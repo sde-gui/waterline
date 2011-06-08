@@ -1,0 +1,21 @@
+0.2.7.2
+-------------------------------------------------------------------------
+1. Add manapages of lxpanelctl.
+2. Supported HWAddr status in netstat plugin.
+
+0.2.7.1
+-------------------------------------------------------------------------
+1. Add manpages.
+2. reduce memory usage and delete unused functions in netstat plugin.
+
+0.2.7
+-------------------------------------------------------------------------
+1. Fixed compile errors in configure and Makefile.am.
+2. Deleted unused files.
+3. Add a new network status plugin - netstat (testing).
+4. Fixed incorrect path of icons.
+5. Changed icon size to reduce memory usage.
+6. Add LXDE-specific configuration profile for LXPanel.
+7. Use "*.directory" file for the translation of categories if available.
+   #1875624 - LXPanel does not correctly show xdg menus.
+8. Fixed tintcolor bug (Request ID 1900678).

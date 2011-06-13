@@ -71,7 +71,8 @@ enum TASKBAR_ACTION {
     ACTION_ICONIFY,
     ACTION_MAXIMIZE,
     ACTION_SHADE,
-    ACTION_UNDECORATE
+    ACTION_UNDECORATE,
+    ACTION_FULLSCREEN,
 };
 
 /* Structure representing a class.  This comes from WM_CLASS, and should identify windows that come from an application. */
@@ -156,8 +157,8 @@ typedef struct _taskbar {
     gboolean show_titles;			/* Show title labels */
     gboolean _show_close_buttons;               /* Show close buttons */
 
-//    GdkAtom atom_NET_WM_STATE;
-//    GdkAtom atom_OB_WM_STATE_UNDECORATED;
+    Atom a_OB_WM_STATE_UNDECORATED;
+    Atom a_NET_WM_STATE_FULLSCREEN;
 } TaskbarPlugin;
 
 static gchar *taskbar_rc = "style 'taskbar-style'\n"
@@ -1096,6 +1097,24 @@ static void task_shade(Task * tk)
                 0, 0, 0);
 }
 
+static void task_undecorate(Task * tk)
+{
+    /* Toggle the undecorated state of the window. */
+    Xclimsg(tk->win, a_NET_WM_STATE,
+                2,		/* a_NET_WM_STATE_TOGGLE */
+                tk->tb->a_OB_WM_STATE_UNDECORATED,
+                0, 0, 0);
+}
+
+static void task_fullscreen(Task * tk)
+{
+    /* Toggle the fullscreen state of the window. */
+    Xclimsg(tk->win, a_NET_WM_STATE,
+                2,		/* a_NET_WM_STATE_TOGGLE */
+                tk->tb->a_NET_WM_STATE_FULLSCREEN,
+                0, 0, 0);
+}
+
 static void task_showmenu(Task * tk, GdkEventButton * event, Task* visible_task)
 {
     /* Right button.  Bring up the window state popup menu. */
@@ -1130,8 +1149,9 @@ static void task_action(Task * tk, int action, GdkEventButton * event, Task* vis
         task_shade(tk);
         break;
       case ACTION_UNDECORATE:
-        /* FIXME: To be implemented */
-        g_printerr("Undecorate is not implemented\n");
+        task_undecorate(tk);
+      case ACTION_FULLSCREEN:
+        task_fullscreen(tk);
         break;
     }
 }
@@ -2124,8 +2144,9 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->_show_close_buttons = FALSE;
     tb->extra_size        = 0;
 
-//    tb->atom_NET_WM_STATE = gdk_atom_intern("_NET_WM_STATE", FALSE);
-//    tb->atom_OB_WM_STATE_UNDECORATED = gdk_atom_intern("_OB_WM_STATE_UNDECORATED", FALSE);
+    tb->a_OB_WM_STATE_UNDECORATED  = XInternAtom(GDK_DISPLAY(), "_OB_WM_STATE_UNDECORATED", False);
+    tb->a_NET_WM_STATE_FULLSCREEN = XInternAtom(GDK_DISPLAY(), "_NET_WM_STATE_FULLSCREEN", False);
+
 
     /* Process configuration file. */
     line s;
@@ -2286,9 +2307,9 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Spacing"), (gpointer)&tb->spacing, (GType)CONF_TYPE_INT,
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
         _("|Mode|Classic|Group similar windows side by side|Group similar windows into one button|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
-        _("|Left button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate"), (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
-        _("|Middle button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate"), (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
-        _("|Right button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate"), (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
+        _("|Left button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen"), (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
+        _("|Middle button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen"), (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
+        _("|Right button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen"), (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
         _("Create groups for \"alone\" windows"), (gpointer)&tb->selfgroup_single_window, (GType)CONF_TYPE_BOOL,
         _("Show windows from all desktops"), (gpointer)&tb->show_all_desks, (GType)CONF_TYPE_BOOL,
         _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,

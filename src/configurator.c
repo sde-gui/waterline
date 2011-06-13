@@ -1312,13 +1312,15 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                   G_CALLBACK(on_file_chooser_btn_file_set), val );
                 break;
             case CONF_TYPE_TRIM:
-                {
+            case CONF_TYPE_TITLE:
+            {
                 entry = gtk_label_new(NULL);
-                char *markup = g_markup_printf_escaped ("<span style=\"italic\">%s</span>", name );
+                const char* style = (type == CONF_TYPE_TITLE) ? "<span weight=\"bold\">%s</span>" : "<span style=\"italic\">%s</span>";
+                char *markup = g_markup_printf_escaped (style, name );
                 gtk_label_set_markup (GTK_LABEL (entry), markup);
                 g_free (markup);
-                }
                 break;
+            }
             case CONF_TYPE_ENUM:
                 entry = gtk_combo_box_new_text();
                 int i;
@@ -1336,7 +1338,7 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
         }
         if( entry )
         {
-            if(( type == CONF_TYPE_BOOL ) || ( type == CONF_TYPE_TRIM ))
+            if(( type == CONF_TYPE_BOOL ) || ( type == CONF_TYPE_TRIM )|| ( type == CONF_TYPE_TITLE ))
                 gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), entry, FALSE, FALSE, 2 );
             else
             {

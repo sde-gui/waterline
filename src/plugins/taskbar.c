@@ -63,6 +63,17 @@ enum {
     SHOW_BOTH
 };
 
+enum TASKBAR_ACTION {
+    ACTION_NONE,
+    ACTION_MENU,
+    ACTION_CLOSE,
+    ACTION_RAISEICONIFY,
+    ACTION_ICONIFY,
+    ACTION_MAXIMIZE,
+    ACTION_SHADE,
+    ACTION_UNDECORATE
+};
+
 /* Structure representing a class.  This comes from WM_CLASS, and should identify windows that come from an application. */
 typedef struct _task_class {
     struct _task_class * res_class_flink;	/* Forward link */
@@ -118,6 +129,9 @@ typedef struct _taskbar {
     guint dnd_delay_timer;			/* Timer for drag and drop delay */
     int icon_size;				/* Size of task icons */
     int extra_size;
+    int button1_action;                         /* User preference: left button action */
+    int button2_action;                         /* User preference: middle button action */
+    int button3_action;                         /* User preference: right button action */
     gboolean show_all_desks;			/* User preference: show windows from all desktops */
     gboolean tooltips;				/* User preference: show tooltips */
     int show_icons_titles;			/* User preference: show icons, titles */
@@ -141,6 +155,9 @@ typedef struct _taskbar {
     gboolean show_icons;			/* Show icons */
     gboolean show_titles;			/* Show title labels */
     gboolean _show_close_buttons;               /* Show close buttons */
+
+//    GdkAtom atom_NET_WM_STATE;
+//    GdkAtom atom_OB_WM_STATE_UNDECORATED;
 } TaskbarPlugin;
 
 static gchar *taskbar_rc = "style 'taskbar-style'\n"
@@ -1043,6 +1060,83 @@ static void task_close(Task * tk)
     Xclimsgwm(tk->win, a_WM_PROTOCOLS, a_WM_DELETE_WINDOW);
 }
 
+static void task_iconify(Task * tk)
+{
+    XIconifyWindow(GDK_DISPLAY(), tk->win, DefaultScreen(GDK_DISPLAY()));
+}
+
+static void task_raiseiconify(Task * tk, GdkEventButton * event)
+{
+    /*
+     * If the task is iconified, raise it.
+     * If the task is not iconified and has focus, iconify it.
+     * If the task is not iconified and does not have focus, raise it. */
+    if (tk->iconified)
+        task_raise_window(tk, event->time);
+    else if ((tk->focused) || (tk == tk->tb->focused_previous))
+        task_iconify(tk);
+    else
+        task_raise_window(tk, event->time);
+}
+
+static void task_maximize(Task* tk)
+{
+    /* FIXME: This should toggle maximize/restore */
+    GdkWindow * win = gdk_window_foreign_new(tk->win);
+    gdk_window_maximize(win);
+    gdk_window_unref(win);
+}
+
+static void task_shade(Task * tk)
+{
+    /* Toggle the shaded state of the window. */
+    Xclimsg(tk->win, a_NET_WM_STATE,
+                2,		/* a_NET_WM_STATE_TOGGLE */
+                a_NET_WM_STATE_SHADED,
+                0, 0, 0);
+}
+
+static void task_showmenu(Task * tk, GdkEventButton * event, Task* visible_task)
+{
+    /* Right button.  Bring up the window state popup menu. */
+    tk->tb->menutask = tk;
+    gtk_menu_popup(
+        GTK_MENU(tk->tb->menu),
+        NULL, NULL,
+        (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) visible_task,
+        event->button, event->time);
+}
+
+/* Close task window. */
+static void task_action(Task * tk, int action, GdkEventButton * event, Task* visible_task)
+{
+    switch (action) {
+      case ACTION_MENU:
+        task_showmenu(tk, event, visible_task);
+        break;
+      case ACTION_CLOSE:
+        task_close(tk);
+        break;
+      case ACTION_RAISEICONIFY:
+        task_raiseiconify(tk, event);
+        break;
+      case ACTION_ICONIFY:
+        task_iconify(tk);
+        break;
+      case ACTION_MAXIMIZE:
+        task_maximize(tk);
+        break;
+      case ACTION_SHADE:
+        task_shade(tk);
+        break;
+      case ACTION_UNDECORATE:
+        /* FIXME: To be implemented */
+        g_printerr("Undecorate is not implemented\n");
+        break;
+    }
+}
+
+
 /* Do the proper steps to raise a window.
  * This means removing it from iconified state and bringing it to the front.
  * We also switch the active desktop and viewport if needed. */
@@ -1172,36 +1266,17 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
         Task * visible_task = (((tk->res_class == NULL) || ( ! tk->tb->grouped_tasks)) ? tk : tk->res_class->visible_task);
         task_group_menu_destroy(tb);
 
-        if (event->button == 1 && !tb->single_window)
+        if (event->button == 1)
         {
-            /* Left button.
-             * If the task is iconified, raise it.
-             * If the task is not iconified and has focus, iconify it.
-             * If the task is not iconified and does not have focus, raise it. */
-            if (tk->iconified)
-                task_raise_window(tk, event->time);
-            else if ((tk->focused) || (tk == tb->focused_previous))
-                XIconifyWindow(GDK_DISPLAY(), tk->win, DefaultScreen(GDK_DISPLAY()));
-            else
-                task_raise_window(tk, event->time);
+            task_action(tk, tk->tb->button1_action, event, visible_task);
         }
         else if (event->button == 2)
         {
-            /* Middle button.  Toggle the shaded state of the window. */
-            Xclimsg(tk->win, a_NET_WM_STATE,
-                2,		/* a_NET_WM_STATE_TOGGLE */
-                a_NET_WM_STATE_SHADED,
-                0, 0, 0);
+            task_action(tk, tk->tb->button2_action, event, visible_task);
         }
-        else if (event->button == 3 || (event->button == 1 && tb->single_window))
+        else if (event->button == 3)
         {
-            /* Right button.  Bring up the window state popup menu. */
-            tk->tb->menutask = tk;
-            gtk_menu_popup(
-                GTK_MENU(tb->menu),
-                NULL, NULL,
-                (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) visible_task,
-                event->button, event->time);
+            task_action(tk, tk->tb->button3_action, event, visible_task);
         }
     }
 
@@ -1294,7 +1369,7 @@ static gboolean taskbar_button_scroll_event(GtkWidget * widget, GdkEventScroll *
         if ((event->direction == GDK_SCROLL_UP) || (event->direction == GDK_SCROLL_LEFT))
             task_raise_window(tk, event->time);
         else
-            XIconifyWindow(GDK_DISPLAY(), tk->win, DefaultScreen(GDK_DISPLAY()));
+            task_iconify(tk);
     }
     return TRUE;
 }
@@ -1825,16 +1900,14 @@ static void menu_restore_window(GtkWidget * widget, TaskbarPlugin * tb)
 /* Handler for "activate" event on Maximize item of right-click menu for task buttons. */
 static void menu_maximize_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    GdkWindow * win = gdk_window_foreign_new(tb->menutask->win);
-    gdk_window_maximize(win);
-    gdk_window_unref(win);
+    task_maximize(tb->menutask);
     task_group_menu_destroy(tb);
 }
 
 /* Handler for "activate" event on Iconify item of right-click menu for task buttons. */
 static void menu_iconify_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    XIconifyWindow(GDK_DISPLAY(), tb->menutask->win, DefaultScreen(GDK_DISPLAY()));
+    task_iconify(tb->menutask);
     task_group_menu_destroy(tb);
 }
 
@@ -2038,6 +2111,9 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->use_urgency_hint  = TRUE;
     tb->mode              = MODE_CLASSIC;
     tb->show_close_buttons = FALSE;
+    tb->button1_action    = ACTION_RAISEICONIFY;
+    tb->button2_action    = ACTION_SHADE;
+    tb->button3_action    = ACTION_MENU;
 
     tb->grouped_tasks     = FALSE;
     tb->single_window     = FALSE;
@@ -2047,6 +2123,9 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->show_all_desks_prev_value = FALSE;
     tb->_show_close_buttons = FALSE;
     tb->extra_size        = 0;
+
+//    tb->atom_NET_WM_STATE = gdk_atom_intern("_NET_WM_STATE", FALSE);
+//    tb->atom_OB_WM_STATE_UNDECORATED = gdk_atom_intern("_OB_WM_STATE_UNDECORATED", FALSE);
 
     /* Process configuration file. */
     line s;
@@ -2092,6 +2171,12 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->show_close_buttons = str2num(bool_pair, s.t[1], 0);
                 else if (g_ascii_strcasecmp(s.t[0], "SelfGroupSingleWindow") == 0)
                     tb->selfgroup_single_window = str2num(bool_pair, s.t[1], 0);
+                else if (g_ascii_strcasecmp(s.t[0], "Button1Action") == 0)
+                    tb->button1_action = atoi(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "Button2Action") == 0)
+                    tb->button2_action = atoi(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "Button3Action") == 0)
+                    tb->button3_action = atoi(s.t[1]);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -2201,6 +2286,9 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Spacing"), (gpointer)&tb->spacing, (GType)CONF_TYPE_INT,
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
         _("|Mode|Classic|Group similar windows side by side|Group similar windows into one button|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
+        _("|Left button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate"), (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
+        _("|Middle button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate"), (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
+        _("|Right button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate"), (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
         _("Create groups for \"alone\" windows"), (gpointer)&tb->selfgroup_single_window, (GType)CONF_TYPE_BOOL,
         _("Show windows from all desktops"), (gpointer)&tb->show_all_desks, (GType)CONF_TYPE_BOOL,
         _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,
@@ -2224,6 +2312,9 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_int(fp, "Mode", tb->mode);
     lxpanel_put_bool(fp, "ShowCloseButtons", tb->show_close_buttons);
     lxpanel_put_bool(fp, "SelfGroupSingleWindow", tb->selfgroup_single_window);
+    lxpanel_put_int(fp, "Button1Action", tb->button1_action);
+    lxpanel_put_int(fp, "Button2Action", tb->button2_action);
+    lxpanel_put_int(fp, "Button3Action", tb->button3_action);
 }
 
 /* Callback when panel configuration changes. */

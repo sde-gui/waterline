@@ -1239,7 +1239,7 @@ static void generic_config_dlg_response(GtkWidget * widget, int response, Plugin
 /* Parameters: const char* name, gpointer ret_value, GType type, ....NULL */
 GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                                       GSourceFunc apply_func, Plugin * plugin,
-                                      const char* name, ... )
+                                      const char* nm, ... )
 {
     va_list args;
     Panel* p = plugin->panel;
@@ -1260,7 +1260,8 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 
     gchar** params = NULL;
 
-    va_start( args, name );
+    const char* name = nm;
+    va_start( args, nm );
     while( name )
     {
         gpointer val = va_arg( args, gpointer );
@@ -1329,6 +1330,9 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                 g_signal_connect( entry, "changed",
                   G_CALLBACK(on_enum_changed), val );
                 break;
+            default:
+	        g_printerr("Invalid CONF_TYPE: %d (text: %s)\n", type, name);
+	        break;
         }
         if( entry )
         {

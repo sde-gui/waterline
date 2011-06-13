@@ -120,7 +120,11 @@ typedef struct _taskbar {
     Task * task_list;				/* List of tasks to be displayed in taskbar */
     TaskClass * res_class_list;			/* Window class list */
     IconGrid * icon_grid;			/* Manager for taskbar buttons */
+
     GtkWidget * menu;				/* Popup menu for task control (Close, Raise, etc.) */
+    GtkWidget * workspace_submenu;		/* Workspace submenu of the task control menu */
+    GtkWidget * iconify_menuitem;		/*  */
+
     GtkWidget * group_menu;			/* Popup menu for grouping selection */
     GdkPixbuf * fallback_pixbuf;		/* Fallback task icon when none is available */
     int number_of_desktops;			/* Number of desktops, from NET_WM_NUMBER_OF_DESKTOPS */
@@ -234,6 +238,7 @@ static void menu_maximize_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_iconify_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb);
+static void task_adjust_menu(Task * tk);
 static void taskbar_make_menu(TaskbarPlugin * tb);
 static void taskbar_window_manager_changed(GdkScreen * screen, TaskbarPlugin * tb);
 static void taskbar_build_gui(Plugin * p);
@@ -1125,6 +1130,7 @@ static void task_showmenu(Task * tk, GdkEventButton * event, Task* visible_task)
 {
     /* Right button.  Bring up the window state popup menu. */
     tk->tb->menutask = tk;
+    task_adjust_menu(tk);
     gtk_menu_popup(
         GTK_MENU(tk->tb->menu),
         NULL, NULL,
@@ -1955,6 +1961,21 @@ static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
+static void task_adjust_menu_workspace_callback(GtkWidget *widget, gpointer data)
+{
+    Task* tk = (Task*)data;
+    int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "num"));
+    gtk_widget_set_sensitive(widget, num != tk->desktop);
+}
+
+static void task_adjust_menu(Task * tk)
+{
+    if (tk->tb->workspace_submenu) {
+        gtk_container_foreach(GTK_CONTAINER(tk->tb->workspace_submenu), task_adjust_menu_workspace_callback, tk);
+    }
+    gtk_widget_set_sensitive(GTK_WIDGET(tk->tb->iconify_menuitem), !tk->iconified);
+}
+
 /* Make right-click menu for task buttons.
  * This depends on number of desktops and edge. */
 static void taskbar_make_menu(TaskbarPlugin * tb)
@@ -1985,8 +2006,10 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     mi = gtk_menu_item_new_with_mnemonic(_("Ico_nify"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_iconify_window, tb);
+    tb->iconify_menuitem = mi;
 
     /* If multiple desktops are supported, add menu items to select them. */
+    tb->workspace_submenu = NULL;
     if (tb->number_of_desktops > 1)
     {
         char label[128];
@@ -2029,6 +2052,8 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
         mi = gtk_menu_item_new_with_mnemonic(_("_Move to Workspace"));
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(mi), workspace_menu);
+
+        tb->workspace_submenu = workspace_menu;
     }
 
     /* Add Close menu item.  By popular demand, we place this menu item closest to the cursor. */
@@ -2156,6 +2181,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->a_OB_WM_STATE_UNDECORATED  = XInternAtom(GDK_DISPLAY(), "_OB_WM_STATE_UNDECORATED", False);
     tb->a_NET_WM_STATE_FULLSCREEN = XInternAtom(GDK_DISPLAY(), "_NET_WM_STATE_FULLSCREEN", False);
 
+    tb->workspace_submenu = NULL;
+    tb->iconify_menuitem  = NULL;
 
     /* Process configuration file. */
     line s;

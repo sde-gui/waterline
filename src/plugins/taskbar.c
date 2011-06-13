@@ -73,6 +73,7 @@ enum TASKBAR_ACTION {
     ACTION_SHADE,
     ACTION_UNDECORATE,
     ACTION_FULLSCREEN,
+    ACTION_STICK
 };
 
 /* Structure representing a class.  This comes from WM_CLASS, and should identify windows that come from an application. */
@@ -1115,6 +1116,11 @@ static void task_fullscreen(Task * tk)
                 0, 0, 0);
 }
 
+static void task_stick(Task * tk)
+{
+    Xclimsg(tk->win, a_NET_WM_DESKTOP, (tk->desktop == ALL_WORKSPACES) ? tk->tb->current_desktop : ALL_WORKSPACES, 0, 0, 0, 0);
+}
+
 static void task_showmenu(Task * tk, GdkEventButton * event, Task* visible_task)
 {
     /* Right button.  Bring up the window state popup menu. */
@@ -1152,6 +1158,9 @@ static void task_action(Task * tk, int action, GdkEventButton * event, Task* vis
         task_undecorate(tk);
       case ACTION_FULLSCREEN:
         task_fullscreen(tk);
+        break;
+      case ACTION_STICK:
+        task_stick(tk);
         break;
     }
 }
@@ -2307,9 +2316,9 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Spacing"), (gpointer)&tb->spacing, (GType)CONF_TYPE_INT,
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
         _("|Mode|Classic|Group similar windows side by side|Group similar windows into one button|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
-        _("|Left button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen"), (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
-        _("|Middle button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen"), (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
-        _("|Right button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen"), (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
+        _("|Left button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick"), (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
+        _("|Middle button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick"), (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
+        _("|Right button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick"), (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
         _("Create groups for \"alone\" windows"), (gpointer)&tb->selfgroup_single_window, (GType)CONF_TYPE_BOOL,
         _("Show windows from all desktops"), (gpointer)&tb->show_all_desks, (GType)CONF_TYPE_BOOL,
         _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,

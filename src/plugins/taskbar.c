@@ -1230,6 +1230,7 @@ static void task_action(Task * tk, int action, GdkEventButton * event, Task* vis
         break;
       case ACTION_UNDECORATE:
         task_undecorate(tk);
+        break;
       case ACTION_FULLSCREEN:
         task_fullscreen(tk);
         break;

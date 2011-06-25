@@ -2381,6 +2381,11 @@ static void taskbar_apply_configuration(Plugin * p)
 /* Display the configuration dialog. */
 static void taskbar_configure(Plugin * p, GtkWindow * parent)
 {
+    const char* actions = _("|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list");
+    char* button1_action = g_strdup_printf("%s%s", _("|Left button action"), actions);
+    char* button2_action = g_strdup_printf("%s%s", _("|Middle button action"), actions);
+    char* button3_action = g_strdup_printf("%s%s", _("|Right button action"), actions);
+
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     GtkWidget* dlg = create_generic_config_dlg(
         _(p->class->name),
@@ -2395,15 +2400,19 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Spacing"), (gpointer)&tb->spacing, (GType)CONF_TYPE_INT,
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
         _("|Mode|Classic|Group similar windows side by side|Group similar windows into one button|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
-        _("|Left button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list"), (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
-        _("|Middle button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list"), (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
-        _("|Right button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list"), (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
+        button1_action, (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
+        button2_action, (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
+        button3_action, (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
         _("Create groups for \"alone\" windows"), (gpointer)&tb->selfgroup_single_window, (GType)CONF_TYPE_BOOL,
         _("Show windows from all desktops"), (gpointer)&tb->show_all_desks, (GType)CONF_TYPE_BOOL,
         _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,
         _("Flash when there is any window requiring attention"), (gpointer)&tb->use_urgency_hint, (GType)CONF_TYPE_BOOL,
         NULL);
     gtk_window_present(GTK_WINDOW(dlg));
+
+    g_free(button1_action);
+    g_free(button2_action);
+    g_free(button3_action);
 }
 
 /* Save the configuration to the configuration file. */

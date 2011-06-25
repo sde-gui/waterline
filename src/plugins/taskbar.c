@@ -73,7 +73,9 @@ enum TASKBAR_ACTION {
     ACTION_SHADE,
     ACTION_UNDECORATE,
     ACTION_FULLSCREEN,
-    ACTION_STICK
+    ACTION_STICK,
+    ACTION_SHOW_WINDOW_LIST,
+    ACTION_SHOW_SIMILAR_WINDOW_LIST
 };
 
 /* Structure representing a class.  This comes from WM_CLASS, and should identify windows that come from an application. */
@@ -291,7 +293,7 @@ static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
 /* Determine if a task is visible considering only its desktop placement. */
 static gboolean task_is_visible_on_current_desktop(TaskbarPlugin * tb, Task * tk)
 {
-    return ( (!tb->single_window || tk->focused) && ((tk->desktop == ALL_WORKSPACES) || (tk->desktop == tb->current_desktop) || (tb->show_all_desks)) );
+    return ( (tk->desktop == ALL_WORKSPACES) || (tk->desktop == tb->current_desktop) || (tb->show_all_desks) );
 }
 
 /* Recompute the visible task for a class when the class membership changes.
@@ -404,6 +406,10 @@ static gboolean task_is_visible(TaskbarPlugin * tb, Task * tk)
 {
     /* Not visible due to grouping. */
     if ((tb->grouped_tasks) && (tk->res_class != NULL) && (tk->res_class->visible_task != tk))
+        return FALSE;
+
+    /* In single_window mode only focused task is visible. */
+    if (tb->single_window && !tk->focused)
         return FALSE;
 
     /* Desktop placement. */
@@ -1143,7 +1149,7 @@ static void task_stick(Task * tk)
     Xclimsg(tk->win, a_NET_WM_DESKTOP, (tk->desktop == ALL_WORKSPACES) ? tk->tb->current_desktop : ALL_WORKSPACES, 0, 0, 0, 0);
 }
 
-static void task_showmenu(Task * tk, GdkEventButton * event, Task* visible_task)
+static void task_show_menu(Task * tk, GdkEventButton * event, Task* visible_task)
 {
     /* Right button.  Bring up the window state popup menu. */
     tk->tb->menutask = tk;
@@ -1155,12 +1161,57 @@ static void task_showmenu(Task * tk, GdkEventButton * event, Task* visible_task)
         event->button, event->time);
 }
 
+static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, TaskbarPlugin * tb)
+{
+    if (task_is_visible_on_current_desktop(tb, tk_cursor))
+    {
+        /* The menu item has the name, or the iconified name, and the icon of the application window. */
+        GtkWidget * mi = gtk_image_menu_item_new_with_label(task_get_displayed_name(tk_cursor));
+        GtkWidget * im = gtk_image_new_from_pixbuf(gtk_image_get_pixbuf(GTK_IMAGE(tk_cursor->image)));
+        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), im);
+        g_signal_connect(mi, "button_press_event", G_CALLBACK(taskbar_popup_activate_event), (gpointer) tk_cursor);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    }
+}
+
+static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean similar)
+{
+    TaskbarPlugin * tb = tk->tb;
+    TaskClass * tc = tk->res_class;
+
+    GtkWidget * menu = gtk_menu_new();
+    Task * tk_cursor;
+
+    if (similar && task_class_is_grouped(tb, tc))
+    {
+        for (tk_cursor = tc->res_class_head; tk_cursor != NULL; tk_cursor = tk_cursor->res_class_flink)
+        {
+            task_show_window_list_helper(tk_cursor, menu, tb);
+        }
+    }
+    else
+    {
+        for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+        {
+            if (!similar || tk_cursor->res_class == tc)
+                task_show_window_list_helper(tk_cursor, menu, tb);
+        }
+    }
+
+    /* Show the menu.  Set context so we can find the menu later to dismiss it.
+     * Use a position-calculation callback to get the menu nicely positioned with respect to the button. */
+    gtk_widget_show_all(menu);
+    tb->group_menu = menu;
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) tk, event->button, event->time);
+
+}
+
 /* Close task window. */
 static void task_action(Task * tk, int action, GdkEventButton * event, Task* visible_task)
 {
     switch (action) {
       case ACTION_MENU:
-        task_showmenu(tk, event, visible_task);
+        task_show_menu(tk, event, visible_task);
         break;
       case ACTION_CLOSE:
         task_close(tk);
@@ -1184,6 +1235,12 @@ static void task_action(Task * tk, int action, GdkEventButton * event, Task* vis
         break;
       case ACTION_STICK:
         task_stick(tk);
+        break;
+      case ACTION_SHOW_WINDOW_LIST:
+        task_show_window_list(tk, event, FALSE);
+        break;
+      case ACTION_SHOW_SIMILAR_WINDOW_LIST:
+        task_show_window_list(tk, event, TRUE);
         break;
     }
 }
@@ -1291,26 +1348,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
     {
         /* If this is a grouped-task representative, meaning that there is a class with at least two windows,
          * bring up a popup menu listing all the class members. */
-        GtkWidget * menu = gtk_menu_new();
-        Task * tk_cursor;
-        for (tk_cursor = tc->res_class_head; tk_cursor != NULL; tk_cursor = tk_cursor->res_class_flink)
-        {
-            if (task_is_visible_on_current_desktop(tb, tk_cursor))
-            {
-                /* The menu item has the name, or the iconified name, and the icon of the application window. */
-                GtkWidget * mi = gtk_image_menu_item_new_with_label(task_get_displayed_name(tk_cursor));
-                GtkWidget * im = gtk_image_new_from_pixbuf(gtk_image_get_pixbuf(GTK_IMAGE(tk_cursor->image)));
-                gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), im);
-                g_signal_connect(mi, "button_press_event", G_CALLBACK(taskbar_popup_activate_event), (gpointer) tk_cursor);
-	        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-            }
-        }
-
-        /* Show the menu.  Set context so we can find the menu later to dismiss it.
-         * Use a position-calculation callback to get the menu nicely positioned with respect to the button. */
-        gtk_widget_show_all(menu);
-        tb->group_menu = menu;
-        gtk_menu_popup(GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) tk, event->button, event->time);
+        task_show_window_list(tk, event, TRUE);
     }
     else
     {
@@ -1318,18 +1356,15 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
         Task * visible_task = (((tk->res_class == NULL) || ( ! tk->tb->grouped_tasks)) ? tk : tk->res_class->visible_task);
         task_group_menu_destroy(tb);
 
-        if (event->button == 1)
-        {
-            task_action(tk, tk->tb->button1_action, event, visible_task);
+        int action = ACTION_NONE;
+        switch (event->button) {
+            case 1: action = tk->tb->button1_action; break;
+            case 2: action = tk->tb->button2_action; break;
+            case 3: action = tk->tb->button3_action; break;
         }
-        else if (event->button == 2)
-        {
-            task_action(tk, tk->tb->button2_action, event, visible_task);
-        }
-        else if (event->button == 3)
-        {
-            task_action(tk, tk->tb->button3_action, event, visible_task);
-        }
+        if (popup_menu && (action == ACTION_SHOW_SIMILAR_WINDOW_LIST || action == ACTION_SHOW_WINDOW_LIST))
+            action = ACTION_RAISEICONIFY;
+        task_action(tk, action, event, visible_task);
     }
 
     /* As a matter of policy, avoid showing selected or prelight states on flat buttons. */
@@ -2360,9 +2395,9 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Spacing"), (gpointer)&tb->spacing, (GType)CONF_TYPE_INT,
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
         _("|Mode|Classic|Group similar windows side by side|Group similar windows into one button|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
-        _("|Left button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick"), (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
-        _("|Middle button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick"), (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
-        _("|Right button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick"), (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
+        _("|Left button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list"), (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
+        _("|Middle button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list"), (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
+        _("|Right button action|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list"), (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
         _("Create groups for \"alone\" windows"), (gpointer)&tb->selfgroup_single_window, (GType)CONF_TYPE_BOOL,
         _("Show windows from all desktops"), (gpointer)&tb->show_all_desks, (GType)CONF_TYPE_BOOL,
         _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,

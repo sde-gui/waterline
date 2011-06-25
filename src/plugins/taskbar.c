@@ -481,6 +481,12 @@ static void task_set_names(Task * tk, Atom source)
         tk->name_iconified = g_strdup_printf("[%s]", name);
         g_free(name);
 
+        /* Update tk->res_class->visible_name as it may point to freed tk->name. */
+        if (tk->res_class && tk->tb)
+        {
+            recompute_group_visibility_for_class(tk->tb, tk->res_class);
+        }
+
         /* Redraw the button. */
         task_button_redraw(tk, tk->tb);
     }

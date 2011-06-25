@@ -271,6 +271,18 @@ static int task_button_is_really_flat(TaskbarPlugin * tb)
     return ( tb->single_window || tb->flat_button );
 }
 
+static char* task_get_displayed_name(Task * tk)
+{
+    if (tk->iconified) {
+        if (!tk->name_iconified) {
+            tk->name_iconified = g_strdup_printf("[%s]", tk->name);
+        }
+        return tk->name_iconified;
+    } else {
+        return tk->name;
+    }
+}
+
 static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
 {
     return (tb->grouped_tasks) && (tc != NULL) && (tc->visible_count > 1 || tb->selfgroup_single_window);
@@ -380,7 +392,7 @@ static void task_draw_label(Task * tk)
 	}
     else
     {
-        char * name = tk->iconified ? tk->name_iconified : tk->name;
+        char * name = task_get_displayed_name(tk);
         if (tk->tb->tooltips)
             gtk_widget_set_tooltip_text(tk->button, name);
         panel_draw_label_text(tk->tb->plug->panel, tk->label, name, bold_style, tk->tb->flat_button);
@@ -478,7 +490,6 @@ static void task_set_names(Task * tk, Atom source)
     {
         task_free_names(tk);
         tk->name = g_strdup(name);
-        tk->name_iconified = g_strdup_printf("[%s]", name);
         g_free(name);
 
         /* Update tk->res_class->visible_name as it may point to freed tk->name. */
@@ -1287,7 +1298,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
             if (task_is_visible_on_current_desktop(tb, tk_cursor))
             {
                 /* The menu item has the name, or the iconified name, and the icon of the application window. */
-                GtkWidget * mi = gtk_image_menu_item_new_with_label(((tk_cursor->iconified) ? tk_cursor->name_iconified : tk_cursor->name));
+                GtkWidget * mi = gtk_image_menu_item_new_with_label(task_get_displayed_name(tk_cursor));
                 GtkWidget * im = gtk_image_new_from_pixbuf(gtk_image_get_pixbuf(GTK_IMAGE(tk_cursor->image)));
                 gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), im);
                 g_signal_connect(mi, "button_press_event", G_CALLBACK(taskbar_popup_activate_event), (gpointer) tk_cursor);

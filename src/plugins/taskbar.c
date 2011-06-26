@@ -1497,15 +1497,8 @@ static void taskbar_update_style(TaskbarPlugin * tb)
 /* Update style on a task button when created or after a configuration change. */
 static void task_update_style(Task * tk, TaskbarPlugin * tb)
 {
-    if (tb->show_titles)
-        gtk_widget_show(tk->label);
-    else
-        gtk_widget_hide(tk->label);
-
-    if (tb->show_icons)
-        gtk_widget_show(tk->image);
-    else
-        gtk_widget_hide(tk->image);
+    gtk_widget_set_visible(tk->label, tb->show_titles);
+    gtk_widget_set_visible(tk->image, tb->show_icons);
 
     if (tb->_show_close_buttons) {
         if (!tk->button_close)

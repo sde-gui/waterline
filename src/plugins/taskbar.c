@@ -126,6 +126,8 @@ typedef struct _taskbar {
     GtkWidget * menu;				/* Popup menu for task control (Close, Raise, etc.) */
     GtkWidget * workspace_submenu;		/* Workspace submenu of the task control menu */
     GtkWidget * iconify_menuitem;		/*  */
+    GtkWidget * title_menuitem;			/*  */
+    GtkWidget * title_separator_menuitem;	/*  */
 
     GtkWidget * group_menu;			/* Popup menu for grouping selection */
     GdkPixbuf * fallback_pixbuf;		/* Fallback task icon when none is available */
@@ -240,7 +242,7 @@ static void menu_maximize_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_iconify_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb);
-static void task_adjust_menu(Task * tk);
+static void task_adjust_menu(Task * tk, gboolean from_popup_menu);
 static void taskbar_make_menu(TaskbarPlugin * tb);
 static void taskbar_window_manager_changed(GdkScreen * screen, TaskbarPlugin * tb);
 static void taskbar_build_gui(Plugin * p);
@@ -1149,11 +1151,11 @@ static void task_stick(Task * tk)
     Xclimsg(tk->win, a_NET_WM_DESKTOP, (tk->desktop == ALL_WORKSPACES) ? tk->tb->current_desktop : ALL_WORKSPACES, 0, 0, 0, 0);
 }
 
-static void task_show_menu(Task * tk, GdkEventButton * event, Task* visible_task)
+static void task_show_menu(Task * tk, GdkEventButton * event, Task* visible_task, gboolean from_popup_menu)
 {
     /* Right button.  Bring up the window state popup menu. */
     tk->tb->menutask = tk;
-    task_adjust_menu(tk);
+    task_adjust_menu(tk, from_popup_menu);
     gtk_menu_popup(
         GTK_MENU(tk->tb->menu),
         NULL, NULL,
@@ -1207,11 +1209,11 @@ static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean si
 }
 
 /* Close task window. */
-static void task_action(Task * tk, int action, GdkEventButton * event, Task* visible_task)
+static void task_action(Task * tk, int action, GdkEventButton * event, Task* visible_task, gboolean from_popup_menu)
 {
     switch (action) {
       case ACTION_MENU:
-        task_show_menu(tk, event, visible_task);
+        task_show_menu(tk, event, visible_task, from_popup_menu);
         break;
       case ACTION_CLOSE:
         task_close(tk);
@@ -1365,7 +1367,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
         }
         if (popup_menu && (action == ACTION_SHOW_SIMILAR_WINDOW_LIST || action == ACTION_SHOW_WINDOW_LIST))
             action = ACTION_RAISEICONIFY;
-        task_action(tk, action, event, visible_task);
+        task_action(tk, action, event, visible_task, popup_menu);
     }
 
     /* As a matter of policy, avoid showing selected or prelight states on flat buttons. */
@@ -2021,12 +2023,21 @@ static void task_adjust_menu_workspace_callback(GtkWidget *widget, gpointer data
     gtk_widget_set_sensitive(widget, num != tk->desktop);
 }
 
-static void task_adjust_menu(Task * tk)
+static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 {
     if (tk->tb->workspace_submenu) {
         gtk_container_foreach(GTK_CONTAINER(tk->tb->workspace_submenu), task_adjust_menu_workspace_callback, tk);
     }
+
     gtk_widget_set_sensitive(GTK_WIDGET(tk->tb->iconify_menuitem), !tk->iconified);
+
+    gtk_widget_set_visible(GTK_WIDGET(tk->tb->title_menuitem), from_popup_menu);
+    gtk_widget_set_visible(GTK_WIDGET(tk->tb->title_separator_menuitem), from_popup_menu);
+    if (from_popup_menu) {
+        gtk_widget_set_sensitive(GTK_WIDGET(tk->tb->title_menuitem), FALSE);
+        gtk_menu_item_set_use_underline(GTK_MENU_ITEM(tk->tb->title_menuitem), FALSE);
+        gtk_menu_item_set_label(GTK_MENU_ITEM(tk->tb->title_menuitem), tk->name);
+    }
 }
 
 /* Make right-click menu for task buttons.
@@ -2122,6 +2133,17 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     }
     g_signal_connect(G_OBJECT(mi), "activate", (GCallback)menu_close_window, tb);
+
+    /* Add window title menu item and separator. */
+
+    mi = gtk_separator_menu_item_new();
+    gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
+    tb->title_separator_menuitem = mi;
+
+    mi = gtk_menu_item_new_with_mnemonic("");
+    gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
+    tb->title_menuitem = mi;
+
 
     gtk_widget_show_all(menu);
     tb->menu = menu;
@@ -2236,6 +2258,9 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 
     tb->workspace_submenu = NULL;
     tb->iconify_menuitem  = NULL;
+    tb->title_menuitem    = NULL;
+    tb->title_separator_menuitem = NULL;
+
 
     /* Process configuration file. */
     line s;

@@ -2427,7 +2427,8 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,
         _("Flash when there is any window requiring attention"), (gpointer)&tb->use_urgency_hint, (GType)CONF_TYPE_BOOL,
         NULL);
-    gtk_window_present(GTK_WINDOW(dlg));
+    if (dlg)
+        gtk_window_present(GTK_WINDOW(dlg));
 
     g_free(button1_action);
     g_free(button2_action);

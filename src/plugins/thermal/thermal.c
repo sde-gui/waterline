@@ -310,7 +310,8 @@ static void config(Plugin *p, GtkWindow* parent) {
             _("Warning1 Temperature"), &th->warning1, CONF_TYPE_INT,
             _("Warning2 Temperature"), &th->warning2, CONF_TYPE_INT,
             NULL);
-    gtk_window_present(GTK_WINDOW(dialog));
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
 
     RET();
 }

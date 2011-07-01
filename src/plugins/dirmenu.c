@@ -412,7 +412,8 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _("Label"), &dm->name, CONF_TYPE_STR,
         _("Icon"), &dm->image, CONF_TYPE_FILE_ENTRY,
         NULL);
-    gtk_window_present(GTK_WINDOW(dlg));
+    if (dlg)
+        gtk_window_present(GTK_WINDOW(dlg));
 }
 
 /* Callback when the configuration is to be saved. */

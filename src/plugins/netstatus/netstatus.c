@@ -179,7 +179,8 @@ static void netstatus_config( Plugin* p, GtkWindow* parent  )
                 _("Interface to monitor"), &ns->iface, CONF_TYPE_STR,
                 _("Config tool"), &ns->config_tool, CONF_TYPE_STR,
                 NULL );
-    gtk_window_present( GTK_WINDOW(dlg) );
+    if (dlg)
+        gtk_window_present( GTK_WINDOW(dlg) );
 }
 
 static void save_config( Plugin* p, FILE* fp )

@@ -1019,7 +1019,8 @@ static void menu_config( Plugin *p, GtkWindow* parent )
                                      _("Icon"), &menu->fname, CONF_TYPE_FILE_ENTRY,
                                      /* _("Caption"), &menu->caption, CONF_TYPE_STR, */
                                      NULL );
-    gtk_window_present( GTK_WINDOW(dlg) );
+    if (dlg)
+        gtk_window_present( GTK_WINDOW(dlg) );
 }
 
 /* Callback when panel configuration changes. */

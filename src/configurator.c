@@ -61,6 +61,7 @@ Command commands[] = {
 static char* file_manager_cmd = NULL;
 static char* terminal_cmd = NULL;
 static char* logout_cmd = NULL;
+static int kiosk_mode = 0;
 
 extern GSList* all_panels;
 extern gchar *cprofile;
@@ -1035,6 +1036,9 @@ void panel_configure( Panel* p, int sel_page )
 void
 panel_global_config_save( Panel* p, FILE *fp)
 {
+    if (lxpanel_is_in_kiosk_mode())
+        return;
+
     fprintf(fp, "# lxpanel <profile> config file. Manually editing is not recommended.\n"
                 "# Use preference dialog in lxpanel to adjust config when you can.\n\n");
     lxpanel_put_line(fp, "Global {");
@@ -1062,6 +1066,9 @@ panel_global_config_save( Panel* p, FILE *fp)
 void
 panel_plugin_config_save( Panel* p, FILE *fp)
 {
+    if (lxpanel_is_in_kiosk_mode())
+        return;
+
     GList* l;
     for( l = p->plugins; l; l = l->next )
     {
@@ -1087,6 +1094,9 @@ panel_plugin_config_save( Panel* p, FILE *fp)
 
 void panel_config_save( Panel* p )
 {
+    if (lxpanel_is_in_kiosk_mode())
+        return;
+
     gchar *fname, *dir;
     FILE *fp;
 
@@ -1241,6 +1251,9 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                                       GSourceFunc apply_func, Plugin * plugin,
                                       const char* nm, ... )
 {
+    if (lxpanel_is_in_kiosk_mode())
+        return NULL;
+
     va_list args;
     Panel* p = plugin->panel;
     GtkWidget* dlg = gtk_dialog_new_with_buttons( title, NULL, 0,
@@ -1399,6 +1412,7 @@ char* get_config_file( const char* profile, const char* file_name, gboolean is_g
     return path;
 }
 
+const char general_group[] = "General";
 const char command_group[] = "Command";
 void load_global_config()
 {
@@ -1414,6 +1428,11 @@ void load_global_config()
 
     if( loaded )
     {
+        if (g_key_file_has_key(kf, general_group, "KioskMode", NULL))
+            kiosk_mode = g_key_file_get_boolean( kf, general_group, "KioskMode", NULL );
+        else
+            kiosk_mode = 0;
+
         file_manager_cmd = g_key_file_get_string( kf, command_group, "FileManager", NULL );
         terminal_cmd = g_key_file_get_string( kf, command_group, "Terminal", NULL );
         logout_cmd = g_key_file_get_string( kf, command_group, "Logout", NULL );
@@ -1423,10 +1442,16 @@ void load_global_config()
 
 static void save_global_config()
 {
+    if (lxpanel_is_in_kiosk_mode())
+        return;
+
     char* file = get_config_file( cprofile, "config", FALSE );
     FILE* f = fopen( file, "w" );
     if( f )
     {
+        fprintf( f, "[%s]\n", general_group );
+        fprintf( f, "KioskMode=%s\n", kiosk_mode ? "true" : "false" );
+
         fprintf( f, "[%s]\n", command_group );
         if( file_manager_cmd )
             fprintf( f, "FileManager=%s\n", file_manager_cmd );
@@ -1455,4 +1480,10 @@ extern const char*
 lxpanel_get_terminal()
 {
     return terminal_cmd ? terminal_cmd : "lxterminal -e %s";
+}
+
+extern int
+lxpanel_is_in_kiosk_mode(void)
+{
+    return kiosk_mode;
 }

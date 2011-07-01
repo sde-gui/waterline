@@ -284,6 +284,9 @@ static void xkb_configuration_response(GtkDialog * dialog, int response, gpointe
 /* Callback when the configuration dialog is to be shown. */
 static void xkb_configure(Plugin * p, GtkWindow * parent)
 {
+    if (lxpanel_is_in_kiosk_mode())
+        return;
+
     XkbPlugin * xkb = (XkbPlugin *) p->priv;
 
     /* Create dialog window. */
@@ -294,6 +297,8 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
         GTK_STOCK_CLOSE, 
         GTK_RESPONSE_OK,
         NULL);
+    if (!dlg)
+        return;
     xkb->config_dlg = dlg;
     panel_apply_icon(GTK_WINDOW(dlg));
 

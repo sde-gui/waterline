@@ -789,6 +789,9 @@ static void launchbar_configure_initialize_list(Plugin * p, GtkWidget * dlg, Gtk
 /* Callback when the configuration dialog is to be shown. */
 static void launchbar_configure(Plugin * p, GtkWindow * parent)
 {
+    if (lxpanel_is_in_kiosk_mode())
+        return;
+
     LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
 
     if (lb->config_dlg == NULL)

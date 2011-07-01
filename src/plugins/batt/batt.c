@@ -589,7 +589,8 @@ static void config(Plugin *p, GtkWindow* parent) {
             _("Border width"), &b->requestedBorder, CONF_TYPE_INT,
             _("Size"), &b->thickness, CONF_TYPE_INT,
             NULL);
-    gtk_window_present(GTK_WINDOW(dialog));
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
 
     RET();
 }

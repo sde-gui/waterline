@@ -231,8 +231,11 @@ static void kbled_configure(Plugin * p, GtkWindow * parent)
         _("Show NumLock"), &kl->visible[1], CONF_TYPE_BOOL,
         _("Show ScrollLock"), &kl->visible[2], CONF_TYPE_BOOL,
         NULL);
-    gtk_widget_set_size_request(GTK_WIDGET(dlg), 200, -1);	/* Improve geometry */
-    gtk_window_present(GTK_WINDOW(dlg));
+    if (dlg)
+    {
+       gtk_widget_set_size_request(GTK_WIDGET(dlg), 200, -1);	/* Improve geometry */
+       gtk_window_present(GTK_WINDOW(dlg));
+    }
 }
 
 /* Callback when the configuration is to be saved. */

@@ -204,6 +204,7 @@ extern int lxpanel_put_line(FILE* fp, const char* format, ...);
 #define lxpanel_put_bool(fp, name, val) lxpanel_put_line(fp, "%s=%c", name, (val) ? '1' : '0')
 #define lxpanel_put_int(fp, name, val) lxpanel_put_line(fp, "%s=%d", name, val)
 
+int lxpanel_is_in_kiosk_mode(void);
 
 /* For debuging */
 #define ERR(fmt, args...) fprintf(stderr, fmt, ## args)

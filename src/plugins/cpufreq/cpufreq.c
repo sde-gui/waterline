@@ -412,7 +412,8 @@ static void config(Plugin *p, GtkWindow* parent) {
             (GSourceFunc) applyConfig, (gpointer) p,
             _("Remember governor and frequency"), &cf->remember, CONF_TYPE_BOOL,
             NULL);
-    gtk_window_present(GTK_WINDOW(dialog));
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
 
     RET();
 }

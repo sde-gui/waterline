@@ -207,8 +207,11 @@ static void deskno_configure(Plugin * p, GtkWindow * parent)
         _("Bold font"), &dc->bold, CONF_TYPE_BOOL,
         _("Display desktop names"), &dc->wm_labels, CONF_TYPE_BOOL,
         NULL);
-    gtk_widget_set_size_request(GTK_WIDGET(dlg), 400, -1);	/* Improve geometry */
-    gtk_window_present(GTK_WINDOW(dlg));
+    if (dlg)
+    {
+       gtk_widget_set_size_request(GTK_WIDGET(dlg), 400, -1);	/* Improve geometry */
+       gtk_window_present(GTK_WINDOW(dlg));
+    }
 }
 
 /* Callback when the configuration is to be saved. */

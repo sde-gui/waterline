@@ -213,7 +213,7 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
         _("Tooltip"), &lb->tooltip, CONF_TYPE_STR,
         _("Icon"), &lb->icon_path, CONF_TYPE_FILE_ENTRY,
         _("Left button command"), &lb->command1, CONF_TYPE_STR,
-        _("Right button command"), &lb->command2, CONF_TYPE_STR,
+        _("Middle button command"), &lb->command2, CONF_TYPE_STR,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));

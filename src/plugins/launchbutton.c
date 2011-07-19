@@ -44,6 +44,7 @@ typedef struct {
     char * tooltip;
     char * command1;
     char * command2;
+    char * command3;
 
     GtkWidget * button;
     GtkWidget * img;
@@ -52,10 +53,10 @@ typedef struct {
     Plugin * plug;
 } lb_t;
 
-static void lb_run_command(const char* command) {
+static int lb_run_command(const char* command) {
 
     if (!command)
-        return;
+        return -1;
 
     while (*command == ' ' || *command == '\t')
         command++;
@@ -66,7 +67,11 @@ static void lb_run_command(const char* command) {
         use_terminal = TRUE,
         command++;
 
+    if (!*command)
+        return -1;
+
     lxpanel_launch_app(command, NULL, use_terminal);
+    return 0;
 }
 
 
@@ -74,19 +79,31 @@ static void lb_run_command(const char* command) {
 static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t * lb)
 {
     /* Standard right-click handling. */
-    if (plugin_button_press_event(widget, event, lb->plug))
-        return TRUE;
-
-//plugin_popup_set_position_helper
-
-    if (event->button == 1)    /* left button */
+    if (event->state & GDK_CONTROL_MASK)
     {
-       lb_run_command(lb->command1);
+        if (plugin_button_press_event(widget, event, lb->plug))
+            return TRUE;
     }
-    else if (event->button == 2)    /* middle button */
+
+    const char* command = (void*)-1;
+
+    if (event->button == 1)
+       command = lb->command1;
+    else if (event->button == 2)
+       command = lb->command2;
+    else if (event->button == 3)
+       command = lb->command3;
+
+    if (command != (void*)-1)
     {
-       lb_run_command(lb->command2);
+        int r = lb_run_command(command);
+        if (r)
+        {
+            GtkMenu* popup = lxpanel_get_panel_menu( lb->plug->panel, lb->plug, FALSE );
+            gtk_menu_popup( popup, NULL, NULL, NULL, NULL, event->button, event->time );
+        }
     }
+
     return TRUE;
 }
 
@@ -127,6 +144,7 @@ static int lb_constructor(Plugin *p, char **fp)
     lb->tooltip   = NULL;
     lb->command1  = NULL;
     lb->command2  = NULL;
+    lb->command3  = NULL;
 
     lb->button = NULL;
     lb->img    = NULL;
@@ -156,6 +174,8 @@ static int lb_constructor(Plugin *p, char **fp)
                     lb->command1 = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "Command2") == 0)
                     lb->command2 = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "Command3") == 0)
+                    lb->command3 = g_strdup(s.t[1]);
                 else
                     ERR( "dclock: unknown var %s\n", s.t[0]);
             }
@@ -177,6 +197,7 @@ static int lb_constructor(Plugin *p, char **fp)
     DEFAULT_STRING(tooltip  , "");
     DEFAULT_STRING(command1 , "");
     DEFAULT_STRING(command2 , "");
+    DEFAULT_STRING(command3 , "");
 
     #undef DEFAULT_STRING
 
@@ -197,6 +218,7 @@ static void lb_destructor(Plugin * p)
     g_free(lb->tooltip);
     g_free(lb->command1);
     g_free(lb->command2);
+    g_free(lb->command3);
     g_free(lb);
 }
 
@@ -214,6 +236,7 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
         _("Icon"), &lb->icon_path, CONF_TYPE_FILE_ENTRY,
         _("Left button command"), &lb->command1, CONF_TYPE_STR,
         _("Middle button command"), &lb->command2, CONF_TYPE_STR,
+        _("Right button command"), &lb->command3, CONF_TYPE_STR,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
@@ -229,6 +252,7 @@ static void lb_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_str(fp, "Tooltip", lb->tooltip);
     lxpanel_put_str(fp, "Command1", lb->command1);
     lxpanel_put_str(fp, "Command2", lb->command2);
+    lxpanel_put_str(fp, "Command3", lb->command3);
 }
 
 

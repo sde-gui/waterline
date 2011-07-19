@@ -29,6 +29,7 @@ endif
 
 PLUGINS_SOURCES = \
 	launchbar.c \
+	launchbutton.c \
 	taskbar.c \
 	dclock.c \
 	$(MENU_SOURCES) \

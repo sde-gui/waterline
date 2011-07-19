@@ -49,13 +49,14 @@ LIBRARIES = $(noinst_LIBRARIES)
 ARFLAGS = cru
 libbuiltin_plugins_a_AR = $(AR) $(ARFLAGS)
 libbuiltin_plugins_a_DEPENDENCIES =
-am__libbuiltin_plugins_a_SOURCES_DIST = launchbar.c taskbar.c dclock.c \
-	menu.c separator.c pager.c space.c tray.c wincmd.c dirmenu.c
+am__libbuiltin_plugins_a_SOURCES_DIST = launchbar.c launchbutton.c \
+	taskbar.c dclock.c menu.c separator.c pager.c space.c tray.c \
+	wincmd.c dirmenu.c
 @ENABLE_MENU_CACHE_TRUE@am__objects_1 = menu.$(OBJEXT)
-am__objects_2 = launchbar.$(OBJEXT) taskbar.$(OBJEXT) dclock.$(OBJEXT) \
-	$(am__objects_1) separator.$(OBJEXT) pager.$(OBJEXT) \
-	space.$(OBJEXT) tray.$(OBJEXT) wincmd.$(OBJEXT) \
-	dirmenu.$(OBJEXT)
+am__objects_2 = launchbar.$(OBJEXT) launchbutton.$(OBJEXT) \
+	taskbar.$(OBJEXT) dclock.$(OBJEXT) $(am__objects_1) \
+	separator.$(OBJEXT) pager.$(OBJEXT) space.$(OBJEXT) \
+	tray.$(OBJEXT) wincmd.$(OBJEXT) dirmenu.$(OBJEXT)
 am_libbuiltin_plugins_a_OBJECTS = $(am__objects_2)
 libbuiltin_plugins_a_OBJECTS = $(am_libbuiltin_plugins_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -133,6 +134,7 @@ CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -167,6 +169,7 @@ LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 LXPANEL_MODULE = @LXPANEL_MODULE@
 MAKEINFO = @MAKEINFO@
+MANIFEST_TOOL = @MANIFEST_TOOL@
 MENU_CACHE_CFLAGS = @MENU_CACHE_CFLAGS@
 MENU_CACHE_LIBS = @MENU_CACHE_LIBS@
 MKDIR_P = @MKDIR_P@
@@ -216,6 +219,7 @@ abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
@@ -285,6 +289,7 @@ INCLUDES = \
 
 PLUGINS_SOURCES = \
 	launchbar.c \
+	launchbutton.c \
 	taskbar.c \
 	dclock.c \
 	$(MENU_SOURCES) \
@@ -353,6 +358,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dclock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dirmenu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/launchbar.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/launchbutton.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/separator.Po@am__quote@

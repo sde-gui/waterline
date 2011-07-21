@@ -303,8 +303,7 @@ clicked( GtkWidget *widget, GdkEventButton* evt, Plugin* plugin)
       return TRUE;
     }else if ( evt->button == 3 )
     {
-        GtkMenu* popup = lxpanel_get_panel_menu( plugin->panel, plugin, FALSE );
-        gtk_menu_popup( popup, NULL, NULL, NULL, NULL, evt->button, evt->time );
+        lxpanel_show_panel_menu( plugin->panel, plugin, evt );
         return TRUE;
       return TRUE;
     }

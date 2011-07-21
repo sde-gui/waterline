@@ -99,8 +99,7 @@ static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t 
         int r = lb_run_command(command);
         if (r)
         {
-            GtkMenu* popup = lxpanel_get_panel_menu( lb->plug->panel, lb->plug, FALSE );
-            gtk_menu_popup( popup, NULL, NULL, NULL, NULL, event->button, event->time );
+              lxpanel_show_panel_menu( lb->plug->panel, lb->plug, event );
         }
     }
 

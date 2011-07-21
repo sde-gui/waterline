@@ -265,8 +265,7 @@ static gint buttonPressEvent(GtkWidget *widget, GdkEventButton *event,
 
     if( event->button == 3 )  /* right button */
     {
-        GtkMenu* popup = lxpanel_get_panel_menu( plugin->panel, plugin, FALSE );
-        gtk_menu_popup( popup, NULL, NULL, NULL, NULL, event->button, event->time );
+        lxpanel_show_panel_menu( plugin->panel, plugin, event );
         return TRUE;
     }
     return FALSE;

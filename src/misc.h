@@ -127,6 +127,7 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 char* get_config_file( const char* profile, const char* file_name, gboolean is_global );
 
 extern GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_menu );
+extern void     lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * event );
 
 extern GdkPixbuf* lxpanel_load_icon( const char* name, int width, int height, gboolean use_fallback );
 

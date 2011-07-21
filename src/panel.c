@@ -543,8 +543,7 @@ static gboolean panel_button_press_event_with_panel(GtkWidget *widget, GdkEventB
 {
     if (event->button == 3)	 /* right button */
     {
-        GtkMenu* popup = (GtkMenu*) lxpanel_get_panel_menu(panel, NULL, FALSE);
-        gtk_menu_popup(popup, NULL, NULL, NULL, NULL, event->button, event->time);
+        lxpanel_show_panel_menu(panel, NULL, event);
         return TRUE;
     }    
     return FALSE;
@@ -800,6 +799,13 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
 
     g_signal_connect( ret, "selection-done", G_CALLBACK(gtk_widget_destroy), NULL );
     return ret;
+}
+
+void lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * event )
+{
+    GtkMenu* popup = lxpanel_get_panel_menu( panel, plugin, FALSE );
+    gtk_menu_popup( popup, NULL, NULL, NULL, NULL, event->button, event->time );
+    return popup;
 }
 
 /****************************************************

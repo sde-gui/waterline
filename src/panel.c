@@ -805,7 +805,6 @@ void lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * eve
 {
     GtkMenu* popup = lxpanel_get_panel_menu( panel, plugin, FALSE );
     gtk_menu_popup( popup, NULL, NULL, NULL, NULL, event->button, event->time );
-    return popup;
 }
 
 /****************************************************

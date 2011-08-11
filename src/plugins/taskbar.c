@@ -227,6 +227,7 @@ static gboolean taskbar_button_scroll_event(GtkWidget * widget, GdkEventScroll *
 static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc, Task * tk);
 static void taskbar_update_style(TaskbarPlugin * tb);
 static void task_update_style(Task * tk, TaskbarPlugin * tb);
+static void task_build_gui_label(TaskbarPlugin * tb, Task* tk);
 static void task_build_gui_button_close(TaskbarPlugin * tb, Task* tk);
 static void task_build_gui(TaskbarPlugin * tb, Task * tk);
 static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb);
@@ -391,7 +392,8 @@ static void task_draw_label(Task * tk)
 	{
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
         gtk_widget_set_tooltip_text(tk->button, label);
-        panel_draw_label_text(tk->tb->plug->panel, tk->label, label, bold_style, tk->tb->flat_button);
+        if (tk->label)
+            panel_draw_label_text(tk->tb->plug->panel, tk->label, label, bold_style, tk->tb->flat_button);
         g_free(label);
 	}
     else
@@ -399,7 +401,8 @@ static void task_draw_label(Task * tk)
         char * name = task_get_displayed_name(tk);
         if (tk->tb->tooltips)
             gtk_widget_set_tooltip_text(tk->button, name);
-        panel_draw_label_text(tk->tb->plug->panel, tk->label, name, bold_style, tk->tb->flat_button);
+        if (tk->label)
+            panel_draw_label_text(tk->tb->plug->panel, tk->label, name, bold_style, tk->tb->flat_button);
     }
 }
 
@@ -1496,8 +1499,15 @@ static void taskbar_update_style(TaskbarPlugin * tb)
 /* Update style on a task button when created or after a configuration change. */
 static void task_update_style(Task * tk, TaskbarPlugin * tb)
 {
-    gtk_widget_set_visible(tk->label, tb->show_titles);
     gtk_widget_set_visible(tk->image, tb->show_icons);
+
+    if (tb->show_titles) {
+        if (!tk->label)
+            task_build_gui_label(tb, tk);
+        gtk_widget_show(tk->label);
+    } else if (tk->label){
+        gtk_widget_hide(tk->label);
+    }
 
     if (tb->_show_close_buttons) {
         if (!tk->button_close)
@@ -1521,9 +1531,22 @@ static void task_update_style(Task * tk, TaskbarPlugin * tb)
     task_draw_label(tk);
 }
 
+/* Build label for a task button. */
+static void task_build_gui_label(TaskbarPlugin * tb, Task* tk)
+{
+    /* Create a label to contain the window title and add it to the box. */
+    tk->label = gtk_label_new(NULL);
+    gtk_misc_set_alignment(GTK_MISC(tk->label), 0.0, 0.5);
+    gtk_label_set_ellipsize(GTK_LABEL(tk->label), PANGO_ELLIPSIZE_END);
+    gtk_box_pack_start(GTK_BOX(tk->container), tk->label, TRUE, TRUE, 0);
+}
+
 /* Build close button for a task button. */
 static void task_build_gui_button_close(TaskbarPlugin * tb, Task* tk)
 {
+    if (!tk->label)
+        task_build_gui_label(tb, tk);
+
     /* Create box for close button. */
     GtkWidget * box = gtk_vbox_new(FALSE, 1);
     gtk_container_set_border_width(GTK_CONTAINER(box), 0);
@@ -1583,11 +1606,8 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
     gtk_widget_show(tk->image);
     gtk_box_pack_start(GTK_BOX(tk->container), tk->image, FALSE, FALSE, 0);
 
-    /* Create a label to contain the window title and add it to the box. */
-    tk->label = gtk_label_new(NULL);
-    gtk_misc_set_alignment(GTK_MISC(tk->label), 0.0, 0.5);
-    gtk_label_set_ellipsize(GTK_LABEL(tk->label), PANGO_ELLIPSIZE_END);
-    gtk_box_pack_start(GTK_BOX(tk->container), tk->label, TRUE, TRUE, 0);
+    if (tb->show_titles)
+        task_build_gui_label(tb, tk);
 
     if (tb->_show_close_buttons)
         task_build_gui_button_close(tb, tk);

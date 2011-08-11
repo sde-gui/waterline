@@ -42,12 +42,13 @@ typedef struct {
     gulong hicolor;
     int dw, dh; /* desired size */
     gboolean keep_ratio;
+    gboolean use_dummy_image;
 } ImgData;
 
 static GQuark img_data_id = 0;
 
 static void on_theme_changed(GtkIconTheme* theme, GtkWidget* img);
-static void _gtk_image_set_from_file_scaled( GtkWidget* img, const gchar *file, gint width, gint height, gboolean keep_ratio);
+static void _gtk_image_set_from_file_scaled( GtkWidget* img, const gchar *file, gint width, gint height, gboolean keep_ratio, gboolean use_dummy_image);
 
 /* X11 data types */
 Atom a_UTF8_STRING;
@@ -929,7 +930,7 @@ static void img_data_free(ImgData * data)
 static void on_theme_changed(GtkIconTheme * theme, GtkWidget * img)
 {
     ImgData * data = (ImgData *) g_object_get_qdata(G_OBJECT(img), img_data_id);
-    _gtk_image_set_from_file_scaled(img, data->fname, data->dw, data->dh, data->keep_ratio);
+    _gtk_image_set_from_file_scaled(img, data->fname, data->dw, data->dh, data->keep_ratio, data->use_dummy_image);
 }
 
 void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width, gint height, gboolean keep_ratio)
@@ -954,16 +955,18 @@ void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width,
         data->dw = width;
         data->dh = height;
         data->keep_ratio = keep_ratio;
-        _gtk_image_set_from_file_scaled(img, data->fname, data->dw, data->dh, data->keep_ratio);
+        data->use_dummy_image = TRUE;
+        _gtk_image_set_from_file_scaled(img, data->fname, data->dw, data->dh, data->keep_ratio, data->use_dummy_image);
     }
 }
 
-static void _gtk_image_set_from_file_scaled(GtkWidget * img, const gchar * file, gint width, gint height, gboolean keep_ratio)
+static void _gtk_image_set_from_file_scaled(GtkWidget * img, const gchar * file, gint width, gint height, gboolean keep_ratio, gboolean use_dummy_image)
 {
     ImgData * data = (ImgData *) g_object_get_qdata(G_OBJECT(img), img_data_id);
     data->dw = width;
     data->dh = height;
     data->keep_ratio = keep_ratio;
+    data->use_dummy_image = use_dummy_image;
 
     if (data->pixbuf != NULL)
     {
@@ -980,7 +983,7 @@ static void _gtk_image_set_from_file_scaled(GtkWidget * img, const gchar * file,
 
     /* if they are the same string, eliminate unnecessary copy. */
     gboolean themed = FALSE;
-    if (file != NULL)
+    if (file != NULL && strlen(file) != 0)
     {
         if (data->fname != file)
         {
@@ -1024,19 +1027,20 @@ static void _gtk_image_set_from_file_scaled(GtkWidget * img, const gchar * file,
     else
     {
         /* No pixbuf available.  Set the "missing image" icon. */
-        gtk_image_set_from_stock(GTK_IMAGE(img), GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
+        if (data->use_dummy_image)
+            gtk_image_set_from_stock(GTK_IMAGE(img), GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     }
     return;
 }
 
-GtkWidget * _gtk_image_new_from_file_scaled(const gchar * file, gint width, gint height, gboolean keep_ratio)
+GtkWidget * _gtk_image_new_from_file_scaled(const gchar * file, gint width, gint height, gboolean keep_ratio, gboolean use_dummy_image)
 {
     GtkWidget * img = gtk_image_new();
     ImgData * data = g_new0(ImgData, 1);
     if (img_data_id == 0)
         img_data_id = g_quark_from_static_string("ImgData");
     g_object_set_qdata_full(G_OBJECT(img), img_data_id, data, (GDestroyNotify) img_data_free);
-    _gtk_image_set_from_file_scaled(img, file, width, height, keep_ratio);
+    _gtk_image_set_from_file_scaled(img, file, width, height, keep_ratio, use_dummy_image);
     return img;
 }
 
@@ -1161,7 +1165,7 @@ GtkWidget * fb_button_new_from_file_with_label(
     gtk_container_set_border_width(GTK_CONTAINER(event_box), 0);
     GTK_WIDGET_UNSET_FLAGS(event_box, GTK_CAN_FOCUS);
 
-    GtkWidget * image = _gtk_image_new_from_file_scaled(image_file, width, height, keep_ratio);
+    GtkWidget * image = _gtk_image_new_from_file_scaled(image_file, width, height, keep_ratio, !label || strlen(label) == 0);
     gtk_misc_set_padding(GTK_MISC(image), 0, 0);
     gtk_misc_set_alignment(GTK_MISC(image), 0, 0);
     if (highlight_color != 0)

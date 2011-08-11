@@ -95,7 +95,7 @@ void calculate_position(Panel *np);
 gchar *expand_tilda(gchar *file);
 
 GtkWidget *_gtk_image_new_from_file_scaled(const gchar *file, gint width,
-                                           gint height, gboolean keep_ratio);
+                                           gint height, gboolean keep_ratio, gboolean use_dummy_image);
 void get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name);
 guint32 gcolor2rgb24(GdkColor *color);
 GtkWidget * fb_button_new_from_file(

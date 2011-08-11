@@ -708,7 +708,7 @@ read_item(Plugin *p, char** fp)
     if (fname) {
         GtkWidget *img;
 
-        img = _gtk_image_new_from_file_scaled(fname, m->iconsize, m->iconsize, TRUE);
+        img = _gtk_image_new_from_file_scaled(fname, m->iconsize, m->iconsize, TRUE, TRUE);
         gtk_widget_show(img);
         gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), img);
         g_free(fname);
@@ -887,7 +887,7 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
         mi = gtk_image_menu_item_new_with_label(name);
         if (fname) {
             GtkWidget *img;
-            img = _gtk_image_new_from_file_scaled(fname, m->iconsize, m->iconsize, TRUE);
+            img = _gtk_image_new_from_file_scaled(fname, m->iconsize, m->iconsize, TRUE, TRUE);
             gtk_widget_show(img);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), img);
         }

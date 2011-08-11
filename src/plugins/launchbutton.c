@@ -191,7 +191,11 @@ static int lb_constructor(Plugin *p, char **fp)
       if (lb->f == NULL) \
           lb->f = g_strdup(v);
 
-    DEFAULT_STRING(icon_path, PACKAGE_DATA_DIR "/lxpanel/images/my-computer.png");
+    if (!lb->title) {
+        DEFAULT_STRING(icon_path, PACKAGE_DATA_DIR "/lxpanel/images/my-computer.png");
+    } else {
+        DEFAULT_STRING(icon_path, "");
+    }
     DEFAULT_STRING(title    , "");
     DEFAULT_STRING(tooltip  , "");
     DEFAULT_STRING(command1 , "");

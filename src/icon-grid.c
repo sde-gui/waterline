@@ -246,11 +246,20 @@ static void icon_grid_size_allocate(GtkWidget * widget, GtkAllocation * allocati
 static void icon_grid_demand_resize(IconGrid * ig)
 {
     ig->children_changed = TRUE;
+/*
     GtkRequisition req;
     icon_grid_size_request(NULL, &req, ig);
 
     if ((ig->rows != 0) || (ig->columns != 0))
         icon_grid_placement(ig);
+*/
+
+    /* Redraw the container. */
+    GdkWindow * window = ig->widget->window;
+    if (window != NULL)
+        gdk_window_invalidate_rect(window, NULL, TRUE);
+    gtk_widget_queue_draw(ig->container);
+
 }
 
 /* Establish an icon grid in a specified container widget.

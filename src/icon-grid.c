@@ -52,6 +52,9 @@ static gboolean icon_grid_placement(IconGrid * ig)
     int container_width_needed = (ig->columns * (child_width + ig->spacing)) - ig->spacing;
     int container_height_needed = (ig->rows * (child_height + ig->spacing)) - ig->spacing;
 
+    int centering_offset_x = 0;
+    int centering_offset_y = 0;
+
     /* Get the constrained child geometry if the allocated geometry is insufficient.
      * All children are still the same size and share equally in the deficit. */
     ig->constrained_child_width = ig->child_width;
@@ -59,8 +62,13 @@ static gboolean icon_grid_placement(IconGrid * ig)
     {
         if (container_width_needed > ig->container_width)
             ig->constrained_child_width = child_width = (ig->container_width - ((ig->columns - 1) * ig->spacing)) / ig->columns;
+        else if (ig->orientation != GTK_ORIENTATION_HORIZONTAL)
+            centering_offset_x = (ig->container_width - container_width_needed) / 2;
+
         if (container_height_needed > ig->container_height)
             child_height = (ig->container_height - ((ig->rows - 1) * ig->spacing)) / ig->rows;
+        else if (ig->orientation == GTK_ORIENTATION_HORIZONTAL)
+            centering_offset_y = (ig->container_height - container_height_needed) / 2;
     }
 
     /* Initialize parameters to control repositioning each visible child. */
@@ -69,14 +77,14 @@ static gboolean icon_grid_placement(IconGrid * ig)
         ?  (ig->rows * (child_height + ig->spacing))
         :  (ig->columns * (child_width + ig->spacing)));
     int x_initial = ((direction == GTK_TEXT_DIR_RTL)
-        ? ig->widget->allocation.width - child_width - ig->border
-        : ig->border);
+        ? ig->widget->allocation.width - child_width - ig->border - centering_offset_x
+        : ig->border + centering_offset_x);
     int x_delta = child_width + ig->spacing;
     if (direction == GTK_TEXT_DIR_RTL) x_delta = - x_delta;
 
     /* Reposition each visible child. */
     int x = x_initial;
-    int y = ig->border;
+    int y = ig->border + centering_offset_y;
     gboolean contains_sockets = FALSE;
     IconGridElement * ige;
     for (ige = ig->child_list; ige != NULL; ige = ige->flink)
@@ -109,7 +117,7 @@ static gboolean icon_grid_placement(IconGrid * ig)
                 y += child_height + ig->spacing;
                 if (y >= limit)
                 {
-                    y = ig->border;
+                    y = ig->border + centering_offset_y;
                     x += x_delta;
                 }
             }
@@ -133,6 +141,7 @@ static gboolean icon_grid_placement(IconGrid * ig)
     /* If the icon grid contains sockets, do special handling to get the background erased. */
     if (contains_sockets)
         plugin_widget_set_background(ig->widget, ig->panel);
+
     return FALSE;
 }
 

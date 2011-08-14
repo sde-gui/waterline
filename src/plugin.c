@@ -345,6 +345,12 @@ void plugin_widget_set_background(GtkWidget * w, Panel * p)
         /* Special handling to get tray icons redrawn. */
         if (GTK_IS_SOCKET(w))
         {
+            if (GTK_WIDGET_REALIZED(w))
+            {
+                gdk_window_set_back_pixmap(w->window, NULL, TRUE);
+//                gtk_style_set_background(w->style, w->window, GTK_STATE_NORMAL);
+            }
+
             gtk_widget_hide(w);
             gdk_window_process_all_updates();
             gtk_widget_show(w);

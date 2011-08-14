@@ -1041,6 +1041,10 @@ GtkWidget * _gtk_image_new_from_file_scaled(const gchar * file, gint width, gint
         img_data_id = g_quark_from_static_string("ImgData");
     g_object_set_qdata_full(G_OBJECT(img), img_data_id, data, (GDestroyNotify) img_data_free);
     _gtk_image_set_from_file_scaled(img, file, width, height, keep_ratio, use_dummy_image);
+
+    gtk_misc_set_alignment(GTK_MISC(img), 0.5, 0.5);
+    gtk_misc_set_padding (GTK_MISC(img), 0, 0);
+
     return img;
 }
 
@@ -1194,6 +1198,9 @@ GtkWidget * fb_button_new_from_file_with_label(
         gtk_misc_set_padding(GTK_MISC(lbl), 2, 0);
         gtk_box_pack_end(GTK_BOX(inner), lbl, FALSE, FALSE, 0);
     }
+
+    gtk_misc_set_alignment(GTK_MISC(image), 0.5, 0.5);
+    gtk_misc_set_padding (GTK_MISC(image), 0, 0);
 
     gtk_widget_show_all(event_box);
     return event_box;

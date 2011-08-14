@@ -347,8 +347,10 @@ void plugin_widget_set_background(GtkWidget * w, Panel * p)
         {
             if (GTK_WIDGET_REALIZED(w))
             {
-                gdk_window_set_back_pixmap(w->window, NULL, TRUE);
-//                gtk_style_set_background(w->style, w->window, GTK_STATE_NORMAL);
+                if ((p->background) || (p->transparent))
+                    gdk_window_set_back_pixmap(w->window, NULL, TRUE);
+                else
+                    gtk_style_set_background(w->style, w->window, GTK_STATE_NORMAL);
             }
 
             gtk_widget_hide(w);

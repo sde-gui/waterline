@@ -419,12 +419,14 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         _(p->class->name),
         GTK_WIDGET(parent),
         (GSourceFunc) dclock_apply_configuration, (gpointer) p,
-        _("Clock Format"), &dc->clock_format, CONF_TYPE_STR,
-        _("Tooltip Format"), &dc->tooltip_format, CONF_TYPE_STR,
-        _("Format codes: man 3 strftime; \\n for line break"), NULL, CONF_TYPE_TRIM,
-        _("Action when clicked (default: display calendar)"), &dc->action, CONF_TYPE_STR,
-        _("Bold font"), &dc->bold, CONF_TYPE_BOOL,
-        _("Tooltip only"), &dc->icon_only, CONF_TYPE_BOOL,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        _("Clock Format")  , &dc->clock_format  , (GType)CONF_TYPE_STR,
+        _("Tooltip Format"), &dc->tooltip_format, (GType)CONF_TYPE_STR,
+        "", 0, (GType)CONF_TYPE_END_TABLE,
+        _("Format codes: man 3 strftime; \\n for line break"), NULL, (GType)CONF_TYPE_TRIM,
+        _("Action when clicked (default: display calendar)"), &dc->action, (GType)CONF_TYPE_STR,
+        _("Bold font"), &dc->bold, (GType)CONF_TYPE_BOOL,
+        _("Tooltip only"), &dc->icon_only, (GType)CONF_TYPE_BOOL,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));

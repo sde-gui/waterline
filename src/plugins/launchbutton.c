@@ -234,12 +234,14 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
         _(p->class->name),
         GTK_WIDGET(parent),
         (GSourceFunc) lb_apply_configuration, (gpointer) p,
-        _("Title"), &lb->title, CONF_TYPE_STR,
-        _("Tooltip"), &lb->tooltip, CONF_TYPE_STR,
-        _("Icon"), &lb->icon_path, CONF_TYPE_FILE_ENTRY,
-        _("Left button command"), &lb->command1, CONF_TYPE_STR,
-        _("Middle button command"), &lb->command2, CONF_TYPE_STR,
-        _("Right button command"), &lb->command3, CONF_TYPE_STR,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        _("Title")  , &lb->title    , (GType)CONF_TYPE_STR,
+        _("Tooltip"), &lb->tooltip  , (GType)CONF_TYPE_STR,
+        _("Icon")   , &lb->icon_path, (GType)CONF_TYPE_FILE_ENTRY,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        _("Left button command")  , &lb->command1, (GType)CONF_TYPE_STR,
+        _("Middle button command"), &lb->command2, (GType)CONF_TYPE_STR,
+        _("Right button command") , &lb->command3, (GType)CONF_TYPE_STR,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));

@@ -1273,6 +1273,9 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 
     gchar** params = NULL;
 
+    GtkWidget* table = NULL;
+    int table_row_count = 0;
+
     const char* name = nm;
     va_start( args, nm );
     while( name )
@@ -1291,6 +1294,15 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 
         switch( type )
         {
+            case CONF_TYPE_BEGIN_TABLE:
+                entry = table = gtk_table_new(1, 3, FALSE);
+                gtk_table_set_col_spacings(GTK_TABLE(table), 4);
+                gtk_table_set_row_spacings(GTK_TABLE(table), 8);
+                table_row_count = 0;
+                break;
+            case CONF_TYPE_END_TABLE:
+                table = NULL;
+                break;
             case CONF_TYPE_STR:
             case CONF_TYPE_FILE_ENTRY: /* entry with a button to browse for files. */
             case CONF_TYPE_DIRECTORY_ENTRY: /* entry with a button to browse for directories. */
@@ -1351,25 +1363,54 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
         }
         if( entry )
         {
-            if(( type == CONF_TYPE_BOOL ) || ( type == CONF_TYPE_TRIM )|| ( type == CONF_TYPE_TITLE ))
-                gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), entry, FALSE, FALSE, 2 );
+            if(( type == CONF_TYPE_BOOL ) || ( type == CONF_TYPE_TRIM ) || ( type == CONF_TYPE_TITLE ) || ( type == CONF_TYPE_BEGIN_TABLE ))
+            {
+                int r = table_row_count;
+                if (type == CONF_TYPE_BEGIN_TABLE || !table)
+                    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), entry, FALSE, FALSE, 2 );
+                else
+                    gtk_table_resize(GTK_TABLE(table), ++table_row_count, 3),
+                    gtk_table_attach_defaults(GTK_TABLE(table), entry, 0, 3, r, r + 1);
+            }
             else
             {
-                GtkWidget* hbox = gtk_hbox_new( FALSE, 2 );
-                gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, FALSE, 2 );
-                gtk_box_pack_start( GTK_BOX(hbox), entry, TRUE, TRUE, 2 );
-                gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), hbox, FALSE, FALSE, 2 );
-                if ((type == CONF_TYPE_FILE_ENTRY) || (type == CONF_TYPE_DIRECTORY_ENTRY))
-                {
-                    GtkWidget* browse = gtk_button_new_with_mnemonic(_("_Browse"));
-                    gtk_box_pack_start( GTK_BOX(hbox), browse, TRUE, TRUE, 2 );
-                    g_object_set_data(G_OBJECT(dlg), "file-val", val);
-                    g_object_set_data(G_OBJECT(browse), "dlg", dlg);
-                    g_object_set_data(G_OBJECT(browse), "chooser-action",
-                        (gpointer) ((type == CONF_TYPE_DIRECTORY_ENTRY) ? GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER : GTK_FILE_CHOOSER_ACTION_OPEN));
-                    g_signal_connect( browse, "clicked", G_CALLBACK(on_browse_btn_clicked), entry );
+                if (table) {
+                    int r = table_row_count;                    
+                    gtk_table_resize(GTK_TABLE(table), ++table_row_count, 3),
+                    gtk_table_attach(GTK_TABLE(table), label, 0, 1, r, r + 1, GTK_FILL, GTK_FILL, 0, 0);
+                    if ((type == CONF_TYPE_FILE_ENTRY) || (type == CONF_TYPE_DIRECTORY_ENTRY)) {
+                        gtk_table_attach_defaults(GTK_TABLE(table), entry, 1, 2, r, r + 1);
+
+                        GtkWidget* browse = gtk_button_new_with_mnemonic(_("_Browse"));
+                        g_object_set_data(G_OBJECT(dlg), "file-val", val);
+                        g_object_set_data(G_OBJECT(browse), "dlg", dlg);
+                        g_object_set_data(G_OBJECT(browse), "chooser-action",
+                            (gpointer) ((type == CONF_TYPE_DIRECTORY_ENTRY) ? GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER : GTK_FILE_CHOOSER_ACTION_OPEN));
+                        g_signal_connect( browse, "clicked", G_CALLBACK(on_browse_btn_clicked), entry );
+
+                        //gtk_table_attach_defaults(GTK_TABLE(table), browse, 2, 3, r, r + 1);
+                        gtk_table_attach(GTK_TABLE(table), browse, 2, 3, r, r + 1, GTK_SHRINK, GTK_FILL, 0, 0);
+                    } else {
+                        gtk_table_attach_defaults(GTK_TABLE(table), entry, 1, 3, r, r + 1);
+                    }
+                } else {
+                    GtkWidget* hbox = gtk_hbox_new( FALSE, 2 );
+                    gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, FALSE, 2 );
+                    gtk_box_pack_start( GTK_BOX(hbox), entry, TRUE, TRUE, 2 );
+                    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), hbox, FALSE, FALSE, 2 );
+                    if ((type == CONF_TYPE_FILE_ENTRY) || (type == CONF_TYPE_DIRECTORY_ENTRY))
+                    {
+                        GtkWidget* browse = gtk_button_new_with_mnemonic(_("_Browse"));
+                        gtk_box_pack_start( GTK_BOX(hbox), browse, TRUE, TRUE, 2 );
+                        g_object_set_data(G_OBJECT(dlg), "file-val", val);
+                        g_object_set_data(G_OBJECT(browse), "dlg", dlg);
+                        g_object_set_data(G_OBJECT(browse), "chooser-action",
+                            (gpointer) ((type == CONF_TYPE_DIRECTORY_ENTRY) ? GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER : GTK_FILE_CHOOSER_ACTION_OPEN));
+                        g_signal_connect( browse, "clicked", G_CALLBACK(on_browse_btn_clicked), entry );
+                    }
                 }
             }
+            gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
         }
         if (params != NULL) {
             g_strfreev(params);

@@ -71,20 +71,23 @@ static gboolean icon_grid_placement(IconGrid * ig)
             centering_offset_y = (ig->container_height - container_height_needed) / 2;
     }
 
+    centering_offset_x = centering_offset_x < ig->border ? ig->border : centering_offset_x;
+    centering_offset_y = centering_offset_y < ig->border ? ig->border : centering_offset_y;
+
     /* Initialize parameters to control repositioning each visible child. */
     GtkTextDirection direction = gtk_widget_get_direction(ig->container);
-    int limit = ig->border + ((ig->orientation == GTK_ORIENTATION_HORIZONTAL)
-        ?  (ig->rows * (child_height + ig->spacing))
-        :  (ig->columns * (child_width + ig->spacing)));
+    int limit = ((ig->orientation == GTK_ORIENTATION_HORIZONTAL)
+        ? centering_offset_y + (ig->rows * (child_height + ig->spacing))
+        : centering_offset_x + (ig->columns * (child_width + ig->spacing)));
     int x_initial = ((direction == GTK_TEXT_DIR_RTL)
-        ? ig->widget->allocation.width - child_width - ig->border - centering_offset_x
+        ? ig->widget->allocation.width - child_width - centering_offset_x
         : ig->border + centering_offset_x);
     int x_delta = child_width + ig->spacing;
     if (direction == GTK_TEXT_DIR_RTL) x_delta = - x_delta;
 
     /* Reposition each visible child. */
     int x = x_initial;
-    int y = ig->border + centering_offset_y;
+    int y = centering_offset_y;
     gboolean contains_sockets = FALSE;
     IconGridElement * ige;
     for (ige = ig->child_list; ige != NULL; ige = ige->flink)
@@ -117,7 +120,7 @@ static gboolean icon_grid_placement(IconGrid * ig)
                 y += child_height + ig->spacing;
                 if (y >= limit)
                 {
-                    y = ig->border + centering_offset_y;
+                    y = centering_offset_y;
                     x += x_delta;
                 }
             }

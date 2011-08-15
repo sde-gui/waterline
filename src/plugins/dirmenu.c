@@ -408,9 +408,10 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _(p->class->name),
         GTK_WIDGET(parent),
         (GSourceFunc) dirmenu_apply_configuration, (gpointer) p,
-        _("Directory"), &dm->path, CONF_TYPE_DIRECTORY_ENTRY,
-        _("Label"), &dm->name, CONF_TYPE_STR,
-        _("Icon"), &dm->image, CONF_TYPE_FILE_ENTRY,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        _("Directory"), &dm->path, (GType)CONF_TYPE_DIRECTORY_ENTRY,
+        _("Label"), &dm->name, (GType)CONF_TYPE_STR,
+        _("Icon"), &dm->image, (GType)CONF_TYPE_FILE_ENTRY,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));

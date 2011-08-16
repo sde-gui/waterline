@@ -117,6 +117,18 @@ static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t 
 }
 
 
+/* Recursively apply a configuration change. */
+static void lb_apply_configuration_to_children(GtkWidget * w, Plugin * p)
+{
+    if (GTK_IS_CONTAINER(w)) {
+	gtk_container_foreach(GTK_CONTAINER(w), (GtkCallback) lb_apply_configuration_to_children, (gpointer) p);
+    } else if (GTK_IS_LABEL(w)) {
+        lb_t * lb = (lb_t *) p->priv;
+        panel_draw_label_text(p->panel, w, lb->title, FALSE, TRUE);
+    }
+}
+
+
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void lb_apply_configuration(Plugin * p)
 {
@@ -187,6 +199,8 @@ static void lb_apply_configuration(Plugin * p)
         gtk_widget_set_tooltip_text(lb->button, tooltip);
         g_free(tooltip);
     }
+
+    gtk_container_foreach(GTK_CONTAINER(p->pwid), (GtkCallback) lb_apply_configuration_to_children, (gpointer) p);
 }
 
 

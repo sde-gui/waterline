@@ -1174,7 +1174,7 @@ static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, Tas
 
         gchar * name = task_get_displayed_name(tk_cursor);
         GtkWidget * mi = NULL;
-        if (tk_cursor->desktop != tb->current_desktop) {
+        if (tk_cursor->desktop != tb->current_desktop && tk_cursor->desktop != ALL_WORKSPACES) {
             name = g_strdup_printf("%s [%d]", name, tk_cursor->desktop + 1);
             mi = gtk_image_menu_item_new_with_label(name);
             g_free(name);

@@ -584,9 +584,7 @@ static TaskClass * taskbar_enter_res_class(TaskbarPlugin * tb, char * res_class,
     return tc;
 }
 
-/* Set the class associated with a task. */
-static void task_set_class(Task * tk)
-{
+static gchar* task_get_res_class(Task * tk) {
     /* Read the WM_CLASS property. */
     XClassHint ch;
     ch.res_name = NULL;
@@ -599,42 +597,48 @@ static void task_set_class(Task * tk)
         XFree(ch.res_name);
     }
 
-    /* If the res_class was returned, process it.
-     * This identifies the application that created the window and is the basis for taskbar grouping. */
+    gchar * res_class = NULL;
     if (ch.res_class != NULL)
-    {
-        /* Convert the class to UTF-8 and enter it in the class table. */
-        gchar * res_class = g_locale_to_utf8(ch.res_class, -1, NULL, NULL, NULL);
-        if (res_class != NULL)
-        {
-            gboolean name_consumed;
-            TaskClass * tc = taskbar_enter_res_class(tk->tb, res_class, &name_consumed);
-            if ( ! name_consumed) g_free(res_class);
-
-            /* If the task changed class, update data structures. */
-            TaskClass * old_tc = tk->res_class;
-            if (old_tc != tc)
-            {
-                /* Unlink from previous class, if any. */
-                task_unlink_class(tk);
-
-                /* Add to end of per-class task list.  Do this to keep the popup menu in order of creation. */
-                if (tc->res_class_head == NULL)
-                    tc->res_class_head = tk;
-                else
-                {
-                    Task * tk_pred;
-                    for (tk_pred = tc->res_class_head; tk_pred->res_class_flink != NULL; tk_pred = tk_pred->res_class_flink) ;
-                    tk_pred->res_class_flink = tk;
-                    task_button_redraw(tk, tk->tb);
-                }
-                tk->res_class = tc;
-
-                /* Recompute group visibility. */
-                recompute_group_visibility_for_class(tk->tb, tc);
-            }
-        }
+        res_class = g_locale_to_utf8(ch.res_class, -1, NULL, NULL, NULL),
         XFree(ch.res_class);
+    else
+        res_class = g_strdup("");
+
+    return res_class;
+}
+
+/* Set the class associated with a task. */
+static void task_set_class(Task * tk)
+{
+    gchar * res_class = task_get_res_class(tk);
+    if (res_class != NULL)
+    {
+        gboolean name_consumed;
+        TaskClass * tc = taskbar_enter_res_class(tk->tb, res_class, &name_consumed);
+        if ( ! name_consumed) g_free(res_class);
+
+        /* If the task changed class, update data structures. */
+        TaskClass * old_tc = tk->res_class;
+        if (old_tc != tc)
+        {
+            /* Unlink from previous class, if any. */
+            task_unlink_class(tk);
+
+            /* Add to end of per-class task list.  Do this to keep the popup menu in order of creation. */
+            if (tc->res_class_head == NULL)
+                tc->res_class_head = tk;
+            else
+            {
+                Task * tk_pred;
+                for (tk_pred = tc->res_class_head; tk_pred->res_class_flink != NULL; tk_pred = tk_pred->res_class_flink) ;
+                tk_pred->res_class_flink = tk;
+                task_button_redraw(tk, tk->tb);
+            }
+            tk->res_class = tc;
+
+            /* Recompute group visibility. */
+            recompute_group_visibility_for_class(tk->tb, tc);
+        }
     }
 }
 

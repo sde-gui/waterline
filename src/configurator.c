@@ -541,6 +541,12 @@ static void on_add_plugin_response( GtkDialog* dlg,
     gtk_widget_destroy( (GtkWidget*)dlg );
 }
 
+static void on_add_plugin_row_activated(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *col, gpointer userdata)
+{
+    GtkWidget* dlg = (GtkWidget*)userdata;
+    gtk_dialog_response(GTK_DIALOG(dlg), GTK_RESPONSE_OK);
+}
+
 static void on_add_plugin( GtkButton* btn, GtkTreeView* _view )
 {
     GtkWidget* dlg, *parent_win, *scroll;
@@ -611,6 +617,8 @@ static void on_add_plugin( GtkButton* btn, GtkTreeView* _view )
 
     gtk_tree_view_set_model( view, GTK_TREE_MODEL(list) );
     g_object_unref( list );
+
+    g_signal_connect( view, "row-activated", G_CALLBACK(on_add_plugin_row_activated), (gpointer)dlg );
 
     g_signal_connect( dlg, "response",
                       G_CALLBACK(on_add_plugin_response), _view );

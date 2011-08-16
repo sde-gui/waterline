@@ -1171,10 +1171,22 @@ static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, Tas
     if (task_is_visible_on_current_desktop(tb, tk_cursor))
     {
         /* The menu item has the name, or the iconified name, and the icon of the application window. */
-        GtkWidget * mi = gtk_image_menu_item_new_with_label(task_get_displayed_name(tk_cursor));
+
+        gchar * name = task_get_displayed_name(tk_cursor);
+        GtkWidget * mi = NULL;
+        if (tk_cursor->desktop != tb->current_desktop) {
+            name = g_strdup_printf("%s [%d]", name, tk_cursor->desktop + 1);
+            mi = gtk_image_menu_item_new_with_label(name);
+            g_free(name);
+        } else {
+            mi = gtk_image_menu_item_new_with_label(name);
+        }
+
         GtkWidget * im = gtk_image_new_from_pixbuf(gtk_image_get_pixbuf(GTK_IMAGE(tk_cursor->image)));
         gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), im);
+
         g_signal_connect(mi, "button_press_event", G_CALLBACK(taskbar_popup_activate_event), (gpointer) tk_cursor);
+
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     }
 }

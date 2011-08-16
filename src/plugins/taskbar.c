@@ -293,6 +293,16 @@ static char* task_get_displayed_name(Task * tk)
     }
 }
 
+static gchar* task_get_desktop_name(Task * tk)
+{
+    gchar * name = NULL;
+    if (tk->desktop == ALL_WORKSPACES)
+        name = g_strdup(_("_All workspaces"));
+    else
+        name = g_strdup_printf("%d", tk->desktop + 1);
+    return name;
+}
+
 static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
 {
     return (tb->grouped_tasks) && (tc != NULL) && (tc->visible_count > 1 || tb->selfgroup_single_window);
@@ -1184,9 +1194,11 @@ static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, Tas
         gchar * name = task_get_displayed_name(tk_cursor);
         GtkWidget * mi = NULL;
         if (tk_cursor->desktop != tb->current_desktop && tk_cursor->desktop != ALL_WORKSPACES) {
-            name = g_strdup_printf("%s [%d]", name, tk_cursor->desktop + 1);
+            gchar* wname = task_get_desktop_name(tk_cursor);
+            name = g_strdup_printf("%s [%s]", name, wname);
             mi = gtk_image_menu_item_new_with_label(name);
             g_free(name);
+            g_free(wname);
         } else {
             mi = gtk_image_menu_item_new_with_label(name);
         }

@@ -150,7 +150,7 @@ typedef struct _taskbar {
     gboolean use_urgency_hint;			/* User preference: windows with urgency will flash */
     gboolean flat_button;			/* User preference: taskbar buttons have visible background */
     int mode;                                   /* User preference: view mode */
-    gboolean selfgroup_single_window;           /* User preference: create groups for "alone" windows */
+    int group_threshold;                        /* User preference: threshold for groupping tasks into one button */
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
     int spacing;				/* Spacing between taskbar buttons */
     gboolean use_net_active;			/* NET_WM_ACTIVE_WINDOW is supported by the window manager */
@@ -165,6 +165,7 @@ typedef struct _taskbar {
     gboolean show_icons;			/* Show icons */
     gboolean show_titles;			/* Show title labels */
     gboolean _show_close_buttons;               /* Show close buttons */
+    int _group_threshold;
 
     Atom a_OB_WM_STATE_UNDECORATED;
     Atom a_NET_WM_STATE_FULLSCREEN;
@@ -305,7 +306,7 @@ static gchar* task_get_desktop_name(Task * tk)
 
 static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
 {
-    return (tb->grouped_tasks) && (tc != NULL) && (tc->visible_count > 1 || tb->selfgroup_single_window);
+    return (tb->grouped_tasks) && (tc != NULL) && (tb->_group_threshold > 0) && (tc->visible_count >= tb->_group_threshold);
 }
 
 /* Determine if a task is visible considering only its desktop placement. */
@@ -403,14 +404,14 @@ static void task_draw_label(Task * tk)
 {
     TaskClass * tc = tk->res_class;
     gboolean bold_style = (((tk->entered_state) || (tk->flash_state)) && (tk->tb->flat_button));
-    if ((tk->tb->grouped_tasks) && (tc != NULL) && (tc->visible_task == tk) && task_class_is_grouped(tk->tb, tc))
-	{
+    if (task_class_is_grouped(tk->tb, tc) && (tc->visible_task == tk))
+    {
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
         gtk_widget_set_tooltip_text(tk->button, label);
         if (tk->label)
             panel_draw_label_text(tk->tb->plug->panel, tk->label, label, bold_style, task_button_is_really_flat(tk->tb));
         g_free(label);
-	}
+    }
     else
     {
         char * name = task_get_displayed_name(tk);
@@ -425,7 +426,7 @@ static void task_draw_label(Task * tk)
 static gboolean task_is_visible(TaskbarPlugin * tb, Task * tk)
 {
     /* Not visible due to grouping. */
-    if ((tb->grouped_tasks) && (tk->res_class != NULL) && (tk->res_class->visible_task != tk))
+    if (task_class_is_grouped(tk->tb, tk->res_class) && (tk->res_class->visible_task != tk))
         return FALSE;
 
     /* In single_window mode only focused task is visible. */
@@ -1392,9 +1393,10 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
     else
     {
         /* Not a grouped-task representative, or entered from the grouped-task popup menu. */
+
         Task * visible_task = (
             (tb->single_window) ? tb->focused :
-            ((tk->res_class == NULL) || ( ! tb->grouped_tasks)) ? tk :
+            (!task_class_is_grouped(tb, tk->res_class)) ? tk :
             tk->res_class->visible_task);
         task_group_menu_destroy(tb);
 
@@ -2262,9 +2264,11 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     // Поэтому пришлось включить сюда проверку tb->mode == MODE_SINGLE_WINDOW
     tb->rebuild_gui = group_side_by_side != tb->group_side_by_side && (tb->mode == MODE_CLASSIC || tb->mode == MODE_GROUP_SIDE_BY_SIDE || tb->mode == MODE_SINGLE_WINDOW);
     tb->rebuild_gui |= tb->show_all_desks && tb->show_all_desks_prev_value != tb->show_all_desks && tb->mode == MODE_GROUP_SIDE_BY_SIDE;
+    tb->rebuild_gui |= tb->_group_threshold != tb->group_threshold;
     if (tb->rebuild_gui) {
         tb->group_side_by_side = group_side_by_side;
         tb->show_all_desks_prev_value = tb->show_all_desks;
+        tb->_group_threshold = tb->group_threshold;
     }
 
     tb->_show_close_buttons = tb->show_close_buttons && !tb->grouped_tasks;
@@ -2288,6 +2292,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->use_mouse_wheel   = TRUE;
     tb->use_urgency_hint  = TRUE;
     tb->mode              = MODE_CLASSIC;
+    tb->group_threshold   = 1;
     tb->show_close_buttons = FALSE;
     tb->button1_action    = ACTION_RAISEICONIFY;
     tb->button2_action    = ACTION_SHADE;
@@ -2349,12 +2354,14 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "Mode") == 0)
                     tb->mode = atoi(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "GroupThreshold") == 0)
+                    tb->group_threshold = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowIconsTitles") == 0)
                     tb->show_icons_titles = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowCloseButtons") == 0)
                     tb->show_close_buttons = str2num(bool_pair, s.t[1], 0);
                 else if (g_ascii_strcasecmp(s.t[0], "SelfGroupSingleWindow") == 0)
-                    tb->selfgroup_single_window = str2num(bool_pair, s.t[1], 0);
+                    tb->group_threshold = str2num(bool_pair, s.t[1], 0) ? 1 : 2;        /* For backward compatibility */
                 else if (g_ascii_strcasecmp(s.t[0], "Button1Action") == 0)
                     tb->button1_action = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "Button2Action") == 0)
@@ -2477,12 +2484,12 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         "", 0, (GType)CONF_TYPE_END_TABLE,
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
         _("|Mode|Classic|Group similar windows side by side|Group similar windows into one button|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
+        _("Group threshold"), (gpointer)&tb->group_threshold, (GType)CONF_TYPE_INT,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         button1_action, (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
         button2_action, (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
         button3_action, (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
-        _("Create groups for \"alone\" windows"), (gpointer)&tb->selfgroup_single_window, (GType)CONF_TYPE_BOOL,
         _("Show windows from all desktops"), (gpointer)&tb->show_all_desks, (GType)CONF_TYPE_BOOL,
         _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,
         _("Flash when there is any window requiring attention"), (gpointer)&tb->use_urgency_hint, (GType)CONF_TYPE_BOOL,
@@ -2508,8 +2515,8 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
     lxpanel_put_int(fp, "spacing", tb->spacing);
     lxpanel_put_int(fp, "Mode", tb->mode);
+    lxpanel_put_int(fp, "GroupThreshold", tb->group_threshold);
     lxpanel_put_bool(fp, "ShowCloseButtons", tb->show_close_buttons);
-    lxpanel_put_bool(fp, "SelfGroupSingleWindow", tb->selfgroup_single_window);
     lxpanel_put_int(fp, "Button1Action", tb->button1_action);
     lxpanel_put_int(fp, "Button2Action", tb->button2_action);
     lxpanel_put_int(fp, "Button3Action", tb->button3_action);

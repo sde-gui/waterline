@@ -45,7 +45,7 @@ typedef struct _icon_grid {
     gint spacing;				/* Desired spacing between grid elements */
     gint border;				/* Desired border around grid elements */
     gint target_dimension;			/* Desired dimension perpendicular to orientation */
-    gboolean constrain_width;			/* True if width should be constrained by allocated space */
+    gboolean expand;				/*  */
     gboolean actual_dimension;			/* True if container has been allocated space */
     gboolean children_changed;			/* True if icon grid element list changed */
     GtkWidget * widget;				/* Layout widget we use for packing */
@@ -53,15 +53,16 @@ typedef struct _icon_grid {
     int columns;				/* Computed layout columns */
     int container_width;			/* Container's allocated width */
     int container_height;			/* Container's allocated height */
-    int constrained_child_width;		/* Child width constrained by allocation */
+    int allocated_child_width;
+    int allocated_child_height;
 } IconGrid;
 
 extern IconGrid * icon_grid_new(
     Panel * panel, GtkWidget * container,
     GtkOrientation orientation, gint child_width, gint child_height, gint spacing, gint border, gint target_dimension);
 						/* Create an icon grid */
-extern void icon_grid_set_constrain_width(IconGrid * ig, gboolean constrain_width);
-						/* Set the constrain-width property */
+extern void icon_grid_set_expand(IconGrid * ig, gboolean expand);
+						/* Set the expand property */
 extern void icon_grid_set_geometry(IconGrid * ig,
     GtkOrientation orientation, gint child_width, gint child_height, gint spacing, gint border, gint target_dimension);
 						/* Change the geometry of an icon grid */

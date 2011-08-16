@@ -264,11 +264,16 @@ static void set_timer_on_task(Task * tk)
 
 static int get_task_button_max_width(TaskbarPlugin * tb)
 {
-    if (tb->show_titles) {
-        return (tb->single_window) ? 9999 : tb->task_width_max;
+    int icon_mode_max_width = tb->icon_size + ICON_ONLY_EXTRA + (tb->_show_close_buttons ? tb->extra_size : 0);
+    if (tb->show_titles && tb->task_width_max > icon_mode_max_width) {
+        return tb->task_width_max;
     } else {
-        return tb->icon_size + ICON_ONLY_EXTRA + (tb->_show_close_buttons ? tb->extra_size : 0);
+        return icon_mode_max_width;
     }
+}
+
+static gboolean get_task_button_expandable(TaskbarPlugin * tb) {
+        return tb->single_window || tb->task_width_max < 1;
 }
 
 static int task_button_is_really_flat(TaskbarPlugin * tb)
@@ -1503,6 +1508,7 @@ static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc,
 static void taskbar_update_style(TaskbarPlugin * tb)
 {
     GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    icon_grid_set_expand(tb->icon_grid, get_task_button_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
         get_task_button_max_width(tb), tb->icon_size + BUTTON_HEIGHT_EXTRA,
         tb->spacing, 0, tb->plug->panel->height);
@@ -2197,7 +2203,7 @@ static void taskbar_build_gui(Plugin * p)
     /* Make container for task buttons as a child of top level widget. */
     GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     tb->icon_grid = icon_grid_new(p->panel, p->pwid, bo, tb->task_width_max, tb->icon_size, tb->spacing, 0, p->panel->height);
-    icon_grid_set_constrain_width(tb->icon_grid, TRUE);
+    icon_grid_set_expand(tb->icon_grid, get_task_button_expandable(tb));
     taskbar_update_style(tb);
 
     /* Add GDK event filter. */
@@ -2497,6 +2503,7 @@ static void taskbar_panel_configuration_changed(Plugin * p)
     taskbar_update_style(tb);
     taskbar_make_menu(tb);
     GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    icon_grid_set_expand(tb->icon_grid, get_task_button_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
         get_task_button_max_width(tb), tb->plug->panel->icon_size + BUTTON_HEIGHT_EXTRA,
         tb->spacing, 0, tb->plug->panel->height);

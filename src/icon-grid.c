@@ -57,19 +57,38 @@ static gboolean icon_grid_placement(IconGrid * ig)
 
     /* Get the constrained child geometry if the allocated geometry is insufficient.
      * All children are still the same size and share equally in the deficit. */
-    ig->constrained_child_width = ig->child_width;
     if ((ig->columns != 0) && (ig->rows != 0) && (ig->container_width > 1))
     {
-        if (container_width_needed > ig->container_width)
-            ig->constrained_child_width = child_width = (ig->container_width - ((ig->columns - 1) * ig->spacing)) / ig->columns;
-        else if (ig->orientation != GTK_ORIENTATION_HORIZONTAL)
-            centering_offset_x = (ig->container_width - container_width_needed) / 2;
+        int width_delta  = ig->container_width  - container_width_needed;
+        int height_delta = ig->container_height - container_height_needed;
 
-        if (container_height_needed > ig->container_height)
+        if (width_delta < 0) {
+            child_width = (ig->container_width - ((ig->columns - 1) * ig->spacing)) / ig->columns;
+        } else {
+            if (ig->expand) {
+                int extra_child_width = width_delta / ig->columns;
+                width_delta = width_delta % ig->columns;
+                child_width += extra_child_width;
+            }
+            if (ig->orientation != GTK_ORIENTATION_HORIZONTAL)
+                centering_offset_x = width_delta / 2;
+        }
+
+        if (height_delta < 0) {
             child_height = (ig->container_height - ((ig->rows - 1) * ig->spacing)) / ig->rows;
-        else if (ig->orientation == GTK_ORIENTATION_HORIZONTAL)
-            centering_offset_y = (ig->container_height - container_height_needed) / 2;
+        } else {
+            if (ig->expand) {
+                int extra_child_height = height_delta / ig->rows;
+                height_delta = height_delta % ig->rows;
+                child_height += extra_child_height;
+            }
+            if (ig->orientation == GTK_ORIENTATION_HORIZONTAL)
+                centering_offset_y = height_delta / 2;
+        }
     }
+
+    ig->allocated_child_width = child_width;
+    ig->allocated_child_height = child_height;
 
     centering_offset_x = centering_offset_x < ig->border ? ig->border : centering_offset_x;
     centering_offset_y = centering_offset_y < ig->border ? ig->border : centering_offset_y;
@@ -214,10 +233,8 @@ static void icon_grid_element_size_request(GtkWidget * widget, GtkRequisition * 
 {
     /* This is our opportunity to request space for the element. */
     IconGrid * ig = ige->ig;
-    requisition->width = ig->child_width;
-    if ((ig->constrain_width) && (ig->actual_dimension) && (ig->constrained_child_width > 1))
-        requisition->width = ig->constrained_child_width;
-    requisition->height = ig->child_height;
+    requisition->width = ig->allocated_child_width;
+    requisition->height = ig->allocated_child_height;
 }
 
 /* Handler for "size-request" event on the icon grid's container. */
@@ -282,7 +299,9 @@ IconGrid * icon_grid_new(
     ig->container = container;
     ig->orientation = orientation;
     ig->child_width = child_width;
-    ig->constrained_child_width = child_width;
+    ig->allocated_child_width = 0;
+    ig->allocated_child_height = 0;
+    ig->expand = FALSE;
     ig->child_height = child_height;
     ig->spacing = spacing;
     ig->border = border;
@@ -331,9 +350,9 @@ void icon_grid_add(IconGrid * ig, GtkWidget * child, gboolean visible)
     icon_grid_demand_resize(ig);
 }
 
-extern void icon_grid_set_constrain_width(IconGrid * ig, gboolean constrain_width)
+extern void icon_grid_set_expand(IconGrid * ig, gboolean expand)
 {
-    ig->constrain_width = constrain_width;
+    ig->expand = expand;
 }
 
 /* Remove an icon grid element. */
@@ -455,7 +474,6 @@ void icon_grid_set_geometry(IconGrid * ig,
 {
     ig->orientation = orientation;
     ig->child_width = child_width;
-    ig->constrained_child_width = child_width;
     ig->child_height = child_height;
     ig->spacing = spacing;
     ig->border = border;

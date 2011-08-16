@@ -53,6 +53,16 @@ typedef struct {
     Plugin * plug;
 } lb_t;
 
+
+static int strempty(const char* s) {
+    if (!s)
+        return 1;
+    while (*s == ' ' || *s == '\t')
+        s++;
+    return strlen(s) == 0;
+}
+
+
 static int lb_run_command(const char* command) {
 
     if (!command)
@@ -121,12 +131,62 @@ static void lb_apply_configuration(Plugin * p)
         lb->button = NULL;
 
 
-    lb->button = fb_button_new_from_file_with_label(lb->icon_path, p->panel->icon_size, p->panel->icon_size, PANEL_ICON_HIGHLIGHT, TRUE, p->panel, lb->title);
+    lb->button = fb_button_new_from_file_with_label(lb->icon_path,
+                 p->panel->icon_size, p->panel->icon_size, PANEL_ICON_HIGHLIGHT, TRUE, p->panel, lb->title);
     gtk_container_add(GTK_CONTAINER(p->pwid), lb->button);
     g_signal_connect(lb->button, "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
     gtk_widget_show(lb->button);
 
-    gtk_widget_set_tooltip_text(lb->button, lb->tooltip);
+    if (!strempty(lb->tooltip)) {
+        gtk_widget_set_tooltip_text(lb->button, lb->tooltip);
+    } else {
+        gchar * tooltip = NULL;
+        if (strempty(lb->command2) && strempty(lb->command3)) {
+            if (strempty(lb->command1))
+                tooltip = g_strdup("");
+            else
+                tooltip = g_strdup_printf(_("%s"), lb->command1);
+        } else {
+            if (!strempty(lb->command1))
+            {
+                gchar * t1 = g_strdup_printf(_("Left click: %s"), lb->command1);
+                if (tooltip) {
+                    gchar * t2 = g_strdup_printf("%s\n%s", tooltip, t1);
+                    g_free(t1);
+                    g_free(tooltip);
+                    tooltip = t2;
+                } else {
+                    tooltip = t1;
+                }
+            }
+            if (!strempty(lb->command2))
+            {
+                gchar * t1 = g_strdup_printf(_("Middle click: %s"), lb->command2);
+                if (tooltip) {
+                    gchar * t2 = g_strdup_printf("%s\n%s", tooltip, t1);
+                    g_free(t1);
+                    g_free(tooltip);
+                    tooltip = t2;
+                } else {
+                    tooltip = t1;
+                }
+            }
+            if (!strempty(lb->command3))
+            {
+                gchar * t1 = g_strdup_printf(_("Right click: %s"), lb->command3);
+                if (tooltip) {
+                    gchar * t2 = g_strdup_printf("%s\n%s", tooltip, t1);
+                    g_free(t1);
+                    g_free(tooltip);
+                    tooltip = t2;
+                } else {
+                    tooltip = t1;
+                }
+            }
+        }
+        gtk_widget_set_tooltip_text(lb->button, tooltip);
+        g_free(tooltip);
+    }
 }
 
 

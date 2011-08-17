@@ -185,6 +185,24 @@ Plugin * plugin_load(char * type)
     return plug;
 }
 
+static gboolean plugin_set_background(Plugin * pl)
+{
+    plugin_widget_set_background(pl->pwid, pl->panel);
+    return FALSE;
+}
+
+static void plugin_size_allocate(GtkWidget * widget, GtkAllocation * allocation, Plugin * pl)
+{
+    gboolean c = (allocation->x != pl->pwid_allocation.x)
+        || (allocation->y != pl->pwid_allocation.y)
+        || (allocation->width != pl->pwid_allocation.width)
+        || (allocation->height != pl->pwid_allocation.height);
+    pl->pwid_allocation = *allocation;
+    if (c)
+        g_idle_add((GSourceFunc) plugin_set_background, pl);
+}
+
+
 /* Configure and start a plugin by calling its constructor. */
 int plugin_start(Plugin * pl, char ** fp)
 {
@@ -201,6 +219,7 @@ int plugin_start(Plugin * pl, char ** fp)
     /* If the plugin has a top level widget, add it to the panel's container. */
     if (pl->pwid != NULL)
     {
+        g_signal_connect(G_OBJECT(pl->pwid), "size-allocate", G_CALLBACK(plugin_size_allocate), (gpointer) pl);
         gtk_widget_set_name(pl->pwid, pl->class->type);
         gtk_box_pack_start(GTK_BOX(pl->panel->box), pl->pwid, pl->expand, TRUE, pl->padding);
         gtk_container_set_border_width(GTK_CONTAINER(pl->pwid), pl->border);

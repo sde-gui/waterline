@@ -76,6 +76,8 @@ typedef struct _Plugin {
     int padding;				/* Padding setting for container */
     int border;					/* Border setting for container */
     gpointer priv;				/* Private context for plugin; plugin frees this in its destructor */
+
+    GtkAllocation pwid_allocation;
 } Plugin;
 
 extern Plugin * plugin_load(char * type);		/* Create an instance of a plugin, loading it if necessary */

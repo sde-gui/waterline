@@ -110,11 +110,19 @@ static gboolean icon_grid_placement(IconGrid * ig)
     int x_delta = child_width + ig->spacing;
     if (direction == GTK_TEXT_DIR_RTL) x_delta = - x_delta;
 
+
+    IconGridElement * ige;
+    for (ige = ig->child_list; ige != NULL; ige = ige->flink)
+    {
+        if (ige->deferred_hide && !ige->visible)
+            gtk_widget_hide(ige->widget);
+        ige->deferred_hide = 0;
+    }
+
     /* Reposition each visible child. */
     int x = x_initial;
     int y = centering_offset_y;
     gboolean contains_sockets = FALSE;
-    IconGridElement * ige;
     for (ige = ig->child_list; ige != NULL; ige = ige->flink)
     {
         if (ige->visible)
@@ -541,12 +549,14 @@ void icon_grid_set_visible(IconGrid * ig, GtkWidget * child, gboolean visible)
 
                 /* Found, and the visibility changed.  Do a relayout. */
                 ige->visible = visible;
-                if ( ! ige->visible)
-                    gtk_widget_hide(ige->widget);
-                if (ig->deferred < 1)
+                if (ig->deferred < 1) {
+                    if ( ! ige->visible)
+                        gtk_widget_hide(ige->widget);
                     icon_grid_demand_resize(ig);
-                else
+                } else {
                     ig->deferred_resize = 1;
+                    ige->deferred_hide = 1;
+                }
             }
             break;
         }

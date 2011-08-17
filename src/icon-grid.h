@@ -32,6 +32,7 @@ typedef struct _icon_grid_element {
     struct _icon_grid * ig;			/* Back pointer to IconGrid */
     GtkWidget * widget;				/* Customer's widget */
     gboolean visible;				/* True if widget is visible */
+    gboolean deferred_hide;
 } IconGridElement;
 
 /* Representative of an icon grid.  This is a manager that packs widgets into a rectangular grid whose size adapts to conditions. */

@@ -44,6 +44,8 @@
  * 3. Add Restore & Maximize menu items to popup menu of task bar buttons.
  */
 
+//#define DEBUG
+
 #include "dbg.h"
 
 struct _taskbar;
@@ -52,8 +54,7 @@ struct _task;
 
 enum TASKBAR_MODE {
     MODE_CLASSIC,
-    MODE_GROUP_SIDE_BY_SIDE,
-    MODE_GROUP_INTO_BUTTON,
+    MODE_GROUP,
     MODE_SINGLE_WINDOW
 };
 
@@ -76,6 +77,13 @@ enum TASKBAR_ACTION {
     ACTION_STICK,
     ACTION_SHOW_WINDOW_LIST,
     ACTION_SHOW_SIMILAR_WINDOW_LIST
+};
+
+enum {
+    GROUP_BY_NONE,
+    GROUP_BY_CLASS,
+    GROUP_BY_WORKSPACE,
+    GROUP_BY_STATE
 };
 
 /* Structure representing a class.  This comes from WM_CLASS, and should identify windows that come from an application. */
@@ -113,6 +121,8 @@ typedef struct _task {
     unsigned int entered_state : 1;		/* True if cursor is inside taskbar button */
     unsigned int present_in_client_list : 1;	/* State during WM_CLIENT_LIST processing to detect deletions */
 
+    int timestamp;
+
     GtkWidget* click_on;
 } Task;
 
@@ -122,6 +132,8 @@ typedef struct _taskbar {
     Task * task_list;				/* List of tasks to be displayed in taskbar */
     TaskClass * res_class_list;			/* Window class list */
     IconGrid * icon_grid;			/* Manager for taskbar buttons */
+
+    int task_timestamp;
 
     GtkWidget * menu;				/* Popup menu for task control (Close, Raise, etc.) */
     GtkWidget * workspace_submenu;		/* Workspace submenu of the task control menu */
@@ -151,6 +163,7 @@ typedef struct _taskbar {
     gboolean flat_button;			/* User preference: taskbar buttons have visible background */
     int mode;                                   /* User preference: view mode */
     int group_threshold;                        /* User preference: threshold for groupping tasks into one button */
+    int group_by;                               /* User preference: attr to group tasks by */
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
     int spacing;				/* Spacing between taskbar buttons */
     gboolean use_net_active;			/* NET_WM_ACTIVE_WINDOW is supported by the window manager */
@@ -166,6 +179,8 @@ typedef struct _taskbar {
     gboolean show_titles;			/* Show title labels */
     gboolean _show_close_buttons;               /* Show close buttons */
     int _group_threshold;
+    int _group_by;
+    int _mode;
 
     Atom a_OB_WM_STATE_UNDECORATED;
     Atom a_NET_WM_STATE_FULLSCREEN;
@@ -533,14 +548,18 @@ static void task_set_names(Task * tk, Atom source)
 /* Unlink a task from the class list because its class changed or it was deleted. */
 static void task_unlink_class(Task * tk)
 {
+    ENTER;
     TaskClass * tc = tk->res_class;
     if (tc != NULL)
     {
+        tk->res_class = NULL;
+
         /* Remove from per-class task list. */
         if (tc->res_class_head == tk)
         {
             /* Removing the head of the list.  This causes a new task to be the visible task, so we redraw. */
             tc->res_class_head = tk->res_class_flink;
+            tk->res_class_flink = NULL;
             if (tc->res_class_head != NULL)
                 task_button_redraw(tc->res_class_head, tk->tb);
         }
@@ -555,16 +574,19 @@ static void task_unlink_class(Task * tk)
               tk_pred = tk_cursor, tk_cursor = tk_cursor->res_class_flink) ;
             if (tk_cursor == tk)
                 tk_pred->res_class_flink = tk->res_class_flink;
+            tk->res_class_flink = NULL;
         }
 
         /* Recompute group visibility. */
         recompute_group_visibility_for_class(tk->tb, tc);
     }
+    RET();
 }
 
 /* Enter class with specified name. */
 static TaskClass * taskbar_enter_res_class(TaskbarPlugin * tb, char * res_class, gboolean * name_consumed)
-    {
+{
+    ENTER;
     /* Find existing entry or insertion point. */
     *name_consumed = FALSE;
     TaskClass * tc_pred = NULL;
@@ -573,7 +595,7 @@ static TaskClass * taskbar_enter_res_class(TaskbarPlugin * tb, char * res_class,
     {
         int status = strcmp(res_class, tc->res_class);
         if (status == 0)
-            return tc;
+            RET(tc);
         if (status < 0)
             break;
     }
@@ -592,10 +614,11 @@ static TaskClass * taskbar_enter_res_class(TaskbarPlugin * tb, char * res_class,
         tc->res_class_flink = tc_pred->res_class_flink;
 	tc_pred->res_class_flink = tc;
     }
-    return tc;
+    RET(tc);
 }
 
 static gchar* task_get_res_class(Task * tk) {
+    ENTER;
     /* Read the WM_CLASS property. */
     XClassHint ch;
     ch.res_name = NULL;
@@ -615,15 +638,35 @@ static gchar* task_get_res_class(Task * tk) {
     else
         res_class = g_strdup("");
 
-    return res_class;
+    RET(res_class);
 }
 
 /* Set the class associated with a task. */
 static void task_set_class(Task * tk)
 {
-    gchar * res_class = task_get_res_class(tk);
+    ENTER;
+
+    g_assert(tk != NULL);
+
+    gchar * res_class = NULL;
+    switch (tk->tb->_group_by) {
+        case GROUP_BY_CLASS:
+            res_class = task_get_res_class(tk); break;
+        case GROUP_BY_WORKSPACE:
+            res_class = task_get_desktop_name(tk); break;
+        case GROUP_BY_STATE:
+            res_class = g_strdup(
+                (tk->urgency) ? _("Urgency") : 
+                (tk->iconified) ? _("Iconified") : 
+                _("Mapped")
+            );
+            break;
+    }
+
     if (res_class != NULL)
     {
+        DBG("Task %s has res_class %s\n", tk->name, res_class);
+
         gboolean name_consumed;
         TaskClass * tc = taskbar_enter_res_class(tk->tb, res_class, &name_consumed);
         if ( ! name_consumed) g_free(res_class);
@@ -633,7 +676,8 @@ static void task_set_class(Task * tk)
         if (old_tc != tc)
         {
             /* Unlink from previous class, if any. */
-            task_unlink_class(tk);
+            if (old_tc)
+                task_unlink_class(tk);
 
             /* Add to end of per-class task list.  Do this to keep the popup menu in order of creation. */
             if (tc->res_class_head == NULL)
@@ -643,6 +687,7 @@ static void task_set_class(Task * tk)
                 Task * tk_pred;
                 for (tk_pred = tc->res_class_head; tk_pred->res_class_flink != NULL; tk_pred = tk_pred->res_class_flink) ;
                 tk_pred->res_class_flink = tk;
+                g_assert(tk->res_class_flink == NULL);
                 task_button_redraw(tk, tk->tb);
             }
             tk->res_class = tc;
@@ -651,6 +696,8 @@ static void task_set_class(Task * tk)
             recompute_group_visibility_for_class(tk->tb, tc);
         }
     }
+
+    RET();
 }
 
 /* Look up a task in the task list. */
@@ -661,8 +708,8 @@ static Task * task_lookup(TaskbarPlugin * tb, Window win)
         {
         if (tk->win == win)
 	    return tk;
-        if (tk->win > win)
-            break;
+//        if (tk->win > win)
+//            break;
         }
     return NULL;
 }
@@ -670,6 +717,10 @@ static Task * task_lookup(TaskbarPlugin * tb, Window win)
 /* Delete a task and optionally unlink it from the task list. */
 static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 {
+    ENTER;
+
+    DBG("Deleting task %s (0x%x)\n", tk->name, (int)tk);
+
     /* If we think this task had focus, remove that. */
     if (tb->focused == tk)
         tb->focused = NULL;
@@ -705,6 +756,8 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
     /* Deallocate the task structure. */
     g_free(tk);
+
+    RET();
 }
 
 /* Get a pixbuf from a pixmap.
@@ -1194,7 +1247,7 @@ static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, Tas
 
         gchar * name = task_get_displayed_name(tk_cursor);
         GtkWidget * mi = NULL;
-        if (tk_cursor->desktop != tb->current_desktop && tk_cursor->desktop != ALL_WORKSPACES) {
+        if (tk_cursor->desktop != tb->current_desktop && tk_cursor->desktop != ALL_WORKSPACES && tb->_group_by != GROUP_BY_WORKSPACE) {
             gchar* wname = task_get_desktop_name(tk_cursor);
             name = g_strdup_printf("%s [%s]", name, wname);
             mi = gtk_image_menu_item_new_with_label(name);
@@ -1669,22 +1722,57 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
         task_set_urgency(tk);
 }
 
+static int task_compare(Task * tk1, Task * tk2)
+{
+    int result = 0;
+    switch (tk1->tb->_group_by)
+    {
+        case GROUP_BY_WORKSPACE:
+        {
+            int w1 = (tk1->desktop == ALL_WORKSPACES) ? 0 : (tk1->desktop + 1);
+            int w2 = (tk2->desktop == ALL_WORKSPACES) ? 0 : (tk2->desktop + 1);
+            result = w2 - w1;
+            break;
+        }
+        case GROUP_BY_STATE:
+        {
+            int w1 = tk1->urgency * 2 + tk1->iconified;
+            int w2 = tk2->urgency * 2 + tk2->iconified;
+            result = w2 - w1;
+        }
+            break;
+    }
+
+    if (result == 0)
+        result = tk2->timestamp - tk1->timestamp;
+
+    return result;
+}
+
 static void task_reorder(Task * tk)
 {
-    if (!tk->tb->group_side_by_side)
-        return;
-
     Task* tk_prev_old = NULL;
     Task* tk_prev_new = NULL;
     Task* tk_cursor;
+    int tk_prev_new_found = 0;
     for (tk_cursor = tk->tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
     {
          if (tk_cursor == tk)
              continue;
-         if (tk_cursor->res_class != NULL && tk_cursor->res_class == tk->res_class && (tk_cursor->desktop == tk->desktop || tk->tb->show_all_desks))
-             tk_prev_new = tk_cursor;
+         if (!tk_prev_new_found)
+         {
+             //DBG("[0x%x] [\"%s\" (0x%x), \"%s\" (0x%x)] => %d\n", tk->tb, tk->name,tk, tk_cursor->name,tk_cursor, task_compare(tk, tk_cursor));
+
+             if (task_compare(tk, tk_cursor) <= 0)
+                 tk_prev_new = tk_cursor;
+             else
+                 tk_prev_new_found = 1;
+         }
          if (tk_cursor->task_flink == tk)
              tk_prev_old = tk_cursor;
+
+         if (tk_prev_new_found && tk_prev_old)
+             break;
     }
 
     if (tk_prev_new) {
@@ -1695,8 +1783,25 @@ static void task_reorder(Task * tk)
                 tk->tb->task_list = tk->task_flink;
             tk->task_flink = tk_prev_new->task_flink;
             tk_prev_new->task_flink = tk;
+
+            //DBG("[0x%x] task \"%s\" (0x%x) moved after \"%s\" (0x%x)\n", tk->tb, tk->name, tk, tk_prev_new->name, tk_prev_new);
+
+            icon_grid_place_child_after(tk->tb->icon_grid, tk->button, tk_prev_new->button);
+        } else {
+            //DBG("[0x%x] task \"%s\" (0x%x) is in rigth place\n", tk->tb, tk->name, tk);
         }
-        icon_grid_place_child_after(tk->tb->icon_grid, tk->button, tk_prev_new->button);
+    } else {
+        if (tk_prev_old)
+            tk_prev_old->task_flink = tk->task_flink;
+        else
+            tk->tb->task_list = tk->task_flink;
+
+        tk->task_flink = tk->tb->task_list;
+        tk->tb->task_list = tk;
+
+        //DBG("[0x%x] task \"%s\" (0x%x) moved to head\n", tk->tb, tk->name, tk);
+
+        icon_grid_place_child_after(tk->tb->icon_grid, tk->button, NULL);
     }
 }
 
@@ -1707,6 +1812,8 @@ static void task_reorder(Task * tk)
 /* Handler for "client-list" event from root window listener. */
 static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
 {
+    ENTER;
+
     /* Get the NET_CLIENT_LIST property. */
     int client_count;
     Window * client_list = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &client_count);
@@ -1727,8 +1834,8 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     tk = tk_cursor;
                     break;
                 }
-                if (tk_cursor->win > client_list[i])
-                    break;
+//                if (tk_cursor->win > client_list[i])
+//                    break;
             }
 
             /* Task is already in task list. */
@@ -1748,6 +1855,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                 {
                     /* Allocate and initialize new task structure. */
                     tk = g_new0(Task, 1);
+                    tk->timestamp = ++tb->task_timestamp;
                     tk->click_on = NULL;
                     tk->present_in_client_list = TRUE;
                     tk->win = client_list[i];
@@ -1760,6 +1868,9 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                         tk->urgency = task_has_urgency(tk);
                     task_build_gui(tb, tk);
                     task_set_names(tk, None);
+
+                    DBG("Creating task %s (0x%x)\n", tk->name, (int)tk);
+
                     task_set_class(tk);
 
                     /* Link the task structure into the task list. */
@@ -1804,6 +1915,8 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
 
     /* Redraw the taskbar. */
     taskbar_redraw(tb);
+
+    RET();
 }
 
 /* Handler for "current-desktop" event from root window listener. */
@@ -1901,6 +2014,20 @@ static gboolean task_has_urgency(Task * tk)
     return result;
 }
 
+static void task_update_grouping(Task * tk, int group_by)
+{
+    ENTER;
+    DBG("group_by = %d, tb->_group_by = %d\n", group_by, tk->tb->_group_by);
+    if (tk->tb->_group_by == group_by)
+    {
+        task_set_class(tk);
+        task_reorder(tk);
+        taskbar_redraw(tk->tb);
+    }
+    RET();
+}
+
+
 /* Handle PropertyNotify event.
  * http://tronche.com/gui/x/icccm/
  * http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html */
@@ -1926,6 +2053,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 {
                     /* Window changed desktop. */
                     tk->desktop = get_net_wm_desktop(win);
+                    task_update_grouping(tk, GROUP_BY_WORKSPACE);
                     taskbar_redraw(tb);
                 }
                 else if ((at == XA_WM_NAME) || (at == a_NET_WM_NAME) || (at == a_NET_WM_VISIBLE_NAME))
@@ -1943,15 +2071,14 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 else if (at == XA_WM_CLASS)
                 {
                     /* Window changed class. */
-                    task_set_class(tk);
-                    task_reorder(tk);
-                    taskbar_redraw(tb);
+                    task_update_grouping(tk, GROUP_BY_CLASS);
                 }
                 else if (at == a_WM_STATE)
                 {
                     /* Window changed state. */
                     tk->iconified = (get_wm_state(win) == IconicState);
                     task_draw_label(tk);
+                    task_update_grouping(tk, GROUP_BY_STATE);
                 }
                 else if (at == XA_WM_HINTS)
                 {
@@ -1971,6 +2098,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                             task_set_urgency(tk);
                         else
                             task_clear_urgency(tk);
+                        task_update_grouping(tk, GROUP_BY_STATE);
                     }
                 }
                 else if (at == a_NET_WM_STATE)
@@ -2252,23 +2380,23 @@ static void taskbar_build_gui(Plugin * p)
 
 static void taskbar_config_updated(TaskbarPlugin * tb)
 {
-    gboolean group_side_by_side = tb->mode == MODE_GROUP_SIDE_BY_SIDE;
-
-    tb->grouped_tasks = tb->mode == MODE_GROUP_INTO_BUTTON;
+    tb->grouped_tasks = tb->mode == MODE_GROUP;
     tb->single_window = tb->mode == MODE_SINGLE_WINDOW;
+
+    int group_by = (tb->grouped_tasks) ? tb->group_by : GROUP_BY_NONE;
 
     tb->show_icons  = tb->show_icons_titles != SHOW_TITLES;
     tb->show_titles = tb->show_icons_titles != SHOW_ICONS;
 
-    // FIXME: В некоторых случаях использование режима MODE_SINGLE_WINDOW с tb->group_side_by_side == TRUE приводит к тому, что кнопка активного окна не отображается.
-    // Поэтому пришлось включить сюда проверку tb->mode == MODE_SINGLE_WINDOW
-    tb->rebuild_gui = group_side_by_side != tb->group_side_by_side && (tb->mode == MODE_CLASSIC || tb->mode == MODE_GROUP_SIDE_BY_SIDE || tb->mode == MODE_SINGLE_WINDOW);
-    tb->rebuild_gui |= tb->show_all_desks && tb->show_all_desks_prev_value != tb->show_all_desks && tb->mode == MODE_GROUP_SIDE_BY_SIDE;
+    tb->rebuild_gui = tb->_mode != tb->mode;
+    tb->rebuild_gui |= tb->show_all_desks_prev_value != tb->show_all_desks;
     tb->rebuild_gui |= tb->_group_threshold != tb->group_threshold;
+    tb->rebuild_gui |= tb->_group_by != group_by;
     if (tb->rebuild_gui) {
-        tb->group_side_by_side = group_side_by_side;
+        tb->_mode != tb->mode;
         tb->show_all_desks_prev_value = tb->show_all_desks;
         tb->_group_threshold = tb->group_threshold;
+        tb->_group_by = group_by;
     }
 
     tb->_show_close_buttons = tb->show_close_buttons && !tb->grouped_tasks;
@@ -2293,6 +2421,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->use_urgency_hint  = TRUE;
     tb->mode              = MODE_CLASSIC;
     tb->group_threshold   = 1;
+    tb->group_by          = GROUP_BY_CLASS;
     tb->show_close_buttons = FALSE;
     tb->button1_action    = ACTION_RAISEICONIFY;
     tb->button2_action    = ACTION_SHADE;
@@ -2315,6 +2444,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->title_menuitem    = NULL;
     tb->title_separator_menuitem = NULL;
 
+    tb->task_timestamp = 0;
 
     /* Process configuration file. */
     line s;
@@ -2356,6 +2486,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->mode = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupThreshold") == 0)
                     tb->group_threshold = atoi(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "GroupBy") == 0)
+                    tb->group_by = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowIconsTitles") == 0)
                     tb->show_icons_titles = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowCloseButtons") == 0)
@@ -2483,7 +2615,8 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Spacing"), (gpointer)&tb->spacing, (GType)CONF_TYPE_INT,
         "", 0, (GType)CONF_TYPE_END_TABLE,
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
-        _("|Mode|Classic|Group similar windows side by side|Group similar windows into one button|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
+        _("|Mode|Classic|Group windows|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
+        _("|Group by|None|Window class|Workspace|Window state"), (gpointer)&tb->group_by, (GType)CONF_TYPE_ENUM,
         _("Group threshold"), (gpointer)&tb->group_threshold, (GType)CONF_TYPE_INT,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         button1_action, (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
@@ -2516,6 +2649,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_int(fp, "spacing", tb->spacing);
     lxpanel_put_int(fp, "Mode", tb->mode);
     lxpanel_put_int(fp, "GroupThreshold", tb->group_threshold);
+    lxpanel_put_int(fp, "GroupBy", tb->group_by);
     lxpanel_put_bool(fp, "ShowCloseButtons", tb->show_close_buttons);
     lxpanel_put_int(fp, "Button1Action", tb->button1_action);
     lxpanel_put_int(fp, "Button2Action", tb->button2_action);

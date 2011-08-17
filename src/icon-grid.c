@@ -384,17 +384,20 @@ extern void icon_grid_place_child_after(IconGrid * ig, GtkWidget * child, GtkWid
 {
     /* Search 'after' element */
     IconGridElement * ige_after = NULL;
-    for (ige_after = ig->child_list; ige_after != NULL; ige_after = ige_after->flink)
+    if (after)
     {
-        if (ige_after->widget == after)
-            break;
+        for (ige_after = ig->child_list; ige_after != NULL; ige_after = ige_after->flink)
+        {
+            if (ige_after->widget == after)
+                break;
+        }
+
+        if (!ige_after)
+            return;
+
+        if (ige_after->flink && ige_after->flink->widget == child)
+            return;
     }
-
-    if (!ige_after)
-        return;
-
-    if (ige_after->flink && ige_after->flink->widget == child)
-        return;
 
     /* Remove the child from its current position. */
     IconGridElement * ige_pred = NULL;
@@ -403,16 +406,25 @@ extern void icon_grid_place_child_after(IconGrid * ig, GtkWidget * child, GtkWid
     {
         if (ige->widget == child)
         {
-            if (ige_pred == NULL)
-                ig->child_list = ige->flink;
-            else
+            if (ige_pred == NULL) {
+                if (ige_after == NULL)
+                    return;
+                else
+                    ig->child_list = ige->flink;
+            } else {
                 ige_pred->flink = ige->flink;
+            }
             break;
         }
     }
 
-    ige->flink = ige_after->flink;
-    ige_after->flink = ige;
+    if (ige_after) {
+       ige->flink = ige_after->flink;
+       ige_after->flink = ige;
+    } else {
+        ige->flink = ig->child_list;
+        ig->child_list = ige;
+    }
 
     if (ige->visible)
         icon_grid_demand_resize(ig);

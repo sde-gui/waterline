@@ -78,6 +78,7 @@ typedef struct _Plugin {
     gpointer priv;				/* Private context for plugin; plugin frees this in its destructor */
 
     GtkAllocation pwid_allocation;
+    gboolean background_update_scheduled;
 } Plugin;
 
 extern Plugin * plugin_load(char * type);		/* Create an instance of a plugin, loading it if necessary */

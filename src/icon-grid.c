@@ -40,6 +40,8 @@ enum {
 /* Establish the widget placement of an icon grid. */
 static gboolean icon_grid_placement(IconGrid * ig)
 {
+    //g_print("[0x%x] icon_grid_placement\n", (int)ig);
+
     /* Make sure the container is visible. */
     gtk_widget_show(ig->container);
 
@@ -268,9 +270,9 @@ static void icon_grid_geometry(IconGrid * ig, int reason)
             //g_print("[0x%x] gtk_widget_queue_resize()\n", (int)ig);
             gtk_widget_queue_resize(ig->container);
         } else{ 
-            //g_print("[0x%x] g_idle_add((GSourceFunc) icon_grid_placement, ig)\n", (int)ig);
             ig->actual_dimension = TRUE;
             ig->children_changed = FALSE;
+            //g_print("[0x%x] g_idle_add((GSourceFunc) icon_grid_placement, ig)\n", (int)ig);
             g_idle_add((GSourceFunc) icon_grid_placement, ig);
         }
     }
@@ -306,6 +308,8 @@ static void icon_grid_size_request(GtkWidget * widget, GtkRequisition * requisit
 /* Handler for "size-allocate" event on the icon grid's container. */
 static void icon_grid_size_allocate(GtkWidget * widget, GtkAllocation * allocation, IconGrid * ig)
 {
+    //g_print("[0x%x] icon_grid_size_allocate: %d %d %d %d\n", (int)ig, allocation->x, allocation->y, allocation->width, allocation->height);
+
     /* This is our notification that there is a resize of the entire panel.
      * Compute the geometry and recompute layout if the geometry changed. */
     icon_grid_geometry(ig, GEOMETRY_SIZE_ALLOCATED);

@@ -187,6 +187,7 @@ Plugin * plugin_load(char * type)
 
 static gboolean plugin_set_background(Plugin * pl)
 {
+    pl->background_update_scheduled = FALSE;
     plugin_widget_set_background(pl->pwid, pl->panel);
     return FALSE;
 }
@@ -198,8 +199,12 @@ static void plugin_size_allocate(GtkWidget * widget, GtkAllocation * allocation,
         || (allocation->width != pl->pwid_allocation.width)
         || (allocation->height != pl->pwid_allocation.height);
     pl->pwid_allocation = *allocation;
-    if (c)
+
+    if (c && !pl->background_update_scheduled)
+    {
+        pl->background_update_scheduled = TRUE;
         g_idle_add((GSourceFunc) plugin_set_background, pl);
+    }
 }
 
 
@@ -219,6 +224,7 @@ int plugin_start(Plugin * pl, char ** fp)
     /* If the plugin has a top level widget, add it to the panel's container. */
     if (pl->pwid != NULL)
     {
+        pl->background_update_scheduled = FALSE;
         g_signal_connect(G_OBJECT(pl->pwid), "size-allocate", G_CALLBACK(plugin_size_allocate), (gpointer) pl);
         gtk_widget_set_name(pl->pwid, pl->class->type);
         gtk_box_pack_start(GTK_BOX(pl->panel->box), pl->pwid, pl->expand, TRUE, pl->padding);

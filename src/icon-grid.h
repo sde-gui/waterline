@@ -49,8 +49,14 @@ typedef struct _icon_grid {
     gboolean actual_dimension;			/* True if container has been allocated space */
     gboolean children_changed;			/* True if icon grid element list changed */
     GtkWidget * widget;				/* Layout widget we use for packing */
+
     int rows;					/* Computed layout rows */
     int columns;				/* Computed layout columns */
+
+    int requisition_width;			/* Computed preferred width */
+    int requisition_height;			/* Computed preferred height */
+    gboolean requisition_changed;		/* True if preferred size has been changed since last size-request */
+
     int container_width;			/* Container's allocated width */
     int container_height;			/* Container's allocated height */
     int allocated_child_width;

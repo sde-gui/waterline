@@ -31,6 +31,12 @@ static void icon_grid_size_request(GtkWidget * widget, GtkRequisition * requisit
 static void icon_grid_size_allocate(GtkWidget * widget, GtkAllocation * allocation, IconGrid * ig);
 static void icon_grid_demand_resize(IconGrid * ig);
 
+enum {
+   GEOMETRY_SIZE_REQUEST,
+   GEOMETRY_SIZE_ALLOCATED,
+   GEOMETRY_DEMAND_RESIZE
+};
+
 /* Establish the widget placement of an icon grid. */
 static gboolean icon_grid_placement(IconGrid * ig)
 {
@@ -156,9 +162,9 @@ static gboolean icon_grid_placement(IconGrid * ig)
     }
 
     /* Redraw the container. */
-    if (window != NULL)
-        gdk_window_invalidate_rect(window, NULL, TRUE);
-    gtk_widget_queue_draw(ig->container);
+//    if (window != NULL)
+//        gdk_window_invalidate_rect(window, NULL, TRUE);
+//    gtk_widget_queue_draw(ig->container);
 
     /* If the icon grid contains sockets, do special handling to get the background erased. */
     if (contains_sockets)
@@ -168,8 +174,10 @@ static gboolean icon_grid_placement(IconGrid * ig)
 }
 
 /* Establish the geometry of an icon grid. */
-static void icon_grid_geometry(IconGrid * ig, gboolean layout)
+static void icon_grid_geometry(IconGrid * ig, int reason)
 {
+    //g_print("[0x%x] icon_grid_geometry: reason = %d\n", (int)ig, reason);
+
     /* Count visible children. */
     int visible_children = 0;
     IconGridElement * ige;
@@ -179,6 +187,10 @@ static void icon_grid_geometry(IconGrid * ig, gboolean layout)
 
    int original_rows = ig->rows;
    int original_columns = ig->columns;
+
+   int original_requisition_width = ig->requisition_width;
+   int original_requisition_height = ig->requisition_height;
+
    int target_dimension = ig->target_dimension;
    if (ig->orientation == GTK_ORIENTATION_HORIZONTAL)
     {
@@ -211,21 +223,47 @@ static void icon_grid_geometry(IconGrid * ig, gboolean layout)
             ig->columns = visible_children;
     }
 
+    /* Compute the requisition. */
+    if ((ig->columns == 0) || (ig->rows == 0))
+    {
+        ig->requisition_width = 1;
+        ig->requisition_height = 1;
+    }
+    else
+    {
+        int column_spaces = ig->columns - 1;
+        int row_spaces = ig->rows - 1;
+        if (column_spaces < 0) column_spaces = 0;
+        if (row_spaces < 0) row_spaces = 0;
+        ig->requisition_width = ig->child_width * ig->columns + column_spaces * ig->spacing + 2 * ig->border;
+        ig->requisition_height = ig->child_height * ig->rows + row_spaces * ig->spacing + 2 * ig->border;
+    }
+
+    if (reason != GEOMETRY_SIZE_ALLOCATED)
+        ig->requisition_changed |= (original_requisition_width != ig->requisition_width || original_requisition_height != ig->requisition_height);
+
     /* If the table geometry or child composition changed, redo the placement of children in table cells.
      * This is gated by having a valid table allocation and by the "layout" parameter, which prevents a recursive loop.
      * We do the placement later, also to prevent a recursive loop. */
-    if ((layout)
+    if ((reason != GEOMETRY_SIZE_REQUEST)
     && (( ! ig->actual_dimension)
+      || (ig->requisition_changed)
       || (ig->rows != original_rows)
       || (ig->columns != original_columns)
       || (ig->container_width != ig->container->allocation.width)
       || (ig->container_height != ig->container->allocation.height)
       || (ig->children_changed)))
-        {
-        ig->actual_dimension = TRUE;
-        ig->children_changed = FALSE;
-        g_idle_add((GSourceFunc) icon_grid_placement, ig);
+    {
+        if (ig->requisition_changed && reason == GEOMETRY_DEMAND_RESIZE) {
+            //g_print("[0x%x] gtk_widget_queue_resize()\n", (int)ig);
+            gtk_widget_queue_resize(ig->container);
+        } else{ 
+            //g_print("[0x%x] g_idle_add((GSourceFunc) icon_grid_placement, ig)\n", (int)ig);
+            ig->actual_dimension = TRUE;
+            ig->children_changed = FALSE;
+            g_idle_add((GSourceFunc) icon_grid_placement, ig);
         }
+    }
 }
 
 /* Handler for "size-request" event on the icon grid element. */
@@ -242,25 +280,17 @@ static void icon_grid_size_request(GtkWidget * widget, GtkRequisition * requisit
 {
     /* This is our opportunity to request space for the layout container.
      * Compute the geometry.  Do not lay out children at this time to avoid a recursive loop. */
-    icon_grid_geometry(ig, FALSE);
+    icon_grid_geometry(ig, GEOMETRY_SIZE_REQUEST);
 
-    /* Compute the requisition. */
+    requisition->width = ig->requisition_width;
+    requisition->height = ig->requisition_height;
+
+    ig->requisition_changed = FALSE;
+
     if ((ig->columns == 0) || (ig->rows == 0))
-    {
-        requisition->width = 1;
-        requisition->height = 1;
         gtk_widget_hide(ig->widget);	/* Necessary to get the plugin to disappear */
-    }
     else
-    {
-        int column_spaces = ig->columns - 1;
-        int row_spaces = ig->rows - 1;
-        if (column_spaces < 0) column_spaces = 0;
-        if (row_spaces < 0) row_spaces = 0;
-        requisition->width = ig->child_width * ig->columns + column_spaces * ig->spacing + 2 * ig->border;
-        requisition->height = ig->child_height * ig->rows + row_spaces * ig->spacing + 2 * ig->border;
         gtk_widget_show(ig->widget);
-    }
 }
 
 /* Handler for "size-allocate" event on the icon grid's container. */
@@ -268,22 +298,14 @@ static void icon_grid_size_allocate(GtkWidget * widget, GtkAllocation * allocati
 {
     /* This is our notification that there is a resize of the entire panel.
      * Compute the geometry and recompute layout if the geometry changed. */
-    icon_grid_geometry(ig, TRUE);
+    icon_grid_geometry(ig, GEOMETRY_SIZE_ALLOCATED);
 }
 
 /* Initiate a resize. */
 static void icon_grid_demand_resize(IconGrid * ig)
 {
     ig->children_changed = TRUE;
-#if 0
-    GtkRequisition req;
-    icon_grid_size_request(NULL, &req, ig);
-
-    if ((ig->rows != 0) || (ig->columns != 0))
-        icon_grid_placement(ig);
-#else
-    gtk_widget_queue_resize(ig->container);
-#endif
+    icon_grid_geometry(ig, GEOMETRY_DEMAND_RESIZE);
 }
 
 /* Establish an icon grid in a specified container widget.
@@ -308,6 +330,7 @@ IconGrid * icon_grid_new(
     ig->target_dimension = target_dimension;
     ig->deferred = 0;
     ig->deferred_resize = 0;
+    ig->requisition_changed = TRUE;
 
     /* Create a layout container. */
     ig->widget = gtk_fixed_new();
@@ -514,6 +537,8 @@ void icon_grid_set_visible(IconGrid * ig, GtkWidget * child, gboolean visible)
         {
             if (ige->visible != visible)
             {
+                //g_print("[0x%x] 0x%x %s\n", (int)ig, (int)ige, visible ? "shown" : "hidden");
+
                 /* Found, and the visibility changed.  Do a relayout. */
                 ige->visible = visible;
                 if ( ! ige->visible)

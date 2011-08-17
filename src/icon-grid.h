@@ -55,6 +55,8 @@ typedef struct _icon_grid {
     int container_height;			/* Container's allocated height */
     int allocated_child_width;
     int allocated_child_height;
+    int deferred;
+    int deferred_resize;
 } IconGrid;
 
 extern IconGrid * icon_grid_new(
@@ -77,5 +79,8 @@ extern void icon_grid_place_child_after(IconGrid * ig, GtkWidget * child, GtkWid
 extern void icon_grid_set_visible(IconGrid * ig, GtkWidget * child, gboolean visible);
 						/* Set the visibility of a child in the icon grid */
 extern void icon_grid_free(IconGrid * ig);	/* Free the icon grid */
+
+extern void icon_grid_defer_updates(IconGrid * ig);
+extern void icon_grid_resume_updates(IconGrid * ig);
 
 #endif

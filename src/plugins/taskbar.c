@@ -472,9 +472,11 @@ static void task_button_redraw(Task * tk, TaskbarPlugin * tb)
 /* Redraw all tasks in the taskbar. */
 static void taskbar_redraw(TaskbarPlugin * tb)
 {
+    icon_grid_defer_updates(tb->icon_grid);
     Task * tk;
     for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         task_button_redraw(tk, tb);
+    icon_grid_resume_updates(tb->icon_grid);
 }
 
 /* Determine if a task should be visible given its NET_WM_STATE. */
@@ -1988,6 +1990,8 @@ static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
         XFree(f);
     }
 
+    icon_grid_defer_updates(tb->icon_grid);
+
     /* If our idea of the current task lost focus, update data structures. */
     if ((ctk != NULL) && (drop_old))
     {
@@ -2008,6 +2012,8 @@ static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
         tb->focused = ntk;
         task_button_redraw(ntk, tb);
     }
+
+    icon_grid_resume_updates(tb->icon_grid);
 }
 
 /* Determine if the "urgency" hint is set on a window. */

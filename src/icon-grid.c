@@ -306,6 +306,8 @@ IconGrid * icon_grid_new(
     ig->spacing = spacing;
     ig->border = border;
     ig->target_dimension = target_dimension;
+    ig->deferred = 0;
+    ig->deferred_resize = 0;
 
     /* Create a layout container. */
     ig->widget = gtk_fixed_new();
@@ -516,7 +518,10 @@ void icon_grid_set_visible(IconGrid * ig, GtkWidget * child, gboolean visible)
                 ige->visible = visible;
                 if ( ! ige->visible)
                     gtk_widget_hide(ige->widget);
-                icon_grid_demand_resize(ig);
+                if (ig->deferred < 1)
+                    icon_grid_demand_resize(ig);
+                else
+                    ig->deferred_resize = 1;
             }
             break;
         }
@@ -540,3 +545,21 @@ void icon_grid_free(IconGrid * ig)
     }
     g_free(ig);
 }
+
+extern void icon_grid_defer_updates(IconGrid * ig)
+{
+    ig->deferred++;
+}
+
+extern void icon_grid_resume_updates(IconGrid * ig)
+{
+    ig->deferred--;
+    if (ig->deferred < 1)
+    {
+        ig->deferred = 0;
+        if (ig->deferred_resize)
+            ig->deferred_resize = 0,
+            icon_grid_demand_resize(ig);
+    }
+}
+

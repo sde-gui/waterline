@@ -143,6 +143,8 @@ typedef struct _taskbar {
 
     GtkWidget * group_menu;			/* Popup menu for grouping selection */
     GdkPixbuf * fallback_pixbuf;		/* Fallback task icon when none is available */
+    char * * desktop_names;
+    int number_of_desktop_names;
     int number_of_desktops;			/* Number of desktops, from NET_WM_NUMBER_OF_DESKTOPS */
     int current_desktop;			/* Current desktop, from NET_WM_CURRENT_DESKTOP */
     Task * focused;				/* Task that has focus */
@@ -249,6 +251,7 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk);
 static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb);
 static void taskbar_net_current_desktop(GtkWidget * widget, TaskbarPlugin * tb);
 static void taskbar_net_number_of_desktops(GtkWidget * widget, TaskbarPlugin * tb);
+static void taskbar_net_desktop_names(FbEv * fbev, TaskbarPlugin * tb);
 static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb);
 static gboolean task_has_urgency(Task * tk);
 static void taskbar_property_notify_event(TaskbarPlugin * tb, XEvent *ev);
@@ -314,6 +317,8 @@ static gchar* task_get_desktop_name(Task * tk)
     gchar * name = NULL;
     if (tk->desktop == ALL_WORKSPACES)
         name = g_strdup(_("_All workspaces"));
+    else if (tk->desktop < tk->tb->number_of_desktop_names && tk->tb->desktop_names)
+        name = g_strdup(tk->tb->desktop_names[tk->desktop]);
     else
         name = g_strdup_printf("%d", tk->desktop + 1);
     return name;
@@ -2014,6 +2019,17 @@ static gboolean task_has_urgency(Task * tk)
     return result;
 }
 
+/* Handler for desktop_name event from window manager. */
+static void taskbar_net_desktop_names(FbEv * fbev, TaskbarPlugin * tb)
+{
+    if (tb->desktop_names != NULL)
+        g_strfreev(tb->desktop_names),
+        tb->desktop_names;
+
+    /* Get the NET_DESKTOP_NAMES property. */
+    tb->desktop_names = get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &tb->number_of_desktop_names);
+}
+
 static void task_update_grouping(Task * tk, int group_by)
 {
     ENTER;
@@ -2367,6 +2383,7 @@ static void taskbar_build_gui(Plugin * p)
     g_signal_connect(G_OBJECT(fbev), "current_desktop", G_CALLBACK(taskbar_net_current_desktop), (gpointer) tb);
     g_signal_connect(G_OBJECT(fbev), "active_window", G_CALLBACK(taskbar_net_active_window), (gpointer) tb);
     g_signal_connect(G_OBJECT(fbev), "number_of_desktops", G_CALLBACK(taskbar_net_number_of_desktops), (gpointer) tb);
+    g_signal_connect(G_OBJECT(fbev), "desktop_names", G_CALLBACK(taskbar_net_desktop_names), (gpointer) tb);
     g_signal_connect(G_OBJECT(fbev), "client_list", G_CALLBACK(taskbar_net_client_list), (gpointer) tb);
 
     /* Make right-click menu for task buttons.
@@ -2444,6 +2461,9 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->title_menuitem    = NULL;
     tb->title_separator_menuitem = NULL;
 
+    tb->desktop_names = NULL;
+    tb->number_of_desktop_names = 0;
+
     tb->task_timestamp = 0;
 
     /* Process configuration file. */
@@ -2516,6 +2536,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     /* Build the graphic elements. */
     taskbar_build_gui(p);
 
+    taskbar_net_desktop_names(NULL, tb);
+
     /* Fetch the client list and redraw the taskbar.  Then determine what window has focus. */
     taskbar_net_client_list(NULL, tb);
     taskbar_net_active_window(NULL, tb);
@@ -2541,6 +2563,9 @@ static void taskbar_destructor(Plugin * p)
 
     /* Remove "window-manager-changed" handler. */
     g_signal_handlers_disconnect_by_func(gtk_widget_get_screen(p->pwid), taskbar_window_manager_changed, tb);
+
+    if (tb->desktop_names != NULL)
+        g_strfreev(tb->desktop_names);
 
     /* Deallocate task list. */
     while (tb->task_list != NULL)

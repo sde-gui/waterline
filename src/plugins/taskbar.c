@@ -1819,6 +1819,8 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
 {
     ENTER;
 
+    gboolean redraw = FALSE;
+
     /* Get the NET_CLIENT_LIST property. */
     int client_count;
     Window * client_list = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &client_count);
@@ -1891,6 +1893,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     }
                     task_reorder(tk);
                     icon_grid_set_visible(tb->icon_grid, tk->button, TRUE);
+                    redraw = TRUE;
                 }
             }
         }
@@ -1914,12 +1917,14 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                 tb->task_list = tk_succ;
                 else tk_pred->task_flink = tk_succ;
             task_delete(tb, tk, FALSE);
+            redraw = TRUE;
         }
         tk = tk_succ;
     }
 
     /* Redraw the taskbar. */
-    taskbar_redraw(tb);
+    if (redraw)
+        taskbar_redraw(tb);
 
     RET();
 }

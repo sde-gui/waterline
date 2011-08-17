@@ -184,6 +184,12 @@ typedef struct _taskbar {
     int _group_by;
     int _mode;
 
+    guint deferred_desktop_switch_timer;
+    int deferred_current_desktop;
+    int deferred_active_window_valid;
+    Window deferred_active_window;
+
+
     Atom a_OB_WM_STATE_UNDECORATED;
     Atom a_NET_WM_STATE_FULLSCREEN;
 } TaskbarPlugin;
@@ -330,9 +336,24 @@ static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
 }
 
 /* Determine if a task is visible considering only its desktop placement. */
+static gboolean task_is_visible_on_desktop(TaskbarPlugin * tb, Task * tk, int desktop)
+{
+    return ( (tk->desktop == ALL_WORKSPACES) || (tk->desktop == desktop) || (tb->show_all_desks) );
+}
+
+/* Determine if a task is visible considering only its desktop placement. */
 static gboolean task_is_visible_on_current_desktop(TaskbarPlugin * tb, Task * tk)
 {
-    return ( (tk->desktop == ALL_WORKSPACES) || (tk->desktop == tb->current_desktop) || (tb->show_all_desks) );
+    return task_is_visible_on_desktop(tb, tk, tb->current_desktop);
+}
+
+static gboolean taskbar_has_visible_tasks_on_desktop(TaskbarPlugin * tb, int desktop)
+{
+    Task * tk;
+    for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
+        if (task_is_visible_on_desktop(tb, tk,  desktop))
+            return TRUE;
+    return FALSE;
 }
 
 /* Recompute the visible task for a class when the class membership changes.
@@ -457,11 +478,26 @@ static gboolean task_is_visible(TaskbarPlugin * tb, Task * tk)
     return task_is_visible_on_current_desktop(tb, tk);
 }
 
+static void task_button_redraw_button_state(Task * tk, TaskbarPlugin * tb)
+{
+    if( task_button_is_really_flat(tb) )
+    {
+        gtk_toggle_button_set_active((GtkToggleButton*)tk->button, FALSE);
+        gtk_button_set_relief(GTK_BUTTON(tk->button), GTK_RELIEF_NONE);
+    }
+    else
+    {
+        gtk_toggle_button_set_active((GtkToggleButton*)tk->button, tk->focused);
+        gtk_button_set_relief(GTK_BUTTON(tk->button), GTK_RELIEF_NORMAL);
+    }
+}
+
 /* Redraw a task button. */
 static void task_button_redraw(Task * tk, TaskbarPlugin * tb)
 {
     if (task_is_visible(tb, tk))
     {
+        task_button_redraw_button_state(tk, tb);
         task_draw_label(tk);
         icon_grid_set_visible(tb->icon_grid, tk->button, TRUE);
     }
@@ -1616,6 +1652,8 @@ static void task_update_style(Task * tk, TaskbarPlugin * tb)
         gtk_widget_hide(tk->button_close);
     }
 
+    task_button_redraw_button_state(tk, tb);
+/*
     if( task_button_is_really_flat(tb) )
     {
         gtk_toggle_button_set_active((GtkToggleButton*)tk->button, FALSE);
@@ -1626,7 +1664,7 @@ static void task_update_style(Task * tk, TaskbarPlugin * tb)
         gtk_toggle_button_set_active((GtkToggleButton*)tk->button, tk->focused);
         gtk_button_set_relief(GTK_BUTTON(tk->button), GTK_RELIEF_NORMAL);
     }
-
+*/
     task_draw_label(tk);
 }
 
@@ -1931,13 +1969,108 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
     RET();
 }
 
+/* Display given window as active. */
+static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
+{
+    gboolean drop_old = FALSE;
+    gboolean make_new = FALSE;
+    Task * ctk = tb->focused;
+    Task * ntk = NULL;
+
+    /* Get the window that has focus. */
+    if (f == tb->plug->panel->topxwin)
+    {
+        /* Taskbar window gained focus (this isn't supposed to be able to happen).  Remember current focus. */
+        if (ctk != NULL)
+        {
+            tb->focused_previous = ctk;
+            drop_old = TRUE;
+        }
+    }
+    else
+    {
+        /* Identify task that gained focus. */
+        tb->focused_previous = NULL;
+        ntk = task_lookup(tb, f);
+        if (ntk != ctk)
+        {
+            drop_old = TRUE;
+            make_new = TRUE;
+        }
+    }
+
+    //g_print("[0x%x] taskbar_set_active_window %s\n", (int) tb, ntk ? ntk->name : "(null)");
+
+    icon_grid_defer_updates(tb->icon_grid);
+
+    /* If our idea of the current task lost focus, update data structures. */
+    if ((ctk != NULL) && (drop_old))
+    {
+        ctk->focused = FALSE;
+        tb->focused = NULL;
+        task_button_redraw(ctk, tb);
+    }
+
+    /* If a task gained focus, update data structures. */
+    if ((ntk != NULL) && (make_new))
+    {
+        ntk->focused = TRUE;
+        tb->focused = ntk;
+        task_button_redraw(ntk, tb);
+    }
+
+    icon_grid_resume_updates(tb->icon_grid);
+}
+
+/* Set given desktop as current. */
+static void taskbar_set_current_desktop(TaskbarPlugin * tb, int desktop)
+{
+    icon_grid_defer_updates(tb->icon_grid);
+
+    /* Store the local copy of current desktops.  Redisplay the taskbar. */
+    tb->current_desktop = desktop;
+    //g_print("[0x%x] taskbar_set_current_desktop %d\n", (int) tb, tb->current_desktop);
+    recompute_group_visibility_on_current_desktop(tb);
+    taskbar_redraw(tb);
+
+    icon_grid_resume_updates(tb->icon_grid);
+}
+
+/* Switch to deferred desktop and window. */
+static gboolean taskbar_switch_desktop_and_window(TaskbarPlugin * tb)
+{
+    //g_print("[0x%x] taskbar_switch_desktop_and_window\n", (int) tb);
+
+    icon_grid_defer_updates(tb->icon_grid);
+
+    if (tb->deferred_current_desktop >= 0) {
+        int desktop = tb->deferred_current_desktop;
+        tb->deferred_current_desktop = -1;
+        taskbar_set_current_desktop(tb, desktop);
+    }
+
+    if (tb->deferred_active_window_valid) {
+        tb->deferred_active_window_valid = 0;
+        taskbar_set_active_window(tb, tb->deferred_active_window);
+    }
+
+    icon_grid_resume_updates(tb->icon_grid);
+
+    return FALSE;
+}
+
 /* Handler for "current-desktop" event from root window listener. */
 static void taskbar_net_current_desktop(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    /* Store the local copy of current desktops.  Redisplay the taskbar. */
-    tb->current_desktop = get_net_current_desktop();
-    recompute_group_visibility_on_current_desktop(tb);
-    taskbar_redraw(tb);
+    int desktop = get_net_current_desktop();
+
+    /* If target desktop has visible tasks, use deferred switching to redice blinking. */
+    if (taskbar_has_visible_tasks_on_desktop(tb, desktop)) {
+        tb->deferred_current_desktop = desktop;
+        tb->deferred_desktop_switch_timer = g_timeout_add(350, (GSourceFunc) taskbar_switch_desktop_and_window, (gpointer) tb);
+    } else {
+        taskbar_set_current_desktop(tb, desktop);
+    }
 }
 
 /* Handler for "number-of-desktops" event from root window listener. */
@@ -1952,68 +2085,25 @@ static void taskbar_net_number_of_desktops(GtkWidget * widget, TaskbarPlugin * t
 /* Handler for "active-window" event from root window listener. */
 static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    gboolean drop_old = FALSE;
-    gboolean make_new = FALSE;
-    Task * ctk = tb->focused;
-    Task * ntk = NULL;
+    /* Get active window. */
+    Window * p = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
+    Window w = p ? *p : 0;
+    XFree(p);
 
-    /* Get the window that has focus. */
-    Window * f = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
-    if (f == NULL)
-    {
-        /* No window has focus. */
-        drop_old = TRUE;
-        tb->focused_previous = NULL;
-    }
-    else
-    {
-        if (*f == tb->plug->panel->topxwin)
-        {
-	    /* Taskbar window gained focus (this isn't supposed to be able to happen).  Remember current focus. */
-            if (ctk != NULL)
-            {
-                tb->focused_previous = ctk;
-                drop_old = TRUE;
-            }
+    //g_print("[0x%x] net_active_window %d\n", (int) tb, (int)w);
+
+    /* If there is no deferred desktop switching, set active window directly. */
+    if (tb->deferred_current_desktop < 0) {
+        taskbar_set_active_window(tb, w);
+    } else {
+        /* Add window to the deferred switching. */
+        tb->deferred_active_window_valid = 1;
+        tb->deferred_active_window = w;
+        /* If window is not null, do referred switching now. */
+        if (w) {
+            taskbar_switch_desktop_and_window(tb);
         }
-        else
-        {
-            /* Identify task that gained focus. */
-            tb->focused_previous = NULL;
-            ntk = task_lookup(tb, *f);
-            if (ntk != ctk)
-            {
-                drop_old = TRUE;
-                make_new = TRUE;
-            }
-        }
-        XFree(f);
     }
-
-    icon_grid_defer_updates(tb->icon_grid);
-
-    /* If our idea of the current task lost focus, update data structures. */
-    if ((ctk != NULL) && (drop_old))
-    {
-        ctk->focused = FALSE;
-        tb->focused = NULL;
-        if(! task_button_is_really_flat(tb)) /* relieve the button if flat buttons is not used. */
-            gtk_toggle_button_set_active((GtkToggleButton*)ctk->button, FALSE);
-
-        task_button_redraw(ctk, tb);
-    }
-
-    /* If a task gained focus, update data structures. */
-    if ((ntk != NULL) && (make_new))
-    {
-        if(! task_button_is_really_flat(tb)) /* depress the button if flat buttons is not used. */
-            gtk_toggle_button_set_active((GtkToggleButton*)ntk->button, TRUE);
-        ntk->focused = TRUE;
-        tb->focused = ntk;
-        task_button_redraw(ntk, tb);
-    }
-
-    icon_grid_resume_updates(tb->icon_grid);
 }
 
 /* Determine if the "urgency" hint is set on a window. */
@@ -2104,7 +2194,11 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 {
                     /* Window changed state. */
                     tk->iconified = (get_wm_state(win) == IconicState);
-                    task_draw_label(tk);
+                    /* Do not update task label, if we a waiting for deferred desktop switching. */
+                    if (tb->deferred_current_desktop < 0)
+                    {
+                       task_draw_label(tk);
+                    }
                     task_update_grouping(tk, GROUP_BY_STATE);
                 }
                 else if (at == XA_WM_HINTS)
@@ -2475,6 +2569,10 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->desktop_names = NULL;
     tb->number_of_desktop_names = 0;
 
+    tb->deferred_desktop_switch_timer = 0;
+    tb->deferred_current_desktop = -1;
+    tb->deferred_active_window_valid = 0;
+
     tb->task_timestamp = 0;
 
     /* Process configuration file. */
@@ -2562,6 +2660,9 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 static void taskbar_destructor(Plugin * p)
 {
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
+
+    if (tb->deferred_desktop_switch_timer != 0)
+        g_source_remove(tb->deferred_desktop_switch_timer);
 
     /* Remove GDK event filter. */
     gdk_window_remove_filter(NULL, (GdkFilterFunc) taskbar_event_filter, tb);

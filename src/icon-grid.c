@@ -114,8 +114,10 @@ static gboolean icon_grid_placement(IconGrid * ig)
     IconGridElement * ige;
     for (ige = ig->child_list; ige != NULL; ige = ige->flink)
     {
-        if (ige->deferred_hide && !ige->visible)
+        if (ige->deferred_hide && !ige->visible) {
+            //g_print("[0x%x] deferred hiding 0x%x\n", (int)ig, (int)ige);
             gtk_widget_hide(ige->widget);
+        }
         ige->deferred_hide = 0;
     }
 

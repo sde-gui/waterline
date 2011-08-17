@@ -484,6 +484,15 @@ extern void icon_grid_reorder_child(IconGrid * ig, GtkWidget * child, gint posit
 void icon_grid_set_geometry(IconGrid * ig,
     GtkOrientation orientation, gint child_width, gint child_height, gint spacing, gint border, gint target_dimension)
 {
+    if (
+        ig->orientation == orientation &&
+        ig->child_width == child_width &&
+        ig->child_height == child_height &&
+        ig->spacing == spacing &&
+        ig->border == border &&
+        ig->target_dimension == target_dimension
+    ) return;
+
     ig->orientation = orientation;
     ig->child_width = child_width;
     ig->child_height = child_height;

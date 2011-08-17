@@ -2415,7 +2415,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     tb->rebuild_gui |= tb->_group_threshold != tb->group_threshold;
     tb->rebuild_gui |= tb->_group_by != group_by;
     if (tb->rebuild_gui) {
-        tb->_mode != tb->mode;
+        tb->_mode = tb->mode;
         tb->show_all_desks_prev_value = tb->show_all_desks;
         tb->_group_threshold = tb->group_threshold;
         tb->_group_by = group_by;

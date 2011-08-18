@@ -112,6 +112,10 @@ typedef struct _task {
     Atom image_source;				/* Atom that is the source of taskbar icon */
     GtkWidget * label;				/* Label for task, child of button */
     GtkWidget * button_close;			/* Close button */
+
+    GtkAllocation button_alloc;
+    guint adapt_to_allocated_size_idle_cb;
+
     int desktop;				/* Desktop that contains task, needed to switch to it on Raise */
     guint flash_timeout;			/* Timer for urgency notification */
     unsigned int focused : 1;			/* True if window has focus */
@@ -492,6 +496,21 @@ static void task_button_redraw_button_state(Task * tk, TaskbarPlugin * tb)
     }
 }
 
+static gboolean task_adapt_to_allocated_size(Task * tk)
+{
+    tk->adapt_to_allocated_size_idle_cb = 0;
+
+    gboolean button_close_visible = FALSE;
+    if (tk->tb->_show_close_buttons) {
+        int task_button_required_width = tk->tb->icon_size + ICON_ONLY_EXTRA + tk->tb->extra_size;
+        button_close_visible = tk->button_alloc.width >= task_button_required_width;
+    }
+    if (tk->button_close)
+        gtk_widget_set_visible(tk->button_close, button_close_visible);
+
+    return FALSE;
+}
+
 /* Redraw a task button. */
 static void task_button_redraw(Task * tk, TaskbarPlugin * tb)
 {
@@ -767,6 +786,10 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     /* If we think this task had focus, remove that. */
     if (tb->focused == tk)
         tb->focused = NULL;
+
+    /* If there is deferred adapt_to_allocated_size proc, remove it. */
+    if (tk->adapt_to_allocated_size_idle_cb != 0)
+        g_source_remove(tk->adapt_to_allocated_size_idle_cb);
 
     /* If there is an urgency timeout, remove it. */
     if (tk->flash_timeout != 0)
@@ -1455,7 +1478,7 @@ static void task_group_menu_destroy(TaskbarPlugin * tb)
 static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * event, Task * tk, gboolean popup_menu)
 {
     gboolean event_in_close_button = FALSE;
-    if (!popup_menu && tk->tb->_show_close_buttons && tk->button_close) {
+    if (!popup_menu && tk->tb->_show_close_buttons && tk->button_close && gtk_widget_get_visible(GTK_WIDGET(tk->button_close))) {
         // FIXME: какой нормальный способ узнать, находится ли мышь в пределах виджета?
         gint dest_x, dest_y;
         gtk_widget_translate_coordinates(widget, tk->button_close, event->x, event->y, &dest_x, &dest_y);
@@ -1603,6 +1626,12 @@ static gboolean taskbar_button_scroll_event(GtkWidget * widget, GdkEventScroll *
 /* Handler for "size-allocate" event from taskbar button. */
 static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc, Task * tk)
 {
+    gboolean size_changed = (tk->button_alloc.width != alloc->width) || (tk->button_alloc.height != alloc->height);
+    tk->button_alloc = *alloc;
+
+    if (size_changed)
+        tk->adapt_to_allocated_size_idle_cb = g_idle_add((GSourceFunc) task_adapt_to_allocated_size, tk);
+
     if (GTK_WIDGET_REALIZED(btn))
     {
         /* Get the coordinates of the button. */

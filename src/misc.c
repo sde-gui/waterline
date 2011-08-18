@@ -205,13 +205,30 @@ pair pos_pair[] = {
 
 
 int
-str2num(pair *p, gchar *str, int defval)
+str2num(pair *_p, gchar *str, int defval)
 {
     ENTER;
-    for (;p && p->str; p++) {
+
+    pair * p;
+
+    for (p = _p; p && p->str; p++) {
         if (!g_ascii_strcasecmp(str, p->str))
             RET(p->num);
     }
+
+    gchar * s;
+    for (s = str; *s; s++) {
+        if (*s < '0' || *s > '9')
+            RET(defval);
+    }
+
+    int num = atoi(str);
+
+    for (p = _p; p && p->str; p++) {
+        if (p->num == num)
+            RET(p->num);
+    }
+
     RET(defval);
 }
 

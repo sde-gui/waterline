@@ -161,6 +161,8 @@ typedef struct _taskbar {
     int button2_action;                         /* User preference: middle button action */
     int button3_action;                         /* User preference: right button action */
     gboolean show_all_desks;			/* User preference: show windows from all desktops */
+    gboolean show_mapped;			/* User preference: show mapped windows */
+    gboolean show_iconified;			/* User preference: show iconified windows */
     gboolean tooltips;				/* User preference: show tooltips */
     int show_icons_titles;			/* User preference: show icons, titles */
     gboolean show_close_buttons;		/* User preference: show close button */
@@ -187,6 +189,9 @@ typedef struct _taskbar {
     int _group_threshold;
     int _group_by;
     int _mode;
+
+    gboolean show_mapped_prev;
+    gboolean show_iconified_prev;
 
     guint deferred_desktop_switch_timer;
     int deferred_current_desktop;
@@ -476,6 +481,10 @@ static gboolean task_is_visible(TaskbarPlugin * tb, Task * tk)
 
     /* In single_window mode only focused task is visible. */
     if (tb->single_window && !tk->focused)
+        return FALSE;
+
+    /* Hide iconified or mapped tasks? */
+    if (!tb->single_window && !((tk->iconified && tb->show_iconified) || (!tk->iconified && tb->show_mapped)) )
         return FALSE;
 
     /* Desktop placement. */
@@ -2539,6 +2548,9 @@ static void taskbar_build_gui(Plugin * p)
 
 static void taskbar_config_updated(TaskbarPlugin * tb)
 {
+    if (!tb->show_iconified)
+        tb->show_mapped = TRUE;
+
     tb->grouped_tasks = tb->mode == MODE_GROUP;
     tb->single_window = tb->mode == MODE_SINGLE_WINDOW;
 
@@ -2551,14 +2563,20 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     tb->rebuild_gui |= tb->show_all_desks_prev_value != tb->show_all_desks;
     tb->rebuild_gui |= tb->_group_threshold != tb->group_threshold;
     tb->rebuild_gui |= tb->_group_by != group_by;
+    tb->rebuild_gui |= tb->show_iconified_prev != tb->show_iconified;
+    tb->rebuild_gui |= tb->show_mapped_prev != tb->show_mapped;
+
     if (tb->rebuild_gui) {
         tb->_mode = tb->mode;
         tb->show_all_desks_prev_value = tb->show_all_desks;
         tb->_group_threshold = tb->group_threshold;
         tb->_group_by = group_by;
+        tb->show_iconified_prev = tb->show_iconified;
+        tb->show_mapped_prev = tb->show_mapped;
     }
 
     tb->_show_close_buttons = tb->show_close_buttons && !tb->grouped_tasks;
+
 }
 
 /* Plugin constructor. */
@@ -2574,6 +2592,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->tooltips          = TRUE;
     tb->show_icons_titles = SHOW_BOTH;
     tb->show_all_desks    = FALSE;
+    tb->show_mapped       = TRUE;
+    tb->show_iconified    = TRUE;
     tb->task_width_max    = TASK_WIDTH_MAX;
     tb->spacing           = 1;
     tb->use_mouse_wheel   = TRUE;
@@ -2630,10 +2650,10 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "AcceptSkipPager") == 0)		/* For backward compatibility */
                     ;
-                else if (g_ascii_strcasecmp(s.t[0], "ShowIconified") == 0)		/* For backward compatibility */
-                    ;
-                else if (g_ascii_strcasecmp(s.t[0], "ShowMapped") == 0)			/* For backward compatibility */
-                    ;
+                else if (g_ascii_strcasecmp(s.t[0], "ShowIconified") == 0)
+                    tb->show_iconified = str2num(bool_pair, s.t[1], 0);
+                else if (g_ascii_strcasecmp(s.t[0], "ShowMapped") == 0)
+                    tb->show_mapped = str2num(bool_pair, s.t[1], 0);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowAllDesks") == 0)
                     tb->show_all_desks = str2num(bool_pair, s.t[1], 0);
                 else if (g_ascii_strcasecmp(s.t[0], "MaxTaskWidth") == 0)
@@ -2804,10 +2824,14 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         button3_action, (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
+        _("Show iconified windows"), (gpointer)&tb->show_iconified, (GType)CONF_TYPE_BOOL,
+        _("Show mapped windows"), (gpointer)&tb->show_mapped, (GType)CONF_TYPE_BOOL,
         _("Show windows from all desktops"), (gpointer)&tb->show_all_desks, (GType)CONF_TYPE_BOOL,
+
         _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,
         _("Flash when there is any window requiring attention"), (gpointer)&tb->use_urgency_hint, (GType)CONF_TYPE_BOOL,
         NULL);
+
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
 
@@ -2822,6 +2846,8 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     lxpanel_put_bool(fp, "tooltips", tb->tooltips);
     lxpanel_put_int(fp, "ShowIconsTitles", tb->show_icons_titles);
+    lxpanel_put_bool(fp, "ShowIconified", tb->show_iconified);
+    lxpanel_put_bool(fp, "ShowMapped", tb->show_mapped);
     lxpanel_put_bool(fp, "ShowAllDesks", tb->show_all_desks);
     lxpanel_put_bool(fp, "UseMouseWheel", tb->use_mouse_wheel);
     lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);

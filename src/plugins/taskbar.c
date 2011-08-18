@@ -2780,6 +2780,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         GTK_WIDGET(parent),
         (GSourceFunc) taskbar_apply_configuration, (gpointer) p,
         _("Appearance"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
+
         _("|Show:|Icons only|Titles only|Icons and titles"), (gpointer)&tb->show_icons_titles, (GType)CONF_TYPE_ENUM,
         _("Show tooltips"), (gpointer)&tb->tooltips, (GType)CONF_TYPE_BOOL,
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
@@ -2788,15 +2789,21 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Maximum width of task button"), (gpointer)&tb->task_width_max, (GType)CONF_TYPE_INT,
         _("Spacing"), (gpointer)&tb->spacing, (GType)CONF_TYPE_INT,
         "", 0, (GType)CONF_TYPE_END_TABLE,
+
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
+
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("|Mode|Classic|Group windows|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
         _("|Group by|None|Window class|Workspace|Window state"), (gpointer)&tb->group_by, (GType)CONF_TYPE_ENUM,
         _("Group threshold"), (gpointer)&tb->group_threshold, (GType)CONF_TYPE_INT,
+        "", 0, (GType)CONF_TYPE_END_TABLE,
+
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         button1_action, (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
         button2_action, (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
         button3_action, (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
+
         _("Show windows from all desktops"), (gpointer)&tb->show_all_desks, (GType)CONF_TYPE_BOOL,
         _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,
         _("Flash when there is any window requiring attention"), (gpointer)&tb->use_urgency_hint, (GType)CONF_TYPE_BOOL,

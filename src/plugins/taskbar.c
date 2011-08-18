@@ -86,6 +86,45 @@ enum {
     GROUP_BY_STATE
 };
 
+static pair show_pair[] = {
+    { SHOW_ICONS, "Icons"},
+    { SHOW_TITLES, "Titles"},
+    { SHOW_BOTH, "Both"},
+    { 0, NULL},
+};
+
+static pair mode_pair[] = {
+    { MODE_CLASSIC, "Classic"},
+    { MODE_GROUP, "Group"},
+    { MODE_SINGLE_WINDOW, "SingleWindow"},
+    { 0, NULL},
+};
+
+static pair action_pair[] = {
+    { ACTION_NONE, "None"},
+    { ACTION_MENU, "Menu"},
+    { ACTION_CLOSE, "Close"},
+    { ACTION_RAISEICONIFY, "RaiseIconify"},
+    { ACTION_ICONIFY, "Iconify"},
+    { ACTION_MAXIMIZE, "Maximize"},
+    { ACTION_SHADE, "Shade"},
+    { ACTION_UNDECORATE, "Undecorate"},
+    { ACTION_FULLSCREEN, "Fullscreen"},
+    { ACTION_STICK, "Stick"},
+    { ACTION_SHOW_WINDOW_LIST, "ShowWindowList"},
+    { ACTION_SHOW_SIMILAR_WINDOW_LIST, "ShowGroupedWindowList"},
+    { 0, NULL},
+};
+
+static pair group_by_pair[] = {
+    { GROUP_BY_NONE, "None" },
+    { GROUP_BY_CLASS, "Class" },
+    { GROUP_BY_WORKSPACE,  "Workspace" },
+    { GROUP_BY_STATE,  "State" },
+    { 0, NULL},
+};
+
+
 /* Structure representing a class.  This comes from WM_CLASS, and should identify windows that come from an application. */
 typedef struct _task_class {
     struct _task_class * res_class_flink;	/* Forward link */
@@ -2669,23 +2708,23 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                 else if (g_ascii_strcasecmp(s.t[0], "GroupedTasks") == 0)		/* For backward compatibility */
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "Mode") == 0)
-                    tb->mode = atoi(s.t[1]);
+                    tb->mode = str2num(mode_pair, s.t[1], tb->mode);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupThreshold") == 0)
                     tb->group_threshold = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupBy") == 0)
-                    tb->group_by = atoi(s.t[1]);
+                    tb->group_by = str2num(group_by_pair, s.t[1], tb->group_by);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowIconsTitles") == 0)
-                    tb->show_icons_titles = atoi(s.t[1]);
+                    tb->show_icons_titles = str2num(show_pair, s.t[1], tb->show_icons_titles);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowCloseButtons") == 0)
                     tb->show_close_buttons = str2num(bool_pair, s.t[1], 0);
                 else if (g_ascii_strcasecmp(s.t[0], "SelfGroupSingleWindow") == 0)
                     tb->group_threshold = str2num(bool_pair, s.t[1], 0) ? 1 : 2;        /* For backward compatibility */
                 else if (g_ascii_strcasecmp(s.t[0], "Button1Action") == 0)
-                    tb->button1_action = atoi(s.t[1]);
+                    tb->button1_action = str2num(action_pair, s.t[1], tb->button1_action);
                 else if (g_ascii_strcasecmp(s.t[0], "Button2Action") == 0)
-                    tb->button2_action = atoi(s.t[1]);
+                    tb->button2_action = str2num(action_pair, s.t[1], tb->button2_action);
                 else if (g_ascii_strcasecmp(s.t[0], "Button3Action") == 0)
-                    tb->button3_action = atoi(s.t[1]);
+                    tb->button3_action = str2num(action_pair, s.t[1], tb->button3_action);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -2845,7 +2884,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
 {
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     lxpanel_put_bool(fp, "tooltips", tb->tooltips);
-    lxpanel_put_int(fp, "ShowIconsTitles", tb->show_icons_titles);
+    lxpanel_put_str(fp, "ShowIconsTitles", num2str(show_pair, tb->show_icons_titles, NULL));
     lxpanel_put_bool(fp, "ShowIconified", tb->show_iconified);
     lxpanel_put_bool(fp, "ShowMapped", tb->show_mapped);
     lxpanel_put_bool(fp, "ShowAllDesks", tb->show_all_desks);
@@ -2854,13 +2893,13 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "FlatButton", tb->flat_button);
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
     lxpanel_put_int(fp, "spacing", tb->spacing);
-    lxpanel_put_int(fp, "Mode", tb->mode);
+    lxpanel_put_str(fp, "Mode", num2str(mode_pair, tb->mode, NULL));
     lxpanel_put_int(fp, "GroupThreshold", tb->group_threshold);
-    lxpanel_put_int(fp, "GroupBy", tb->group_by);
+    lxpanel_put_str(fp, "GroupBy", num2str(group_by_pair, tb->group_by, NULL));
     lxpanel_put_bool(fp, "ShowCloseButtons", tb->show_close_buttons);
-    lxpanel_put_int(fp, "Button1Action", tb->button1_action);
-    lxpanel_put_int(fp, "Button2Action", tb->button2_action);
-    lxpanel_put_int(fp, "Button3Action", tb->button3_action);
+    lxpanel_put_str(fp, "Button1Action", num2str(action_pair, tb->button1_action, NULL));
+    lxpanel_put_str(fp, "Button2Action", num2str(action_pair, tb->button2_action, NULL));
+    lxpanel_put_str(fp, "Button3Action", num2str(action_pair, tb->button3_action, NULL));
 }
 
 /* Callback when panel configuration changes. */

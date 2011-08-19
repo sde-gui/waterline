@@ -366,16 +366,23 @@ static char* task_get_displayed_name(Task * tk)
     }
 }
 
-static gchar* task_get_desktop_name(Task * tk)
+static gchar* taskbar_get_desktop_name(TaskbarPlugin * tb, int desktop, const char* defval)
 {
     gchar * name = NULL;
-    if (tk->desktop == ALL_WORKSPACES)
+    if (desktop == ALL_WORKSPACES)
         name = g_strdup(_("_All workspaces"));
-    else if (tk->desktop < tk->tb->number_of_desktop_names && tk->tb->desktop_names)
-        name = g_strdup(tk->tb->desktop_names[tk->desktop]);
+    else if (desktop < tb->number_of_desktop_names && tb->desktop_names)
+        name = g_strdup(tb->desktop_names[desktop]);
+    else if (defval)
+        name = g_strdup(defval);
     else
-        name = g_strdup_printf("%d", tk->desktop + 1);
+        name = g_strdup_printf("%d", desktop + 1);
     return name;
+}
+
+static gchar* task_get_desktop_name(Task * tk, const char* defval)
+{
+    return taskbar_get_desktop_name(tk->tb, tk->desktop, defval);
 }
 
 static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
@@ -763,7 +770,7 @@ static void task_set_class(Task * tk)
         case GROUP_BY_CLASS:
             res_class = task_get_res_class(tk); break;
         case GROUP_BY_WORKSPACE:
-            res_class = task_get_desktop_name(tk); break;
+            res_class = task_get_desktop_name(tk, NULL); break;
         case GROUP_BY_STATE:
             res_class = g_strdup(
                 (tk->urgency) ? _("Urgency") : 
@@ -1370,7 +1377,7 @@ static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, Tas
         gchar * name = task_get_displayed_name(tk_cursor);
         GtkWidget * mi = NULL;
         if (tk_cursor->desktop != tb->current_desktop && tk_cursor->desktop != ALL_WORKSPACES && tb->_group_by != GROUP_BY_WORKSPACE) {
-            gchar* wname = task_get_desktop_name(tk_cursor);
+            gchar* wname = task_get_desktop_name(tk_cursor, NULL);
             name = g_strdup_printf("%s [%s]", name, wname);
             mi = gtk_image_menu_item_new_with_label(name);
             g_free(name);
@@ -2461,8 +2468,6 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     tb->workspace_submenu = NULL;
     if (tb->number_of_desktops > 1)
     {
-        char label[128];
-
         /* Allocate submenu. */
         GtkWidget * workspace_menu = gtk_menu_new();
 
@@ -2470,17 +2475,11 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
         int i;
         for (i = 1; i <= tb->number_of_desktops; i++)
         {
-            /* For the first 9 desktops, allow the desktop number as a keyboard shortcut. */
-            if (i <= 9)
-            {
-                g_snprintf(label, sizeof(label), _("Workspace _%d"), i);
-                mi = gtk_menu_item_new_with_mnemonic(label);
-            }
-            else
-            {
-                g_snprintf(label, sizeof(label), _("Workspace %d"), i);
-                mi = gtk_menu_item_new_with_label(label);
-            }
+            gchar * deflabel = g_strdup_printf( "Workspace %d", i);
+            gchar * label = taskbar_get_desktop_name(tb, i - 1, deflabel);
+            mi = gtk_menu_item_new_with_label(label);
+            g_free(label);
+            g_free(deflabel);
 
             /* Set the desktop number as a property on the menu item. */
             g_object_set_data(G_OBJECT(mi), "num", GINT_TO_POINTER(i - 1));
@@ -2737,6 +2736,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     }
 
     taskbar_config_updated(tb);
+
+    taskbar_net_desktop_names(NULL, tb);
 
     /* Build the graphic elements. */
     taskbar_build_gui(p);

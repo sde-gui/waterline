@@ -1320,9 +1320,12 @@ static void task_raiseiconify(Task * tk, GdkEventButton * event)
 
 static void task_maximize(Task* tk)
 {
-    /* FIXME: This should toggle maximize/restore */
     GdkWindow * win = gdk_window_foreign_new(tk->win);
-    gdk_window_maximize(win);
+    if (tk->maximized) {
+        gdk_window_unmaximize(win);
+    } else {
+        gdk_window_maximize(win);
+    }
     gdk_window_unref(win);
 }
 
@@ -2377,9 +2380,7 @@ static void menu_raise_window(GtkWidget * widget, TaskbarPlugin * tb)
 /* Handler for "activate" event on Restore item of right-click menu for task buttons. */
 static void menu_restore_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    GdkWindow * win = gdk_window_foreign_new(tb->menutask->win);
-    gdk_window_unmaximize(win);
-    gdk_window_unref(win);
+    task_maximize(tb->menutask);
     task_group_menu_destroy(tb);
 }
 

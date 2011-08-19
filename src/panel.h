@@ -131,6 +131,7 @@ typedef struct {
     unsigned int fullscreen : 1;
     unsigned int above : 1;
     unsigned int below : 1;
+    unsigned int demands_attention : 1;
 } NetWMState;
 
 /* Decoded value of _NET_WM_WINDOW_TYPE property. */
@@ -173,12 +174,21 @@ extern Atom a_NET_ACTIVE_WINDOW;
 extern Atom a_NET_CLOSE_WINDOW;
 extern Atom a_NET_SHOWING_DESKTOP;
 extern Atom a_NET_SUPPORTED;
+
 extern Atom a_NET_WM_STATE;
+extern Atom a_NET_WM_STATE_MODAL;
+extern Atom a_NET_WM_STATE_STICKY;
+extern Atom a_NET_WM_STATE_MAXIMIZED_VERT;
+extern Atom a_NET_WM_STATE_MAXIMIZED_HORZ;
+extern Atom a_NET_WM_STATE_SHADED;
 extern Atom a_NET_WM_STATE_SKIP_TASKBAR;
 extern Atom a_NET_WM_STATE_SKIP_PAGER;
-extern Atom a_NET_WM_STATE_STICKY;
 extern Atom a_NET_WM_STATE_HIDDEN;
-extern Atom a_NET_WM_STATE_SHADED;
+extern Atom a_NET_WM_STATE_FULLSCREEN;
+extern Atom a_NET_WM_STATE_ABOVE;
+extern Atom a_NET_WM_STATE_BELOW;
+extern Atom a_NET_WM_STATE_DEMANDS_ATTENTION;
+
 
 #define a_NET_WM_STATE_REMOVE        0    /* remove/unset property */
 #define a_NET_WM_STATE_ADD           1    /* add/set property */

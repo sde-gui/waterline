@@ -35,7 +35,6 @@ return args; } while(0)
 
 #else
 
-extern int log_level;
 #define ENTER         do {  } while(0)
 #define RET(args...)   return args
 #define DBG(fmt, args...)   do {  } while(0)
@@ -43,3 +42,4 @@ extern int log_level;
 
 #endif
 
+extern int log_level;

@@ -61,6 +61,7 @@ Atom a_WM_DELETE_WINDOW;
 Atom a_WM_PROTOCOLS;
 
 /* new NET spec */
+
 Atom a_NET_WORKAREA;
 Atom a_NET_CLIENT_LIST;
 Atom a_NET_CLIENT_LIST_STACKING;
@@ -72,12 +73,21 @@ Atom a_NET_ACTIVE_WINDOW;
 Atom a_NET_CLOSE_WINDOW;
 Atom a_NET_SHOWING_DESKTOP;
 Atom a_NET_SUPPORTED;
+
 Atom a_NET_WM_STATE;
+Atom a_NET_WM_STATE_MODAL;
+Atom a_NET_WM_STATE_STICKY;
+Atom a_NET_WM_STATE_MAXIMIZED_VERT;
+Atom a_NET_WM_STATE_MAXIMIZED_HORZ;
+Atom a_NET_WM_STATE_SHADED;
 Atom a_NET_WM_STATE_SKIP_TASKBAR;
 Atom a_NET_WM_STATE_SKIP_PAGER;
-Atom a_NET_WM_STATE_STICKY;
 Atom a_NET_WM_STATE_HIDDEN;
-Atom a_NET_WM_STATE_SHADED;
+Atom a_NET_WM_STATE_FULLSCREEN;
+Atom a_NET_WM_STATE_ABOVE;
+Atom a_NET_WM_STATE_BELOW;
+Atom a_NET_WM_STATE_DEMANDS_ATTENTION;
+
 Atom a_NET_WM_WINDOW_TYPE;
 Atom a_NET_WM_WINDOW_TYPE_DESKTOP;
 Atom a_NET_WM_WINDOW_TYPE_DOCK;
@@ -127,13 +137,20 @@ enum{
     I_NET_SUPPORTED,
 
     I_NET_WM_STATE,
+    I_NET_WM_STATE_MODAL,
+    I_NET_WM_STATE_STICKY,
+    I_NET_WM_STATE_MAXIMIZED_VERT,
+    I_NET_WM_STATE_MAXIMIZED_HORZ,
+    I_NET_WM_STATE_SHADED,
     I_NET_WM_STATE_SKIP_TASKBAR,
     I_NET_WM_STATE_SKIP_PAGER,
-    I_NET_WM_STATE_STICKY,
     I_NET_WM_STATE_HIDDEN,
-    I_NET_WM_STATE_SHADED,
-    I_NET_WM_WINDOW_TYPE,
+    I_NET_WM_STATE_FULLSCREEN,
+    I_NET_WM_STATE_ABOVE,
+    I_NET_WM_STATE_BELOW,
+    I_NET_WM_STATE_DEMANDS_ATTENTION,
 
+    I_NET_WM_WINDOW_TYPE,
     I_NET_WM_WINDOW_TYPE_DESKTOP,
     I_NET_WM_WINDOW_TYPE_DOCK,
     I_NET_WM_WINDOW_TYPE_TOOLBAR,
@@ -416,14 +433,22 @@ void resolve_atoms()
     atom_names[ I_NET_SHOWING_DESKTOP ] = "_NET_SHOWING_DESKTOP";
     atom_names[ I_NET_SUPPORTED ] = "_NET_SUPPORTED";
     atom_names[ I_NET_WM_DESKTOP ] = "_NET_WM_DESKTOP";
+
     atom_names[ I_NET_WM_STATE ] = "_NET_WM_STATE";
+    atom_names[ I_NET_WM_STATE_MODAL ] = "_NET_WM_STATE_MODAL";
+    atom_names[ I_NET_WM_STATE_STICKY ] = "_NET_WM_STATE_STICKY";
+    atom_names[ I_NET_WM_STATE_MAXIMIZED_VERT ] = "_NET_WM_STATE_MAXIMIZED_VERT";
+    atom_names[ I_NET_WM_STATE_MAXIMIZED_HORZ ] = "_NET_WM_STATE_MAXIMIZED_HORZ";
+    atom_names[ I_NET_WM_STATE_SHADED ] = "_NET_WM_STATE_SHADED";
     atom_names[ I_NET_WM_STATE_SKIP_TASKBAR ] = "_NET_WM_STATE_SKIP_TASKBAR";
     atom_names[ I_NET_WM_STATE_SKIP_PAGER ] = "_NET_WM_STATE_SKIP_PAGER";
-    atom_names[ I_NET_WM_STATE_STICKY ] = "_NET_WM_STATE_STICKY";
     atom_names[ I_NET_WM_STATE_HIDDEN ] = "_NET_WM_STATE_HIDDEN";
-    atom_names[ I_NET_WM_STATE_SHADED ] = "_NET_WM_STATE_SHADED";
-    atom_names[ I_NET_WM_WINDOW_TYPE ] = "_NET_WM_WINDOW_TYPE";
+    atom_names[ I_NET_WM_STATE_FULLSCREEN ] = "_NET_WM_STATE_FULLSCREEN";
+    atom_names[ I_NET_WM_STATE_ABOVE ] = "_NET_WM_STATE_ABOVE";
+    atom_names[ I_NET_WM_STATE_BELOW ] = "_NET_WM_STATE_BELOW";
+    atom_names[ I_NET_WM_STATE_DEMANDS_ATTENTION ] = "_NET_WM_STATE_DEMANDS_ATTENTION";
 
+    atom_names[ I_NET_WM_WINDOW_TYPE ] = "_NET_WM_WINDOW_TYPE";
     atom_names[ I_NET_WM_WINDOW_TYPE_DESKTOP ] = "_NET_WM_WINDOW_TYPE_DESKTOP";
     atom_names[ I_NET_WM_WINDOW_TYPE_DOCK ] = "_NET_WM_WINDOW_TYPE_DOCK";
     atom_names[ I_NET_WM_WINDOW_TYPE_TOOLBAR ] = "_NET_WM_WINDOW_TYPE_TOOLBAR";
@@ -451,13 +476,26 @@ void resolve_atoms()
     Atom atoms[ N_ATOMS ];
 
     ENTER;
-   
+
+#ifndef DEBUG
     if( !  XInternAtoms( GDK_DISPLAY(), (char**)atom_names,
             N_ATOMS, False, atoms ) )
     {
         g_warning( "Error: unable to return Atoms" );
         return;
     }
+#else
+    int i;
+    for (i = 0; i < N_ATOMS; i++) {
+        DBG("Registering atom %s\n", atom_names[i]);
+        if( !  XInternAtoms( GDK_DISPLAY(), ((char**)atom_names) + i,
+               1, False, atoms + i) )
+        {
+            g_warning( "Error: unable to return Atoms" );
+            return;
+        }
+    }
+#endif
 
     a_UTF8_STRING = atoms[ I_UTF8_STRING ];
     a_XROOTPMAP_ID = atoms[ I_XROOTPMAP_ID ];
@@ -476,14 +514,22 @@ void resolve_atoms()
     a_NET_ACTIVE_WINDOW = atoms[ I_NET_ACTIVE_WINDOW ];
     a_NET_SHOWING_DESKTOP = atoms[ I_NET_SHOWING_DESKTOP ];
     a_NET_SUPPORTED = atoms[ I_NET_SUPPORTED ];
+
     a_NET_WM_STATE = atoms[ I_NET_WM_STATE ];
+    a_NET_WM_STATE_MODAL = atoms[ I_NET_WM_STATE_MODAL ];
+    a_NET_WM_STATE_STICKY = atoms[ I_NET_WM_STATE_STICKY ];
+    a_NET_WM_STATE_MAXIMIZED_VERT = atoms[ I_NET_WM_STATE_MAXIMIZED_VERT ];
+    a_NET_WM_STATE_MAXIMIZED_HORZ = atoms[ I_NET_WM_STATE_MAXIMIZED_HORZ ];
+    a_NET_WM_STATE_SHADED = atoms[ I_NET_WM_STATE_SHADED ];
     a_NET_WM_STATE_SKIP_TASKBAR = atoms[ I_NET_WM_STATE_SKIP_TASKBAR ];
     a_NET_WM_STATE_SKIP_PAGER = atoms[ I_NET_WM_STATE_SKIP_PAGER ];
-    a_NET_WM_STATE_STICKY = atoms[ I_NET_WM_STATE_STICKY ];
     a_NET_WM_STATE_HIDDEN = atoms[ I_NET_WM_STATE_HIDDEN ];
-    a_NET_WM_STATE_SHADED = atoms[ I_NET_WM_STATE_SHADED ];
-    a_NET_WM_WINDOW_TYPE = atoms[ I_NET_WM_WINDOW_TYPE ];
+    a_NET_WM_STATE_FULLSCREEN = atoms[ I_NET_WM_STATE_FULLSCREEN ];
+    a_NET_WM_STATE_ABOVE = atoms[ I_NET_WM_STATE_ABOVE ];
+    a_NET_WM_STATE_BELOW = atoms[ I_NET_WM_STATE_BELOW ];
+    a_NET_WM_STATE_DEMANDS_ATTENTION = atoms[ I_NET_WM_STATE_DEMANDS_ATTENTION ];
 
+    a_NET_WM_WINDOW_TYPE = atoms[ I_NET_WM_WINDOW_TYPE ];
     a_NET_WM_WINDOW_TYPE_DESKTOP = atoms[ I_NET_WM_WINDOW_TYPE_DESKTOP ];
     a_NET_WM_WINDOW_TYPE_DOCK = atoms[ I_NET_WM_WINDOW_TYPE_DOCK ];
     a_NET_WM_WINDOW_TYPE_TOOLBAR = atoms[ I_NET_WM_WINDOW_TYPE_TOOLBAR ];
@@ -772,6 +818,7 @@ get_net_wm_state(Window win, NetWMState *nws)
 
     DBG( "%x: netwm state = { ", (unsigned int)win);
     while (--num3 >= 0) {
+
         if (state[num3] == a_NET_WM_STATE_SKIP_PAGER) {
             DBG("NET_WM_STATE_SKIP_PAGER ");
             nws->skip_pager = 1;
@@ -787,6 +834,27 @@ get_net_wm_state(Window win, NetWMState *nws)
         } else if (state[num3] == a_NET_WM_STATE_SHADED) {
             DBG( "NET_WM_STATE_SHADED ");
             nws->shaded = 1;
+        } else if (state[num3] == a_NET_WM_STATE_MODAL) {
+            DBG( "NET_WM_STATE_MODAL ");
+            nws->modal = 1;
+        } else if (state[num3] == a_NET_WM_STATE_MAXIMIZED_VERT) {
+            DBG( "NET_WM_STATE_MAXIMIZED_VERT ");
+            nws->maximized_vert = 1;
+        } else if (state[num3] == a_NET_WM_STATE_MAXIMIZED_HORZ) {
+            DBG( "NET_WM_STATE_MAXIMIZED_HORZ ");
+            nws->maximized_horz = 1;
+        } else if (state[num3] == a_NET_WM_STATE_FULLSCREEN) {
+            DBG( "NET_WM_STATE_FULLSCREEN; ");
+            nws->fullscreen = 1;
+        } else if (state[num3] == a_NET_WM_STATE_ABOVE) {
+            DBG( "NET_WM_STATE_ABOVE ");
+            nws->above = 1;
+        } else if (state[num3] == a_NET_WM_STATE_BELOW) {
+            DBG( "NET_WM_STATE_BELOW ");
+            nws->below = 1;
+        } else if (state[num3] == a_NET_WM_STATE_DEMANDS_ATTENTION) {
+            DBG( "NET_WM_STATE_DEMANDS_ATTENTION ");
+            nws->demands_attention = 1;
         } else {
             DBG( "... ");
         }

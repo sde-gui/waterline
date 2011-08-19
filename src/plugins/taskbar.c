@@ -159,6 +159,7 @@ typedef struct _task {
     guint flash_timeout;			/* Timer for urgency notification */
     unsigned int focused : 1;			/* True if window has focus */
     unsigned int iconified : 1;			/* True if window is iconified, from WM_STATE */
+    unsigned int maximized : 1;			/* True if window is maximized, from WM_STATE */
     unsigned int urgency : 1;			/* True if window has an urgency hint, from WM_HINTS */
     unsigned int flash_state : 1;		/* One-bit counter to flash taskbar */
     unsigned int entered_state : 1;		/* True if cursor is inside taskbar button */
@@ -180,6 +181,8 @@ typedef struct _taskbar {
 
     GtkWidget * menu;				/* Popup menu for task control (Close, Raise, etc.) */
     GtkWidget * workspace_submenu;		/* Workspace submenu of the task control menu */
+    GtkWidget * restore_menuitem;		/*  */
+    GtkWidget * maximize_menuitem;		/*  */
     GtkWidget * iconify_menuitem;		/*  */
     GtkWidget * title_menuitem;			/*  */
     GtkWidget * title_separator_menuitem;	/*  */
@@ -2001,6 +2004,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     tk->name_source = None;
                     tk->image_source = None;
                     tk->iconified = (get_wm_state(tk->win) == IconicState);
+                    tk->maximized = nws.maximized_vert || nws.maximized_horz;
                     tk->desktop = get_net_wm_desktop(tk->win);
                     if (tb->use_urgency_hint)
                         tk->urgency = task_has_urgency(tk);
@@ -2323,6 +2327,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         task_delete(tb, tk, TRUE);
                         taskbar_redraw(tb);
                     }
+                    tk->maximized = nws.maximized_vert || nws.maximized_horz;
                 }
                 else if (at == a_NET_WM_ICON)
                 {
@@ -2420,6 +2425,9 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
         gtk_container_foreach(GTK_CONTAINER(tk->tb->workspace_submenu), task_adjust_menu_workspace_callback, tk);
     }
 
+    gtk_widget_set_visible(GTK_WIDGET(tk->tb->maximize_menuitem), !tk->maximized);
+    gtk_widget_set_visible(GTK_WIDGET(tk->tb->restore_menuitem), tk->maximized);
+
     gtk_widget_set_sensitive(GTK_WIDGET(tk->tb->iconify_menuitem), !tk->iconified);
 
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->title_menuitem), from_popup_menu);
@@ -2451,11 +2459,13 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     mi = gtk_menu_item_new_with_mnemonic(_("R_estore"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_restore_window, tb);
+    tb->restore_menuitem = mi;
 
     /* Add Maximize menu item. */
     mi = gtk_menu_item_new_with_mnemonic(_("Ma_ximize"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_maximize_window, tb);
+    tb->maximize_menuitem = mi;
 
     /* Add Iconify menu item. */
     mi = gtk_menu_item_new_with_mnemonic(_("Ico_nify"));
@@ -2655,6 +2665,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->a_OB_WM_STATE_UNDECORATED  = XInternAtom(GDK_DISPLAY(), "_OB_WM_STATE_UNDECORATED", False);
 
     tb->workspace_submenu = NULL;
+    tb->restore_menuitem  = NULL;
+    tb->maximize_menuitem  = NULL;
     tb->iconify_menuitem  = NULL;
     tb->title_menuitem    = NULL;
     tb->title_separator_menuitem = NULL;

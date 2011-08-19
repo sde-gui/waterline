@@ -76,7 +76,13 @@ enum TASKBAR_ACTION {
     ACTION_FULLSCREEN,
     ACTION_STICK,
     ACTION_SHOW_WINDOW_LIST,
-    ACTION_SHOW_SIMILAR_WINDOW_LIST
+    ACTION_SHOW_SIMILAR_WINDOW_LIST,
+    ACTION_NEXT_WINDOW,
+    ACTION_PREV_WINDOW,
+    ACTION_NEXT_WINDOW_IN_CURRENT_GROUP,
+    ACTION_PREV_WINDOW_IN_CURRENT_GROUP,
+    ACTION_NEXT_WINDOW_IN_GROUP,
+    ACTION_PREV_WINDOW_IN_GROUP
 };
 
 enum {
@@ -113,6 +119,12 @@ static pair action_pair[] = {
     { ACTION_STICK, "Stick"},
     { ACTION_SHOW_WINDOW_LIST, "ShowWindowList"},
     { ACTION_SHOW_SIMILAR_WINDOW_LIST, "ShowGroupedWindowList"},
+    { ACTION_NEXT_WINDOW, "NextWindow"},
+    { ACTION_PREV_WINDOW, "PrevWindow"},
+    { ACTION_NEXT_WINDOW_IN_CURRENT_GROUP, "NextWindowInCurrentGroup"},
+    { ACTION_PREV_WINDOW_IN_CURRENT_GROUP, "PrevWindowInCurrentGroup"},
+    { ACTION_NEXT_WINDOW_IN_GROUP, "NextWindowInGroup"},
+    { ACTION_PREV_WINDOW_IN_GROUP, "PrevWindowInGroup"},
     { 0, NULL},
 };
 
@@ -202,13 +214,14 @@ typedef struct _taskbar {
     int button1_action;                         /* User preference: left button action */
     int button2_action;                         /* User preference: middle button action */
     int button3_action;                         /* User preference: right button action */
+    int scroll_up_action;                       /* User preference: scroll up action */
+    int scroll_down_action;                     /* User preference: scroll down action */
     gboolean show_all_desks;			/* User preference: show windows from all desktops */
     gboolean show_mapped;			/* User preference: show mapped windows */
     gboolean show_iconified;			/* User preference: show iconified windows */
     gboolean tooltips;				/* User preference: show tooltips */
     int show_icons_titles;			/* User preference: show icons, titles */
     gboolean show_close_buttons;		/* User preference: show close button */
-    gboolean use_mouse_wheel;			/* User preference: scroll wheel does iconify and raise */
     gboolean use_urgency_hint;			/* User preference: windows with urgency will flash */
     gboolean flat_button;			/* User preference: taskbar buttons have visible background */
     int mode;                                   /* User preference: view mode */
@@ -1432,6 +1445,93 @@ static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean si
 
 }
 
+static void task_activate_neighbour(Task * tk, GdkEventButton * event, gboolean next, gboolean in_group)
+{
+    gboolean before = TRUE;
+    Task * candidate_before = NULL;
+    Task * candidate_after = NULL;
+
+    Task * tk_cursor;
+
+    if (!tk)
+        return;
+
+    if (in_group && tk->res_class)
+    {
+        if (tk->tb->focused && tk->res_class == tk->tb->focused->res_class)
+            tk = tk->tb->focused;
+    }
+
+    for (tk_cursor = tk->tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+    {
+        if (tk_cursor == tk)
+        {
+            before = FALSE;
+            if (!next && candidate_before)
+                break;
+            continue;
+        }
+        gboolean ok = task_is_visible_on_current_desktop(tk->tb, tk_cursor)
+            && (!in_group || (tk->res_class && tk->res_class == tk_cursor->res_class));
+        if (ok)
+        {
+            if (next)
+            {
+                if (before)
+                {
+                    if (!candidate_before)
+                        candidate_before = tk_cursor;
+                }
+                else
+                {
+                    if (!candidate_after)
+                    {
+                        candidate_after = tk_cursor;
+                        break;
+                    }
+                }
+            }
+            else // prev
+            {
+                if (before)
+                {
+                    candidate_before = tk_cursor;
+                }
+                else
+                {
+                    candidate_after = tk_cursor;
+                }
+            }
+        }
+    } // end for
+
+    Task * result = NULL;
+    if (next)
+    {
+        if (candidate_after)
+            result = candidate_after;
+        else
+            result = candidate_before;
+    }
+    else
+    {
+        if (candidate_before)
+            result = candidate_before;
+        else
+            result = candidate_after;
+    }
+
+    if (result)
+        task_raise_window(result, event->time);
+    else if (in_group)
+    {
+        if (!tk->focused)
+        {
+            task_raise_window(tk, event->time);
+        }
+    }
+}
+
 /* Close task window. */
 static void task_action(Task * tk, int action, GdkEventButton * event, Task* visible_task, gboolean from_popup_menu)
 {
@@ -1468,6 +1568,24 @@ static void task_action(Task * tk, int action, GdkEventButton * event, Task* vis
         break;
       case ACTION_SHOW_SIMILAR_WINDOW_LIST:
         task_show_window_list(tk, event, TRUE);
+        break;
+      case ACTION_NEXT_WINDOW:
+        task_activate_neighbour(tk->tb->focused, event, TRUE, FALSE);
+        break;
+      case ACTION_PREV_WINDOW:
+        task_activate_neighbour(tk->tb->focused, event, FALSE, FALSE);
+        break;
+      case ACTION_NEXT_WINDOW_IN_CURRENT_GROUP:
+        task_activate_neighbour(tk->tb->focused, event, TRUE, TRUE);
+        break;
+      case ACTION_PREV_WINDOW_IN_CURRENT_GROUP:
+        task_activate_neighbour(tk->tb->focused, event, FALSE, TRUE);
+        break;
+      case ACTION_NEXT_WINDOW_IN_GROUP:
+        task_activate_neighbour(tk, event, TRUE, TRUE);
+        break;
+      case ACTION_PREV_WINDOW_IN_GROUP:
+        task_activate_neighbour(tk, event, FALSE, TRUE);
         break;
     }
 }
@@ -1678,16 +1796,18 @@ static void taskbar_button_leave(GtkWidget * widget, Task * tk)
 /* Handler for "scroll-event" event from taskbar button. */
 static gboolean taskbar_button_scroll_event(GtkWidget * widget, GdkEventScroll * event, Task * tk)
 {
-    TaskbarPlugin * tb = tk->tb;
-    TaskClass * tc = tk->res_class;
-    if ((tb->use_mouse_wheel)
-    && (task_class_is_grouped(tb, tc)))
-    {
-        if ((event->direction == GDK_SCROLL_UP) || (event->direction == GDK_SCROLL_LEFT))
-            task_raise_window(tk, event->time);
-        else
-            task_iconify(tk);
-    }
+    GdkEventButton e;
+    e.time = event->time;
+
+    int action;
+
+    if ((event->direction == GDK_SCROLL_UP) || (event->direction == GDK_SCROLL_LEFT))
+        action = tk->tb->scroll_up_action;
+    else
+        action = tk->tb->scroll_down_action;
+
+    task_action(tk, action, &e, tk, FALSE);
+    
     return TRUE;
 }
 
@@ -2644,7 +2764,6 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->show_iconified    = TRUE;
     tb->task_width_max    = TASK_WIDTH_MAX;
     tb->spacing           = 1;
-    tb->use_mouse_wheel   = TRUE;
     tb->use_urgency_hint  = TRUE;
     tb->mode              = MODE_CLASSIC;
     tb->group_threshold   = 1;
@@ -2653,6 +2772,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->button1_action    = ACTION_RAISEICONIFY;
     tb->button2_action    = ACTION_SHADE;
     tb->button3_action    = ACTION_MENU;
+    tb->scroll_up_action  = ACTION_PREV_WINDOW;
+    tb->scroll_down_action = ACTION_NEXT_WINDOW;
 
     tb->grouped_tasks     = FALSE;
     tb->single_window     = FALSE;
@@ -2709,8 +2830,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->task_width_max = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "spacing") == 0)
                     tb->spacing = atoi(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "UseMouseWheel") == 0)
-                    tb->use_mouse_wheel = str2num(bool_pair, s.t[1], tb->use_mouse_wheel);
+                else if (g_ascii_strcasecmp(s.t[0], "UseMouseWheel") == 0)              /* For backward compatibility */
+                    ;
                 else if (g_ascii_strcasecmp(s.t[0], "UseUrgencyHint") == 0)
                     tb->use_urgency_hint = str2num(bool_pair, s.t[1], tb->use_urgency_hint);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatButton") == 0)
@@ -2735,6 +2856,10 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->button2_action = str2num(action_pair, s.t[1], tb->button2_action);
                 else if (g_ascii_strcasecmp(s.t[0], "Button3Action") == 0)
                     tb->button3_action = str2num(action_pair, s.t[1], tb->button3_action);
+                else if (g_ascii_strcasecmp(s.t[0], "ScrollUpAction") == 0)
+                    tb->scroll_up_action = str2num(action_pair, s.t[1], tb->scroll_up_action);
+                else if (g_ascii_strcasecmp(s.t[0], "ScrollDownAction") == 0)
+                    tb->scroll_down_action = str2num(action_pair, s.t[1], tb->scroll_down_action);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -2840,10 +2965,12 @@ static void taskbar_apply_configuration(Plugin * p)
 /* Display the configuration dialog. */
 static void taskbar_configure(Plugin * p, GtkWindow * parent)
 {
-    const char* actions = _("|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list");
+    const char* actions = _("|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list|Next window|Previous window|Next window in current group|Previous window in current group|Next window in pointed group|Previous window in pointed group");
     char* button1_action = g_strdup_printf("%s%s", _("|Left button action"), actions);
     char* button2_action = g_strdup_printf("%s%s", _("|Middle button action"), actions);
     char* button3_action = g_strdup_printf("%s%s", _("|Right button action"), actions);
+    char* scroll_up_action = g_strdup_printf("%s%s", _("|Scroll up action"), actions);
+    char* scroll_down_action = g_strdup_printf("%s%s", _("|Scroll down action"), actions);
 
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     GtkWidget* dlg = create_generic_config_dlg(
@@ -2873,13 +3000,14 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         button1_action, (gpointer)&tb->button1_action, (GType)CONF_TYPE_ENUM,
         button2_action, (gpointer)&tb->button2_action, (GType)CONF_TYPE_ENUM,
         button3_action, (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
+        scroll_up_action, (gpointer)&tb->scroll_up_action, (GType)CONF_TYPE_ENUM,
+        scroll_down_action, (gpointer)&tb->scroll_down_action, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
         _("Show iconified windows"), (gpointer)&tb->show_iconified, (GType)CONF_TYPE_BOOL,
         _("Show mapped windows"), (gpointer)&tb->show_mapped, (GType)CONF_TYPE_BOOL,
         _("Show windows from all desktops"), (gpointer)&tb->show_all_desks, (GType)CONF_TYPE_BOOL,
 
-        _("Use mouse wheel"), (gpointer)&tb->use_mouse_wheel, (GType)CONF_TYPE_BOOL,
         _("Flash when there is any window requiring attention"), (gpointer)&tb->use_urgency_hint, (GType)CONF_TYPE_BOOL,
         NULL);
 
@@ -2900,7 +3028,6 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowIconified", tb->show_iconified);
     lxpanel_put_bool(fp, "ShowMapped", tb->show_mapped);
     lxpanel_put_bool(fp, "ShowAllDesks", tb->show_all_desks);
-    lxpanel_put_bool(fp, "UseMouseWheel", tb->use_mouse_wheel);
     lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);
     lxpanel_put_bool(fp, "FlatButton", tb->flat_button);
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
@@ -2912,6 +3039,8 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "Button1Action", tb->button1_action, action_pair);
     lxpanel_put_enum(fp, "Button2Action", tb->button2_action, action_pair);
     lxpanel_put_enum(fp, "Button3Action", tb->button3_action, action_pair);
+    lxpanel_put_enum(fp, "ScrollUpAction", tb->scroll_up_action, action_pair);
+    lxpanel_put_enum(fp, "ScrollDownAction", tb->scroll_down_action, action_pair);
 }
 
 /* Callback when panel configuration changes. */

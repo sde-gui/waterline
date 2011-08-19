@@ -239,7 +239,6 @@ typedef struct _taskbar {
 
 
     Atom a_OB_WM_STATE_UNDECORATED;
-    Atom a_NET_WM_STATE_FULLSCREEN;
 } TaskbarPlugin;
 
 static gchar *taskbar_rc = "style 'taskbar-style'\n"
@@ -1347,7 +1346,7 @@ static void task_fullscreen(Task * tk)
     /* Toggle the fullscreen state of the window. */
     Xclimsg(tk->win, a_NET_WM_STATE,
                 2,		/* a_NET_WM_STATE_TOGGLE */
-                tk->tb->a_NET_WM_STATE_FULLSCREEN,
+                a_NET_WM_STATE_FULLSCREEN,
                 0, 0, 0);
 }
 
@@ -2654,7 +2653,6 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->extra_size        = 0;
 
     tb->a_OB_WM_STATE_UNDECORATED  = XInternAtom(GDK_DISPLAY(), "_OB_WM_STATE_UNDECORATED", False);
-    tb->a_NET_WM_STATE_FULLSCREEN = XInternAtom(GDK_DISPLAY(), "_NET_WM_STATE_FULLSCREEN", False);
 
     tb->workspace_submenu = NULL;
     tb->iconify_menuitem  = NULL;

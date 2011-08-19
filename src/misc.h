@@ -74,6 +74,8 @@ extern int lxpanel_put_line(FILE* fp, const char* format, ...);
 extern int lxpanel_put_str( FILE* fp, const char* name, const char* val );
 extern int lxpanel_put_bool( FILE* fp, const char* name, gboolean val );
 extern int lxpanel_put_int( FILE* fp, const char* name, int val );
+extern int lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair);
+
 int get_line_as_is(char **fp, line *s);
 
 void Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4);

@@ -314,6 +314,12 @@ lxpanel_put_int( FILE* fp, const char* name, int val )
     return lxpanel_put_line( fp, "%s=%d", name, val );
 }
 
+extern int
+lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair)
+{
+    lxpanel_put_str(fp, name, num2str(pair, val, NULL));
+}
+
 extern  int
 lxpanel_get_line(char**fp, line *s)
 {

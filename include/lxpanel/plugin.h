@@ -208,6 +208,7 @@ extern int lxpanel_put_line(FILE* fp, const char* format, ...);
 extern int lxpanel_put_str( FILE* fp, const char* name, const char* val );
 extern int lxpanel_put_bool( FILE* fp, const char* name, gboolean val );
 extern int lxpanel_put_int( FILE* fp, const char* name, int val );
+extern int lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair);
 
 int lxpanel_is_in_kiosk_mode(void);
 

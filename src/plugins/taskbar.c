@@ -2884,7 +2884,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
 {
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     lxpanel_put_bool(fp, "tooltips", tb->tooltips);
-    lxpanel_put_str(fp, "ShowIconsTitles", num2str(show_pair, tb->show_icons_titles, NULL));
+    lxpanel_put_enum(fp, "ShowIconsTitles", tb->show_icons_titles, show_pair);
     lxpanel_put_bool(fp, "ShowIconified", tb->show_iconified);
     lxpanel_put_bool(fp, "ShowMapped", tb->show_mapped);
     lxpanel_put_bool(fp, "ShowAllDesks", tb->show_all_desks);
@@ -2893,13 +2893,13 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "FlatButton", tb->flat_button);
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
     lxpanel_put_int(fp, "spacing", tb->spacing);
-    lxpanel_put_str(fp, "Mode", num2str(mode_pair, tb->mode, NULL));
+    lxpanel_put_enum(fp, "Mode", tb->mode, mode_pair);
     lxpanel_put_int(fp, "GroupThreshold", tb->group_threshold);
-    lxpanel_put_str(fp, "GroupBy", num2str(group_by_pair, tb->group_by, NULL));
+    lxpanel_put_enum(fp, "GroupBy", tb->group_by, group_by_pair);
     lxpanel_put_bool(fp, "ShowCloseButtons", tb->show_close_buttons);
-    lxpanel_put_str(fp, "Button1Action", num2str(action_pair, tb->button1_action, NULL));
-    lxpanel_put_str(fp, "Button2Action", num2str(action_pair, tb->button2_action, NULL));
-    lxpanel_put_str(fp, "Button3Action", num2str(action_pair, tb->button3_action, NULL));
+    lxpanel_put_enum(fp, "Button1Action", tb->button1_action, action_pair);
+    lxpanel_put_enum(fp, "Button2Action", tb->button2_action, action_pair);
+    lxpanel_put_enum(fp, "Button3Action", tb->button3_action, action_pair);
 }
 
 /* Callback when panel configuration changes. */

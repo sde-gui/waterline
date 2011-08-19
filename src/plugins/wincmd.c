@@ -246,8 +246,8 @@ static void wincmd_save_configuration(Plugin * p, FILE * fp)
 {
     WinCmdPlugin * wc = (WinCmdPlugin *) p->priv;
     lxpanel_put_str(fp, "image", wc->image);
-    lxpanel_put_str(fp, "Button1", num2str(wincmd_pair, wc->button_1_command, NULL));
-    lxpanel_put_str(fp, "Button2", num2str(wincmd_pair, wc->button_2_command, NULL));
+    lxpanel_put_enum(fp, "Button1", wc->button_1_command, wincmd_pair);
+    lxpanel_put_enum(fp, "Button2", wc->button_2_command, wincmd_pair);
     lxpanel_put_bool(fp, "Toggle", wc->toggle_preference);
 }
 

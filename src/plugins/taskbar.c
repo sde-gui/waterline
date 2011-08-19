@@ -2684,27 +2684,27 @@ static int taskbar_constructor(Plugin * p, char ** fp)
             if (s.type == LINE_VAR)
             {
                 if (g_ascii_strcasecmp(s.t[0], "tooltips") == 0)
-                    tb->tooltips = str2num(bool_pair, s.t[1], 1);
+                    tb->tooltips = str2num(bool_pair, s.t[1], tb->tooltips);
                 else if (g_ascii_strcasecmp(s.t[0], "IconsOnly") == 0)			/* For backward compatibility */
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "AcceptSkipPager") == 0)		/* For backward compatibility */
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "ShowIconified") == 0)
-                    tb->show_iconified = str2num(bool_pair, s.t[1], 0);
+                    tb->show_iconified = str2num(bool_pair, s.t[1], tb->show_iconified);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowMapped") == 0)
-                    tb->show_mapped = str2num(bool_pair, s.t[1], 0);
+                    tb->show_mapped = str2num(bool_pair, s.t[1], tb->show_mapped);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowAllDesks") == 0)
-                    tb->show_all_desks = str2num(bool_pair, s.t[1], 0);
+                    tb->show_all_desks = str2num(bool_pair, s.t[1], tb->show_all_desks);
                 else if (g_ascii_strcasecmp(s.t[0], "MaxTaskWidth") == 0)
                     tb->task_width_max = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "spacing") == 0)
                     tb->spacing = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "UseMouseWheel") == 0)
-                    tb->use_mouse_wheel = str2num(bool_pair, s.t[1], 1);
+                    tb->use_mouse_wheel = str2num(bool_pair, s.t[1], tb->use_mouse_wheel);
                 else if (g_ascii_strcasecmp(s.t[0], "UseUrgencyHint") == 0)
-                    tb->use_urgency_hint = str2num(bool_pair, s.t[1], 1);
+                    tb->use_urgency_hint = str2num(bool_pair, s.t[1], tb->use_urgency_hint);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatButton") == 0)
-                    tb->flat_button = str2num(bool_pair, s.t[1], 1);
+                    tb->flat_button = str2num(bool_pair, s.t[1], tb->flat_button);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupedTasks") == 0)		/* For backward compatibility */
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "Mode") == 0)
@@ -2716,7 +2716,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                 else if (g_ascii_strcasecmp(s.t[0], "ShowIconsTitles") == 0)
                     tb->show_icons_titles = str2num(show_pair, s.t[1], tb->show_icons_titles);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowCloseButtons") == 0)
-                    tb->show_close_buttons = str2num(bool_pair, s.t[1], 0);
+                    tb->show_close_buttons = str2num(bool_pair, s.t[1], tb->show_close_buttons);
                 else if (g_ascii_strcasecmp(s.t[0], "SelfGroupSingleWindow") == 0)
                     tb->group_threshold = str2num(bool_pair, s.t[1], 0) ? 1 : 2;        /* For backward compatibility */
                 else if (g_ascii_strcasecmp(s.t[0], "Button1Action") == 0)

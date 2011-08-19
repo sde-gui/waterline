@@ -764,8 +764,8 @@ get_net_wm_state(Window win, NetWMState *nws)
     Atom *state;
     int num3;
 
-
     ENTER;
+
     bzero(nws, sizeof(nws));
     if (!(state = get_xaproperty(win, a_NET_WM_STATE, XA_ATOM, &num3)))
         RET();
@@ -777,19 +777,19 @@ get_net_wm_state(Window win, NetWMState *nws)
             nws->skip_pager = 1;
         } else if (state[num3] == a_NET_WM_STATE_SKIP_TASKBAR) {
             DBG( "NET_WM_STATE_SKIP_TASKBAR ");
-        nws->skip_taskbar = 1;
-    } else if (state[num3] == a_NET_WM_STATE_STICKY) {
+            nws->skip_taskbar = 1;
+        } else if (state[num3] == a_NET_WM_STATE_STICKY) {
             DBG( "NET_WM_STATE_STICKY ");
-        nws->sticky = 1;
+            nws->sticky = 1;
         } else if (state[num3] == a_NET_WM_STATE_HIDDEN) {
             DBG( "NET_WM_STATE_HIDDEN ");
             nws->hidden = 1;
-    } else if (state[num3] == a_NET_WM_STATE_SHADED) {
+        } else if (state[num3] == a_NET_WM_STATE_SHADED) {
             DBG( "NET_WM_STATE_SHADED ");
             nws->shaded = 1;
-    } else {
-        DBG( "... ");
-    }
+        } else {
+            DBG( "... ");
+        }
     }
     XFree(state);
     DBG( "}\n");

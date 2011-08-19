@@ -202,9 +202,12 @@ gchar *num2str(pair *p, int num, gchar *defval);
 
 extern int lxpanel_get_line(char **fp, line *s);
 extern int lxpanel_put_line(FILE* fp, const char* format, ...);
-#define lxpanel_put_str(fp, name, val) (G_UNLIKELY( !(val) || !*(val) )) ? 0 : lxpanel_put_line(fp, "%s=%s", name, val)
-#define lxpanel_put_bool(fp, name, val) lxpanel_put_line(fp, "%s=%c", name, (val) ? '1' : '0')
-#define lxpanel_put_int(fp, name, val) lxpanel_put_line(fp, "%s=%d", name, val)
+//#define lxpanel_put_str(fp, name, val) (G_UNLIKELY( !(val) || !*(val) )) ? 0 : lxpanel_put_line(fp, "%s=%s", name, val)
+//#define lxpanel_put_bool(fp, name, val) lxpanel_put_line(fp, "%s=%c", name, (val) ? '1' : '0')
+//#define lxpanel_put_int(fp, name, val) lxpanel_put_line(fp, "%s=%d", name, val)
+extern int lxpanel_put_str( FILE* fp, const char* name, const char* val );
+extern int lxpanel_put_bool( FILE* fp, const char* name, gboolean val );
+extern int lxpanel_put_int( FILE* fp, const char* name, int val );
 
 int lxpanel_is_in_kiosk_mode(void);
 

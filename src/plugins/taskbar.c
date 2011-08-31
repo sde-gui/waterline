@@ -405,6 +405,11 @@ static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
     return (tb->grouped_tasks) && (tc != NULL) && (tb->_group_threshold > 0) && (tc->visible_count >= tb->_group_threshold);
 }
 
+static gboolean task_has_visible_close_button(Task * tk)
+{
+    return tk->tb->_show_close_buttons && !task_class_is_grouped(tk->tb, tk->res_class);
+}
+
 /* Determine if a task is visible considering only its desktop placement. */
 static gboolean task_is_visible_on_desktop(TaskbarPlugin * tb, Task * tk, int desktop)
 {
@@ -571,7 +576,7 @@ static gboolean task_adapt_to_allocated_size(Task * tk)
     tk->adapt_to_allocated_size_idle_cb = 0;
 
     gboolean button_close_visible = FALSE;
-    if (tk->tb->_show_close_buttons) {
+    if (task_has_visible_close_button(tk)) {
         int task_button_required_width = tk->tb->icon_size + ICON_ONLY_EXTRA + tk->tb->extra_size;
         button_close_visible = tk->button_alloc.width >= task_button_required_width;
     }
@@ -1664,7 +1669,7 @@ static void task_group_menu_destroy(TaskbarPlugin * tb)
 static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * event, Task * tk, gboolean popup_menu)
 {
     gboolean event_in_close_button = FALSE;
-    if (!popup_menu && tk->tb->_show_close_buttons && tk->button_close && gtk_widget_get_visible(GTK_WIDGET(tk->button_close))) {
+    if (!popup_menu && task_has_visible_close_button(tk) && tk->button_close && gtk_widget_get_visible(GTK_WIDGET(tk->button_close))) {
         // FIXME: какой нормальный способ узнать, находится ли мышь в пределах виджета?
         gint dest_x, dest_y;
         gtk_widget_translate_coordinates(widget, tk->button_close, event->x, event->y, &dest_x, &dest_y);
@@ -1861,7 +1866,7 @@ static void task_update_style(Task * tk, TaskbarPlugin * tb)
         gtk_widget_hide(tk->label);
     }
 
-    if (tb->_show_close_buttons) {
+    if (task_has_visible_close_button(tk)) {
         if (!tk->button_close)
             task_build_gui_button_close(tb, tk);
         gtk_widget_show(tk->button_close);
@@ -2743,7 +2748,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
         tb->show_mapped_prev = tb->show_mapped;
     }
 
-    tb->_show_close_buttons = tb->show_close_buttons && !tb->grouped_tasks;
+    tb->_show_close_buttons = tb->show_close_buttons && !(tb->grouped_tasks && tb->_group_threshold == 1);
 
 }
 

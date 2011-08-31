@@ -1281,6 +1281,8 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 
     gchar** params = NULL;
 
+    GtkWidget* notebook = NULL;
+
     GtkWidget* table = NULL;
     int table_row_count = 0;
 

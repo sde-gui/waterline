@@ -1284,6 +1284,9 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
     GtkWidget* table = NULL;
     int table_row_count = 0;
 
+    gboolean only_entry = FALSE;
+    gboolean create_browse_button = FALSE;
+
     const char* name = nm;
     va_start( args, nm );
     while( name )
@@ -1297,8 +1300,9 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
             name = params[1];
         }
 
-        GtkWidget* label = gtk_label_new( name );
         GtkWidget* entry = NULL;
+        only_entry = FALSE;
+        create_browse_button = FALSE;
 
         switch( type )
         {
@@ -1307,9 +1311,11 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                 gtk_table_set_col_spacings(GTK_TABLE(table), 4);
                 gtk_table_set_row_spacings(GTK_TABLE(table), 8);
                 table_row_count = 0;
+                only_entry = TRUE;
                 break;
             case CONF_TYPE_END_TABLE:
                 table = NULL;
+                only_entry = TRUE;
                 break;
             case CONF_TYPE_STR:
             case CONF_TYPE_FILE_ENTRY: /* entry with a button to browse for files. */
@@ -1320,6 +1326,7 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                 gtk_entry_set_width_chars(GTK_ENTRY(entry), 40);
                 g_signal_connect( entry, "focus-out-event",
                   G_CALLBACK(on_entry_focus_out), val );
+                create_browse_button = (type == CONF_TYPE_FILE_ENTRY) || (type == CONF_TYPE_DIRECTORY_ENTRY);
                 break;
             case CONF_TYPE_INT:
             {
@@ -1332,10 +1339,12 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
             }
             case CONF_TYPE_BOOL:
                 entry = gtk_check_button_new();
+                GtkWidget* label = gtk_label_new( name );
                 gtk_container_add( GTK_CONTAINER(entry), label );
                 gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(entry), *(gboolean*)val );
                 g_signal_connect( entry, "toggled",
                   G_CALLBACK(on_toggle_changed), val );
+                only_entry = TRUE;
                 break;
             case CONF_TYPE_FILE:
                 entry = gtk_file_chooser_button_new(_("Select a file"), GTK_FILE_CHOOSER_ACTION_OPEN);
@@ -1352,6 +1361,7 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                 char *markup = g_markup_printf_escaped (style, name );
                 gtk_label_set_markup (GTK_LABEL (entry), markup);
                 g_free (markup);
+                only_entry = TRUE;
                 break;
             }
             case CONF_TYPE_ENUM:
@@ -1371,7 +1381,7 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
         }
         if( entry )
         {
-            if(( type == CONF_TYPE_BOOL ) || ( type == CONF_TYPE_TRIM ) || ( type == CONF_TYPE_TITLE ) || ( type == CONF_TYPE_BEGIN_TABLE ))
+            if (only_entry)
             {
                 int r = table_row_count;
                 if (type == CONF_TYPE_BEGIN_TABLE || !table)
@@ -1382,21 +1392,23 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
             }
             else
             {
+                GtkWidget* label = gtk_label_new( name );
+                GtkWidget* browse = NULL;
+                if (create_browse_button) {
+                    browse = gtk_button_new_with_mnemonic(_("_Browse"));
+                    g_object_set_data(G_OBJECT(dlg), "file-val", val);
+                    g_object_set_data(G_OBJECT(browse), "dlg", dlg);
+                    g_object_set_data(G_OBJECT(browse), "chooser-action",
+                        (gpointer) ((type == CONF_TYPE_DIRECTORY_ENTRY) ? GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER : GTK_FILE_CHOOSER_ACTION_OPEN));
+                    g_signal_connect( browse, "clicked", G_CALLBACK(on_browse_btn_clicked), entry );
+                }
+
                 if (table) {
                     int r = table_row_count;                    
                     gtk_table_resize(GTK_TABLE(table), ++table_row_count, 3),
                     gtk_table_attach(GTK_TABLE(table), label, 0, 1, r, r + 1, GTK_FILL, GTK_FILL, 0, 0);
-                    if ((type == CONF_TYPE_FILE_ENTRY) || (type == CONF_TYPE_DIRECTORY_ENTRY)) {
+                    if (browse) {
                         gtk_table_attach_defaults(GTK_TABLE(table), entry, 1, 2, r, r + 1);
-
-                        GtkWidget* browse = gtk_button_new_with_mnemonic(_("_Browse"));
-                        g_object_set_data(G_OBJECT(dlg), "file-val", val);
-                        g_object_set_data(G_OBJECT(browse), "dlg", dlg);
-                        g_object_set_data(G_OBJECT(browse), "chooser-action",
-                            (gpointer) ((type == CONF_TYPE_DIRECTORY_ENTRY) ? GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER : GTK_FILE_CHOOSER_ACTION_OPEN));
-                        g_signal_connect( browse, "clicked", G_CALLBACK(on_browse_btn_clicked), entry );
-
-                        //gtk_table_attach_defaults(GTK_TABLE(table), browse, 2, 3, r, r + 1);
                         gtk_table_attach(GTK_TABLE(table), browse, 2, 3, r, r + 1, GTK_SHRINK, GTK_FILL, 0, 0);
                     } else {
                         gtk_table_attach_defaults(GTK_TABLE(table), entry, 1, 3, r, r + 1);
@@ -1406,19 +1418,13 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, FALSE, 2 );
                     gtk_box_pack_start( GTK_BOX(hbox), entry, TRUE, TRUE, 2 );
                     gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), hbox, FALSE, FALSE, 2 );
-                    if ((type == CONF_TYPE_FILE_ENTRY) || (type == CONF_TYPE_DIRECTORY_ENTRY))
+                    if (browse)
                     {
-                        GtkWidget* browse = gtk_button_new_with_mnemonic(_("_Browse"));
                         gtk_box_pack_start( GTK_BOX(hbox), browse, TRUE, TRUE, 2 );
-                        g_object_set_data(G_OBJECT(dlg), "file-val", val);
-                        g_object_set_data(G_OBJECT(browse), "dlg", dlg);
-                        g_object_set_data(G_OBJECT(browse), "chooser-action",
-                            (gpointer) ((type == CONF_TYPE_DIRECTORY_ENTRY) ? GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER : GTK_FILE_CHOOSER_ACTION_OPEN));
-                        g_signal_connect( browse, "clicked", G_CALLBACK(on_browse_btn_clicked), entry );
                     }
                 }
+                gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
             }
-            gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
         }
         if (params != NULL) {
             g_strfreev(params);

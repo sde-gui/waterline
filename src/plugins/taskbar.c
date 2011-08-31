@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -145,6 +146,7 @@ typedef struct _task_class {
     struct _task * visible_task;		/* Task that is visible in current desktop, if any */
     char * visible_name;			/* Name that will be visible for grouped tasks */
     int visible_count;				/* Count of tasks that are visible in current desktop */
+    int timestamp;
 } TaskClass;
 
 /* Structure representing a "task", an open window. */
@@ -815,6 +817,9 @@ static void task_set_class(Task * tk)
             /* Unlink from previous class, if any. */
             if (old_tc)
                 task_unlink_class(tk);
+
+            if (!tc->timestamp)
+                tc->timestamp = tk->timestamp;
 
             /* Add to end of per-class task list.  Do this to keep the popup menu in order of creation. */
             if (tc->res_class_head == NULL)
@@ -2006,8 +2011,15 @@ static int task_compare(Task * tk1, Task * tk2)
             int w1 = tk1->urgency * 2 + tk1->iconified;
             int w2 = tk2->urgency * 2 + tk2->iconified;
             result = w2 - w1;
-        }
             break;
+        }
+        case GROUP_BY_CLASS:
+        {
+            int w1 = tk1->res_class ? tk1->res_class->timestamp : INT_MAX;
+            int w2 = tk2->res_class ? tk2->res_class->timestamp : INT_MAX;
+            result = w2 - w1;
+            break;
+        }
     }
 
     if (result == 0)

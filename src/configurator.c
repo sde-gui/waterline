@@ -1282,12 +1282,14 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
     gchar** params = NULL;
 
     GtkWidget* notebook = NULL;
+    GtkWidget* frame = NULL;
 
     GtkWidget* table = NULL;
     int table_row_count = 0;
 
     gboolean only_entry = FALSE;
     gboolean create_browse_button = FALSE;
+    gboolean ignore_frame = FALSE;
 
     const char* name = nm;
     va_start( args, nm );
@@ -1305,9 +1307,31 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
         GtkWidget* entry = NULL;
         only_entry = FALSE;
         create_browse_button = FALSE;
+        ignore_frame = FALSE;
 
         switch( type )
         {
+            case CONF_TYPE_BEGIN_PAGE:
+            {
+                if (!notebook) {
+                    notebook = gtk_notebook_new();
+                    entry = notebook;
+                }
+                frame = gtk_vbox_new( FALSE, 4 );
+                GtkWidget* b = gtk_hbox_new( FALSE, 4 );
+                gtk_box_pack_start( GTK_BOX(b), frame, FALSE, FALSE, 4 );
+                                    
+                GtkWidget* label = gtk_label_new(name);
+                gtk_notebook_append_page( GTK_NOTEBOOK(notebook), b, label );
+                table = NULL;
+                only_entry = TRUE;
+                ignore_frame = TRUE;
+                break;
+            }
+            case CONF_TYPE_END_PAGE:
+                table = NULL;
+                frame = NULL;
+                break;
             case CONF_TYPE_BEGIN_TABLE:
                 entry = table = gtk_table_new(1, 3, FALSE);
                 gtk_table_set_col_spacings(GTK_TABLE(table), 4);
@@ -1383,11 +1407,13 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
         }
         if( entry )
         {
+            GtkBox * vbox = (frame && !ignore_frame) ? GTK_BOX(frame) : GTK_BOX(GTK_DIALOG(dlg)->vbox);
+
             if (only_entry)
             {
                 int r = table_row_count;
                 if (type == CONF_TYPE_BEGIN_TABLE || !table)
-                    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), entry, FALSE, FALSE, 2 );
+                    gtk_box_pack_start( GTK_BOX(vbox), entry, FALSE, FALSE, 2 );
                 else
                     gtk_table_resize(GTK_TABLE(table), ++table_row_count, 3),
                     gtk_table_attach_defaults(GTK_TABLE(table), entry, 0, 3, r, r + 1);
@@ -1419,11 +1445,11 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                     GtkWidget* hbox = gtk_hbox_new( FALSE, 2 );
                     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, FALSE, 2 );
                     gtk_box_pack_start( GTK_BOX(hbox), entry, TRUE, TRUE, 2 );
-                    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), hbox, FALSE, FALSE, 2 );
                     if (browse)
                     {
                         gtk_box_pack_start( GTK_BOX(hbox), browse, TRUE, TRUE, 2 );
                     }
+                    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, FALSE, 2 );
                 }
                 gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
             }

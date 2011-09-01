@@ -213,11 +213,20 @@ typedef struct _taskbar {
     guint dnd_delay_timer;			/* Timer for drag and drop delay */
     int icon_size;				/* Size of task icons */
     int extra_size;
+
     int button1_action;                         /* User preference: left button action */
     int button2_action;                         /* User preference: middle button action */
     int button3_action;                         /* User preference: right button action */
     int scroll_up_action;                       /* User preference: scroll up action */
     int scroll_down_action;                     /* User preference: scroll down action */
+
+    int shift_button1_action;                   /* User preference: shift + left button action */
+    int shift_button2_action;                   /* User preference: shift + middle button action */
+    int shift_button3_action;                   /* User preference: shift + right button action */
+    int shift_scroll_up_action;                 /* User preference: shift + scroll up action */
+    int shift_scroll_down_action;               /* User preference: shift + scroll down action */
+
+
     gboolean show_all_desks;			/* User preference: show windows from all desktops */
     gboolean show_mapped;			/* User preference: show mapped windows */
     gboolean show_iconified;			/* User preference: show iconified windows */
@@ -1717,9 +1726,9 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
 
         int action = ACTION_NONE;
         switch (event->button) {
-            case 1: action = tk->tb->button1_action; break;
-            case 2: action = tk->tb->button2_action; break;
-            case 3: action = tk->tb->button3_action; break;
+            case 1: action = (event->state & GDK_SHIFT_MASK) ? tk->tb->shift_button1_action : tk->tb->button1_action; break;
+            case 2: action = (event->state & GDK_SHIFT_MASK) ? tk->tb->shift_button2_action : tk->tb->button2_action; break;
+            case 3: action = (event->state & GDK_SHIFT_MASK) ? tk->tb->shift_button3_action : tk->tb->button3_action; break;
         }
         if (popup_menu && (action == ACTION_SHOW_SIMILAR_WINDOW_LIST || action == ACTION_SHOW_WINDOW_LIST))
             action = ACTION_RAISEICONIFY;
@@ -1812,9 +1821,9 @@ static gboolean taskbar_button_scroll_event(GtkWidget * widget, GdkEventScroll *
     int action;
 
     if ((event->direction == GDK_SCROLL_UP) || (event->direction == GDK_SCROLL_LEFT))
-        action = tk->tb->scroll_up_action;
+        action = (event->state & GDK_SHIFT_MASK) ? tk->tb->shift_scroll_up_action : tk->tb->scroll_up_action;
     else
-        action = tk->tb->scroll_down_action;
+        action = (event->state & GDK_SHIFT_MASK) ? tk->tb->shift_scroll_down_action : tk->tb->scroll_down_action;
 
     task_action(tk, action, &e, tk, FALSE);
     
@@ -2786,11 +2795,18 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->group_threshold   = 1;
     tb->group_by          = GROUP_BY_CLASS;
     tb->show_close_buttons = FALSE;
+    
     tb->button1_action    = ACTION_RAISEICONIFY;
     tb->button2_action    = ACTION_SHADE;
     tb->button3_action    = ACTION_MENU;
     tb->scroll_up_action  = ACTION_PREV_WINDOW;
     tb->scroll_down_action = ACTION_NEXT_WINDOW;
+
+    tb->shift_button1_action    = ACTION_ICONIFY;
+    tb->shift_button2_action    = ACTION_MAXIMIZE;
+    tb->shift_button3_action    = ACTION_CLOSE;
+    tb->shift_scroll_up_action  = ACTION_PREV_WINDOW_IN_CURRENT_GROUP;
+    tb->shift_scroll_down_action = ACTION_NEXT_WINDOW_IN_CURRENT_GROUP;
 
     tb->grouped_tasks     = FALSE;
     tb->single_window     = FALSE;
@@ -2877,6 +2893,16 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->scroll_up_action = str2num(action_pair, s.t[1], tb->scroll_up_action);
                 else if (g_ascii_strcasecmp(s.t[0], "ScrollDownAction") == 0)
                     tb->scroll_down_action = str2num(action_pair, s.t[1], tb->scroll_down_action);
+                else if (g_ascii_strcasecmp(s.t[0], "ShiftButton1Action") == 0)
+                    tb->shift_button1_action = str2num(action_pair, s.t[1], tb->shift_button1_action);
+                else if (g_ascii_strcasecmp(s.t[0], "ShiftButton2Action") == 0)
+                    tb->shift_button2_action = str2num(action_pair, s.t[1], tb->shift_button2_action);
+                else if (g_ascii_strcasecmp(s.t[0], "ShiftButton3Action") == 0)
+                    tb->shift_button3_action = str2num(action_pair, s.t[1], tb->shift_button3_action);
+                else if (g_ascii_strcasecmp(s.t[0], "ShiftScrollUpAction") == 0)
+                    tb->shift_scroll_up_action = str2num(action_pair, s.t[1], tb->shift_scroll_up_action);
+                else if (g_ascii_strcasecmp(s.t[0], "ShiftScrollDownAction") == 0)
+                    tb->shift_scroll_down_action = str2num(action_pair, s.t[1], tb->shift_scroll_down_action);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -2983,11 +3009,17 @@ static void taskbar_apply_configuration(Plugin * p)
 static void taskbar_configure(Plugin * p, GtkWindow * parent)
 {
     const char* actions = _("|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list|Next window|Previous window|Next window in current group|Previous window in current group|Next window in pointed group|Previous window in pointed group");
-    char* button1_action = g_strdup_printf("%s%s", _("|Left button action"), actions);
-    char* button2_action = g_strdup_printf("%s%s", _("|Middle button action"), actions);
-    char* button3_action = g_strdup_printf("%s%s", _("|Right button action"), actions);
-    char* scroll_up_action = g_strdup_printf("%s%s", _("|Scroll up action"), actions);
-    char* scroll_down_action = g_strdup_printf("%s%s", _("|Scroll down action"), actions);
+    char* button1_action = g_strdup_printf("%s%s", _("|Left button"), actions);
+    char* button2_action = g_strdup_printf("%s%s", _("|Middle button"), actions);
+    char* button3_action = g_strdup_printf("%s%s", _("|Right button"), actions);
+    char* scroll_up_action = g_strdup_printf("%s%s", _("|Scroll up"), actions);
+    char* scroll_down_action = g_strdup_printf("%s%s", _("|Scroll down"), actions);
+    char* shift_button1_action = g_strdup_printf("%s%s", _("|Shift + Left button"), actions);
+    char* shift_button2_action = g_strdup_printf("%s%s", _("|Shift + Middle button"), actions);
+    char* shift_button3_action = g_strdup_printf("%s%s", _("|Shift + Right button"), actions);
+    char* shift_scroll_up_action = g_strdup_printf("%s%s", _("|Shift + Scroll up"), actions);
+    char* shift_scroll_down_action = g_strdup_printf("%s%s", _("|Shift + Scroll down"), actions);
+
 
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     GtkWidget* dlg = create_generic_config_dlg(
@@ -3027,6 +3059,11 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         button3_action, (gpointer)&tb->button3_action, (GType)CONF_TYPE_ENUM,
         scroll_up_action, (gpointer)&tb->scroll_up_action, (GType)CONF_TYPE_ENUM,
         scroll_down_action, (gpointer)&tb->scroll_down_action, (GType)CONF_TYPE_ENUM,
+        shift_button1_action, (gpointer)&tb->shift_button1_action, (GType)CONF_TYPE_ENUM,
+        shift_button2_action, (gpointer)&tb->shift_button2_action, (GType)CONF_TYPE_ENUM,
+        shift_button3_action, (gpointer)&tb->shift_button3_action, (GType)CONF_TYPE_ENUM,
+        shift_scroll_up_action, (gpointer)&tb->shift_scroll_up_action, (GType)CONF_TYPE_ENUM,
+        shift_scroll_down_action, (gpointer)&tb->shift_scroll_down_action, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
         NULL);
@@ -3037,6 +3074,13 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     g_free(button1_action);
     g_free(button2_action);
     g_free(button3_action);
+    g_free(scroll_up_action);
+    g_free(scroll_down_action);
+    g_free(shift_button1_action);
+    g_free(shift_button2_action);
+    g_free(shift_button3_action);
+    g_free(shift_scroll_up_action);
+    g_free(shift_scroll_down_action);
 }
 
 /* Save the configuration to the configuration file. */
@@ -3061,6 +3105,11 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "Button3Action", tb->button3_action, action_pair);
     lxpanel_put_enum(fp, "ScrollUpAction", tb->scroll_up_action, action_pair);
     lxpanel_put_enum(fp, "ScrollDownAction", tb->scroll_down_action, action_pair);
+    lxpanel_put_enum(fp, "ShiftButton1Action", tb->shift_button1_action, action_pair);
+    lxpanel_put_enum(fp, "ShiftButton2Action", tb->shift_button2_action, action_pair);
+    lxpanel_put_enum(fp, "ShiftButton3Action", tb->shift_button3_action, action_pair);
+    lxpanel_put_enum(fp, "ShiftScrollUpAction", tb->shift_scroll_up_action, action_pair);
+    lxpanel_put_enum(fp, "ShiftScrollDownAction", tb->shift_scroll_down_action, action_pair);
 }
 
 /* Callback when panel configuration changes. */

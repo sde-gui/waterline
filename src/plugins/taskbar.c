@@ -168,6 +168,7 @@ typedef struct _task {
 
     GtkAllocation button_alloc;
     guint adapt_to_allocated_size_idle_cb;
+    guint update_icon_idle_cb;
 
     int desktop;				/* Desktop that contains task, needed to switch to it on Raise */
     guint flash_timeout;			/* Timer for urgency notification */
@@ -182,6 +183,9 @@ typedef struct _task {
     int timestamp;
 
     GtkWidget* click_on;
+    
+    int allocated_icon_size;
+    int icon_size;
 } Task;
 
 /* Private context for taskbar plugin. */
@@ -264,6 +268,7 @@ typedef struct _taskbar {
     int deferred_active_window_valid;
     Window deferred_active_window;
 
+    int expected_icon_size;
 
     Atom a_OB_WM_STATE_UNDECORATED;
 } TaskbarPlugin;
@@ -306,7 +311,7 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink);
 static GdkPixbuf * _wnck_gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, int height);
 static GdkPixbuf * apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask);
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
-static GdkPixbuf * task_update_icon(TaskbarPlugin * tb, Task * tk, Atom source);
+static void task_update_icon(Task * tk, Atom source);
 static gboolean flash_window_timeout(Task * tk);
 static void task_set_urgency(Task * tk);
 static void task_clear_urgency(Task * tk);
@@ -323,6 +328,7 @@ static void taskbar_button_enter(GtkWidget * widget, Task * tk);
 static void taskbar_button_leave(GtkWidget * widget, Task * tk);
 static gboolean taskbar_button_scroll_event(GtkWidget * widget, GdkEventScroll * event, Task * tk);
 static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc, Task * tk);
+static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, Task * tk);
 static void taskbar_update_style(TaskbarPlugin * tb);
 static void task_update_style(Task * tk, TaskbarPlugin * tb);
 static void task_build_gui_label(TaskbarPlugin * tb, Task* tk);
@@ -876,9 +882,12 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     if (tb->focused == tk)
         tb->focused = NULL;
 
-    /* If there is deferred adapt_to_allocated_size proc, remove it. */
+    /* If there are deferred calls, remove them. */
     if (tk->adapt_to_allocated_size_idle_cb != 0)
         g_source_remove(tk->adapt_to_allocated_size_idle_cb);
+    if (tk->update_icon_idle_cb != 0)
+        g_source_remove(tk->update_icon_idle_cb);
+
 
     /* If there is an urgency timeout, remove it. */
     if (tk->flash_timeout != 0)
@@ -1250,10 +1259,12 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
 }
 
 /* Update the icon of a task. */
-static GdkPixbuf * task_update_icon(TaskbarPlugin * tb, Task * tk, Atom source)
+static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
 {
+    TaskbarPlugin * tb = tk->tb;
+
     /* Get the icon from the window's hints. */
-    GdkPixbuf * pixbuf = get_wm_icon(tk->win, tb->icon_size, tb->icon_size, source, &tk->image_source);
+    GdkPixbuf * pixbuf = get_wm_icon(tk->win, icon_size, icon_size, source, &tk->image_source);
 
     /* If that fails, and we have no other icon yet, return the fallback icon. */
     if ((pixbuf == NULL)
@@ -1268,6 +1279,29 @@ static GdkPixbuf * task_update_icon(TaskbarPlugin * tb, Task * tk, Atom source)
 
     /* Return what we have.  This may be NULL to indicate that no change should be made to the icon. */
     return pixbuf;
+}
+
+static void task_update_icon(Task * tk, Atom source)
+{
+    int icon_size = tk->tb->expected_icon_size > 0 ? tk->tb->expected_icon_size : tk->tb->icon_size;
+    if (tk->allocated_icon_size > 0 && tk->allocated_icon_size < icon_size)
+        icon_size = tk->allocated_icon_size;
+
+    GdkPixbuf * pixbuf = task_create_icon(tk, source, icon_size);
+    if (pixbuf != NULL)
+    {
+        gtk_image_set_from_pixbuf(GTK_IMAGE(tk->image), pixbuf);
+        g_object_unref(pixbuf);
+    }
+
+    tk->icon_size = icon_size;
+}
+
+static gboolean task_update_icon_cb(Task * tk)
+{
+    tk->update_icon_idle_cb = 0;
+    task_update_icon(tk, None);
+    return FALSE;
 }
 
 /* Timer expiration for urgency notification.  Also used to draw the button in setting and clearing urgency. */
@@ -1857,6 +1891,29 @@ static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc,
     }
 }
 
+/* Handler for "size-allocate" event from taskbar button image. */
+static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, Task * tk)
+{
+    //int sz = alloc->width < alloc->height ? alloc->width : alloc->height;
+    int sz = alloc->height;
+
+    if (sz > tk->button_alloc.width - ICON_ONLY_EXTRA)
+        sz = tk->button_alloc.width - ICON_ONLY_EXTRA;
+
+    if (sz < 1)
+        sz = 1;
+
+    if (sz < tk->tb->icon_size)
+        tk->allocated_icon_size = sz;
+    else
+        tk->allocated_icon_size = tk->tb->icon_size;
+
+    tk->tb->expected_icon_size = tk->allocated_icon_size;
+
+    if (tk->allocated_icon_size != tk->icon_size && tk->update_icon_idle_cb == 0)
+        tk->update_icon_idle_cb = g_idle_add((GSourceFunc) task_update_icon_cb, tk);
+}
+
 /* Update style on the taskbar when created or after a configuration change. */
 static void taskbar_update_style(TaskbarPlugin * tb)
 {
@@ -1972,12 +2029,13 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
     gtk_container_set_border_width(GTK_CONTAINER(tk->container), 0);
 
     /* Create an image to contain the application icon and add it to the box. */
-    GdkPixbuf* pixbuf = task_update_icon(tb, tk, None);
-    tk->image = gtk_image_new_from_pixbuf(pixbuf);
+    tk->image = gtk_image_new_from_pixbuf(NULL);
     gtk_misc_set_padding(GTK_MISC(tk->image), 0, 0);
-    g_object_unref(pixbuf);
+    task_update_icon(tk, None);
     gtk_widget_show(tk->image);
     gtk_box_pack_start(GTK_BOX(tk->container), tk->image, FALSE, FALSE, 0);
+
+    g_signal_connect(tk->image, "size-allocate", G_CALLBACK(taskbar_image_size_allocate), (gpointer) tk);
 
     if (tb->show_titles)
         task_build_gui_label(tb, tk);
@@ -2449,12 +2507,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 {
                     /* Window changed "window manager hints".
                      * Some windows set their WM_HINTS icon after mapping. */
-                    GdkPixbuf * pixbuf = task_update_icon(tb, tk, XA_WM_HINTS);
-                    if (pixbuf != NULL)
-                    {
-                        gtk_image_set_from_pixbuf(GTK_IMAGE(tk->image), pixbuf);
-                        g_object_unref(pixbuf);
-                    }
+                    task_update_icon(tk, XA_WM_HINTS);
 
                     if (tb->use_urgency_hint)
                     {
@@ -2481,12 +2534,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 else if (at == a_NET_WM_ICON)
                 {
                     /* Window changed EWMH icon. */
-                    GdkPixbuf * pixbuf = task_update_icon(tb, tk, a_NET_WM_ICON);
-                    if (pixbuf != NULL)
-                    {
-                        gtk_image_set_from_pixbuf(GTK_IMAGE(tk->image), pixbuf);
-                        g_object_unref(pixbuf);
-                    }
+                    task_update_icon(tk, a_NET_WM_ICON);
                 }
                 else if (at == a_NET_WM_WINDOW_TYPE)
                 {
@@ -3131,12 +3179,7 @@ static void taskbar_panel_configuration_changed(Plugin * p)
         Task * tk;
         for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         {
-            GdkPixbuf * pixbuf = task_update_icon(tb, tk, None);
-            if (pixbuf != NULL)
-            {
-                gtk_image_set_from_pixbuf(GTK_IMAGE(tk->image), pixbuf);
-                g_object_unref(pixbuf);
-            }
+            task_update_icon(tk, None);
         }
     }
 

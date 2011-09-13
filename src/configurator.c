@@ -195,6 +195,7 @@ set_width(  GtkSpinButton* spin, Panel* p )
 {
     p->width = (int)gtk_spin_button_get_value(spin);
     update_panel_geometry(p);
+    panel_set_panel_configuration_changed(p);
 }
 
 static void
@@ -202,6 +203,7 @@ set_height( GtkSpinButton* spin, Panel* p )
 {
     p->height = (int)gtk_spin_button_get_value(spin);
     update_panel_geometry(p);
+    panel_set_panel_configuration_changed(p);
 }
 
 static void set_width_type( GtkWidget *item, Panel* p )
@@ -369,7 +371,7 @@ set_height_when_minimized( GtkSpinButton* spin,  Panel* p  )
 static void
 set_icon_size( GtkSpinButton* spin,  Panel* p  )
 {
-    p->icon_size = (int)gtk_spin_button_get_value(spin);
+    p->preferred_icon_size = (int)gtk_spin_button_get_value(spin);
     panel_set_panel_configuration_changed(p);
 }
 
@@ -889,7 +891,7 @@ void panel_configure( Panel* p, int sel_page )
 
     w = (GtkWidget*)gtk_builder_get_object( builder, "icon_size" );
     gtk_spin_button_set_range( (GtkSpinButton*)w, PANEL_HEIGHT_MIN, PANEL_HEIGHT_MAX );
-    gtk_spin_button_set_value( (GtkSpinButton*)w, p->icon_size );
+    gtk_spin_button_set_value( (GtkSpinButton*)w, p->preferred_icon_size );
     g_signal_connect( w, "value_changed", G_CALLBACK(set_icon_size), p );
 
     /* properties */
@@ -1067,7 +1069,7 @@ panel_global_config_save( Panel* p, FILE *fp)
     lxpanel_put_line(fp, "fontcolor=#%06x", gcolor2rgb24(&p->gfontcolor));
     lxpanel_put_bool(fp, "background", p->background );
     lxpanel_put_str(fp, "backgroundfile", p->background_file);
-    lxpanel_put_int(fp, "iconsize", p->icon_size);
+    lxpanel_put_int(fp, "iconsize", p->preferred_icon_size);
     lxpanel_put_line(fp, "}\n");
 }
 

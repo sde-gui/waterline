@@ -1147,6 +1147,9 @@ void panel_set_panel_configuration_changed(Panel *p)
 
     }
 
+    int max_icon_size = (p->orientation == ORIENT_HORIZ) ?  p->height : p->width;
+    p->icon_size = (p->preferred_icon_size < max_icon_size) ? p->preferred_icon_size : max_icon_size;
+
     if (p->orientation == ORIENT_HORIZ) {
         p->my_box_new = gtk_hbox_new;
         p->my_separator_new = gtk_vseparator_new;
@@ -1243,7 +1246,7 @@ panel_parse_global(Panel *p, char **fp)
                 } else if( !g_ascii_strcasecmp(s.t[0], "BackgroundFile") ) {
                     p->background_file = g_strdup( s.t[1] );
                 } else if (!g_ascii_strcasecmp(s.t[0], "IconSize")) {
-                    p->icon_size = atoi(s.t[1]);
+                    p->preferred_icon_size = atoi(s.t[1]);
                 } else {
                     ERR( "lxpanel: %s - unknown var in Global section\n", s.t[0]);
                 }

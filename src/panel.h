@@ -116,6 +116,8 @@ typedef struct _Panel {
     GtkWidget* alignment_right_label;	/* Label of alignment: right control */
     GtkWidget* height_control;		/* Height control in preference dialog */
     GtkWidget* width_control;		/* Width control in preference dialog */
+
+    int preferred_icon_size;
 } Panel;
 
 /* Decoded value of WM_STATE property. */

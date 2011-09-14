@@ -861,18 +861,21 @@ static gchar* task_get_res_class(Task * tk) {
     ch.res_class = NULL;
     XGetClassHint(GDK_DISPLAY(), tk->win, &ch);
 
-    /* If the res_name was returned, free it.  We make no use of it at this time. */
-    if (ch.res_name != NULL)
-    {
-        XFree(ch.res_name);
-    }
-
     gchar * res_class = NULL;
     if (ch.res_class != NULL)
-        res_class = g_locale_to_utf8(ch.res_class, -1, NULL, NULL, NULL),
-        XFree(ch.res_class);
-    else
+        res_class = g_locale_to_utf8(ch.res_class, -1, NULL, NULL, NULL);
+
+    if (ch.res_name != NULL && (!res_class || !strlen(res_class)))
+        res_class = g_locale_to_utf8(ch.res_name, -1, NULL, NULL, NULL);
+
+    if (!res_class)
         res_class = g_strdup("");
+
+    if (ch.res_class != NULL)
+        XFree(ch.res_class);
+
+    if (ch.res_name != NULL)
+        XFree(ch.res_name);
 
     RET(res_class);
 }

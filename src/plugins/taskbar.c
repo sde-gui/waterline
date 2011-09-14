@@ -318,7 +318,7 @@ static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass *
 static void recompute_group_visibility_on_current_desktop(TaskbarPlugin * tb);
 static void task_draw_label(Task * tk);
 static gboolean task_is_visible(Task * tk);
-static void task_button_redraw(Task * tk, TaskbarPlugin * tb);
+static void task_button_redraw(Task * tk);
 static void taskbar_redraw(TaskbarPlugin * tb);
 static gboolean accept_net_wm_state(NetWMState * nws);
 static gboolean accept_net_wm_window_type(NetWMWindowType * nwwt);
@@ -653,8 +653,10 @@ static gboolean task_adapt_to_allocated_size(Task * tk)
 }
 
 /* Redraw a task button. */
-static void task_button_redraw(Task * tk, TaskbarPlugin * tb)
+static void task_button_redraw(Task * tk)
 {
+    TaskbarPlugin * tb = tk->tb;
+
     if (task_is_visible(tk))
     {
         task_button_redraw_button_state(tk, tb);
@@ -671,7 +673,7 @@ static void taskbar_redraw(TaskbarPlugin * tb)
     icon_grid_defer_updates(tb->icon_grid);
     Task * tk;
     for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
-        task_button_redraw(tk, tb);
+        task_button_redraw(tk);
     icon_grid_resume_updates(tb->icon_grid);
 }
 
@@ -744,7 +746,7 @@ static void task_set_names(Task * tk, Atom source)
         }
 
         /* Redraw the button. */
-        task_button_redraw(tk, tk->tb);
+        task_button_redraw(tk);
     }
 }
 
@@ -768,7 +770,7 @@ static void task_unlink_class(Task * tk)
             tc->res_class_head = tk->res_class_flink;
             tk->res_class_flink = NULL;
             if (tc->res_class_head != NULL)
-                task_button_redraw(tc->res_class_head, tk->tb);
+                task_button_redraw(tc->res_class_head);
         }
         else
         {
@@ -903,7 +905,7 @@ static void task_set_class(Task * tk)
                 for (tk_pred = tc->res_class_head; tk_pred->res_class_flink != NULL; tk_pred = tk_pred->res_class_flink) ;
                 tk_pred->res_class_flink = tk;
                 g_assert(tk->res_class_flink == NULL);
-                task_button_redraw(tk, tk->tb);
+                task_button_redraw(tk);
             }
             tk->res_class = tc;
 
@@ -2408,7 +2410,7 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
     {
         ctk->focused = FALSE;
         tb->focused = NULL;
-        task_button_redraw(ctk, tb);
+        task_button_redraw(ctk);
     }
 
     /* If a task gained focus, update data structures. */
@@ -2416,7 +2418,7 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
     {
         ntk->focused = TRUE;
         tb->focused = ntk;
-        task_button_redraw(ntk, tb);
+        task_button_redraw(ntk);
     }
 
     icon_grid_resume_updates(tb->icon_grid);
@@ -2829,34 +2831,36 @@ static void adjust_separators(GtkWidget * menu)
 
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 {
-    if (tk->tb->workspace_submenu) {
-        gtk_container_foreach(GTK_CONTAINER(tk->tb->workspace_submenu), task_adjust_menu_workspace_callback, tk);
+    TaskbarPlugin * tb = tk->tb;
+
+    if (tb->workspace_submenu) {
+        gtk_container_foreach(GTK_CONTAINER(tb->workspace_submenu), task_adjust_menu_workspace_callback, tk);
     }
 
-    gboolean manual_grouping = tk->tb->manual_grouping && tk->tb->grouped_tasks;
+    gboolean manual_grouping = tb->manual_grouping && tb->grouped_tasks;
     if (manual_grouping)
         task_adjust_menu_move_to_group(tk);
-    gtk_widget_set_visible(GTK_WIDGET(tk->tb->move_to_group_menuitem), manual_grouping);
-    gtk_widget_set_visible(GTK_WIDGET(tk->tb->ungroup_menuitem), manual_grouping && tk->res_class && tk->res_class->visible_count > 1);
+    gtk_widget_set_visible(GTK_WIDGET(tb->move_to_group_menuitem), manual_grouping);
+    gtk_widget_set_visible(GTK_WIDGET(tb->ungroup_menuitem), manual_grouping && tk->res_class && tk->res_class->visible_count > 1);
 
-    gtk_widget_set_visible(GTK_WIDGET(tk->tb->expand_group_menuitem),
-        manual_grouping && tk->res_class && tk->res_class->visible_count > 1 && task_class_is_grouped(tk->tb, tk->res_class));
+    gtk_widget_set_visible(GTK_WIDGET(tb->expand_group_menuitem),
+        manual_grouping && tk->res_class && tk->res_class->visible_count > 1 && task_class_is_grouped(tb, tk->res_class));
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->shrink_group_menuitem),
-        manual_grouping && tk->res_class && tk->res_class->visible_count > 1 && !task_class_is_grouped(tk->tb, tk->res_class));
+        manual_grouping && tk->res_class && tk->res_class->visible_count > 1 && !task_class_is_grouped(tb, tk->res_class));
     
-    gtk_widget_set_visible(GTK_WIDGET(tk->tb->maximize_menuitem), !tk->maximized);
-    gtk_widget_set_visible(GTK_WIDGET(tk->tb->restore_menuitem), tk->maximized);
+    gtk_widget_set_visible(GTK_WIDGET(tb->maximize_menuitem), !tk->maximized);
+    gtk_widget_set_visible(GTK_WIDGET(tb->restore_menuitem), tk->maximized);
 
-    gtk_widget_set_sensitive(GTK_WIDGET(tk->tb->iconify_menuitem), !tk->iconified);
+    gtk_widget_set_sensitive(GTK_WIDGET(tb->iconify_menuitem), !tk->iconified);
 
-    gtk_widget_set_visible(GTK_WIDGET(tk->tb->title_menuitem), from_popup_menu);
+    gtk_widget_set_visible(GTK_WIDGET(tb->title_menuitem), from_popup_menu);
     if (from_popup_menu) {
-        gtk_widget_set_sensitive(GTK_WIDGET(tk->tb->title_menuitem), FALSE);
-        gtk_menu_item_set_use_underline(GTK_MENU_ITEM(tk->tb->title_menuitem), FALSE);
-        gtk_menu_item_set_label(GTK_MENU_ITEM(tk->tb->title_menuitem), tk->name);
+        gtk_widget_set_sensitive(GTK_WIDGET(tb->title_menuitem), FALSE);
+        gtk_menu_item_set_use_underline(GTK_MENU_ITEM(tb->title_menuitem), FALSE);
+        gtk_menu_item_set_label(GTK_MENU_ITEM(tb->title_menuitem), tk->name);
     }
 
-    adjust_separators(tk->tb->menu);
+    adjust_separators(tb->menu);
 }
 
 /******************************************************************************/

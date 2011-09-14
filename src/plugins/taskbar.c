@@ -53,6 +53,8 @@ struct _taskbar;
 struct _task_class;
 struct _task;
 
+/******************************************************************************/
+
 enum TASKBAR_MODE {
     MODE_CLASSIC,
     MODE_GROUP,
@@ -92,6 +94,8 @@ enum {
     GROUP_BY_WORKSPACE,
     GROUP_BY_STATE
 };
+
+/******************************************************************************/
 
 static pair show_pair[] = {
     { SHOW_ICONS, "Icons"},
@@ -137,6 +141,7 @@ static pair group_by_pair[] = {
     { 0, NULL},
 };
 
+/******************************************************************************/
 
 /* Structure representing a class.  This comes from WM_CLASS, and should identify windows that come from an application. */
 typedef struct _task_class {
@@ -287,6 +292,8 @@ typedef struct _taskbar {
     Atom a_OB_WM_STATE_UNDECORATED;
 } TaskbarPlugin;
 
+/******************************************************************************/
+
 static gchar *taskbar_rc = "style 'taskbar-style'\n"
 "{\n"
 "GtkWidget::focus-padding=0\n" /* FIXME: seem to fix #2821771, not sure if this is ok. */
@@ -357,6 +364,7 @@ static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb);
 static gboolean task_has_urgency(Task * tk);
 static void taskbar_property_notify_event(TaskbarPlugin * tb, XEvent *ev);
 static GdkFilterReturn taskbar_event_filter(XEvent * xev, GdkEvent * event, TaskbarPlugin * tb);
+
 static void menu_raise_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_restore_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_maximize_window(GtkWidget * widget, TaskbarPlugin * tb);
@@ -364,16 +372,22 @@ static void menu_iconify_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_ungroup_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb);
+
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu);
 static void taskbar_make_menu(TaskbarPlugin * tb);
+
 static void taskbar_window_manager_changed(GdkScreen * screen, TaskbarPlugin * tb);
+
 static void taskbar_build_gui(Plugin * p);
+
 static int taskbar_constructor(Plugin * p, char ** fp);
 static void taskbar_destructor(Plugin * p);
 static void taskbar_apply_configuration(Plugin * p);
 static void taskbar_configure(Plugin * p, GtkWindow * parent);
 static void taskbar_save_configuration(Plugin * p, FILE * fp);
 static void taskbar_panel_configuration_changed(Plugin * p);
+
+/******************************************************************************/
 
 /* Set an urgency timer on a task. */
 static void set_timer_on_task(Task * tk)
@@ -730,6 +744,10 @@ static void task_set_names(Task * tk, Atom source)
     }
 }
 
+/******************************************************************************/
+
+/* Task Class managment functions. */
+
 /* Unlink a task from the class list because its class changed or it was deleted. */
 static void task_unlink_class(Task * tk)
 {
@@ -908,17 +926,17 @@ static void task_set_override_class(Task * tk, char * class_name)
      task_update_grouping(tk, -1);
 }
 
+/******************************************************************************/
+
 /* Look up a task in the task list. */
 static Task * task_lookup(TaskbarPlugin * tb, Window win)
 {
     Task * tk;
     for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
-        {
+    {
         if (tk->win == win)
 	    return tk;
-//        if (tk->win > win)
-//            break;
-        }
+    }
     return NULL;
 }
 
@@ -1412,6 +1430,10 @@ static void task_clear_urgency(Task * tk)
     }
 }
 
+/******************************************************************************/
+
+/* Task actions. */
+
 /* Close task window. */
 static void task_close(Task * tk)
 {
@@ -1748,6 +1770,10 @@ static void task_raise_window(Task * tk, guint32 time)
     Xclimsg(tk->win, a_NET_DESKTOP_VIEWPORT, xwa.x, xwa.y, 0, 0, 0);
 }
 
+/******************************************************************************/
+
+/* Task button input message handlers. */
+
 /* Position-calculation callback for grouped-task and window-management popup menu. */
 static void taskbar_popup_set_position(GtkWidget * menu, gint * px, gint * py, gboolean * push_in, gpointer data)
 {
@@ -1925,6 +1951,10 @@ static gboolean taskbar_button_scroll_event(GtkWidget * widget, GdkEventScroll *
     return TRUE;
 }
 
+/******************************************************************************/
+
+/* Task button layout message handlers. */
+
 /* Handler for "size-allocate" event from taskbar button. */
 static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc, Task * tk)
 {
@@ -1975,6 +2005,8 @@ static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, 
         tk->update_icon_idle_cb = g_idle_add((GSourceFunc) task_update_icon_cb, tk);
 }
 
+/******************************************************************************/
+
 /* Update style on the taskbar when created or after a configuration change. */
 static void taskbar_update_style(TaskbarPlugin * tb)
 {
@@ -2021,6 +2053,10 @@ static void task_update_style(Task * tk, TaskbarPlugin * tb)
 */
     task_draw_label(tk);
 }
+
+/******************************************************************************/
+
+/* Functions to build task gui. */
 
 /* Build label for a task button. */
 static void task_build_gui_label(TaskbarPlugin * tb, Task* tk)
@@ -2122,6 +2158,10 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
         task_set_urgency(tk);
 }
 
+/******************************************************************************/
+
+/* Task reordering. */
+
 static int task_compare(Task * tk1, Task * tk2)
 {
     int result = 0;
@@ -2212,6 +2252,8 @@ static void task_reorder(Task * tk)
     }
 }
 
+/******************************************************************************/
+
 /*****************************************************
  * handlers for NET actions                          *
  *****************************************************/
@@ -2235,17 +2277,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
             /* Search for the window in the task list.  Set up context to do an insert right away if needed. */
             Task * tk_pred = NULL;
             Task * tk_cursor;
-            Task * tk = NULL;
-            for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_pred = tk_cursor, tk_cursor = tk_cursor->task_flink)
-            {
-                if (tk_cursor->win == client_list[i])
-                {
-                    tk = tk_cursor;
-                    break;
-                }
-//                if (tk_cursor->win > client_list[i])
-//                    break;
-            }
+            Task * tk = task_lookup(tb, client_list[i]);
 
             /* Task is already in task list. */
             if (tk != NULL)
@@ -2624,7 +2656,10 @@ static GdkFilterReturn taskbar_event_filter(XEvent * xev, GdkEvent * event, Task
     return GDK_FILTER_CONTINUE;
 }
 
-/* Handler for "activate" event on Raise item of right-click menu for task buttons. */
+/******************************************************************************/
+
+/* Task button context menu handlers */
+
 static void menu_raise_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     if ((tb->menutask->desktop != ALL_WORKSPACES) && (tb->menutask->desktop != tb->current_desktop))
@@ -2633,28 +2668,24 @@ static void menu_raise_window(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
-/* Handler for "activate" event on Restore item of right-click menu for task buttons. */
 static void menu_restore_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_maximize(tb->menutask);
     task_group_menu_destroy(tb);
 }
 
-/* Handler for "activate" event on Maximize item of right-click menu for task buttons. */
 static void menu_maximize_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_maximize(tb->menutask);
     task_group_menu_destroy(tb);
 }
 
-/* Handler for "activate" event on Iconify item of right-click menu for task buttons. */
 static void menu_iconify_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_iconify(tb->menutask);
     task_group_menu_destroy(tb);
 }
 
-/* Handler for "activate" event on Move to Workspace item of right-click menu for task buttons. */
 static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb)
 {
     int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "num"));
@@ -2662,14 +2693,12 @@ static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
-/* Handler for "activate" event on Ungroup item of right-click menu for task buttons. */
 static void menu_ungroup_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_set_override_class(tb->menutask, NULL);
     task_group_menu_destroy(tb);
 }
 
-/* Handler for "activate" event on Move to Group item of right-click menu for task buttons. */
 static void menu_move_to_group(GtkWidget * widget, TaskbarPlugin * tb)
 {
     TaskClass * tc = (TaskClass *)(g_object_get_data(G_OBJECT(widget), "res_class"));
@@ -2682,7 +2711,6 @@ static void menu_move_to_group(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
-/* Handler for "activate" event on Expand Group item of right-click menu for task buttons. */
 static void menu_expand_group_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     TaskClass * tc = tb->menutask->res_class;
@@ -2699,7 +2727,6 @@ static void menu_expand_group_window(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
-/* Handler for "activate" event on Shrink Group item of right-click menu for task buttons. */
 static void menu_shrink_group_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     TaskClass * tc = tb->menutask->res_class;
@@ -2716,12 +2743,15 @@ static void menu_shrink_group_window(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
-/* Handler for "activate" event on Close item of right-click menu for task buttons. */
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_close(tb->menutask);
     task_group_menu_destroy(tb);
 }
+
+/******************************************************************************/
+
+/* Context menu adjust functions. */
 
 static void task_adjust_menu_workspace_callback(GtkWidget *widget, gpointer data)
 {
@@ -2824,6 +2854,10 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 
     adjust_separators(tk->tb->menu);
 }
+
+/******************************************************************************/
+
+/* Functions to build task context menu. */
 
 /* Helper function to create menu items for taskbar_make_menu() */
 static GtkWidget * create_menu_item(TaskbarPlugin * tb, char * name, GCallback activate_cb, GtkWidget ** menuitem)
@@ -2932,6 +2966,8 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
 
     gtk_widget_show_all(menu);
 }
+
+/******************************************************************************/
 
 /* Handler for "window-manager-changed" event. */
 static void taskbar_window_manager_changed(GdkScreen * screen, TaskbarPlugin * tb)

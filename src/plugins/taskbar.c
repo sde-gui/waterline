@@ -430,7 +430,11 @@ static gchar* task_get_desktop_name(Task * tk, const char* defval)
 
 static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
 {
-    return (tb->grouped_tasks) && (tc != NULL) && (tb->_group_threshold > 0) && (tc->visible_count >= tb->_group_threshold);
+    if (!tb->grouped_tasks)
+        return FALSE;
+
+    int visible_count = tc ? tc->visible_count : 1;
+    return (tb->grouped_tasks) && (tb->_group_threshold > 0) && (visible_count >= tb->_group_threshold);
 }
 
 static gboolean task_has_visible_close_button(Task * tk)
@@ -463,6 +467,9 @@ static gboolean taskbar_has_visible_tasks_on_desktop(TaskbarPlugin * tb, int des
  * Also transfer the urgency state to the visible task if necessary. */
 static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass * tc)
 {
+    if (!tc)
+        return;
+
     tc->visible_count = 0;
     tc->visible_task = NULL;
     tc->visible_name = NULL;
@@ -548,7 +555,7 @@ static void task_draw_label(Task * tk)
 {
     TaskClass * tc = tk->res_class;
     gboolean bold_style = (((tk->entered_state) || (tk->flash_state)) && (tk->tb->flat_button));
-    if (task_class_is_grouped(tk->tb, tc) && (tc->visible_task == tk))
+    if (task_class_is_grouped(tk->tb, tc) && (tc) && (tc->visible_task == tk))
     {
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
         gtk_widget_set_tooltip_text(tk->button, label);
@@ -570,7 +577,7 @@ static void task_draw_label(Task * tk)
 static gboolean task_is_visible(TaskbarPlugin * tb, Task * tk)
 {
     /* Not visible due to grouping. */
-    if (task_class_is_grouped(tk->tb, tk->res_class) && (tk->res_class->visible_task != tk))
+    if (task_class_is_grouped(tk->tb, tk->res_class) && (tk->res_class) && (tk->res_class->visible_task != tk))
         return FALSE;
 
     /* In single_window mode only focused task is visible. */
@@ -1356,7 +1363,7 @@ static void task_set_urgency(Task * tk)
     TaskbarPlugin * tb = tk->tb;
     TaskClass * tc = tk->res_class;
     if (task_class_is_grouped(tb, tc))
-        recompute_group_visibility_for_class(tk->tb, tk->res_class);
+        recompute_group_visibility_for_class(tk->tb, tc);
     else
     {
         /* Set the flashing context and flash the window immediately. */
@@ -1375,7 +1382,7 @@ static void task_clear_urgency(Task * tk)
     TaskbarPlugin * tb = tk->tb;
     TaskClass * tc = tk->res_class;
     if (task_class_is_grouped(tb, tc))
-        recompute_group_visibility_for_class(tk->tb, tk->res_class);
+        recompute_group_visibility_for_class(tk->tb, tc);
     else
     {
         /* Remove the timer if one is set. */
@@ -1509,9 +1516,16 @@ static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean si
 
     if (similar && task_class_is_grouped(tb, tc))
     {
-        for (tk_cursor = tc->res_class_head; tk_cursor != NULL; tk_cursor = tk_cursor->res_class_flink)
+        if (tc)
         {
-            task_show_window_list_helper(tk_cursor, menu, tb);
+            for (tk_cursor = tc->res_class_head; tk_cursor != NULL; tk_cursor = tk_cursor->res_class_flink)
+            {
+                task_show_window_list_helper(tk_cursor, menu, tb);
+            }
+        }
+        else
+        {
+            task_show_window_list_helper(tk, menu, tb);
         }
     }
     else
@@ -1788,7 +1802,8 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
         Task * visible_task = (
             (tb->single_window) ? tb->focused :
             (!task_class_is_grouped(tb, tk->res_class)) ? tk :
-            tk->res_class->visible_task);
+            (tk->res_class) ? tk->res_class->visible_task :
+            tk);
         task_group_menu_destroy(tb);
 
         int action = ACTION_NONE;

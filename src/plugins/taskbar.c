@@ -208,7 +208,6 @@ typedef struct _taskbar {
     GtkWidget * ungroup_menuitem;		/*  */
     GtkWidget * move_to_group_menuitem;		/*  */
     GtkWidget * title_menuitem;			/*  */
-    GtkWidget * title_separator_menuitem;	/*  */
 
     GtkWidget * group_menu;			/* Popup menu for grouping selection */
     GdkPixbuf * fallback_pixbuf;		/* Fallback task icon when none is available */
@@ -2695,6 +2694,43 @@ static void task_adjust_menu_move_to_group(Task * tk)
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(tk->tb->move_to_group_menuitem), move_to_group_menu);
 }
 
+typedef struct {
+    gboolean prev_is_separator;
+    GtkWidget * last_visible;
+} _AdjustSeparatorsData;
+
+static void adjust_separators_callback(GtkWidget * widget, gpointer d)
+{
+    _AdjustSeparatorsData * data = (_AdjustSeparatorsData *) d;
+    
+    gboolean is_separator = GTK_IS_SEPARATOR_MENU_ITEM(widget);
+
+    if (gtk_widget_get_visible(GTK_WIDGET(widget))) {
+        if (data->prev_is_separator && is_separator) {
+            gtk_widget_set_visible(GTK_WIDGET(widget), FALSE);
+        } else {
+            data->last_visible = widget;
+            data->prev_is_separator = is_separator;
+        }
+    } else {
+        if (!data->prev_is_separator && is_separator) {
+            gtk_widget_set_visible(GTK_WIDGET(widget), TRUE);
+            data->last_visible = widget;
+            data->prev_is_separator = is_separator;
+        }
+    }
+}
+
+static void adjust_separators(GtkWidget * menu)
+{
+    _AdjustSeparatorsData data;
+    data.prev_is_separator = TRUE;
+    data.last_visible = NULL;
+    gtk_container_foreach(GTK_CONTAINER(menu), adjust_separators_callback, &data);
+    if (data.last_visible)
+        adjust_separators_callback(data.last_visible, &data);
+}
+
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 {
     if (tk->tb->workspace_submenu) {
@@ -2713,12 +2749,13 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
     gtk_widget_set_sensitive(GTK_WIDGET(tk->tb->iconify_menuitem), !tk->iconified);
 
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->title_menuitem), from_popup_menu);
-    gtk_widget_set_visible(GTK_WIDGET(tk->tb->title_separator_menuitem), from_popup_menu);
     if (from_popup_menu) {
         gtk_widget_set_sensitive(GTK_WIDGET(tk->tb->title_menuitem), FALSE);
         gtk_menu_item_set_use_underline(GTK_MENU_ITEM(tk->tb->title_menuitem), FALSE);
         gtk_menu_item_set_label(GTK_MENU_ITEM(tk->tb->title_menuitem), tk->name);
     }
+
+    adjust_separators(tk->tb->menu);
 }
 
 /* Make right-click menu for task buttons.
@@ -2826,12 +2863,10 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
 
     mi = gtk_separator_menu_item_new();
     gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
-    tb->title_separator_menuitem = mi;
 
     mi = gtk_menu_item_new_with_mnemonic("");
     gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
     tb->title_menuitem = mi;
-
 
     gtk_widget_show_all(menu);
     tb->menu = menu;
@@ -2970,10 +3005,11 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 
     tb->workspace_submenu = NULL;
     tb->restore_menuitem  = NULL;
-    tb->maximize_menuitem  = NULL;
+    tb->maximize_menuitem = NULL;
     tb->iconify_menuitem  = NULL;
+    tb->ungroup_menuitem  = NULL;
+    tb->move_to_group_menuitem  = NULL;
     tb->title_menuitem    = NULL;
-    tb->title_separator_menuitem = NULL;
 
     tb->desktop_names = NULL;
     tb->number_of_desktop_names = 0;

@@ -2872,9 +2872,9 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
     gtk_widget_set_visible(GTK_WIDGET(tb->ungroup_menuitem), manual_grouping && tk->res_class && tk->res_class->visible_count > 1);
 
     gtk_widget_set_visible(GTK_WIDGET(tb->expand_group_menuitem),
-        manual_grouping && tk->res_class && tk->res_class->visible_count > 1 && task_class_is_grouped(tb, tk->res_class));
+        manual_grouping && tk->res_class && task_class_is_grouped(tb, tk->res_class));
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->shrink_group_menuitem),
-        manual_grouping && tk->res_class && tk->res_class->visible_count > 1 && !task_class_is_grouped(tb, tk->res_class));
+        manual_grouping && tk->res_class && !task_class_is_grouped(tb, tk->res_class));
     
     gtk_widget_set_visible(GTK_WIDGET(tb->maximize_menuitem), !tk->maximized);
     gtk_widget_set_visible(GTK_WIDGET(tb->restore_menuitem), tk->maximized);

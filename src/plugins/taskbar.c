@@ -313,20 +313,22 @@ static gchar *taskbar_rc = "style 'taskbar-style'\n"
 #define BUTTON_HEIGHT_EXTRA  4          /* Amount needed to have button not clip icon */
 
 static void set_timer_on_task(Task * tk);
-static gboolean task_is_visible_on_current_desktop(TaskbarPlugin * tb, Task * tk);
+static gboolean task_is_visible_on_current_desktop(Task * tk);
 static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass * tc);
 static void recompute_group_visibility_on_current_desktop(TaskbarPlugin * tb);
 static void task_draw_label(Task * tk);
-static gboolean task_is_visible(TaskbarPlugin * tb, Task * tk);
+static gboolean task_is_visible(Task * tk);
 static void task_button_redraw(Task * tk, TaskbarPlugin * tb);
 static void taskbar_redraw(TaskbarPlugin * tb);
 static gboolean accept_net_wm_state(NetWMState * nws);
 static gboolean accept_net_wm_window_type(NetWMWindowType * nwwt);
 static void task_free_names(Task * tk);
 static void task_set_names(Task * tk, Atom source);
+
 static void task_unlink_class(Task * tk);
 static TaskClass * taskbar_enter_res_class(TaskbarPlugin * tb, char * res_class, gboolean * name_consumed);
 static void task_set_class(Task * tk);
+
 static Task * task_lookup(TaskbarPlugin * tb, Window win);
 static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink);
 static GdkPixbuf * _wnck_gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, int height);
@@ -467,22 +469,22 @@ static gboolean task_has_visible_close_button(Task * tk)
 }
 
 /* Determine if a task is visible considering only its desktop placement. */
-static gboolean task_is_visible_on_desktop(TaskbarPlugin * tb, Task * tk, int desktop)
+static gboolean task_is_visible_on_desktop(Task * tk, int desktop)
 {
-    return ( (tk->desktop == ALL_WORKSPACES) || (tk->desktop == desktop) || (tb->show_all_desks) );
+    return ( (tk->desktop == ALL_WORKSPACES) || (tk->desktop == desktop) || (tk->tb->show_all_desks) );
 }
 
 /* Determine if a task is visible considering only its desktop placement. */
-static gboolean task_is_visible_on_current_desktop(TaskbarPlugin * tb, Task * tk)
+static gboolean task_is_visible_on_current_desktop(Task * tk)
 {
-    return task_is_visible_on_desktop(tb, tk, tb->current_desktop);
+    return task_is_visible_on_desktop(tk, tk->tb->current_desktop);
 }
 
 static gboolean taskbar_has_visible_tasks_on_desktop(TaskbarPlugin * tb, int desktop)
 {
     Task * tk;
     for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
-        if (task_is_visible_on_desktop(tb, tk,  desktop))
+        if (task_is_visible_on_desktop(tk,  desktop))
             return TRUE;
     return FALSE;
 }
@@ -502,7 +504,7 @@ static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass *
     Task * tk;
     for (tk = tc->res_class_head; tk != NULL; tk = tk->res_class_flink)
     {
-        if (task_is_visible_on_current_desktop(tb, tk))
+        if (task_is_visible_on_current_desktop(tk))
         {
             /* Count visible tasks and make the first visible task the one that is used for display. */
             if (tc->visible_count == 0)
@@ -601,10 +603,12 @@ static void task_draw_label(Task * tk)
 }
 
 /* Determine if a task is visible. */
-static gboolean task_is_visible(TaskbarPlugin * tb, Task * tk)
+static gboolean task_is_visible(Task * tk)
 {
+    TaskbarPlugin * tb = tk->tb;
+
     /* Not visible due to grouping. */
-    if (task_class_is_grouped(tk->tb, tk->res_class) && (tk->res_class) && (tk->res_class->visible_task != tk))
+    if (task_class_is_grouped(tb, tk->res_class) && (tk->res_class) && (tk->res_class->visible_task != tk))
         return FALSE;
 
     /* In single_window mode only focused task is visible. */
@@ -616,7 +620,7 @@ static gboolean task_is_visible(TaskbarPlugin * tb, Task * tk)
         return FALSE;
 
     /* Desktop placement. */
-    return task_is_visible_on_current_desktop(tb, tk);
+    return task_is_visible_on_current_desktop(tk);
 }
 
 static void task_button_redraw_button_state(Task * tk, TaskbarPlugin * tb)
@@ -651,7 +655,7 @@ static gboolean task_adapt_to_allocated_size(Task * tk)
 /* Redraw a task button. */
 static void task_button_redraw(Task * tk, TaskbarPlugin * tb)
 {
-    if (task_is_visible(tb, tk))
+    if (task_is_visible(tk))
     {
         task_button_redraw_button_state(tk, tb);
         task_draw_label(tk);
@@ -1516,7 +1520,7 @@ static void task_show_menu(Task * tk, GdkEventButton * event, Task* visible_task
 
 static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, TaskbarPlugin * tb)
 {
-    if (task_is_visible_on_current_desktop(tb, tk_cursor))
+    if (task_is_visible_on_current_desktop(tk_cursor))
     {
         /* The menu item has the name, or the iconified name, and the icon of the application window. */
 
@@ -1606,7 +1610,7 @@ static void task_activate_neighbour(Task * tk, GdkEventButton * event, gboolean 
                 break;
             continue;
         }
-        gboolean ok = task_is_visible_on_current_desktop(tk->tb, tk_cursor)
+        gboolean ok = task_is_visible_on_current_desktop(tk_cursor)
             && (!in_group || (tk->res_class && tk->res_class == tk_cursor->res_class));
         if (ok)
         {

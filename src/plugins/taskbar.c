@@ -548,6 +548,9 @@ static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass *
             flashing_task->flash_timeout = 0;
         }
     }
+
+    if (tc->visible_task)
+        task_update_style(tc->visible_task, tb);
 }
 
 /* Recompute the visible task for all classes when the desktop changes. */

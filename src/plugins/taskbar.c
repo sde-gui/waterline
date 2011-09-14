@@ -193,6 +193,8 @@ typedef struct _task {
 
     int timestamp;
 
+    int focus_timestamp;
+
     GtkWidget* click_on;
     
     int allocated_icon_size;
@@ -496,20 +498,29 @@ static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass *
     if (!tc)
         return;
 
+    Task * prev_visible_task = tc->visible_task;
+
     tc->visible_count = 0;
     tc->visible_task = NULL;
     tc->visible_name = NULL;
     Task * flashing_task = NULL;
     gboolean class_has_urgency = FALSE;
     Task * tk;
+
+    Task * visible_task_candidate = NULL;
+    int visible_task_prio = 0;
+
     for (tk = tc->res_class_head; tk != NULL; tk = tk->res_class_flink)
     {
         if (task_is_visible_on_current_desktop(tk))
         {
-            /* Count visible tasks and make the first visible task the one that is used for display. */
-            if (tc->visible_count == 0)
-                tc->visible_task = tk;
             tc->visible_count += 1;
+
+            if (!visible_task_candidate || tk->focus_timestamp > visible_task_prio)
+            {
+                visible_task_prio = tk->focus_timestamp;
+                visible_task_candidate = tk;
+            }
 
             /* Compute summary bit for urgency anywhere in the class. */
             if (tk->urgency)
@@ -530,6 +541,8 @@ static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass *
                 tc->visible_name = tc->res_class;
         }
     }
+
+    tc->visible_task = visible_task_candidate;
 
     /* Transfer the flash timeout to the visible task. */
     if (class_has_urgency)
@@ -567,6 +580,9 @@ static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass *
 
     if (tc->visible_task)
         task_update_style(tc->visible_task, tb);
+
+    if (prev_visible_task && prev_visible_task != tc->visible_task)
+        task_button_redraw(prev_visible_task);
 }
 
 /* Recompute the visible task for all classes when the desktop changes. */
@@ -664,7 +680,9 @@ static void task_button_redraw(Task * tk)
         icon_grid_set_visible(tb->icon_grid, tk->button, TRUE);
     }
     else
+    {
         icon_grid_set_visible(tb->icon_grid, tk->button, FALSE);
+    }
 }
 
 /* Redraw all tasks in the taskbar. */
@@ -762,6 +780,9 @@ static void task_unlink_class(Task * tk)
     if (tc != NULL)
     {
         tk->res_class = NULL;
+
+        if (tc->visible_task == tk)
+            tc->visible_task = NULL;
 
         /* Remove from per-class task list. */
         if (tc->res_class_head == tk)
@@ -2303,6 +2324,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     /* Allocate and initialize new task structure. */
                     tk = g_new0(Task, 1);
                     tk->timestamp = ++tb->task_timestamp;
+                    tk->focus_timestamp = 0;
                     tk->click_on = NULL;
                     tk->present_in_client_list = TRUE;
                     tk->win = client_list[i];
@@ -2410,15 +2432,21 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
     {
         ctk->focused = FALSE;
         tb->focused = NULL;
-        task_button_redraw(ctk);
     }
 
     /* If a task gained focus, update data structures. */
     if ((ntk != NULL) && (make_new))
     {
+        ntk->focus_timestamp = ++tb->task_timestamp;
         ntk->focused = TRUE;
         tb->focused = ntk;
+        recompute_group_visibility_for_class(tb, ntk->res_class);
         task_button_redraw(ntk);
+    }
+
+    if (ctk != NULL)
+    {
+        task_button_redraw(ctk);
     }
 
     icon_grid_resume_updates(tb->icon_grid);

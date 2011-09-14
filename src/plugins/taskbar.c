@@ -2800,7 +2800,7 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
     if (manual_grouping)
         task_adjust_menu_move_to_group(tk);
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->move_to_group_menuitem), manual_grouping);
-    gtk_widget_set_visible(GTK_WIDGET(tk->tb->ungroup_menuitem), manual_grouping && tk->res_class);
+    gtk_widget_set_visible(GTK_WIDGET(tk->tb->ungroup_menuitem), manual_grouping && tk->res_class && tk->res_class->visible_count > 1);
 
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->expand_group_menuitem),
         manual_grouping && tk->res_class && tk->res_class->visible_count > 1 && task_class_is_grouped(tk->tb, tk->res_class));

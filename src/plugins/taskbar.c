@@ -2822,6 +2822,18 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
     adjust_separators(tk->tb->menu);
 }
 
+/* Helper function to create menu items for taskbar_make_menu() */
+static GtkWidget * create_menu_item(TaskbarPlugin * tb, char * name, GCallback activate_cb, GtkWidget ** menuitem)
+{
+    GtkWidget * mi = gtk_menu_item_new_with_mnemonic(name);
+    gtk_menu_shell_append(GTK_MENU_SHELL(tb->menu), mi);
+    if (activate_cb)
+        g_signal_connect(G_OBJECT(mi), "activate", activate_cb, tb);
+    if (menuitem)
+        *menuitem = mi;
+    return mi;
+}
+
 /* Make right-click menu for task buttons.
  * This depends on number of desktops and edge. */
 static void taskbar_make_menu(TaskbarPlugin * tb)
@@ -2832,29 +2844,16 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
 
     /* Allocate menu. */
     GtkWidget * menu = gtk_menu_new();
+    tb->menu = menu;
 
-    /* Add Raise menu item. */
-    GtkWidget *mi = gtk_menu_item_new_with_mnemonic(_("_Raise"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_raise_window, tb);
+    GtkWidget * mi;
+        
+    /* Create menu items. */
 
-    /* Add Restore menu item. */
-    mi = gtk_menu_item_new_with_mnemonic(_("R_estore"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_restore_window, tb);
-    tb->restore_menuitem = mi;
-
-    /* Add Maximize menu item. */
-    mi = gtk_menu_item_new_with_mnemonic(_("Ma_ximize"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_maximize_window, tb);
-    tb->maximize_menuitem = mi;
-
-    /* Add Iconify menu item. */
-    mi = gtk_menu_item_new_with_mnemonic(_("Ico_nify"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_iconify_window, tb);
-    tb->iconify_menuitem = mi;
+    create_menu_item(tb, _("_Raise"), (GCallback) menu_raise_window, NULL);
+    create_menu_item(tb, _("R_estore"), (GCallback) menu_restore_window, &tb->restore_menuitem);
+    create_menu_item(tb, _("Ma_ximize"), (GCallback) menu_maximize_window, &tb->maximize_menuitem);
+    create_menu_item(tb, _("Ico_nify"), (GCallback) menu_iconify_window, &tb->iconify_menuitem);
 
     /* If multiple desktops are supported, add menu items to select them. */
     tb->workspace_submenu = NULL;
@@ -2889,39 +2888,21 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
         gtk_menu_shell_append(GTK_MENU_SHELL(workspace_menu), mi);
 
         /* Add Move to Workspace menu item as a submenu. */
-        mi = gtk_menu_item_new_with_mnemonic(_("_Move to Workspace"));
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+        mi = create_menu_item(tb, _("_Move to Workspace"), NULL, NULL);
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(mi), workspace_menu);
 
         tb->workspace_submenu = workspace_menu;
     }
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-
-    /* Add Ungroup menu item. */
-    mi = gtk_menu_item_new_with_mnemonic(_("_Ungroup"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_ungroup_window, tb);
-    tb->ungroup_menuitem = mi;
-        
-    /* Add Move to Workspace menu item as a submenu. */
-    mi = gtk_menu_item_new_with_mnemonic(_("_Move to Group"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    tb->move_to_group_menuitem = mi;
+    
+    create_menu_item(tb, _("_Ungroup"), (GCallback) menu_ungroup_window, &tb->ungroup_menuitem);
+    create_menu_item(tb, _("M_ove to Group"), NULL, &tb->move_to_group_menuitem);
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-
-    /* Add Expand Group menu item. */
-    mi = gtk_menu_item_new_with_mnemonic(_("Expand _Group"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_expand_group_window, tb);
-    tb->expand_group_menuitem = mi;
-
-    /* Add Shrink Group menu item. */
-    mi = gtk_menu_item_new_with_mnemonic(_("Shrink _Group"));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_shrink_group_window, tb);
-    tb->shrink_group_menuitem = mi;
+    
+    create_menu_item(tb, _("Expand _Group"), (GCallback) menu_expand_group_window, &tb->expand_group_menuitem);
+    create_menu_item(tb, _("Shrink _Group"), (GCallback) menu_shrink_group_window, &tb->shrink_group_menuitem);
 
     /* Add Close menu item.  By popular demand, we place this menu item closest to the cursor. */
     mi = gtk_menu_item_new_with_mnemonic (_("_Close Window"));
@@ -2947,7 +2928,6 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     tb->title_menuitem = mi;
 
     gtk_widget_show_all(menu);
-    tb->menu = menu;
 }
 
 /* Handler for "window-manager-changed" event. */

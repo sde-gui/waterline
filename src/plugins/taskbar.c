@@ -147,6 +147,9 @@ typedef struct _task_class {
     char * visible_name;			/* Name that will be visible for grouped tasks */
     int visible_count;				/* Count of tasks that are visible in current desktop */
     int timestamp;
+    
+    gboolean expand;
+    gboolean manual_expand_state;
 } TaskClass;
 
 /* Structure representing a "task", an open window. */
@@ -207,6 +210,8 @@ typedef struct _taskbar {
     GtkWidget * iconify_menuitem;		/*  */
     GtkWidget * ungroup_menuitem;		/*  */
     GtkWidget * move_to_group_menuitem;		/*  */
+    GtkWidget * expand_group_menuitem;		/*  */
+    GtkWidget * shrink_group_menuitem;		/*  */
     GtkWidget * title_menuitem;			/*  */
 
     GtkWidget * group_menu;			/* Popup menu for grouping selection */
@@ -433,8 +438,13 @@ static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
     if (!tb->grouped_tasks)
         return FALSE;
 
+    if (tc && tc->manual_expand_state)
+    {
+        return !tc->expand;
+    }
+
     int visible_count = tc ? tc->visible_count : 1;
-    return (tb->grouped_tasks) && (tb->_group_threshold > 0) && (visible_count >= tb->_group_threshold);
+    return (tb->_group_threshold > 0) && (visible_count >= tb->_group_threshold);
 }
 
 static gboolean task_has_visible_close_button(Task * tk)
@@ -2669,6 +2679,40 @@ static void menu_move_to_group(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
+/* Handler for "activate" event on Expand Group item of right-click menu for task buttons. */
+static void menu_expand_group_window(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    TaskClass * tc = tb->menutask->res_class;
+    if (tc)
+    {
+        tc->expand = TRUE;
+        tc->manual_expand_state = TRUE;
+
+        icon_grid_defer_updates(tb->icon_grid);
+        recompute_group_visibility_on_current_desktop(tb);
+        taskbar_redraw(tb);
+        icon_grid_resume_updates(tb->icon_grid);
+    }
+    task_group_menu_destroy(tb);
+}
+
+/* Handler for "activate" event on Shrink Group item of right-click menu for task buttons. */
+static void menu_shrink_group_window(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    TaskClass * tc = tb->menutask->res_class;
+    if (tc)
+    {
+        tc->expand = FALSE;
+        tc->manual_expand_state = TRUE;
+
+        icon_grid_defer_updates(tb->icon_grid);
+        recompute_group_visibility_on_current_desktop(tb);
+        taskbar_redraw(tb);
+        icon_grid_resume_updates(tb->icon_grid);
+    }
+    task_group_menu_destroy(tb);
+}
+
 /* Handler for "activate" event on Close item of right-click menu for task buttons. */
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
@@ -2757,6 +2801,11 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
         task_adjust_menu_move_to_group(tk);
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->move_to_group_menuitem), manual_grouping);
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->ungroup_menuitem), manual_grouping && tk->res_class);
+
+    gtk_widget_set_visible(GTK_WIDGET(tk->tb->expand_group_menuitem),
+        manual_grouping && tk->res_class && tk->res_class->visible_count > 1 && task_class_is_grouped(tk->tb, tk->res_class));
+    gtk_widget_set_visible(GTK_WIDGET(tk->tb->shrink_group_menuitem),
+        manual_grouping && tk->res_class && tk->res_class->visible_count > 1 && !task_class_is_grouped(tk->tb, tk->res_class));
     
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->maximize_menuitem), !tk->maximized);
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->restore_menuitem), tk->maximized);
@@ -2859,6 +2908,20 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     mi = gtk_menu_item_new_with_mnemonic(_("_Move to Group"));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     tb->move_to_group_menuitem = mi;
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+    /* Add Expand Group menu item. */
+    mi = gtk_menu_item_new_with_mnemonic(_("Expand _Group"));
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_expand_group_window, tb);
+    tb->expand_group_menuitem = mi;
+
+    /* Add Shrink Group menu item. */
+    mi = gtk_menu_item_new_with_mnemonic(_("Shrink _Group"));
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_shrink_group_window, tb);
+    tb->shrink_group_menuitem = mi;
 
     /* Add Close menu item.  By popular demand, we place this menu item closest to the cursor. */
     mi = gtk_menu_item_new_with_mnemonic (_("_Close Window"));

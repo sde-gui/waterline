@@ -157,8 +157,11 @@ typedef struct _task {
     char * name;				/* Taskbar label when normal, from WM_NAME or NET_WM_NAME */
     char * name_iconified;			/* Taskbar label when iconified */
     Atom name_source;				/* Atom that is the source of taskbar label */
+    
     TaskClass * res_class;			/* Class, from WM_CLASS */
     struct _task * res_class_flink;		/* Forward link to task in same class */
+    char * override_class_name;
+
     GtkWidget * button;				/* Button representing task in taskbar */
     GtkWidget * container;			/* Container for image, label and close button. */
     GtkWidget * image;				/* Icon for task, child of button */
@@ -202,6 +205,8 @@ typedef struct _taskbar {
     GtkWidget * restore_menuitem;		/*  */
     GtkWidget * maximize_menuitem;		/*  */
     GtkWidget * iconify_menuitem;		/*  */
+    GtkWidget * ungroup_menuitem;		/*  */
+    GtkWidget * move_to_group_menuitem;		/*  */
     GtkWidget * title_menuitem;			/*  */
     GtkWidget * title_separator_menuitem;	/*  */
 
@@ -237,13 +242,18 @@ typedef struct _taskbar {
     gboolean tooltips;				/* User preference: show tooltips */
     int show_icons_titles;			/* User preference: show icons, titles */
     gboolean show_close_buttons;		/* User preference: show close button */
+    
     gboolean use_urgency_hint;			/* User preference: windows with urgency will flash */
     gboolean flat_button;			/* User preference: taskbar buttons have visible background */
+    
     int mode;                                   /* User preference: view mode */
     int group_threshold;                        /* User preference: threshold for groupping tasks into one button */
     int group_by;                               /* User preference: attr to group tasks by */
+    gboolean manual_grouping;			/* User preference: manual grouping */
+
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
     int spacing;				/* Spacing between taskbar buttons */
+
     gboolean use_net_active;			/* NET_WM_ACTIVE_WINDOW is supported by the window manager */
     gboolean net_active_checked;		/* True if use_net_active is valid */
 
@@ -312,6 +322,7 @@ static GdkPixbuf * _wnck_gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, i
 static GdkPixbuf * apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask);
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 static void task_update_icon(Task * tk, Atom source);
+static void task_update_grouping(Task * tk, int group_by);
 static gboolean flash_window_timeout(Task * tk);
 static void task_set_urgency(Task * tk);
 static void task_clear_urgency(Task * tk);
@@ -346,6 +357,7 @@ static void menu_raise_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_restore_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_maximize_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_iconify_window(GtkWidget * widget, TaskbarPlugin * tb);
+static void menu_ungroup_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb);
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb);
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu);
@@ -803,18 +815,23 @@ static void task_set_class(Task * tk)
     g_assert(tk != NULL);
 
     gchar * res_class = NULL;
-    switch (tk->tb->_group_by) {
-        case GROUP_BY_CLASS:
-            res_class = task_get_res_class(tk); break;
-        case GROUP_BY_WORKSPACE:
-            res_class = task_get_desktop_name(tk, NULL); break;
-        case GROUP_BY_STATE:
-            res_class = g_strdup(
-                (tk->urgency) ? _("Urgency") : 
-                (tk->iconified) ? _("Iconified") : 
-                _("Mapped")
-            );
-            break;
+    
+    if (tk->override_class_name != (char*) -1) {
+         res_class = g_strdup(tk->override_class_name);
+    } else {
+        switch (tk->tb->_group_by) {
+            case GROUP_BY_CLASS:
+                res_class = task_get_res_class(tk); break;
+            case GROUP_BY_WORKSPACE:
+                res_class = task_get_desktop_name(tk, NULL); break;
+            case GROUP_BY_STATE:
+                res_class = g_strdup(
+                    (tk->urgency) ? _("Urgency") : 
+                    (tk->iconified) ? _("Iconified") : 
+                    _("Mapped")
+                );
+                break;
+        }
     }
 
     if (res_class != NULL)
@@ -857,6 +874,21 @@ static void task_set_class(Task * tk)
     RET();
 }
 
+static void task_set_override_class(Task * tk, char * class_name)
+{
+     task_unlink_class(tk);
+
+     if (tk->override_class_name != (char*) -1 && tk->override_class_name)
+         g_free(tk->override_class_name);
+
+     if (class_name != (char*) -1 && class_name)
+         tk->override_class_name = g_strdup(class_name);
+     else
+         tk->override_class_name = class_name;
+
+     task_update_grouping(tk, -1);
+}
+
 /* Look up a task in the task list. */
 static Task * task_lookup(TaskbarPlugin * tb, Window win)
 {
@@ -888,6 +920,8 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     if (tk->update_icon_idle_cb != 0)
         g_source_remove(tk->update_icon_idle_cb);
 
+    if (tk->override_class_name != (char*) -1 && tk->override_class_name)
+         g_free(tk->override_class_name);
 
     /* If there is an urgency timeout, remove it. */
     if (tk->flash_timeout != 0)
@@ -2213,6 +2247,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     tk->iconified = (get_wm_state(tk->win) == IconicState);
                     tk->maximized = nws.maximized_vert || nws.maximized_horz;
                     tk->desktop = get_net_wm_desktop(tk->win);
+                    tk->override_class_name = (char*) -1;
                     if (tb->use_urgency_hint)
                         tk->urgency = task_has_urgency(tk);
                     task_build_gui(tb, tk);
@@ -2437,7 +2472,7 @@ static void task_update_grouping(Task * tk, int group_by)
 {
     ENTER;
     DBG("group_by = %d, tb->_group_by = %d\n", group_by, tk->tb->_group_by);
-    if (tk->tb->_group_by == group_by)
+    if (tk->tb->_group_by == group_by || group_by < 0)
     {
         task_set_class(tk);
         task_reorder(tk);
@@ -2600,6 +2635,26 @@ static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
+/* Handler for "activate" event on Ungroup item of right-click menu for task buttons. */
+static void menu_ungroup_window(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    task_set_override_class(tb->menutask, NULL);
+    task_group_menu_destroy(tb);
+}
+
+/* Handler for "activate" event on Move to Group item of right-click menu for task buttons. */
+static void menu_move_to_group(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    TaskClass * tc = (TaskClass *)(g_object_get_data(G_OBJECT(widget), "res_class"));
+    if (tc && tc->res_class)
+    {
+        char * name = g_strdup(tc->res_class);
+        task_set_override_class(tb->menutask, name);
+        g_free(name);
+    }
+    task_group_menu_destroy(tb);
+}
+
 /* Handler for "activate" event on Close item of right-click menu for task buttons. */
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
@@ -2614,12 +2669,44 @@ static void task_adjust_menu_workspace_callback(GtkWidget *widget, gpointer data
     gtk_widget_set_sensitive(widget, num != tk->desktop);
 }
 
+static void task_adjust_menu_move_to_group(Task * tk)
+{
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(tk->tb->move_to_group_menuitem), NULL);
+
+    GtkWidget * move_to_group_menu = gtk_menu_new();
+
+    TaskClass * tc;
+    for (tc = tk->tb->res_class_list; tc != NULL; tc = tc->res_class_flink)
+    {
+        if (tc->visible_count && tk->res_class != tc)
+        {
+            gchar * label = g_strdup((tc->res_class && strlen(tc->res_class) > 0) ? tc->res_class : _("(unnamed)"));
+            GtkWidget * mi = gtk_menu_item_new_with_label(label);
+            g_free(label);
+
+            g_object_set_data(G_OBJECT(mi), "res_class", tc);
+            g_signal_connect(mi, "activate", G_CALLBACK(menu_move_to_group), tk->tb);
+            gtk_menu_shell_append(GTK_MENU_SHELL(move_to_group_menu), mi);
+
+            gtk_widget_set_visible(GTK_WIDGET(mi), TRUE);
+        }
+    }
+
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(tk->tb->move_to_group_menuitem), move_to_group_menu);
+}
+
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 {
     if (tk->tb->workspace_submenu) {
         gtk_container_foreach(GTK_CONTAINER(tk->tb->workspace_submenu), task_adjust_menu_workspace_callback, tk);
     }
 
+    gboolean manual_grouping = tk->tb->manual_grouping && tk->tb->grouped_tasks;
+    if (manual_grouping)
+        task_adjust_menu_move_to_group(tk);
+    gtk_widget_set_visible(GTK_WIDGET(tk->tb->move_to_group_menuitem), manual_grouping);
+    gtk_widget_set_visible(GTK_WIDGET(tk->tb->ungroup_menuitem), manual_grouping && tk->res_class);
+    
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->maximize_menuitem), !tk->maximized);
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->restore_menuitem), tk->maximized);
 
@@ -2707,6 +2794,19 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
 
         tb->workspace_submenu = workspace_menu;
     }
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+    /* Add Ungroup menu item. */
+    mi = gtk_menu_item_new_with_mnemonic(_("_Ungroup"));
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    g_signal_connect(G_OBJECT(mi), "activate", (GCallback) menu_ungroup_window, tb);
+    tb->ungroup_menuitem = mi;
+        
+    /* Add Move to Workspace menu item as a submenu. */
+    mi = gtk_menu_item_new_with_mnemonic(_("_Move to Group"));
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    tb->move_to_group_menuitem = mi;
 
     /* Add Close menu item.  By popular demand, we place this menu item closest to the cursor. */
     mi = gtk_menu_item_new_with_mnemonic (_("_Close Window"));
@@ -2842,8 +2942,9 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->mode              = MODE_CLASSIC;
     tb->group_threshold   = 1;
     tb->group_by          = GROUP_BY_CLASS;
+    tb->manual_grouping   = TRUE;
     tb->show_close_buttons = FALSE;
-    
+
     tb->button1_action    = ACTION_RAISEICONIFY;
     tb->button2_action    = ACTION_SHADE;
     tb->button3_action    = ACTION_MENU;
@@ -2925,6 +3026,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->group_threshold = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupBy") == 0)
                     tb->group_by = str2num(group_by_pair, s.t[1], tb->group_by);
+                else if (g_ascii_strcasecmp(s.t[0], "ManualGrouping") == 0)
+                    tb->manual_grouping = str2num(bool_pair, s.t[1], tb->manual_grouping);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowIconsTitles") == 0)
                     tb->show_icons_titles = str2num(show_pair, s.t[1], tb->show_icons_titles);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowCloseButtons") == 0)
@@ -3091,6 +3194,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("|Mode|Classic|Group windows|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
         _("|Group by|None|Window class|Workspace|Window state"), (gpointer)&tb->group_by, (GType)CONF_TYPE_ENUM,
         _("Group threshold"), (gpointer)&tb->group_threshold, (GType)CONF_TYPE_INT,
+        _("Manual grouping"), (gpointer)&tb->manual_grouping, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
         _("Show iconified windows"), (gpointer)&tb->show_iconified, (GType)CONF_TYPE_BOOL,
@@ -3147,6 +3251,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "Mode", tb->mode, mode_pair);
     lxpanel_put_int(fp, "GroupThreshold", tb->group_threshold);
     lxpanel_put_enum(fp, "GroupBy", tb->group_by, group_by_pair);
+    lxpanel_put_bool(fp, "ManualGrouping", tb->manual_grouping);
     lxpanel_put_bool(fp, "ShowCloseButtons", tb->show_close_buttons);
     lxpanel_put_enum(fp, "Button1Action", tb->button1_action, action_pair);
     lxpanel_put_enum(fp, "Button2Action", tb->button2_action, action_pair);

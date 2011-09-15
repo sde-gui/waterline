@@ -177,6 +177,8 @@ typedef struct _task {
     GtkWidget * label;				/* Label for task, child of button */
     GtkWidget * button_close;			/* Close button */
 
+    GtkWidget * new_group_dlg;			/* Move to new group dialog */
+
     GtkAllocation button_alloc;
     guint adapt_to_allocated_size_idle_cb;
     guint update_icon_idle_cb;
@@ -995,6 +997,9 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
     if (tk->override_class_name != (char*) -1 && tk->override_class_name)
          g_free(tk->override_class_name);
+
+    if (tk->new_group_dlg)
+        gtk_widget_destroy(tk->new_group_dlg);
 
     /* If there is an urgency timeout, remove it. */
     if (tk->flash_timeout != 0)
@@ -2760,6 +2765,30 @@ static void menu_move_to_group(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
+static void task_move_to_new_group_cb(char * value, gpointer p)
+{
+    Task * tk = (Task *) p;
+    
+    tk->new_group_dlg = NULL;
+
+    if (value)
+        task_set_override_class(tk, value),
+        g_free(value);
+}
+
+static void menu_move_to_new_group(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    Task * tk = tb->menutask;
+
+    if (tk->new_group_dlg)
+        gtk_widget_destroy(tk->new_group_dlg),
+        tk->new_group_dlg = NULL;
+
+    tk->new_group_dlg = create_entry_dialog(_("Move window to new group"), NULL, NULL, task_move_to_new_group_cb, tk);
+
+    task_group_menu_destroy(tb);
+}
+
 static void menu_expand_group_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     TaskClass * tc = tb->menutask->res_class;
@@ -2827,10 +2856,16 @@ static void task_adjust_menu_move_to_group(Task * tk)
             g_object_set_data(G_OBJECT(mi), "res_class", tc);
             g_signal_connect(mi, "activate", G_CALLBACK(menu_move_to_group), tk->tb);
             gtk_menu_shell_append(GTK_MENU_SHELL(move_to_group_menu), mi);
-
-            gtk_widget_set_visible(GTK_WIDGET(mi), TRUE);
         }
     }
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(move_to_group_menu), gtk_separator_menu_item_new());
+
+    GtkWidget * mi = gtk_menu_item_new_with_label(_("New group"));
+    g_signal_connect(mi, "activate", G_CALLBACK(menu_move_to_new_group), tk->tb);
+    gtk_menu_shell_append(GTK_MENU_SHELL(move_to_group_menu), mi);
+
+    gtk_widget_show_all(move_to_group_menu);
 
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(tk->tb->move_to_group_menuitem), move_to_group_menu);
 }

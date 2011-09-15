@@ -141,4 +141,9 @@ void fb_button_set_from_file(GtkWidget* btn, const char* img_file, gint width, g
 
 gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal);
 
+
+typedef void (*EntryDialogCallback)(char * value, gpointer payload);
+
+GtkWidget* create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload);
+
 #endif

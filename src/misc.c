@@ -1700,3 +1700,61 @@ gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal
 
     return (error == NULL);
 }
+
+
+static void entry_dlg_response(GtkWidget * widget, int response, gpointer p)
+{
+    (void)p;
+
+    EntryDialogCallback callback = (EntryDialogCallback)g_object_get_data(G_OBJECT(widget), "callback_func" );
+    gpointer payload = g_object_get_data(G_OBJECT(widget), "payload" );
+    GtkWidget * entry = g_object_get_data(G_OBJECT(widget), "entry" );
+
+    char * value = NULL;
+
+    if (response == GTK_RESPONSE_ACCEPT)
+    {
+        value = g_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+    }
+
+    callback(value, payload);
+
+    gtk_widget_destroy(widget);
+}
+
+
+GtkWidget* create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload)
+{
+    GtkWidget* dlg = gtk_dialog_new_with_buttons( title, NULL, 0,
+                                                 GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                                                 GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+                                                 NULL);
+
+    panel_apply_icon(GTK_WINDOW(dlg));
+
+    g_signal_connect( dlg, "response", G_CALLBACK(entry_dlg_response), NULL);
+
+    g_object_set_data( G_OBJECT(dlg), "callback_func", callback);
+    g_object_set_data( G_OBJECT(dlg), "payload", payload);
+
+    GtkWidget* label = NULL;
+    
+    if (description)
+        label = gtk_label_new(description);
+    GtkWidget* entry = gtk_entry_new();
+
+    g_object_set_data( G_OBJECT(dlg), "entry", entry);
+
+    if (value)
+        gtk_entry_set_text(GTK_ENTRY(entry), value);
+
+    if (label)
+        gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), label, FALSE, FALSE, 2 );
+    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlg)->vbox), entry, FALSE, FALSE, 2 );
+
+    gtk_widget_show_all( dlg );
+
+    return dlg;
+}
+
+

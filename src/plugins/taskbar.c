@@ -2066,8 +2066,10 @@ static void task_update_style(Task * tk, TaskbarPlugin * tb)
     if (tb->show_titles) {
         if (!tk->label)
             task_build_gui_label(tb, tk);
+        gtk_box_set_child_packing(GTK_BOX(tk->container), tk->image, FALSE, FALSE, 0, GTK_PACK_START);
         gtk_widget_show(tk->label);
     } else if (tk->label){
+        gtk_box_set_child_packing(GTK_BOX(tk->container), tk->image, TRUE, TRUE, 0, GTK_PACK_START);
         gtk_widget_hide(tk->label);
     }
 
@@ -2171,7 +2173,7 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
     gtk_misc_set_padding(GTK_MISC(tk->image), 0, 0);
     task_update_icon(tk, None);
     gtk_widget_show(tk->image);
-    gtk_box_pack_start(GTK_BOX(tk->container), tk->image, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(tk->container), tk->image, TRUE, TRUE, 0);
 
     g_signal_connect(tk->image, "size-allocate", G_CALLBACK(taskbar_image_size_allocate), (gpointer) tk);
 

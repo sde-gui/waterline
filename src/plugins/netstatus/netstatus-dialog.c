@@ -93,6 +93,22 @@ typedef struct
 } NetstatusDialogData;
 
 
+/*
+   Prevent resetting label text selection and cursor position unless label text really changed.
+*/
+static void _gtk_label_set_text(GtkLabel *label, const gchar *str)
+{
+    if (!str)
+        str = "";
+
+    const gchar * s = gtk_label_get_text(label);
+    if (!s || strcmp(s, str) != 0)
+        gtk_label_set_text(label, str);
+}
+
+#define gtk_label_set_text _gtk_label_set_text
+
+
 static void
 netstatus_dialog_update_state (NetstatusDialogData *data)
 {

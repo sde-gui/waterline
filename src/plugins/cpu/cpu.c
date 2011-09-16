@@ -47,6 +47,10 @@ struct cpu_stat {
 typedef struct {
     GdkGC * graphics_context;			/* Graphics context for drawing area */
     GdkColor foreground_color;			/* Foreground color for drawing area */
+
+    GdkGC * bg_graphics_context;		/* Graphics context for drawing background */
+    GdkColor background_color;			/* Background color for drawing area */
+
     GtkWidget * da;				/* Drawing area */
     GdkPixmap * pixmap;				/* Pixmap to be drawn on drawing area */
 
@@ -56,6 +60,9 @@ typedef struct {
     int pixmap_width;				/* Width of drawing area pixmap; also size of ring buffer; does not include border size */
     int pixmap_height;				/* Height of drawing area pixmap; does not include border size */
     struct cpu_stat previous_cpu_stat;		/* Previous value of cpu_stat */
+
+    char * fg_color;
+    char * bg_color;
 } CPUPlugin;
 
 static void redraw_pixmap(CPUPlugin * c);
@@ -64,12 +71,13 @@ static gboolean configure_event(GtkWidget * widget, GdkEventConfigure * event, C
 static gboolean expose_event(GtkWidget * widget, GdkEventExpose * event, CPUPlugin * c);
 static int cpu_constructor(Plugin * p, char ** fp);
 static void cpu_destructor(Plugin * p);
+static void cpu_save_configuration(Plugin * p, FILE * fp);
 
 /* Redraw after timer callback or resize. */
 static void redraw_pixmap(CPUPlugin * c)
 {
     /* Erase pixmap. */
-    gdk_draw_rectangle(c->pixmap, c->da->style->black_gc, TRUE, 0, 0, c->pixmap_width, c->pixmap_height);
+    gdk_draw_rectangle(c->pixmap, c->bg_graphics_context, TRUE, 0, 0, c->pixmap_width, c->pixmap_height);
 
     /* Recompute pixmap. */
     unsigned int i;
@@ -208,6 +216,58 @@ static gboolean expose_event(GtkWidget * widget, GdkEventExpose * event, CPUPlug
     return FALSE;
 }
 
+/* Callback when the configuration dialog has recorded a configuration change. */
+static void cpu_apply_configuration(Plugin * p)
+{
+    CPUPlugin * c = (CPUPlugin *) p->priv;
+
+    /* Allocate top level widget and set into Plugin widget pointer. */
+    if (!p->pwid)
+    {
+        p->pwid = gtk_event_box_new();
+        gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 1);
+        GTK_WIDGET_SET_FLAGS(p->pwid, GTK_NO_WINDOW);
+    }
+
+    /* Allocate drawing area as a child of top level widget.  Enable button press events. */
+    if (!c->da)
+    {
+        c->da = gtk_drawing_area_new();
+        gtk_widget_set_size_request(c->da, 40, PANEL_HEIGHT_DEFAULT);
+        gtk_widget_add_events(c->da, GDK_BUTTON_PRESS_MASK);
+        gtk_container_add(GTK_CONTAINER(p->pwid), c->da);
+
+        /* Connect signals. */
+        g_signal_connect(G_OBJECT(c->da), "configure_event", G_CALLBACK(configure_event), (gpointer) c);
+        g_signal_connect(G_OBJECT(c->da), "expose_event", G_CALLBACK(expose_event), (gpointer) c);
+        g_signal_connect(c->da, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
+    }
+
+    /* Clone a graphics context and set "green" as its foreground color.
+     * We will use this to draw the graph. */
+    if (c->graphics_context)
+        g_object_unref(c->graphics_context);
+    c->graphics_context = gdk_gc_new(p->panel->topgwin->window);
+
+    gdk_color_parse(c->fg_color,  &c->foreground_color);
+    gdk_colormap_alloc_color(gdk_drawable_get_colormap(p->panel->topgwin->window), &c->foreground_color, FALSE, TRUE);
+    gdk_gc_set_foreground(c->graphics_context, &c->foreground_color);
+
+    if (c->bg_graphics_context)
+        g_object_unref(c->bg_graphics_context);
+    c->bg_graphics_context = gdk_gc_new(p->panel->topgwin->window);
+
+    gdk_color_parse(c->bg_color,  &c->background_color);
+    gdk_colormap_alloc_color(gdk_drawable_get_colormap(p->panel->topgwin->window), &c->background_color, FALSE, TRUE);
+    gdk_gc_set_foreground(c->bg_graphics_context, &c->background_color);
+
+    /* Show the widget.  Connect a timer to refresh the statistics. */
+    gtk_widget_show(c->da);
+    if (c->timer)
+        g_source_remove(c->timer);
+    c->timer = g_timeout_add(1500, (GSourceFunc) cpu_update, (gpointer) c);
+}
+
 /* Plugin constructor. */
 static int cpu_constructor(Plugin * p, char ** fp)
 {
@@ -215,32 +275,51 @@ static int cpu_constructor(Plugin * p, char ** fp)
     CPUPlugin * c = g_new0(CPUPlugin, 1);
     p->priv = c;
 
-    /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 1);
-    GTK_WIDGET_SET_FLAGS(p->pwid, GTK_NO_WINDOW);
+    c->fg_color = NULL;
+    c->bg_color = NULL;
 
-    /* Allocate drawing area as a child of top level widget.  Enable button press events. */
-    c->da = gtk_drawing_area_new();
-    gtk_widget_set_size_request(c->da, 40, PANEL_HEIGHT_DEFAULT);
-    gtk_widget_add_events(c->da, GDK_BUTTON_PRESS_MASK);
-    gtk_container_add(GTK_CONTAINER(p->pwid), c->da);
+    /* Load parameters from the configuration file. */
+    line s;
+    s.len = 256;
+    if (fp)
+    {
+        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
+        {
+            if (s.type == LINE_NONE)
+            {
+                ERR( "cpu: illegal token %s\n", s.str);
+                return 0;
+            }
+            if (s.type == LINE_VAR)
+            {
+                if (g_ascii_strcasecmp(s.t[0], "FgColor") == 0)
+                    c->fg_color = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "BgColor") == 0)
+                    c->bg_color = g_strdup(s.t[1]);
+                else
+                    ERR( "dclock: unknown var %s\n", s.t[0]);
+            }
+            else
+            {
+                ERR( "dclock: illegal in this context %s\n", s.str);
+                return 0;
+            }
+        }
 
-    /* Clone a graphics context and set "green" as its foreground color.
-     * We will use this to draw the graph. */
-    c->graphics_context = gdk_gc_new(p->panel->topgwin->window);
-    gdk_color_parse("green",  &c->foreground_color);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(p->panel->topgwin->window), &c->foreground_color, FALSE, TRUE);
-    gdk_gc_set_foreground(c->graphics_context, &c->foreground_color);
+    }
 
-    /* Connect signals. */
-    g_signal_connect(G_OBJECT(c->da), "configure_event", G_CALLBACK(configure_event), (gpointer) c);
-    g_signal_connect(G_OBJECT(c->da), "expose_event", G_CALLBACK(expose_event), (gpointer) c);
-    g_signal_connect(c->da, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
 
-    /* Show the widget.  Connect a timer to refresh the statistics. */
-    gtk_widget_show(c->da);
-    c->timer = g_timeout_add(1500, (GSourceFunc) cpu_update, (gpointer) c);
+    #define DEFAULT_STRING(f, v) \
+      if (c->f == NULL) \
+          c->f = g_strdup(v);
+
+    DEFAULT_STRING(fg_color, "green");
+    DEFAULT_STRING(bg_color, "black");
+
+    #undef DEFAULT_STRING
+
+    cpu_apply_configuration(p);
+
     return 1;
 }
 
@@ -254,10 +333,47 @@ static void cpu_destructor(Plugin * p)
 
     /* Deallocate memory. */
     g_object_unref(c->graphics_context);
+    g_object_unref(c->bg_graphics_context);
     g_object_unref(c->pixmap);
     g_free(c->stats_cpu);
+    g_free(c->fg_color);
+    g_free(c->bg_color);
     g_free(c);
 }
+
+
+/* Callback when the configuration dialog is to be shown. */
+static void cpu_configure(Plugin * p, GtkWindow * parent)
+{
+    CPUPlugin * c = (CPUPlugin *) p->priv;
+    GtkWidget * dlg = create_generic_config_dlg(
+        _(p->class->name),
+        GTK_WIDGET(parent),
+        (GSourceFunc) cpu_apply_configuration, (gpointer) p,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        _("Foreground color"), &c->fg_color, (GType)CONF_TYPE_STR,
+        _("Background color"), &c->bg_color, (GType)CONF_TYPE_STR,
+        NULL);
+    if (dlg)
+        gtk_window_present(GTK_WINDOW(dlg));
+}
+
+
+/* Callback when the configuration is to be saved. */
+static void cpu_save_configuration(Plugin * p, FILE * fp)
+{
+    CPUPlugin * c = (CPUPlugin *) p->priv;
+    lxpanel_put_str(fp, "FgColor", c->fg_color);
+    lxpanel_put_str(fp, "BgColor", c->bg_color);
+}
+
+
+/* Callback when panel configuration changes. */
+static void cpu_panel_configuration_changed(Plugin * p)
+{
+    cpu_apply_configuration(p);
+}
+
 
 /* Plugin descriptor. */
 PluginClass cpu_plugin_class = {
@@ -271,6 +387,7 @@ PluginClass cpu_plugin_class = {
 
     constructor : cpu_constructor,
     destructor  : cpu_destructor,
-    config : NULL,
-    save : NULL
+    config : cpu_configure,
+    save : cpu_save_configuration,
+    panel_configuration_changed : cpu_panel_configuration_changed
 };

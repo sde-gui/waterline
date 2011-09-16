@@ -14,7 +14,7 @@ src/gtk-run.c
 # Putting translation of plugins in main catalog is not a good idea...
 src/plugins/cpu/cpu.c
 src/plugins/deskno/deskno.c
-src/plugins/image.c
+#src/plugins/image.c
 src/plugins/launchbar.c
 src/plugins/taskbar.c
 src/plugins/dclock.c
@@ -32,9 +32,9 @@ src/plugins/volume/volume.c
 src/plugins/volume/volume-impl.c
 src/plugins/volumealsa/volumealsa.c
 
-src/plugins/netstat/netstat.c
-src/plugins/netstat/passwd_gui.c
-src/plugins/netstat/lxnm_client.c
+#src/plugins/netstat/netstat.c
+#src/plugins/netstat/passwd_gui.c
+#src/plugins/netstat/lxnm_client.c
 
 src/plugins/netstatus/netstatus.c
 src/plugins/netstatus/netstatus-dialog.c

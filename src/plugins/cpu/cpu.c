@@ -63,6 +63,7 @@ typedef struct {
 
     char * fg_color;
     char * bg_color;
+    int update_interval;
 } CPUPlugin;
 
 static void redraw_pixmap(CPUPlugin * c);
@@ -265,7 +266,7 @@ static void cpu_apply_configuration(Plugin * p)
     gtk_widget_show(c->da);
     if (c->timer)
         g_source_remove(c->timer);
-    c->timer = g_timeout_add(1500, (GSourceFunc) cpu_update, (gpointer) c);
+    c->timer = g_timeout_add(c->update_interval, (GSourceFunc) cpu_update, (gpointer) c);
 }
 
 /* Plugin constructor. */
@@ -277,6 +278,7 @@ static int cpu_constructor(Plugin * p, char ** fp)
 
     c->fg_color = NULL;
     c->bg_color = NULL;
+    c->update_interval = 1500;
 
     /* Load parameters from the configuration file. */
     line s;
@@ -296,6 +298,8 @@ static int cpu_constructor(Plugin * p, char ** fp)
                     c->fg_color = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "BgColor") == 0)
                     c->bg_color = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "UpdateInterval") == 0)
+                    c->update_interval = atoi(s.t[1]);
                 else
                     ERR( "dclock: unknown var %s\n", s.t[0]);
             }
@@ -346,6 +350,10 @@ static void cpu_destructor(Plugin * p)
 static void cpu_configure(Plugin * p, GtkWindow * parent)
 {
     CPUPlugin * c = (CPUPlugin *) p->priv;
+
+    int update_interval_min = 50;
+    int update_interval_max = 5000;
+
     GtkWidget * dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
@@ -353,6 +361,9 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Foreground color"), &c->fg_color, (GType)CONF_TYPE_COLOR,
         _("Background color"), &c->bg_color, (GType)CONF_TYPE_COLOR,
+        _("Update interval" ), &c->update_interval, (GType)CONF_TYPE_INT,
+        "int-min-value", (gpointer)&update_interval_min, (GType)CONF_TYPE_SET_PROPERTY,
+        "int-max-value", (gpointer)&update_interval_max, (GType)CONF_TYPE_SET_PROPERTY,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
@@ -365,6 +376,7 @@ static void cpu_save_configuration(Plugin * p, FILE * fp)
     CPUPlugin * c = (CPUPlugin *) p->priv;
     lxpanel_put_str(fp, "FgColor", c->fg_color);
     lxpanel_put_str(fp, "BgColor", c->bg_color);
+    lxpanel_put_int(fp, "UpdateInterval", c->update_interval);
 }
 
 

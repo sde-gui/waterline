@@ -1217,6 +1217,15 @@ static void on_file_chooser_btn_file_set(GtkFileChooser* btn, char** val)
     notify_apply_config( GTK_WIDGET(btn) );
 }
 
+static void on_color_chooser_btn_color_set(GtkColorButton* btn, char** val)
+{
+    g_free( *val );
+    GdkColor c;
+    gtk_color_button_get_color( btn, &c );
+    *val = gdk_color_to_string(&c);
+    notify_apply_config( GTK_WIDGET(btn) );
+}
+
 static void on_browse_btn_clicked(GtkButton* btn, GtkEntry* entry)
 {
     char* file;
@@ -1293,6 +1302,10 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
     gboolean create_browse_button = FALSE;
     gboolean ignore_frame = FALSE;
 
+    GType prev_type = -1;
+    GtkWidget* prev_entry = NULL;
+    GtkWidget* prev_label = NULL;
+
     const char* name = nm;
     va_start( args, nm );
     while( name )
@@ -1311,8 +1324,38 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
         create_browse_button = FALSE;
         ignore_frame = FALSE;
 
+        gboolean is_property = FALSE;
+
+
         switch( type )
         {
+            case CONF_TYPE_SET_PROPERTY:
+            {
+                 is_property = TRUE;
+                 if (!prev_entry)
+                     break;
+                 if (strcmp(name, "tooltip-text") == 0) {
+                     gtk_widget_set_tooltip_text(prev_entry, (const gchar *) val);
+                     if (prev_label)
+                         gtk_widget_set_tooltip_text(prev_label, (const gchar *) val);
+                 } else if (strcmp(name, "tooltip-markup") == 0) {
+                     gtk_widget_set_tooltip_markup(prev_entry, (const gchar *) val);
+                     if (prev_label)
+                         gtk_widget_set_tooltip_markup(prev_label, (const gchar *) val);
+                 } else if (strcmp(name, "int-min-value") == 0 || strcmp(name, "int-max-value") == 0) {
+                     if (prev_type == CONF_TYPE_INT)
+                     {
+                         gdouble min_v, max_v;
+                         gtk_spin_button_get_range(GTK_SPIN_BUTTON(prev_entry), &min_v, &max_v);
+                         if (strcmp(name, "int-min-value") == 0)
+                             min_v = *(int*)val;
+                         else
+                             max_v = *(int*)val;
+                         gtk_spin_button_set_range(GTK_SPIN_BUTTON(prev_entry), min_v, max_v);
+                     }
+                 }
+                 break;
+            }
             case CONF_TYPE_BEGIN_PAGE:
             {
                 if (!notebook) {
@@ -1358,9 +1401,11 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                 break;
             case CONF_TYPE_INT:
             {
-                /* FIXME: the range shouldn't be hardcoded */
-                entry = gtk_spin_button_new_with_range( 0, 1000, 1 );
-                gtk_spin_button_set_value( GTK_SPIN_BUTTON(entry), *(int*)val );
+                int v = *(int*)val;
+                int min_v = (v < 0) ? v : 0;
+                int max_v = (v > 1000) ? v : 1000;
+                entry = gtk_spin_button_new_with_range( min_v, max_v, 1 );
+                gtk_spin_button_set_value( GTK_SPIN_BUTTON(entry), v );
                 g_signal_connect( entry, "value-changed",
                   G_CALLBACK(on_spin_changed), val );
                 break;
@@ -1380,6 +1425,17 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                     gtk_file_chooser_set_filename( GTK_FILE_CHOOSER(entry), *(char**)val );
                 g_signal_connect( entry, "file-set",
                   G_CALLBACK(on_file_chooser_btn_file_set), val );
+                break;
+            case CONF_TYPE_COLOR:
+                entry = gtk_color_button_new();
+                if( *(char**)val )
+                {
+                    GdkColor c;
+                    gdk_color_parse(*(char**)val,  &c);
+                    gtk_color_button_set_color (GTK_COLOR_BUTTON(entry), &c);
+                }
+                g_signal_connect( entry, "color-set",
+                  G_CALLBACK(on_color_chooser_btn_color_set), val );
                 break;
             case CONF_TYPE_TRIM:
             case CONF_TYPE_TITLE:
@@ -1407,6 +1463,9 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 	        g_printerr("Invalid CONF_TYPE: %d (text: %s)\n", type, name);
 	        break;
         }
+
+        GtkWidget* label = NULL;
+
         if( entry )
         {
             GtkBox * vbox = (frame && !ignore_frame) ? GTK_BOX(frame) : GTK_BOX(GTK_DIALOG(dlg)->vbox);
@@ -1422,7 +1481,7 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
             }
             else
             {
-                GtkWidget* label = gtk_label_new( name );
+                label = gtk_label_new( name );
                 GtkWidget* browse = NULL;
                 if (create_browse_button) {
                     browse = gtk_button_new_with_mnemonic(_("_Browse"));
@@ -1459,6 +1518,12 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
         if (params != NULL) {
             g_strfreev(params);
             params = NULL;
+        }
+
+        if (!is_property) {
+            prev_type  = type;
+            prev_entry = entry;
+            prev_label = label;
         }
 
         name = va_arg( args, const char* );

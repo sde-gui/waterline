@@ -351,8 +351,8 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
         GTK_WIDGET(parent),
         (GSourceFunc) cpu_apply_configuration, (gpointer) p,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
-        _("Foreground color"), &c->fg_color, (GType)CONF_TYPE_STR,
-        _("Background color"), &c->bg_color, (GType)CONF_TYPE_STR,
+        _("Foreground color"), &c->fg_color, (GType)CONF_TYPE_COLOR,
+        _("Background color"), &c->bg_color, (GType)CONF_TYPE_COLOR,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));

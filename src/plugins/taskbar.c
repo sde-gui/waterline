@@ -3404,6 +3404,9 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     char* shift_scroll_up_action = g_strdup_printf("%s%s", _("|Shift + Scroll up"), actions);
     char* shift_scroll_down_action = g_strdup_printf("%s%s", _("|Shift + Scroll down"), actions);
 
+    int min_width_max = 16;
+    int max_width_max = 10000;
+    int max_spacing = 50;
 
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     GtkWidget* dlg = create_generic_config_dlg(
@@ -3418,7 +3421,10 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Flat buttons"), (gpointer)&tb->flat_button, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Maximum width of task button"), (gpointer)&tb->task_width_max, (GType)CONF_TYPE_INT,
+        "int-min-value", (gpointer)&min_width_max, (GType)CONF_TYPE_SET_PROPERTY,
+        "int-max-value", (gpointer)&max_width_max, (GType)CONF_TYPE_SET_PROPERTY,
         _("Spacing"), (gpointer)&tb->spacing, (GType)CONF_TYPE_INT,
+        "int-max-value", (gpointer)&max_spacing, (GType)CONF_TYPE_SET_PROPERTY,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,

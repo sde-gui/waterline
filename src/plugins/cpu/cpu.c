@@ -207,11 +207,19 @@ static gboolean expose_event(GtkWidget * widget, GdkEventExpose * event, CPUPlug
      * Translate it in both x and y by the border size. */
     if (c->pixmap != NULL)
     {
+        int x = event->area.x - BORDER_SIZE;
+        int y = event->area.y - BORDER_SIZE;
+        if (x < 0)
+            x = 0;
+        if (y < 0)
+            y = 0;
         gdk_draw_drawable (widget->window,
               c->da->style->black_gc,
               c->pixmap,
-              event->area.x, event->area.y,
-              event->area.x + BORDER_SIZE, event->area.y + BORDER_SIZE,
+//              event->area.x, event->area.y,
+//              event->area.x + BORDER_SIZE, event->area.y + BORDER_SIZE,
+              x, y,
+              x + BORDER_SIZE, y + BORDER_SIZE,
               event->area.width, event->area.height);
     }
     return FALSE;

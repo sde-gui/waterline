@@ -267,6 +267,7 @@ typedef struct _taskbar {
     int group_by;                               /* User preference: attr to group tasks by */
     gboolean manual_grouping;			/* User preference: manual grouping */
     gboolean expand_focused_group;		/* User preference: autoexpand group of focused window */
+    gboolean show_single_group;			/* User preference: show windows of the active group only  */
 
     gboolean highlight_modified_titles;            /* User preference: */
 
@@ -289,6 +290,7 @@ typedef struct _taskbar {
     int _group_by;
     int _mode;
     gboolean _expand_focused_group;
+    gboolean _show_single_group;
 
     gboolean show_mapped_prev;
     gboolean show_iconified_prev;
@@ -468,7 +470,7 @@ static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
     if (tc && tc->manual_expand_state)
         return !tc->expand;
 
-    if (tb->_expand_focused_group && tb->focused && tb->focused->res_class == tc)
+    if ((tb->_expand_focused_group || tb->_show_single_group) && tb->focused && tb->focused->res_class == tc)
         return FALSE;
 
     int visible_count = tc ? tc->visible_count : 1;
@@ -640,6 +642,9 @@ static gboolean task_is_visible(Task * tk)
 
     /* In single_window mode only focused task is visible. */
     if (tb->single_window && !tk->focused)
+        return FALSE;
+
+    if (tb->_show_single_group && !tk->focused && (!tk->res_class || !tb->focused || tb->focused->res_class != tk->res_class))
         return FALSE;
 
     /* Hide iconified or mapped tasks? */
@@ -2474,7 +2479,7 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
         task_button_redraw(ctk);
     }
 
-    if (tb->_expand_focused_group)
+    if (tb->_expand_focused_group || tb->_show_single_group)
     {
         recompute_group_visibility_on_current_desktop(tb);
         taskbar_redraw(tb);
@@ -3148,9 +3153,15 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
 
     tb->_show_close_buttons = tb->show_close_buttons && !(tb->grouped_tasks && tb->_group_shrink_threshold == 1);
 
-    if (tb->_expand_focused_group != tb->expand_focused_group)
+    gboolean expand_focused_group = tb->grouped_tasks && tb->expand_focused_group;
+    gboolean show_single_group = tb->grouped_tasks && tb->show_single_group;
+
+    gboolean recompute_visibility = tb->_expand_focused_group != expand_focused_group;
+    recompute_visibility |= tb->_show_single_group != show_single_group;
+    if (recompute_visibility)
     {
-        tb->_expand_focused_group = tb->expand_focused_group;
+        tb->_expand_focused_group = expand_focused_group;
+	tb->_show_single_group = show_single_group;
         recompute_group_visibility_on_current_desktop(tb);
         taskbar_redraw(tb);
     }
@@ -3180,6 +3191,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->group_by          = GROUP_BY_CLASS;
     tb->manual_grouping   = TRUE;
     tb->expand_focused_group = FALSE;
+    tb->show_single_group = FALSE;
     tb->show_close_buttons = FALSE;
 
     tb->highlight_modified_titles = FALSE;
@@ -3272,6 +3284,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->manual_grouping = str2num(bool_pair, s.t[1], tb->manual_grouping);
                 else if (g_ascii_strcasecmp(s.t[0], "ExpandFocusedGroup") == 0)
                     tb->expand_focused_group = str2num(bool_pair, s.t[1], tb->expand_focused_group);
+                else if (g_ascii_strcasecmp(s.t[0], "ShowSingleGroup") == 0)
+                    tb->show_single_group = str2num(bool_pair, s.t[1], tb->show_single_group);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowIconsTitles") == 0)
                     tb->show_icons_titles = str2num(show_pair, s.t[1], tb->show_icons_titles);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowCloseButtons") == 0)
@@ -3448,6 +3462,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("|Group by|None|Window class|Workspace|Window state"), (gpointer)&tb->group_by, (GType)CONF_TYPE_ENUM,
         _("Group shrink threshold"), (gpointer)&tb->group_shrink_threshold, (GType)CONF_TYPE_INT,
         _("Expand focused group"), (gpointer)&tb->expand_focused_group, (GType)CONF_TYPE_BOOL,
+	_("Show only focused group"), (gpointer)&tb->show_single_group, (GType)CONF_TYPE_BOOL,
         _("Manual grouping"), (gpointer)&tb->manual_grouping, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
@@ -3507,6 +3522,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "GroupBy", tb->group_by, group_by_pair);
     lxpanel_put_bool(fp, "ManualGrouping", tb->manual_grouping);
     lxpanel_put_bool(fp, "ExpandFocusedGroup", tb->expand_focused_group);
+    lxpanel_put_bool(fp, "ShowSingleGroup", tb->show_single_group);
     lxpanel_put_bool(fp, "ShowCloseButtons", tb->show_close_buttons);
     lxpanel_put_enum(fp, "Button1Action", tb->button1_action, action_pair);
     lxpanel_put_enum(fp, "Button2Action", tb->button2_action, action_pair);

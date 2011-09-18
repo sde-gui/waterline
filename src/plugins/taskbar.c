@@ -2847,6 +2847,43 @@ static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb)
 
 /* Context menu adjust functions. */
 
+typedef struct {
+    gboolean prev_is_separator;
+    GtkWidget * last_visible;
+} _AdjustSeparatorsData;
+
+static void adjust_separators_callback(GtkWidget * widget, gpointer d)
+{
+    _AdjustSeparatorsData * data = (_AdjustSeparatorsData *) d;
+    
+    gboolean is_separator = GTK_IS_SEPARATOR_MENU_ITEM(widget);
+
+    if (gtk_widget_get_visible(GTK_WIDGET(widget))) {
+        if (data->prev_is_separator && is_separator) {
+            gtk_widget_set_visible(GTK_WIDGET(widget), FALSE);
+        } else {
+            data->last_visible = widget;
+            data->prev_is_separator = is_separator;
+        }
+    } else {
+        if (!data->prev_is_separator && is_separator) {
+            gtk_widget_set_visible(GTK_WIDGET(widget), TRUE);
+            data->last_visible = widget;
+            data->prev_is_separator = is_separator;
+        }
+    }
+}
+
+static void adjust_separators(GtkWidget * menu)
+{
+    _AdjustSeparatorsData data;
+    data.prev_is_separator = TRUE;
+    data.last_visible = NULL;
+    gtk_container_foreach(GTK_CONTAINER(menu), adjust_separators_callback, &data);
+    if (data.last_visible)
+        adjust_separators_callback(data.last_visible, &data);
+}
+
 static void task_adjust_menu_workspace_callback(GtkWidget *widget, gpointer data)
 {
     Task* tk = (Task*)data;
@@ -2883,44 +2920,9 @@ static void task_adjust_menu_move_to_group(Task * tk)
 
     gtk_widget_show_all(move_to_group_menu);
 
+    adjust_separators(move_to_group_menu);
+
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(tk->tb->move_to_group_menuitem), move_to_group_menu);
-}
-
-typedef struct {
-    gboolean prev_is_separator;
-    GtkWidget * last_visible;
-} _AdjustSeparatorsData;
-
-static void adjust_separators_callback(GtkWidget * widget, gpointer d)
-{
-    _AdjustSeparatorsData * data = (_AdjustSeparatorsData *) d;
-    
-    gboolean is_separator = GTK_IS_SEPARATOR_MENU_ITEM(widget);
-
-    if (gtk_widget_get_visible(GTK_WIDGET(widget))) {
-        if (data->prev_is_separator && is_separator) {
-            gtk_widget_set_visible(GTK_WIDGET(widget), FALSE);
-        } else {
-            data->last_visible = widget;
-            data->prev_is_separator = is_separator;
-        }
-    } else {
-        if (!data->prev_is_separator && is_separator) {
-            gtk_widget_set_visible(GTK_WIDGET(widget), TRUE);
-            data->last_visible = widget;
-            data->prev_is_separator = is_separator;
-        }
-    }
-}
-
-static void adjust_separators(GtkWidget * menu)
-{
-    _AdjustSeparatorsData data;
-    data.prev_is_separator = TRUE;
-    data.last_visible = NULL;
-    gtk_container_foreach(GTK_CONTAINER(menu), adjust_separators_callback, &data);
-    if (data.last_visible)
-        adjust_separators_callback(data.last_visible, &data);
 }
 
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu)

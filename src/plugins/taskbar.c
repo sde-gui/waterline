@@ -162,9 +162,12 @@ typedef struct _task {
     struct _task * task_flink;			/* Forward link to next task in X window ID order */
     struct _taskbar * tb;			/* Back pointer to taskbar */
     Window win;					/* X window ID */
+
     char * name;				/* Taskbar label when normal, from WM_NAME or NET_WM_NAME */
     char * name_iconified;			/* Taskbar label when iconified */
     Atom name_source;				/* Atom that is the source of taskbar label */
+    gboolean name_changed;
+
     
     TaskClass * res_class;			/* Class, from WM_CLASS */
     struct _task * res_class_flink;		/* Forward link to task in same class */
@@ -264,6 +267,8 @@ typedef struct _taskbar {
     int group_by;                               /* User preference: attr to group tasks by */
     gboolean manual_grouping;			/* User preference: manual grouping */
     gboolean expand_focused_group;		/* User preference: autoexpand group of focused window */
+
+    gboolean highlight_modified_titles;            /* User preference: */
 
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
     int spacing;				/* Spacing between taskbar buttons */
@@ -605,6 +610,7 @@ static void task_draw_label(Task * tk)
 {
     TaskClass * tc = tk->res_class;
     gboolean bold_style = (((tk->entered_state) || (tk->flash_state)) && (tk->tb->flat_button));
+    bold_style |= tk->name_changed && tk->tb->highlight_modified_titles;
     if (task_class_is_grouped(tk->tb, tc) && (tc) && (tc->visible_task == tk))
     {
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
@@ -759,11 +765,13 @@ static void task_set_names(Task * tk, Atom source)
     }
 
     /* Set the name into the task context, and also on the tooltip. */
-    if (name != NULL)
+    if (name != NULL && (!tk->name || strcmp(name, tk->name) != 0))
     {
         task_free_names(tk);
         tk->name = g_strdup(name);
         g_free(name);
+
+        tk->name_changed = !tk->focused;
 
         /* Update tk->res_class->visible_name as it may point to freed tk->name. */
         if (tk->res_class && tk->tb)
@@ -2453,6 +2461,7 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
     /* If a task gained focus, update data structures. */
     if ((ntk != NULL) && (make_new))
     {
+        ntk->name_changed = FALSE;
         ntk->focus_timestamp = ++tb->task_timestamp;
         ntk->focused = TRUE;
         tb->focused = ntk;
@@ -3173,6 +3182,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->expand_focused_group = FALSE;
     tb->show_close_buttons = FALSE;
 
+    tb->highlight_modified_titles = FALSE;
+
     tb->button1_action    = ACTION_RAISEICONIFY;
     tb->button2_action    = ACTION_SHADE;
     tb->button3_action    = ACTION_MENU;
@@ -3287,6 +3298,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->shift_scroll_up_action = str2num(action_pair, s.t[1], tb->shift_scroll_up_action);
                 else if (g_ascii_strcasecmp(s.t[0], "ShiftScrollDownAction") == 0)
                     tb->shift_scroll_down_action = str2num(action_pair, s.t[1], tb->shift_scroll_down_action);
+                else if (g_ascii_strcasecmp(s.t[0], "HighlightModifiedTitles") == 0)
+                    tb->highlight_modified_titles = str2num(bool_pair, s.t[1], tb->highlight_modified_titles);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -3419,6 +3432,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Show tooltips"), (gpointer)&tb->tooltips, (GType)CONF_TYPE_BOOL,
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
         _("Flat buttons"), (gpointer)&tb->flat_button, (GType)CONF_TYPE_BOOL,
+        _("Hightlihgt modified titles"), (gpointer)&tb->highlight_modified_titles, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Maximum width of task button"), (gpointer)&tb->task_width_max, (GType)CONF_TYPE_INT,
         "int-min-value", (gpointer)&min_width_max, (GType)CONF_TYPE_SET_PROPERTY,
@@ -3504,6 +3518,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "ShiftButton3Action", tb->shift_button3_action, action_pair);
     lxpanel_put_enum(fp, "ShiftScrollUpAction", tb->shift_scroll_up_action, action_pair);
     lxpanel_put_enum(fp, "ShiftScrollDownAction", tb->shift_scroll_down_action, action_pair);
+    lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
 }
 
 /* Callback when panel configuration changes. */

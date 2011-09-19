@@ -3470,7 +3470,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Show tooltips"), (gpointer)&tb->tooltips, (GType)CONF_TYPE_BOOL,
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
         _("Flat buttons"), (gpointer)&tb->flat_button, (GType)CONF_TYPE_BOOL,
-        _("Hightlihgt modified titles"), (gpointer)&tb->highlight_modified_titles, (GType)CONF_TYPE_BOOL,
+        _("Highlight modified titles"), (gpointer)&tb->highlight_modified_titles, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Maximum width of task button"), (gpointer)&tb->task_width_max, (GType)CONF_TYPE_INT,
         "int-min-value", (gpointer)&min_width_max, (GType)CONF_TYPE_SET_PROPERTY,

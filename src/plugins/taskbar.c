@@ -85,7 +85,8 @@ enum TASKBAR_ACTION {
     ACTION_NEXT_WINDOW_IN_CURRENT_GROUP,
     ACTION_PREV_WINDOW_IN_CURRENT_GROUP,
     ACTION_NEXT_WINDOW_IN_GROUP,
-    ACTION_PREV_WINDOW_IN_GROUP
+    ACTION_PREV_WINDOW_IN_GROUP,
+    ACTION_COPY_TITLE
 };
 
 enum {
@@ -1721,6 +1722,13 @@ static void task_activate_neighbour(Task * tk, GdkEventButton * event, gboolean 
     }
 }
 
+static void task_copy_title(Task * tk)
+{
+    GtkClipboard * clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+    gtk_clipboard_set_text(clipboard, tk->name, strlen(tk->name));
+    gtk_clipboard_store(clipboard);
+}
+
 /* Close task window. */
 static void task_action(Task * tk, int action, GdkEventButton * event, Task* visible_task, gboolean from_popup_menu)
 {
@@ -1775,6 +1783,9 @@ static void task_action(Task * tk, int action, GdkEventButton * event, Task* vis
         break;
       case ACTION_PREV_WINDOW_IN_GROUP:
         task_activate_neighbour(tk, event, FALSE, TRUE);
+        break;
+      case ACTION_COPY_TITLE:
+        task_copy_title(tk);
         break;
     }
 }
@@ -2838,6 +2849,12 @@ static void menu_shrink_group_window(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
+static void menu_copy_title(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    task_copy_title(tb->menutask);
+    task_group_menu_destroy(tb);
+}
+
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_close(tb->menutask);
@@ -3046,6 +3063,10 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     create_menu_item(tb, _("Expand _Group"), (GCallback) menu_expand_group_window, &tb->expand_group_menuitem);
     create_menu_item(tb, _("Shrink _Group"), (GCallback) menu_shrink_group_window, &tb->shrink_group_menuitem);
 
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+    create_menu_item(tb, _("Cop_y title"), (GCallback) menu_copy_title, NULL);
+    
     /* Add Close menu item.  By popular demand, we place this menu item closest to the cursor. */
     mi = gtk_menu_item_new_with_mnemonic (_("_Close Window"));
     if (tb->plug->panel->edge != EDGE_BOTTOM)
@@ -3422,7 +3443,7 @@ static void taskbar_apply_configuration(Plugin * p)
 /* Display the configuration dialog. */
 static void taskbar_configure(Plugin * p, GtkWindow * parent)
 {
-    const char* actions = _("|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list|Next window|Previous window|Next window in current group|Previous window in current group|Next window in pointed group|Previous window in pointed group");
+    const char* actions = _("|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list|Next window|Previous window|Next window in current group|Previous window in current group|Next window in pointed group|Previous window in pointed group|Copy title");
     char* button1_action = g_strdup_printf("%s%s", _("|Left button"), actions);
     char* button2_action = g_strdup_printf("%s%s", _("|Middle button"), actions);
     char* button3_action = g_strdup_printf("%s%s", _("|Right button"), actions);

@@ -2221,7 +2221,7 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
 static int task_compare(Task * tk1, Task * tk2)
 {
     int result = 0;
-    switch (tk1->tb->_group_by)
+    if (tk1->tb->grouped_tasks) switch (tk1->tb->_group_by)
     {
         case GROUP_BY_WORKSPACE:
         {
@@ -2238,6 +2238,7 @@ static int task_compare(Task * tk1, Task * tk2)
             break;
         }
         case GROUP_BY_CLASS:
+        case GROUP_BY_NONE:
         {
             int w1 = tk1->res_class ? tk1->res_class->timestamp : INT_MAX;
             int w2 = tk2->res_class ? tk2->res_class->timestamp : INT_MAX;

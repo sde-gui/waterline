@@ -160,9 +160,11 @@ typedef struct _task_class {
 
 /* Structure representing a "task", an open window. */
 typedef struct _task {
+
     struct _task * task_flink;			/* Forward link to next task in X window ID order */
     struct _taskbar * tb;			/* Back pointer to taskbar */
     Window win;					/* X window ID */
+
 
     char * name;				/* Taskbar label when normal, from WM_NAME or NET_WM_NAME */
     char * name_iconified;			/* Taskbar label when iconified */
@@ -174,6 +176,7 @@ typedef struct _task {
     struct _task * res_class_flink;		/* Forward link to task in same class */
     char * override_class_name;
 
+
     GtkWidget * button;				/* Button representing task in taskbar */
     GtkWidget * container;			/* Container for image, label and close button. */
     GtkWidget * image;				/* Icon for task, child of button */
@@ -183,9 +186,11 @@ typedef struct _task {
 
     GtkWidget * new_group_dlg;			/* Move to new group dialog */
 
+
     GtkAllocation button_alloc;
     guint adapt_to_allocated_size_idle_cb;
     guint update_icon_idle_cb;
+
 
     int desktop;				/* Desktop that contains task, needed to switch to it on Raise */
     guint flash_timeout;			/* Timer for urgency notification */
@@ -201,7 +206,9 @@ typedef struct _task {
 
     int focus_timestamp;
 
+
     GtkWidget* click_on;
+
     
     int allocated_icon_size;
     int icon_size;
@@ -209,26 +216,42 @@ typedef struct _task {
 
 /* Private context for taskbar plugin. */
 typedef struct _taskbar {
+
     Plugin * plug;				/* Back pointer to Plugin */
     Task * task_list;				/* List of tasks to be displayed in taskbar */
     TaskClass * res_class_list;			/* Window class list */
     IconGrid * icon_grid;			/* Manager for taskbar buttons */
 
-    int task_timestamp;
+    int task_timestamp;                         /* To sort tasks and task classes by creation time. */
+
+    GdkPixbuf * fallback_pixbuf;		/* Fallback task icon when none is available */
+
+    /* Geometry */
+
+    int icon_size;				/* Size of task icons (from panel settings) */
+    int expected_icon_size;			/* Expected icon size (from task button allocation data) */
+    int extra_size;
+
+    /* Context menu */
 
     GtkWidget * menu;				/* Popup menu for task control (Close, Raise, etc.) */
     GtkWidget * workspace_submenu;		/* Workspace submenu of the task control menu */
-    GtkWidget * restore_menuitem;		/*  */
-    GtkWidget * maximize_menuitem;		/*  */
-    GtkWidget * iconify_menuitem;		/*  */
-    GtkWidget * ungroup_menuitem;		/*  */
-    GtkWidget * move_to_group_menuitem;		/*  */
-    GtkWidget * unfold_group_menuitem;		/*  */
-    GtkWidget * fold_group_menuitem;		/*  */
-    GtkWidget * title_menuitem;			/*  */
+    GtkWidget * restore_menuitem;
+    GtkWidget * maximize_menuitem;
+    GtkWidget * iconify_menuitem;
+    GtkWidget * ungroup_menuitem;
+    GtkWidget * move_to_group_menuitem;
+    GtkWidget * unfold_group_menuitem;
+    GtkWidget * fold_group_menuitem;
+    GtkWidget * title_menuitem;
 
     GtkWidget * group_menu;			/* Popup menu for grouping selection */
-    GdkPixbuf * fallback_pixbuf;		/* Fallback task icon when none is available */
+
+    /* NETWM stuff */
+
+    gboolean use_net_active;			/* NET_WM_ACTIVE_WINDOW is supported by the window manager */
+    gboolean net_active_checked;		/* True if use_net_active is valid */
+
     char * * desktop_names;
     int number_of_desktop_names;
     int number_of_desktops;			/* Number of desktops, from NET_WM_NUMBER_OF_DESKTOPS */
@@ -236,9 +259,10 @@ typedef struct _taskbar {
     Task * focused;				/* Task that has focus */
     Task * focused_previous;			/* Task that had focus just before panel got it */
     Task * menutask;				/* Task for which popup menu is open */
+
     guint dnd_delay_timer;			/* Timer for drag and drop delay */
-    int icon_size;				/* Size of task icons */
-    int extra_size;
+
+    /* User preferences */
 
     int button1_action;                         /* User preference: left button action */
     int button2_action;                         /* User preference: middle button action */
@@ -251,7 +275,6 @@ typedef struct _taskbar {
     int shift_button3_action;                   /* User preference: shift + right button action */
     int shift_scroll_up_action;                 /* User preference: shift + scroll up action */
     int shift_scroll_down_action;               /* User preference: shift + scroll down action */
-
 
     gboolean show_all_desks;			/* User preference: show windows from all desktops */
     gboolean show_mapped;			/* User preference: show mapped windows */
@@ -270,13 +293,11 @@ typedef struct _taskbar {
     gboolean unfold_focused_group;		/* User preference: autounfold group of focused window */
     gboolean show_single_group;			/* User preference: show windows of the active group only  */
 
-    gboolean highlight_modified_titles;            /* User preference: */
+    gboolean highlight_modified_titles;		/* User preference: highlight modified titles */
 
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
     int spacing;				/* Spacing between taskbar buttons */
 
-    gboolean use_net_active;			/* NET_WM_ACTIVE_WINDOW is supported by the window manager */
-    gboolean net_active_checked;		/* True if use_net_active is valid */
 
     /* Effective config values, evaluated from "User preference" variables: */
     gboolean grouped_tasks;			/* Group task of the same class into single button. */
@@ -296,12 +317,14 @@ typedef struct _taskbar {
     gboolean show_mapped_prev;
     gboolean show_iconified_prev;
 
+
+    /* Deferred window switching data. */
+
     guint deferred_desktop_switch_timer;
     int deferred_current_desktop;
     int deferred_active_window_valid;
     Window deferred_active_window;
 
-    int expected_icon_size;
 
     Atom a_OB_WM_STATE_UNDECORATED;
 } TaskbarPlugin;

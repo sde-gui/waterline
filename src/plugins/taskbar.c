@@ -323,7 +323,6 @@ typedef struct _taskbar {
     /* Effective config values, evaluated from "User preference" variables: */
     gboolean grouped_tasks;			/* Group task of the same class into single button. */
     gboolean single_window;			/* Show only current window button. */
-    gboolean group_side_by_side;		/* Group task of the same class side by side. (value from last gui rebuild) */
     gboolean rebuild_gui;			/* Force gui rebuild (when configuration changed) */
     gboolean show_all_desks_prev_value;         /* Value of show_all_desks from last gui rebuild */
     gboolean show_icons;			/* Show icons */
@@ -3352,7 +3351,6 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 
     tb->grouped_tasks     = FALSE;
     tb->single_window     = FALSE;
-    tb->group_side_by_side = FALSE;
     tb->show_icons        = TRUE;
     tb->show_titles       = TRUE;
     tb->show_all_desks_prev_value = FALSE;

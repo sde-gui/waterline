@@ -2341,7 +2341,9 @@ static int task_compare(Task * tk1, Task * tk2)
             }
             case SORT_BY_TITLE:
             {
-                result = strcmp(tk2->name, tk1->name);
+                char * name1 = tk1->name ? tk1->name : "";
+                char * name2 = tk2->name ? tk2->name : "";
+                result = strcmp(name2, name1);
                 break;
             }
             case SORT_BY_FOCUS:
@@ -2383,7 +2385,7 @@ static void task_reorder(Task * tk)
              continue;
          if (!tk_prev_new_found)
          {
-             //DBG("[0x%x] [\"%s\" (0x%x), \"%s\" (0x%x)] => %d\n", tk->tb, tk->name,tk, tk_cursor->name,tk_cursor, task_compare(tk, tk_cursor));
+             DBG("[0x%x] [\"%s\" (0x%x), \"%s\" (0x%x)] => %d\n", tk->tb, tk->name,tk, tk_cursor->name,tk_cursor, task_compare(tk, tk_cursor));
 
              if (task_compare(tk, tk_cursor) <= 0)
                  tk_prev_new = tk_cursor;
@@ -2406,11 +2408,11 @@ static void task_reorder(Task * tk)
             tk->task_flink = tk_prev_new->task_flink;
             tk_prev_new->task_flink = tk;
 
-            //DBG("[0x%x] task \"%s\" (0x%x) moved after \"%s\" (0x%x)\n", tk->tb, tk->name, tk, tk_prev_new->name, tk_prev_new);
+            DBG("[0x%x] task \"%s\" (0x%x) moved after \"%s\" (0x%x)\n", tk->tb, tk->name, tk, tk_prev_new->name, tk_prev_new);
 
             icon_grid_place_child_after(tk->tb->icon_grid, tk->button, tk_prev_new->button);
         } else {
-            //DBG("[0x%x] task \"%s\" (0x%x) is in rigth place\n", tk->tb, tk->name, tk);
+            DBG("[0x%x] task \"%s\" (0x%x) is in rigth place\n", tk->tb, tk->name, tk);
         }
     } else {
         if (tk_prev_old)
@@ -2421,7 +2423,7 @@ static void task_reorder(Task * tk)
         tk->task_flink = tk->tb->task_list;
         tk->tb->task_list = tk;
 
-        //DBG("[0x%x] task \"%s\" (0x%x) moved to head\n", tk->tb, tk->name, tk);
+        DBG("[0x%x] task \"%s\" (0x%x) moved to head\n", tk->tb, tk->name, tk);
 
         icon_grid_place_child_after(tk->tb->icon_grid, tk->button, NULL);
     }

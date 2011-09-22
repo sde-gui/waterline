@@ -394,8 +394,11 @@ static GdkPixbuf * _wnck_gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, i
 static GdkPixbuf * apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask);
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 static void task_update_icon(Task * tk, Atom source);
+
+static void task_reorder(Task * tk);
 static void task_update_grouping(Task * tk, int group_by);
 static void task_update_sorting(Task * tk, int sort_by);
+
 static gboolean flash_window_timeout(Task * tk);
 static void task_set_urgency(Task * tk);
 static void task_clear_urgency(Task * tk);
@@ -2405,6 +2408,35 @@ static void task_reorder(Task * tk)
     }
 }
 
+static void task_update_grouping(Task * tk, int group_by)
+{
+    ENTER;
+    DBG("group_by = %d, tb->_group_by = %d\n", group_by, tk->tb->_group_by);
+    if (tk->tb->_group_by == group_by || group_by < 0)
+    {
+        task_set_class(tk);
+        task_reorder(tk);
+        taskbar_redraw(tk->tb);
+    }
+    RET();
+}
+
+static void task_update_sorting(Task * tk, int sort_by)
+{
+    ENTER;
+    int i;
+    for (i = 0; i < 3; i++)
+    {
+        if (tk->tb->sort_by[i] == sort_by || sort_by < 0)
+        {
+           task_reorder(tk);
+           taskbar_redraw(tk->tb);
+           break;
+        }
+    }
+    RET();
+}
+
 /******************************************************************************/
 
 /*****************************************************
@@ -2693,35 +2725,6 @@ static void taskbar_net_desktop_names(FbEv * fbev, TaskbarPlugin * tb)
 
     /* Get the NET_DESKTOP_NAMES property. */
     tb->desktop_names = get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &tb->number_of_desktop_names);
-}
-
-static void task_update_grouping(Task * tk, int group_by)
-{
-    ENTER;
-    DBG("group_by = %d, tb->_group_by = %d\n", group_by, tk->tb->_group_by);
-    if (tk->tb->_group_by == group_by || group_by < 0)
-    {
-        task_set_class(tk);
-        task_reorder(tk);
-        taskbar_redraw(tk->tb);
-    }
-    RET();
-}
-
-static void task_update_sorting(Task * tk, int sort_by)
-{
-    ENTER;
-    int i;
-    for (i = 0; i < 3; i++)
-    {
-        if (tk->tb->sort_by[i] == sort_by || sort_by < 0)
-        {
-           task_reorder(tk);
-           taskbar_redraw(tk->tb);
-           break;
-        }
-    }
-    RET();
 }
 
 /* Handle PropertyNotify event.

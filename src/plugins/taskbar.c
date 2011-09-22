@@ -461,7 +461,9 @@ static void set_timer_on_task(Task * tk)
     tk->flash_timeout = g_timeout_add(interval, (GSourceFunc) flash_window_timeout, tk);
 }
 
-static int get_task_button_max_width(TaskbarPlugin * tb)
+/******************************************************************************/
+
+static int taskbar_get_task_button_max_width(TaskbarPlugin * tb)
 {
     int icon_mode_max_width = tb->icon_size + ICON_ONLY_EXTRA + (tb->_show_close_buttons ? tb->extra_size : 0);
     if (tb->show_titles && tb->task_width_max > icon_mode_max_width) {
@@ -471,11 +473,11 @@ static int get_task_button_max_width(TaskbarPlugin * tb)
     }
 }
 
-static gboolean get_task_button_expandable(TaskbarPlugin * tb) {
+static gboolean taskbar_task_button_is_expandable(TaskbarPlugin * tb) {
         return tb->single_window || tb->task_width_max < 1;
 }
 
-static int task_button_is_really_flat(TaskbarPlugin * tb)
+static int taskbar_task_button_is_really_flat(TaskbarPlugin * tb)
 {
     return ( tb->single_window || tb->flat_button );
 }
@@ -672,7 +674,7 @@ static void task_draw_label(Task * tk)
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
         gtk_widget_set_tooltip_text(tk->button, label);
         if (tk->label)
-            panel_draw_label_text(tk->tb->plug->panel, tk->label, label, bold_style, task_button_is_really_flat(tk->tb));
+            panel_draw_label_text(tk->tb->plug->panel, tk->label, label, bold_style, taskbar_task_button_is_really_flat(tk->tb));
         g_free(label);
     }
     else
@@ -681,7 +683,7 @@ static void task_draw_label(Task * tk)
         if (tk->tb->tooltips)
             gtk_widget_set_tooltip_text(tk->button, name);
         if (tk->label)
-            panel_draw_label_text(tk->tb->plug->panel, tk->label, name, bold_style, task_button_is_really_flat(tk->tb));
+            panel_draw_label_text(tk->tb->plug->panel, tk->label, name, bold_style, taskbar_task_button_is_really_flat(tk->tb));
     }
 }
 
@@ -711,7 +713,7 @@ static gboolean task_is_visible(Task * tk)
 
 static void task_button_redraw_button_state(Task * tk, TaskbarPlugin * tb)
 {
-    if( task_button_is_really_flat(tb) )
+    if( taskbar_task_button_is_really_flat(tb) )
     {
         gtk_toggle_button_set_active((GtkToggleButton*)tk->button, FALSE);
         gtk_button_set_relief(GTK_BUTTON(tk->button), GTK_RELIEF_NONE);
@@ -1487,7 +1489,7 @@ static gboolean task_update_icon_cb(Task * tk)
 static gboolean flash_window_timeout(Task * tk)
 {
     /* Set state on the button and redraw. */
-    if ( ! task_button_is_really_flat(tk->tb))
+    if ( ! taskbar_task_button_is_really_flat(tk->tb))
         gtk_widget_set_state(tk->button, tk->flash_state ? GTK_STATE_SELECTED : GTK_STATE_NORMAL);
     task_draw_label(tk);
 
@@ -1975,7 +1977,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
     }
 
     /* As a matter of policy, avoid showing selected or prelight states on flat buttons. */
-    if (task_button_is_really_flat(tb))
+    if (taskbar_task_button_is_really_flat(tb))
         gtk_widget_set_state(widget, GTK_STATE_NORMAL);
     return TRUE;
 }
@@ -2039,7 +2041,7 @@ static void taskbar_button_drag_leave(GtkWidget * widget, GdkDragContext * drag_
 static void taskbar_button_enter(GtkWidget * widget, Task * tk)
 {
     tk->entered_state = TRUE;
-    if (task_button_is_really_flat(tk->tb))
+    if (taskbar_task_button_is_really_flat(tk->tb))
         gtk_widget_set_state(widget, GTK_STATE_NORMAL);
     task_draw_label(tk);
 }
@@ -2129,9 +2131,9 @@ static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, 
 static void taskbar_update_style(TaskbarPlugin * tb)
 {
     GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    icon_grid_set_expand(tb->icon_grid, get_task_button_expandable(tb));
+    icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
-        get_task_button_max_width(tb), tb->icon_size + BUTTON_HEIGHT_EXTRA,
+        taskbar_get_task_button_max_width(tb), tb->icon_size + BUTTON_HEIGHT_EXTRA,
         tb->spacing, 0, tb->plug->panel->height);
 }
 
@@ -2159,18 +2161,6 @@ static void task_update_style(Task * tk, TaskbarPlugin * tb)
     }
 
     task_button_redraw_button_state(tk, tb);
-/*
-    if( task_button_is_really_flat(tb) )
-    {
-        gtk_toggle_button_set_active((GtkToggleButton*)tk->button, FALSE);
-        gtk_button_set_relief(GTK_BUTTON(tk->button), GTK_RELIEF_NONE);
-    }
-    else
-    {
-        gtk_toggle_button_set_active((GtkToggleButton*)tk->button, tk->focused);
-        gtk_button_set_relief(GTK_BUTTON(tk->button), GTK_RELIEF_NORMAL);
-    }
-*/
     task_draw_label(tk);
 }
 
@@ -3231,7 +3221,7 @@ static void taskbar_build_gui(Plugin * p)
     /* Make container for task buttons as a child of top level widget. */
     GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     tb->icon_grid = icon_grid_new(p->panel, p->pwid, bo, tb->task_width_max, tb->icon_size, tb->spacing, 0, p->panel->height);
-    icon_grid_set_expand(tb->icon_grid, get_task_button_expandable(tb));
+    icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     taskbar_update_style(tb);
 
     /* Add GDK event filter. */
@@ -3722,9 +3712,9 @@ static void taskbar_panel_configuration_changed(Plugin * p)
     taskbar_update_style(tb);
     taskbar_make_menu(tb);
     GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    icon_grid_set_expand(tb->icon_grid, get_task_button_expandable(tb));
+    icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
-        get_task_button_max_width(tb), tb->plug->panel->icon_size + BUTTON_HEIGHT_EXTRA,
+        taskbar_get_task_button_max_width(tb), tb->plug->panel->icon_size + BUTTON_HEIGHT_EXTRA,
         tb->spacing, 0, tb->plug->panel->height);
 
     /* If the icon size changed, refetch all the icons. */

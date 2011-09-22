@@ -511,7 +511,7 @@ static gchar* task_get_desktop_name(Task * tk, const char* defval)
     return taskbar_get_desktop_name(tk->tb, tk->desktop, defval);
 }
 
-static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
+static int task_class_is_folded(TaskbarPlugin * tb, TaskClass * tc)
 {
     if (!tb->grouped_tasks)
         return FALSE;
@@ -528,7 +528,7 @@ static int task_class_is_grouped(TaskbarPlugin * tb, TaskClass * tc)
 
 static gboolean task_has_visible_close_button(Task * tk)
 {
-    return tk->tb->_show_close_buttons && !task_class_is_grouped(tk->tb, tk->res_class);
+    return tk->tb->_show_close_buttons && !task_class_is_folded(tk->tb, tk->res_class);
 }
 
 /* Determine if a task is visible considering only its desktop placement. */
@@ -662,7 +662,7 @@ static void task_draw_label(Task * tk)
     TaskClass * tc = tk->res_class;
     gboolean bold_style = (((tk->entered_state) || (tk->flash_state)) && (tk->tb->flat_button));
     bold_style |= tk->name_changed && tk->tb->highlight_modified_titles;
-    if (task_class_is_grouped(tk->tb, tc) && (tc) && (tc->visible_task == tk))
+    if (task_class_is_folded(tk->tb, tc) && (tc) && (tc->visible_task == tk))
     {
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
         gtk_widget_set_tooltip_text(tk->button, label);
@@ -686,7 +686,7 @@ static gboolean task_is_visible(Task * tk)
     TaskbarPlugin * tb = tk->tb;
 
     /* Not visible due to grouping. */
-    if (task_class_is_grouped(tb, tk->res_class) && (tk->res_class) && (tk->res_class->visible_task != tk))
+    if (task_class_is_folded(tb, tk->res_class) && (tk->res_class) && (tk->res_class->visible_task != tk))
         return FALSE;
 
     /* In single_window mode only focused task is visible. */
@@ -1496,7 +1496,7 @@ static void task_set_urgency(Task * tk)
 {
     TaskbarPlugin * tb = tk->tb;
     TaskClass * tc = tk->res_class;
-    if (task_class_is_grouped(tb, tc))
+    if (task_class_is_folded(tb, tc))
         recompute_group_visibility_for_class(tk->tb, tc);
     else
     {
@@ -1515,7 +1515,7 @@ static void task_clear_urgency(Task * tk)
 {
     TaskbarPlugin * tb = tk->tb;
     TaskClass * tc = tk->res_class;
-    if (task_class_is_grouped(tb, tc))
+    if (task_class_is_folded(tb, tc))
         recompute_group_visibility_for_class(tk->tb, tc);
     else
     {
@@ -1652,7 +1652,7 @@ static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean si
     GtkWidget * menu = gtk_menu_new();
     Task * tk_cursor;
 
-    if (similar && task_class_is_grouped(tb, tc))
+    if (similar && task_class_is_folded(tb, tc))
     {
         if (tc)
         {
@@ -1941,7 +1941,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
 
     TaskbarPlugin * tb = tk->tb;
     TaskClass * tc = tk->res_class;
-    if (task_class_is_grouped(tb, tc) && (GTK_IS_BUTTON(widget)))
+    if (task_class_is_folded(tb, tc) && (GTK_IS_BUTTON(widget)))
     {
         /* If this is a grouped-task representative, meaning that there is a class with at least two windows,
          * bring up a popup menu listing all the class members. */
@@ -1953,7 +1953,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
 
         Task * visible_task = (
             (tb->single_window) ? tb->focused :
-            (!task_class_is_grouped(tb, tk->res_class)) ? tk :
+            (!task_class_is_folded(tb, tk->res_class)) ? tk :
             (tk->res_class) ? tk->res_class->visible_task :
             tk);
         task_group_menu_destroy(tb);
@@ -3065,9 +3065,9 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
     gtk_widget_set_visible(GTK_WIDGET(tb->ungroup_menuitem), manual_grouping && tk->res_class && tk->res_class->visible_count > 1);
 
     gtk_widget_set_visible(GTK_WIDGET(tb->unfold_group_menuitem),
-        manual_grouping && !tb->_show_single_group && tk->res_class && task_class_is_grouped(tb, tk->res_class));
+        manual_grouping && !tb->_show_single_group && tk->res_class && task_class_is_folded(tb, tk->res_class));
     gtk_widget_set_visible(GTK_WIDGET(tk->tb->fold_group_menuitem),
-        manual_grouping && !tb->_show_single_group && tk->res_class && !task_class_is_grouped(tb, tk->res_class));
+        manual_grouping && !tb->_show_single_group && tk->res_class && !task_class_is_folded(tb, tk->res_class));
 
     gtk_widget_set_visible(GTK_WIDGET(tb->maximize_menuitem), !tk->maximized);
     gtk_widget_set_visible(GTK_WIDGET(tb->restore_menuitem), tk->maximized);

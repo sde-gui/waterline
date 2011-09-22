@@ -96,6 +96,14 @@ enum {
     GROUP_BY_STATE
 };
 
+enum {
+    SORT_BY_TIMESTAMP,
+    SORT_BY_TITLE,
+    SORT_BY_FOCUS,
+    SORT_BY_STATE,
+    SORT_BY_WORKSPACE
+};
+
 /******************************************************************************/
 
 static pair show_pair[] = {
@@ -139,6 +147,15 @@ static pair group_by_pair[] = {
     { GROUP_BY_CLASS, "Class" },
     { GROUP_BY_WORKSPACE,  "Workspace" },
     { GROUP_BY_STATE,  "State" },
+    { 0, NULL},
+};
+
+static pair sort_by_pair[] = {
+    { SORT_BY_TIMESTAMP, "Timestamp" },
+    { SORT_BY_TITLE, "Title" },
+    { SORT_BY_FOCUS, "Focus" },
+    { SORT_BY_STATE, "State" },
+    { SORT_BY_WORKSPACE,  "Workspace" },
     { 0, NULL},
 };
 
@@ -293,6 +310,9 @@ typedef struct _taskbar {
     gboolean unfold_focused_group;		/* User preference: autounfold group of focused window */
     gboolean show_single_group;			/* User preference: show windows of the active group only  */
 
+    int sort_by[3];
+    gboolean sort_reverse[3];
+
     gboolean highlight_modified_titles;		/* User preference: highlight modified titles */
 
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
@@ -317,6 +337,7 @@ typedef struct _taskbar {
     gboolean show_mapped_prev;
     gboolean show_iconified_prev;
 
+    int sort_settings_hash;
 
     /* Deferred window switching data. */
 
@@ -373,6 +394,7 @@ static GdkPixbuf * apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask);
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 static void task_update_icon(Task * tk, Atom source);
 static void task_update_grouping(Task * tk, int group_by);
+static void task_update_sorting(Task * tk, int sort_by);
 static gboolean flash_window_timeout(Task * tk);
 static void task_set_urgency(Task * tk);
 static void task_clear_urgency(Task * tk);
@@ -2281,8 +2303,47 @@ static int task_compare(Task * tk1, Task * tk2)
         }
     }
 
-    if (result == 0)
-        result = tk2->timestamp - tk1->timestamp;
+    int i;
+    for (i = 0; i < 3; i++)
+    {
+        if (result != 0)
+            break;
+
+        switch (tk1->tb->sort_by[i])
+        {
+            case SORT_BY_TIMESTAMP:
+            {
+                result = tk2->timestamp - tk1->timestamp;
+                break;
+            }
+            case SORT_BY_TITLE:
+            {
+                result = strcmp(tk2->name, tk1->name);
+                break;
+            }
+            case SORT_BY_FOCUS:
+            {
+                result = tk2->focus_timestamp - tk1->focus_timestamp;
+                break;
+            }
+            case SORT_BY_STATE:
+            {
+                int w1 = tk1->urgency * 2 + tk1->iconified;
+                int w2 = tk2->urgency * 2 + tk2->iconified;
+                result = w2 - w1;
+                break;
+            }
+            case SORT_BY_WORKSPACE:
+            {
+                int w1 = (tk1->desktop == ALL_WORKSPACES) ? 0 : (tk1->desktop + 1);
+                int w2 = (tk2->desktop == ALL_WORKSPACES) ? 0 : (tk2->desktop + 1);
+                result = w2 - w1;
+                break;
+            }
+        }
+        if (tk1->tb->sort_reverse[i])
+            result = -result;
+    }
 
     return result;
 }
@@ -2507,6 +2568,7 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
         tb->focused = ntk;
         recompute_group_visibility_for_class(tb, ntk->res_class);
         task_button_redraw(ntk);
+        task_update_sorting(ntk, SORT_BY_FOCUS);
     }
 
     if (ctk != NULL)
@@ -2645,6 +2707,21 @@ static void task_update_grouping(Task * tk, int group_by)
     RET();
 }
 
+static void task_update_sorting(Task * tk, int sort_by)
+{
+    ENTER;
+    int i;
+    for (i = 0; i < 3; i++)
+    {
+        if (tk->tb->sort_by[i] == sort_by || sort_by < 0)
+        {
+           task_reorder(tk);
+           taskbar_redraw(tk->tb);
+           break;
+        }
+    }
+    RET();
+}
 
 /* Handle PropertyNotify event.
  * http://tronche.com/gui/x/icccm/
@@ -2672,6 +2749,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                     /* Window changed desktop. */
                     tk->desktop = get_net_wm_desktop(win);
                     task_update_grouping(tk, GROUP_BY_WORKSPACE);
+                    task_update_sorting(tk, SORT_BY_WORKSPACE);
                     taskbar_redraw(tb);
                 }
                 else if ((at == XA_WM_NAME) || (at == a_NET_WM_NAME) || (at == a_NET_WM_VISIBLE_NAME))
@@ -2685,6 +2763,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         if (tk->res_class->visible_task != NULL)
                             task_draw_label(tk->res_class->visible_task);
                     }
+                    task_update_sorting(tk, SORT_BY_TITLE);
                 }
                 else if (at == XA_WM_CLASS)
                 {
@@ -2701,6 +2780,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                        task_draw_label(tk);
                     }
                     task_update_grouping(tk, GROUP_BY_STATE);
+                    task_update_sorting(tk, SORT_BY_STATE);
                 }
                 else if (at == XA_WM_HINTS)
                 {
@@ -2716,6 +2796,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         else
                             task_clear_urgency(tk);
                         task_update_grouping(tk, GROUP_BY_STATE);
+                        task_update_sorting(tk, SORT_BY_STATE);
                     }
                 }
                 else if (at == a_NET_WM_STATE)
@@ -3174,6 +3255,15 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     if (!tb->show_iconified)
         tb->show_mapped = TRUE;
 
+    int sort_settings_hash = 0;
+    int i;
+    for (i = 0; i < 3; i++)
+    {
+        int v = (tb->sort_by[i] + 1) * 2 + !!tb->sort_reverse[i];
+        sort_settings_hash *= 20;
+        sort_settings_hash += v;
+    }
+
     tb->grouped_tasks = tb->mode == MODE_GROUP;
     tb->single_window = tb->mode == MODE_SINGLE_WINDOW;
 
@@ -3188,6 +3278,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     tb->rebuild_gui |= tb->_group_by != group_by;
     tb->rebuild_gui |= tb->show_iconified_prev != tb->show_iconified;
     tb->rebuild_gui |= tb->show_mapped_prev != tb->show_mapped;
+    tb->rebuild_gui |= tb->sort_settings_hash != sort_settings_hash;
 
     if (tb->rebuild_gui) {
         tb->_mode = tb->mode;
@@ -3196,6 +3287,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
         tb->_group_by = group_by;
         tb->show_iconified_prev = tb->show_iconified;
         tb->show_mapped_prev = tb->show_mapped;
+        tb->sort_settings_hash = sort_settings_hash;
     }
 
     tb->_show_close_buttons = tb->show_close_buttons && !(tb->grouped_tasks && tb->_group_fold_threshold == 1);
@@ -3212,7 +3304,6 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
         recompute_group_visibility_on_current_desktop(tb);
         taskbar_redraw(tb);
     }
-
 }
 
 /* Plugin constructor. */
@@ -3339,6 +3430,18 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->show_close_buttons = str2num(bool_pair, s.t[1], tb->show_close_buttons);
                 else if (g_ascii_strcasecmp(s.t[0], "SelfGroupSingleWindow") == 0)
                     tb->group_fold_threshold = str2num(bool_pair, s.t[1], 0) ? 1 : 2;        /* For backward compatibility */
+                else if (g_ascii_strcasecmp(s.t[0], "SortBy1") == 0)
+                    tb->sort_by[0] = str2num(sort_by_pair, s.t[1], tb->sort_by[0]);
+                else if (g_ascii_strcasecmp(s.t[0], "SortBy2") == 0)
+                    tb->sort_by[1] = str2num(sort_by_pair, s.t[1], tb->sort_by[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "SortBy3") == 0)
+                    tb->sort_by[2] = str2num(sort_by_pair, s.t[1], tb->sort_by[2]);
+                else if (g_ascii_strcasecmp(s.t[0], "SortReverse1") == 0)
+                    tb->sort_reverse[0] = str2num(bool_pair, s.t[1], tb->sort_reverse[0]);
+                else if (g_ascii_strcasecmp(s.t[0], "SortReverse2") == 0)
+                    tb->sort_reverse[1] = str2num(bool_pair, s.t[1], tb->sort_reverse[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "SortReverse3") == 0)
+                    tb->sort_reverse[2] = str2num(bool_pair, s.t[1], tb->sort_reverse[2]);
                 else if (g_ascii_strcasecmp(s.t[0], "Button1Action") == 0)
                     tb->button1_action = str2num(action_pair, s.t[1], tb->button1_action);
                 else if (g_ascii_strcasecmp(s.t[0], "Button2Action") == 0)
@@ -3478,6 +3581,11 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     char* shift_scroll_up_action = g_strdup_printf("%s%s", _("|Shift + Scroll up"), actions);
     char* shift_scroll_down_action = g_strdup_printf("%s%s", _("|Shift + Scroll down"), actions);
 
+    const char* sort_by = _("|Timestamp|Title|Focus (LRU)|State|Workspace");
+    char* sort_by_1 = g_strdup_printf("%s%s", _("|First sort by"), sort_by);
+    char* sort_by_2 = g_strdup_printf("%s%s", _("|Then sort by"), sort_by);
+    char* sort_by_3 = g_strdup_printf("%s%s", _("|And last sort by"), sort_by);
+
     int min_width_max = 16;
     int max_width_max = 10000;
     int max_spacing = 50;
@@ -3519,6 +3627,13 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 
         _("Flash when there is any window requiring attention"), (gpointer)&tb->use_urgency_hint, (GType)CONF_TYPE_BOOL,
 
+        _("Sorting"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        sort_by_1, (gpointer)&tb->sort_by[0], (GType)CONF_TYPE_ENUM,
+        sort_by_2, (gpointer)&tb->sort_by[1], (GType)CONF_TYPE_ENUM,
+        sort_by_3, (gpointer)&tb->sort_by[2], (GType)CONF_TYPE_ENUM,
+        "", 0, (GType)CONF_TYPE_END_TABLE,
+        
         _("Bindings"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
 
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
@@ -3549,6 +3664,9 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     g_free(shift_button3_action);
     g_free(shift_scroll_up_action);
     g_free(shift_scroll_down_action);
+    g_free(sort_by_1);
+    g_free(sort_by_2);
+    g_free(sort_by_3);
 }
 
 /* Save the configuration to the configuration file. */
@@ -3571,6 +3689,12 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "UnfoldFocusedGroup", tb->unfold_focused_group);
     lxpanel_put_bool(fp, "ShowSingleGroup", tb->show_single_group);
     lxpanel_put_bool(fp, "ShowCloseButtons", tb->show_close_buttons);
+    lxpanel_put_enum(fp, "SortBy1", tb->sort_by[0], sort_by_pair);
+    lxpanel_put_enum(fp, "SortBy2", tb->sort_by[1], sort_by_pair);
+    lxpanel_put_enum(fp, "SortBy3", tb->sort_by[2], sort_by_pair);
+    lxpanel_put_bool(fp, "SortReverse1", tb->sort_reverse[0]);
+    lxpanel_put_bool(fp, "SortReverse2", tb->sort_reverse[1]);
+    lxpanel_put_bool(fp, "SortReverse3", tb->sort_reverse[2]);
     lxpanel_put_enum(fp, "Button1Action", tb->button1_action, action_pair);
     lxpanel_put_enum(fp, "Button2Action", tb->button2_action, action_pair);
     lxpanel_put_enum(fp, "Button3Action", tb->button3_action, action_pair);

@@ -371,13 +371,19 @@ static gchar *taskbar_rc = "style 'taskbar-style'\n"
 #define BUTTON_HEIGHT_EXTRA  4          /* Amount needed to have button not clip icon */
 
 static void set_timer_on_task(Task * tk);
+
 static gboolean task_is_visible_on_current_desktop(Task * tk);
+static gboolean task_is_visible_on_desktop(Task * tk, int desktop);
+
+static gboolean task_is_visible(Task * tk);
+
 static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass * tc);
 static void recompute_group_visibility_on_current_desktop(TaskbarPlugin * tb);
+
 static void task_draw_label(Task * tk);
-static gboolean task_is_visible(Task * tk);
 static void task_button_redraw(Task * tk);
 static void taskbar_redraw(TaskbarPlugin * tb);
+
 static gboolean accept_net_wm_state(NetWMState * nws);
 static gboolean accept_net_wm_window_type(NetWMWindowType * nwwt);
 static void task_free_names(Task * tk);
@@ -463,6 +469,8 @@ static void set_timer_on_task(Task * tk)
 
 /******************************************************************************/
 
+/* Taskbar internal options and properties. */
+
 static int taskbar_get_task_button_max_width(TaskbarPlugin * tb)
 {
     int icon_mode_max_width = tb->icon_size + ICON_ONLY_EXTRA + (tb->_show_close_buttons ? tb->extra_size : 0);
@@ -482,18 +490,6 @@ static int taskbar_task_button_is_really_flat(TaskbarPlugin * tb)
     return ( tb->single_window || tb->flat_button );
 }
 
-static char* task_get_displayed_name(Task * tk)
-{
-    if (tk->iconified) {
-        if (!tk->name_iconified) {
-            tk->name_iconified = g_strdup_printf("[%s]", tk->name);
-        }
-        return tk->name_iconified;
-    } else {
-        return tk->name;
-    }
-}
-
 static gchar* taskbar_get_desktop_name(TaskbarPlugin * tb, int desktop, const char* defval)
 {
     gchar * name = NULL;
@@ -508,10 +504,18 @@ static gchar* taskbar_get_desktop_name(TaskbarPlugin * tb, int desktop, const ch
     return name;
 }
 
-static gchar* task_get_desktop_name(Task * tk, const char* defval)
+static gboolean taskbar_has_visible_tasks_on_desktop(TaskbarPlugin * tb, int desktop)
 {
-    return taskbar_get_desktop_name(tk->tb, tk->desktop, defval);
+    Task * tk;
+    for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
+        if (task_is_visible_on_desktop(tk,  desktop))
+            return TRUE;
+    return FALSE;
 }
+
+/******************************************************************************/
+
+/* Task class getters. */
 
 static int task_class_is_folded(TaskbarPlugin * tb, TaskClass * tc)
 {
@@ -526,6 +530,27 @@ static int task_class_is_folded(TaskbarPlugin * tb, TaskClass * tc)
 
     int visible_count = tc ? tc->visible_count : 1;
     return (tb->_group_fold_threshold > 0) && (visible_count >= tb->_group_fold_threshold);
+}
+
+/******************************************************************************/
+
+/* Task getters. */
+
+static char* task_get_displayed_name(Task * tk)
+{
+    if (tk->iconified) {
+        if (!tk->name_iconified) {
+            tk->name_iconified = g_strdup_printf("[%s]", tk->name);
+        }
+        return tk->name_iconified;
+    } else {
+        return tk->name;
+    }
+}
+
+static gchar* task_get_desktop_name(Task * tk, const char* defval)
+{
+    return taskbar_get_desktop_name(tk->tb, tk->desktop, defval);
 }
 
 static int task_is_folded(Task * tk)
@@ -550,14 +575,31 @@ static gboolean task_is_visible_on_current_desktop(Task * tk)
     return task_is_visible_on_desktop(tk, tk->tb->current_desktop);
 }
 
-static gboolean taskbar_has_visible_tasks_on_desktop(TaskbarPlugin * tb, int desktop)
+/* Determine if a task is visible. */
+static gboolean task_is_visible(Task * tk)
 {
-    Task * tk;
-    for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
-        if (task_is_visible_on_desktop(tk,  desktop))
-            return TRUE;
-    return FALSE;
+    TaskbarPlugin * tb = tk->tb;
+
+    /* Not visible due to grouping. */
+    if (task_is_folded(tk) && (tk->res_class) && (tk->res_class->visible_task != tk))
+        return FALSE;
+
+    /* In single_window mode only focused task is visible. */
+    if (tb->single_window && !tk->focused)
+        return FALSE;
+
+    if (tb->_show_single_group && !tk->focused && (!tk->res_class || !tb->focused || tb->focused->res_class != tk->res_class))
+        return FALSE;
+
+    /* Hide iconified or mapped tasks? */
+    if (!tb->single_window && !((tk->iconified && tb->show_iconified) || (!tk->iconified && tb->show_mapped)) )
+        return FALSE;
+
+    /* Desktop placement. */
+    return task_is_visible_on_current_desktop(tk);
 }
+
+/******************************************************************************/
 
 /* Recompute the visible task for a class when the class membership changes.
  * Also transfer the urgency state to the visible task if necessary. */
@@ -685,30 +727,6 @@ static void task_draw_label(Task * tk)
         if (tk->label)
             panel_draw_label_text(tk->tb->plug->panel, tk->label, name, bold_style, taskbar_task_button_is_really_flat(tk->tb));
     }
-}
-
-/* Determine if a task is visible. */
-static gboolean task_is_visible(Task * tk)
-{
-    TaskbarPlugin * tb = tk->tb;
-
-    /* Not visible due to grouping. */
-    if (task_is_folded(tk) && (tk->res_class) && (tk->res_class->visible_task != tk))
-        return FALSE;
-
-    /* In single_window mode only focused task is visible. */
-    if (tb->single_window && !tk->focused)
-        return FALSE;
-
-    if (tb->_show_single_group && !tk->focused && (!tk->res_class || !tb->focused || tb->focused->res_class != tk->res_class))
-        return FALSE;
-
-    /* Hide iconified or mapped tasks? */
-    if (!tb->single_window && !((tk->iconified && tb->show_iconified) || (!tk->iconified && tb->show_mapped)) )
-        return FALSE;
-
-    /* Desktop placement. */
-    return task_is_visible_on_current_desktop(tk);
 }
 
 static void task_button_redraw_button_state(Task * tk, TaskbarPlugin * tb)

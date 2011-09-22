@@ -139,6 +139,7 @@ static pair action_pair[] = {
     { ACTION_PREV_WINDOW_IN_CURRENT_GROUP, "PrevWindowInCurrentGroup"},
     { ACTION_NEXT_WINDOW_IN_GROUP, "NextWindowInGroup"},
     { ACTION_PREV_WINDOW_IN_GROUP, "PrevWindowInGroup"},
+    { ACTION_COPY_TITLE, "CopyTitle"},
     { 0, NULL},
 };
 

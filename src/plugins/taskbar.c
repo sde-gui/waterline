@@ -705,6 +705,8 @@ static void recompute_group_visibility_on_current_desktop(TaskbarPlugin * tb)
     }
 }
 
+/******************************************************************************/
+
 /* Draw the label and tooltip on a taskbar button. */
 static void task_draw_label(Task * tk)
 {
@@ -788,6 +790,8 @@ static void taskbar_redraw(TaskbarPlugin * tb)
     icon_grid_resume_updates(tb->icon_grid);
 }
 
+/******************************************************************************/
+
 /* Determine if a task should be visible given its NET_WM_STATE. */
 static gboolean accept_net_wm_state(NetWMState * nws)
 {
@@ -799,6 +803,8 @@ static gboolean accept_net_wm_window_type(NetWMWindowType * nwwt)
 {
     return ( ! ((nwwt->desktop) || (nwwt->dock) || (nwwt->splash)));
 }
+
+/******************************************************************************/
 
 /* Free the names associated with a task. */
 static void task_free_names(Task * tk)

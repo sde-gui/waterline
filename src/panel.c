@@ -1555,9 +1555,9 @@ out:
 static gboolean start_all_panels( )
 {
     gboolean is_global;
-    for( is_global = 0; ! all_panels && is_global < 2; ++is_global )
+    for( is_global = 0; ! all_panels && is_global < 3; ++is_global )
     {
-        char* panel_dir = get_config_file( cprofile, "panels", is_global );
+        char* panel_dir = is_global == 2 ? get_config_file( "default", "panels", TRUE ) : get_config_file( cprofile, "panels", is_global );
         GDir* dir = g_dir_open( panel_dir, 0, NULL );
         const gchar* name;
 

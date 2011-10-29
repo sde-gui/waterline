@@ -1576,6 +1576,13 @@ void load_global_config()
         loaded = g_key_file_load_from_file( kf, file, 0, NULL );
     }
 
+    if( ! loaded )
+    {
+        g_free( file );
+        file = get_config_file( "default", "config", TRUE ); /* get the system-wide config file */
+        loaded = g_key_file_load_from_file( kf, file, 0, NULL );
+    }
+
     if( loaded )
     {
         if (g_key_file_has_key(kf, general_group, "KioskMode", NULL))

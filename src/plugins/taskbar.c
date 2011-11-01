@@ -254,6 +254,7 @@ typedef struct _taskbar {
 
     GtkWidget * menu;				/* Popup menu for task control (Close, Raise, etc.) */
     GtkWidget * workspace_submenu;		/* Workspace submenu of the task control menu */
+    GtkWidget * move_to_this_workspace_menuitem;
     GtkWidget * restore_menuitem;
     GtkWidget * maximize_menuitem;
     GtkWidget * iconify_menuitem;
@@ -2904,6 +2905,12 @@ static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
+static void menu_move_to_this_workspace(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    Xclimsg(tb->menutask->win, a_NET_WM_DESKTOP, tb->current_desktop, 0, 0, 0, 0);
+    task_group_menu_destroy(tb);
+}
+
 static void menu_ungroup_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_set_override_class(tb->menutask, NULL);
@@ -3080,6 +3087,10 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
         gtk_container_foreach(GTK_CONTAINER(tb->workspace_submenu), task_adjust_menu_workspace_callback, tk);
     }
 
+    if (tb->move_to_this_workspace_menuitem) {
+        gtk_widget_set_visible(GTK_WIDGET(tb->move_to_this_workspace_menuitem), tk->desktop != tb->current_desktop && tk->desktop >= 0);
+    }
+
     gboolean manual_grouping = tb->manual_grouping && tb->grouped_tasks;
     if (manual_grouping)
         task_adjust_menu_move_to_group(tk);
@@ -3147,6 +3158,8 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     tb->workspace_submenu = NULL;
     if (tb->number_of_desktops > 1)
     {
+        create_menu_item(tb, _("Move to this workspace"), (GCallback) menu_move_to_this_workspace, &tb->move_to_this_workspace_menuitem);
+
         /* Allocate submenu. */
         GtkWidget * workspace_menu = gtk_menu_new();
 

@@ -3146,82 +3146,129 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     tb->menu = menu;
 
     GtkWidget * mi;
-        
+
+    gchar * menu_description =
+         "close2 raise restore maximize iconify move_to_this_workspace move_to_workspace - "
+         "ungroup move_to_group - unfold_group fold_group - copy_title";
+
+    tb->workspace_submenu = NULL;
+    tb->move_to_this_workspace_menuitem = NULL;
+    tb->restore_menuitem = NULL;
+    tb->maximize_menuitem = NULL;
+    tb->iconify_menuitem = NULL;
+    tb->ungroup_menuitem = NULL;
+    tb->move_to_group_menuitem = NULL;
+    tb->unfold_group_menuitem = NULL;
+    tb->fold_group_menuitem = NULL;
+    tb->title_menuitem = NULL;
+    tb->group_menu = NULL;
+
     /* Create menu items. */
 
-    create_menu_item(tb, _("_Raise"), (GCallback) menu_raise_window, NULL);
-    create_menu_item(tb, _("R_estore"), (GCallback) menu_restore_window, &tb->restore_menuitem);
-    create_menu_item(tb, _("Ma_ximize"), (GCallback) menu_maximize_window, &tb->maximize_menuitem);
-    create_menu_item(tb, _("Ico_nify"), (GCallback) menu_iconify_window, &tb->iconify_menuitem);
+    gchar ** elements = g_strsplit_set(menu_description, " \t\n,", 0);
 
-    /* If multiple desktops are supported, add menu items to select them. */
-    tb->workspace_submenu = NULL;
-    if (tb->number_of_desktops > 1)
+    int close2 = 0;
+
+    int element_nr;
+    for (element_nr = 0; elements[element_nr]; element_nr++)
     {
-        create_menu_item(tb, _("Move to this workspace"), (GCallback) menu_move_to_this_workspace, &tb->move_to_this_workspace_menuitem);
+        gchar * element = elements[element_nr];
 
-        /* Allocate submenu. */
-        GtkWidget * workspace_menu = gtk_menu_new();
+        #define IF(v) if (strcmp(element, v) == 0)
 
-        /* Loop over all desktops. */
-        int i;
-        for (i = 1; i <= tb->number_of_desktops; i++)
-        {
-            gchar * deflabel = g_strdup_printf( "Workspace %d", i);
-            gchar * label = taskbar_get_desktop_name(tb, i - 1, deflabel);
-            mi = gtk_menu_item_new_with_label(label);
-            g_free(label);
-            g_free(deflabel);
+        IF("") {
+            /* nothing */
+        } else IF("-") {
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+        } else IF("raise") {
+            create_menu_item(tb, _("_Raise"), (GCallback) menu_raise_window, NULL);
+        } else IF("restore") {
+            create_menu_item(tb, _("R_estore"), (GCallback) menu_restore_window, &tb->restore_menuitem);
+        } else IF("maximize") {
+            create_menu_item(tb, _("Ma_ximize"), (GCallback) menu_maximize_window, &tb->maximize_menuitem);
+        } else IF("iconify") {
+            create_menu_item(tb, _("Ico_nify"), (GCallback) menu_iconify_window, &tb->iconify_menuitem);
+        } else IF("move_to_this_workspace") {
+            if (tb->number_of_desktops > 1)
+            {
+                create_menu_item(tb, _("Move to this workspace"), (GCallback) menu_move_to_this_workspace, &tb->move_to_this_workspace_menuitem);
+            }
+        } else IF("move_to_workspace") {
+            if (tb->number_of_desktops > 1)
+            {
+                /* Allocate submenu. */
+                GtkWidget * workspace_menu = gtk_menu_new();
 
-            /* Set the desktop number as a property on the menu item. */
-            g_object_set_data(G_OBJECT(mi), "num", GINT_TO_POINTER(i - 1));
-            g_signal_connect(mi, "activate", G_CALLBACK(menu_move_to_workspace), tb);
-            gtk_menu_shell_append(GTK_MENU_SHELL(workspace_menu), mi);
+                /* Loop over all desktops. */
+                int i;
+                for (i = 1; i <= tb->number_of_desktops; i++)
+                {
+                    gchar * deflabel = g_strdup_printf( "Workspace %d", i);
+                    gchar * label = taskbar_get_desktop_name(tb, i - 1, deflabel);
+                    mi = gtk_menu_item_new_with_label(label);
+                    g_free(label);
+                    g_free(deflabel);
+
+                    /* Set the desktop number as a property on the menu item. */
+                    g_object_set_data(G_OBJECT(mi), "num", GINT_TO_POINTER(i - 1));
+                    g_signal_connect(mi, "activate", G_CALLBACK(menu_move_to_workspace), tb);
+                    gtk_menu_shell_append(GTK_MENU_SHELL(workspace_menu), mi);
+                }
+
+                /* Add a separator. */
+                gtk_menu_shell_append(GTK_MENU_SHELL(workspace_menu), gtk_separator_menu_item_new());
+
+                /* Add "move to all workspaces" item.  This causes the window to be visible no matter what desktop is active. */
+                mi = gtk_menu_item_new_with_mnemonic(_("_All workspaces"));
+                g_object_set_data(G_OBJECT(mi), "num", GINT_TO_POINTER(ALL_WORKSPACES));
+                g_signal_connect(mi, "activate", G_CALLBACK(menu_move_to_workspace), tb);
+                gtk_menu_shell_append(GTK_MENU_SHELL(workspace_menu), mi);
+
+                /* Add Move to Workspace menu item as a submenu. */
+                mi = create_menu_item(tb, _("_Move to Workspace"), NULL, NULL);
+                gtk_menu_item_set_submenu(GTK_MENU_ITEM(mi), workspace_menu);
+
+                tb->workspace_submenu = workspace_menu;
+            }
+        } else IF("ungroup") {
+            create_menu_item(tb, _("_Ungroup"), (GCallback) menu_ungroup_window, &tb->ungroup_menuitem);
+        } else IF("move_to_group") {
+            create_menu_item(tb, _("M_ove to Group"), NULL, &tb->move_to_group_menuitem);
+        } else IF("unfold_group") {
+            create_menu_item(tb, _("Unfold _Group"), (GCallback) menu_unfold_group_window, &tb->unfold_group_menuitem);
+        } else IF("fold_group") {
+            create_menu_item(tb, _("Fold _Group"), (GCallback) menu_fold_group_window, &tb->fold_group_menuitem);
+        } else IF("copy_title") {
+            create_menu_item(tb, _("Cop_y title"), (GCallback) menu_copy_title, NULL);
+        } else IF("close") {
+            create_menu_item(tb, _("_Close Window"), (GCallback) menu_close_window, NULL);
+        } else IF("close2") {
+            close2 = 1;
+        } else {
+            g_warning("Invalid window menu command: %s\n", element);
         }
 
-        /* Add a separator. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(workspace_menu), gtk_separator_menu_item_new());
+        #undef IF
 
-        /* Add "move to all workspaces" item.  This causes the window to be visible no matter what desktop is active. */
-        mi = gtk_menu_item_new_with_mnemonic(_("_All workspaces"));
-        g_object_set_data(G_OBJECT(mi), "num", GINT_TO_POINTER(ALL_WORKSPACES));
-        g_signal_connect(mi, "activate", G_CALLBACK(menu_move_to_workspace), tb);
-        gtk_menu_shell_append(GTK_MENU_SHELL(workspace_menu), mi);
-
-        /* Add Move to Workspace menu item as a submenu. */
-        mi = create_menu_item(tb, _("_Move to Workspace"), NULL, NULL);
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(mi), workspace_menu);
-
-        tb->workspace_submenu = workspace_menu;
     }
-
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
     
-    create_menu_item(tb, _("_Ungroup"), (GCallback) menu_ungroup_window, &tb->ungroup_menuitem);
-    create_menu_item(tb, _("M_ove to Group"), NULL, &tb->move_to_group_menuitem);
-
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-    
-    create_menu_item(tb, _("Expand _Group"), (GCallback) menu_unfold_group_window, &tb->unfold_group_menuitem);
-    create_menu_item(tb, _("Shrink _Group"), (GCallback) menu_fold_group_window, &tb->fold_group_menuitem);
-
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-
-    create_menu_item(tb, _("Cop_y title"), (GCallback) menu_copy_title, NULL);
     
     /* Add Close menu item.  By popular demand, we place this menu item closest to the cursor. */
-    mi = gtk_menu_item_new_with_mnemonic (_("_Close Window"));
-    if (tb->plug->panel->edge != EDGE_BOTTOM)
+    if (close2)
     {
-        gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-        gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
+        mi = gtk_menu_item_new_with_mnemonic (_("_Close Window"));
+        if (tb->plug->panel->edge != EDGE_BOTTOM)
+        {
+            gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+            gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
+        }
+        else
+        {
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+        }
+        g_signal_connect(G_OBJECT(mi), "activate", (GCallback)menu_close_window, tb);
     }
-    else
-    {
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    }
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback)menu_close_window, tb);
 
     /* Add window title menu item and separator. */
 

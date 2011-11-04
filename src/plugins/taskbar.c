@@ -30,6 +30,7 @@
 #include <gdk/gdk.h>
 #include <glib/gi18n.h>
 
+#include "gtkcompat.h"
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
@@ -3107,12 +3108,21 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 
     gtk_widget_set_sensitive(GTK_WIDGET(tb->iconify_menuitem), !tk->iconified);
 
-    gtk_widget_set_visible(GTK_WIDGET(tb->title_menuitem), from_popup_menu);
     if (from_popup_menu) {
-        gtk_widget_set_sensitive(GTK_WIDGET(tb->title_menuitem), FALSE);
+#if GTK_CHECK_VERSION(2,16,0)
         gtk_menu_item_set_use_underline(GTK_MENU_ITEM(tb->title_menuitem), FALSE);
         gtk_menu_item_set_label(GTK_MENU_ITEM(tb->title_menuitem), tk->name);
+#else
+        if (tb->title_menuitem) {
+            gtk_widget_destroy(tb->title_menuitem);
+            tb->title_menuitem = NULL;
+        }
+        tb->title_menuitem = gtk_menu_item_new_with_label(tk->name);
+        gtk_menu_shell_prepend(GTK_MENU_SHELL(tb->menu), tb->title_menuitem);
+#endif
+        gtk_widget_set_sensitive(GTK_WIDGET(tb->title_menuitem), FALSE);
     }
+    gtk_widget_set_visible(GTK_WIDGET(tb->title_menuitem), from_popup_menu);
 
     adjust_separators(tb->menu);
 }
@@ -3274,11 +3284,11 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
 
     mi = gtk_separator_menu_item_new();
     gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
-
+#if GTK_CHECK_VERSION(2,16,0)
     mi = gtk_menu_item_new_with_mnemonic("");
     gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
     tb->title_menuitem = mi;
-
+#endif
     gtk_widget_show_all(menu);
 }
 

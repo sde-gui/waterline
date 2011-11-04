@@ -19,9 +19,13 @@
 #ifndef MENU_POLICY_H
 #define MENU_POLICY_H
 
+#ifndef DISABLE_MENU
+
 #include <menu-cache.h>
 
 extern MenuCache * panel_menu_cache_new(guint32* visibility_flags); /* Allocate a menu cache */
 extern gboolean panel_menu_item_evaluate_visibility(MenuCacheItem * item, guint32 visibility_flags); /* Evaluate the visibility of a menu item */
+
+#endif
 
 #endif

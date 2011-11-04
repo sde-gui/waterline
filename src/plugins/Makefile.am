@@ -24,11 +24,11 @@ INCLUDES = \
 
 if ENABLE_MENU_CACHE
 MENU_SOURCES = \
-	menu.c
+	menu.c \
+	launchbar.c
 endif
 
 PLUGINS_SOURCES = \
-	launchbar.c \
 	launchbutton.c \
 	taskbar.c \
 	dclock.c \

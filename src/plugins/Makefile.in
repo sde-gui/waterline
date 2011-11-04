@@ -49,14 +49,15 @@ LIBRARIES = $(noinst_LIBRARIES)
 ARFLAGS = cru
 libbuiltin_plugins_a_AR = $(AR) $(ARFLAGS)
 libbuiltin_plugins_a_DEPENDENCIES =
-am__libbuiltin_plugins_a_SOURCES_DIST = launchbar.c launchbutton.c \
-	taskbar.c dclock.c menu.c separator.c pager.c space.c tray.c \
+am__libbuiltin_plugins_a_SOURCES_DIST = launchbutton.c taskbar.c \
+	dclock.c menu.c launchbar.c separator.c pager.c space.c tray.c \
 	wincmd.c dirmenu.c
-@ENABLE_MENU_CACHE_TRUE@am__objects_1 = menu.$(OBJEXT)
-am__objects_2 = launchbar.$(OBJEXT) launchbutton.$(OBJEXT) \
-	taskbar.$(OBJEXT) dclock.$(OBJEXT) $(am__objects_1) \
-	separator.$(OBJEXT) pager.$(OBJEXT) space.$(OBJEXT) \
-	tray.$(OBJEXT) wincmd.$(OBJEXT) dirmenu.$(OBJEXT)
+@ENABLE_MENU_CACHE_TRUE@am__objects_1 = menu.$(OBJEXT) \
+@ENABLE_MENU_CACHE_TRUE@	launchbar.$(OBJEXT)
+am__objects_2 = launchbutton.$(OBJEXT) taskbar.$(OBJEXT) \
+	dclock.$(OBJEXT) $(am__objects_1) separator.$(OBJEXT) \
+	pager.$(OBJEXT) space.$(OBJEXT) tray.$(OBJEXT) \
+	wincmd.$(OBJEXT) dirmenu.$(OBJEXT)
 am_libbuiltin_plugins_a_OBJECTS = $(am__objects_2)
 libbuiltin_plugins_a_OBJECTS = $(am_libbuiltin_plugins_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -285,10 +286,10 @@ INCLUDES = \
 	$(G_CAST_CHECKS)
 
 @ENABLE_MENU_CACHE_TRUE@MENU_SOURCES = \
-@ENABLE_MENU_CACHE_TRUE@	menu.c
+@ENABLE_MENU_CACHE_TRUE@	menu.c \
+@ENABLE_MENU_CACHE_TRUE@	launchbar.c
 
 PLUGINS_SOURCES = \
-	launchbar.c \
 	launchbutton.c \
 	taskbar.c \
 	dclock.c \

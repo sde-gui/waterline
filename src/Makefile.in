@@ -54,13 +54,14 @@ am__installdirs = "$(DESTDIR)$(bindir)" \
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__lxpanel_SOURCES_DIST = misc.c misc.h bg.c bg.h configurator.c \
 	dbg.c dbg.h ev.c ev.h gtkbar.h gtkbar.c icon-grid.h \
-	icon-grid.c menu-policy.h menu-policy.c panel.c panel.h \
-	plugin.c plugin.h gtk-run.c
-@ENABLE_MENU_CACHE_TRUE@am__objects_1 = gtk-run.$(OBJEXT)
+	icon-grid.c panel.c panel.h plugin.c plugin.h gtk-run.c \
+	menu-policy.h menu-policy.c
+@ENABLE_MENU_CACHE_TRUE@am__objects_1 = gtk-run.$(OBJEXT) \
+@ENABLE_MENU_CACHE_TRUE@	menu-policy.$(OBJEXT)
 am_lxpanel_OBJECTS = misc.$(OBJEXT) bg.$(OBJEXT) \
 	configurator.$(OBJEXT) dbg.$(OBJEXT) ev.$(OBJEXT) \
-	gtkbar.$(OBJEXT) icon-grid.$(OBJEXT) menu-policy.$(OBJEXT) \
-	panel.$(OBJEXT) plugin.$(OBJEXT) $(am__objects_1)
+	gtkbar.$(OBJEXT) icon-grid.$(OBJEXT) panel.$(OBJEXT) \
+	plugin.$(OBJEXT) $(am__objects_1)
 lxpanel_OBJECTS = $(am_lxpanel_OBJECTS)
 am__DEPENDENCIES_1 =
 lxpanel_DEPENDENCIES = $(BUILTIN_PLUGINS) $(am__DEPENDENCIES_1) \
@@ -325,7 +326,10 @@ INCLUDES = \
 	$(PACKAGE_CFLAGS)
 
 BUILTIN_PLUGINS = $(top_builddir)/src/plugins/libbuiltin_plugins.a
-@ENABLE_MENU_CACHE_TRUE@MENU_SOURCES = gtk-run.c
+@ENABLE_MENU_CACHE_TRUE@MENU_SOURCES = \
+@ENABLE_MENU_CACHE_TRUE@	gtk-run.c \
+@ENABLE_MENU_CACHE_TRUE@	menu-policy.h menu-policy.c
+
 lxpanel_SOURCES = \
 	misc.c misc.h \
 	bg.c bg.h  \
@@ -334,7 +338,6 @@ lxpanel_SOURCES = \
 	ev.c ev.h \
 	gtkbar.h gtkbar.c \
 	icon-grid.h icon-grid.c \
-	menu-policy.h menu-policy.c \
 	panel.c panel.h \
 	plugin.c plugin.h \
 	$(MENU_SOURCES)

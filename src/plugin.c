@@ -65,8 +65,10 @@ static void init_plugin_class_list(void)
     REGISTER_STATIC_PLUGIN_CLASS(separator_plugin_class);
 #endif
 
+#ifndef DISABLE_MENU
 #ifdef STATIC_LAUNCHBAR
     REGISTER_STATIC_PLUGIN_CLASS(launchbar_plugin_class);
+#endif
 #endif
 
 #ifdef STATIC_LAUNCHBUTTON

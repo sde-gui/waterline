@@ -91,6 +91,11 @@ enum TASKBAR_ACTION {
 };
 
 enum {
+    TRIGGERED_BY_CLICK,
+    TRIGGERED_BY_PRESS
+};
+
+enum {
     GROUP_BY_NONE,
     GROUP_BY_CLASS,
     GROUP_BY_WORKSPACE,
@@ -141,6 +146,12 @@ static pair action_pair[] = {
     { ACTION_NEXT_WINDOW_IN_GROUP, "NextWindowInGroup"},
     { ACTION_PREV_WINDOW_IN_GROUP, "PrevWindowInGroup"},
     { ACTION_COPY_TITLE, "CopyTitle"},
+    { 0, NULL},
+};
+
+static pair action_trigged_by_pair[] = {
+    { TRIGGERED_BY_CLICK, "Click"},
+    { TRIGGERED_BY_PRESS, "Press"},
     { 0, NULL},
 };
 
@@ -296,6 +307,10 @@ typedef struct _taskbar {
     int shift_scroll_up_action;                 /* User preference: shift + scroll up action */
     int shift_scroll_down_action;               /* User preference: shift + scroll down action */
 
+    int menu_actions_click_press;
+    int other_actions_click_press;
+
+
     gboolean show_all_desks;			/* User preference: show windows from all desktops */
     gboolean show_mapped;			/* User preference: show mapped windows */
     gboolean show_iconified;			/* User preference: show iconified windows */
@@ -347,6 +362,9 @@ typedef struct _taskbar {
     int deferred_current_desktop;
     int deferred_active_window_valid;
     Window deferred_active_window;
+
+
+    Task * button_pressed_task;
 
 
     Atom a_OB_WM_STATE_UNDECORATED;
@@ -1084,6 +1102,9 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     /* If we think this task had focus, remove that. */
     if (tb->focused == tk)
         tb->focused = NULL;
+
+    if (tb->button_pressed_task == tk)
+        tb->button_pressed_task = NULL;
 
     /* If there are deferred calls, remove them. */
     if (tk->adapt_to_allocated_size_idle_cb != 0)
@@ -1969,11 +1990,45 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
         }
     }
 
-   tk->click_on = NULL;
-   if (event_in_close_button || event->type == GDK_BUTTON_RELEASE)
-       return TRUE;
+    tk->click_on = NULL;
+    if (event_in_close_button)
+        return TRUE;
+
 
     TaskbarPlugin * tb = tk->tb;
+    gboolean click = FALSE;
+
+    int action = ACTION_NONE;
+    switch (event->button) {
+        case 1: action = (event->state & GDK_SHIFT_MASK) ? tb->shift_button1_action : tb->button1_action; break;
+        case 2: action = (event->state & GDK_SHIFT_MASK) ? tb->shift_button2_action : tb->button2_action; break;
+        case 3: action = (event->state & GDK_SHIFT_MASK) ? tb->shift_button3_action : tb->button3_action; break;
+    }
+
+    gboolean action_opens_menu = FALSE;
+    switch (action) {
+        case ACTION_MENU:
+        case ACTION_SHOW_WINDOW_LIST:
+        case ACTION_SHOW_SIMILAR_WINDOW_LIST:
+            action_opens_menu = TRUE;
+    }
+
+    if (popup_menu) {
+        click = TRUE;
+        tb->button_pressed_task = NULL;
+    } else if ( (action_opens_menu && tb->menu_actions_click_press) || (!action_opens_menu && tb->other_actions_click_press) ) {
+        if (event->type == GDK_BUTTON_PRESS)
+            click = TRUE;
+    } else if (event->type == GDK_BUTTON_PRESS) {
+        tb->button_pressed_task = tk;
+    } else if (event->type == GDK_BUTTON_RELEASE) {
+        click = tk->entered_state && tb->button_pressed_task == tk;
+        tb->button_pressed_task = NULL;
+    }
+
+    if (!click)
+        return TRUE;
+
     TaskClass * tc = tk->task_class;
     if (task_is_folded(tk) && (GTK_IS_BUTTON(widget)))
     {
@@ -1992,12 +2047,6 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
             tk);
         task_group_menu_destroy(tb);
 
-        int action = ACTION_NONE;
-        switch (event->button) {
-            case 1: action = (event->state & GDK_SHIFT_MASK) ? tk->tb->shift_button1_action : tk->tb->button1_action; break;
-            case 2: action = (event->state & GDK_SHIFT_MASK) ? tk->tb->shift_button2_action : tk->tb->button2_action; break;
-            case 3: action = (event->state & GDK_SHIFT_MASK) ? tk->tb->shift_button3_action : tk->tb->button3_action; break;
-        }
         if (popup_menu && (action == ACTION_SHOW_SIMILAR_WINDOW_LIST || action == ACTION_SHOW_WINDOW_LIST))
             action = ACTION_RAISEICONIFY;
         task_action(tk, action, event, visible_task, popup_menu);
@@ -3441,6 +3490,9 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->shift_scroll_up_action  = ACTION_PREV_WINDOW_IN_CURRENT_GROUP;
     tb->shift_scroll_down_action = ACTION_NEXT_WINDOW_IN_CURRENT_GROUP;
 
+    tb->menu_actions_click_press = TRIGGERED_BY_PRESS;
+    tb->other_actions_click_press = TRIGGERED_BY_CLICK;
+
     tb->grouped_tasks     = FALSE;
     tb->single_window     = FALSE;
     tb->show_icons        = TRUE;
@@ -3556,6 +3608,10 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->shift_scroll_up_action = str2num(action_pair, s.t[1], tb->shift_scroll_up_action);
                 else if (g_ascii_strcasecmp(s.t[0], "ShiftScrollDownAction") == 0)
                     tb->shift_scroll_down_action = str2num(action_pair, s.t[1], tb->shift_scroll_down_action);
+                else if (g_ascii_strcasecmp(s.t[0], "MenuActionsTriggeredBy") == 0)
+                    tb->menu_actions_click_press = str2num(action_trigged_by_pair, s.t[1], tb->menu_actions_click_press);
+                else if (g_ascii_strcasecmp(s.t[0], "OtherActionsTriggeredBy") == 0)
+                    tb->other_actions_click_press = str2num(action_trigged_by_pair, s.t[1], tb->other_actions_click_press);
                 else if (g_ascii_strcasecmp(s.t[0], "HighlightModifiedTitles") == 0)
                     tb->highlight_modified_titles = str2num(bool_pair, s.t[1], tb->highlight_modified_titles);
                 else
@@ -3663,7 +3719,7 @@ static void taskbar_apply_configuration(Plugin * p)
 /* Display the configuration dialog. */
 static void taskbar_configure(Plugin * p, GtkWindow * parent)
 {
-    const char* actions = _("|None|Show menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list|Show similar window list|Next window|Previous window|Next window in current group|Previous window in current group|Next window in pointed group|Previous window in pointed group|Copy title");
+    const char* actions = _("|None|Show context menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list (menu)|Show group window list (menu)|Next window|Previous window|Next window in current group|Previous window in current group|Next window in pointed group|Previous window in pointed group|Copy title");
     char* button1_action = g_strdup_printf("%s%s", _("|Left button"), actions);
     char* button2_action = g_strdup_printf("%s%s", _("|Middle button"), actions);
     char* button3_action = g_strdup_printf("%s%s", _("|Right button"), actions);
@@ -3679,6 +3735,12 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     char* sort_by_1 = g_strdup_printf("%s%s", _("|First sort by"), sort_by);
     char* sort_by_2 = g_strdup_printf("%s%s", _("|Then sort by"), sort_by);
     char* sort_by_3 = g_strdup_printf("%s%s", _("|And last sort by"), sort_by);
+
+
+    const char* click_press = _("|Click|Press");
+    char* menu_actions_click_press = g_strdup_printf("%s%s", _("|Menu actions triggered by"), click_press);
+    char* other_actions_click_press = g_strdup_printf("%s%s", _("|Other actions triggered by"), click_press);
+
 
     int min_width_max = 16;
     int max_width_max = 10000;
@@ -3743,6 +3805,12 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         shift_scroll_down_action, (gpointer)&tb->shift_scroll_down_action, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
+//        _("Response for mouse clicks or drag:"), (gpointer)NULL, (GType)CONF_TYPE_TITLE,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        menu_actions_click_press, (gpointer)&tb->menu_actions_click_press, (GType)CONF_TYPE_ENUM,
+        other_actions_click_press, (gpointer)&tb->other_actions_click_press, (GType)CONF_TYPE_ENUM,
+        "", 0, (GType)CONF_TYPE_END_TABLE,
+
         NULL);
 
     if (dlg)
@@ -3761,6 +3829,9 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     g_free(sort_by_1);
     g_free(sort_by_2);
     g_free(sort_by_3);
+    g_free(menu_actions_click_press);
+    g_free(other_actions_click_press);
+
 }
 
 /* Save the configuration to the configuration file. */
@@ -3799,6 +3870,8 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "ShiftButton3Action", tb->shift_button3_action, action_pair);
     lxpanel_put_enum(fp, "ShiftScrollUpAction", tb->shift_scroll_up_action, action_pair);
     lxpanel_put_enum(fp, "ShiftScrollDownAction", tb->shift_scroll_down_action, action_pair);
+    lxpanel_put_enum(fp, "MenuActionsTriggeredBy", tb->menu_actions_click_press, action_trigged_by_pair);
+    lxpanel_put_enum(fp, "OtherActionsTriggeredBy", tb->other_actions_click_press, action_trigged_by_pair);
     lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
 }
 

@@ -183,7 +183,9 @@ typedef struct _task_class {
     char * visible_name;			/* Name that will be visible for grouped tasks */
     int visible_count;				/* Count of tasks that are visible in current desktop */
     int timestamp;
-    
+
+    gboolean fold_by_count;
+
     gboolean unfold;
     gboolean manual_unfold_state;
 } TaskClass;
@@ -323,6 +325,7 @@ typedef struct _taskbar {
     
     int mode;                                   /* User preference: view mode */
     int group_fold_threshold;                   /* User preference: threshold for fold grouped tasks into one button */
+    int panel_fold_threshold;
     int group_by;                               /* User preference: attr to group tasks by */
     gboolean manual_grouping;			/* User preference: manual grouping */
     gboolean unfold_focused_group;		/* User preference: autounfold group of focused window */
@@ -346,6 +349,7 @@ typedef struct _taskbar {
     gboolean show_titles;			/* Show title labels */
     gboolean _show_close_buttons;               /* Show close buttons */
     int _group_fold_threshold;
+    int _panel_fold_threshold;
     int _group_by;
     int _mode;
     gboolean _unfold_focused_group;
@@ -548,6 +552,9 @@ static int task_class_is_folded(TaskbarPlugin * tb, TaskClass * tc)
     if ((tb->_unfold_focused_group || tb->_show_single_group) && tb->focused && tb->focused->task_class == tc)
         return FALSE;
 
+    if (tc && tc->fold_by_count)
+        return TRUE;
+
     int visible_count = tc ? tc->visible_count : 1;
     return (tb->_group_fold_threshold > 0) && (visible_count >= tb->_group_fold_threshold);
 }
@@ -617,6 +624,54 @@ static gboolean task_is_visible(Task * tk)
 
     /* Desktop placement. */
     return task_is_visible_on_current_desktop(tk);
+}
+
+/******************************************************************************/
+
+static void taskbar_recompute_fold_by_count(TaskbarPlugin * tb)
+{
+    if (tb->_panel_fold_threshold < 1)
+        return;
+
+
+    TaskClass * tc;
+    
+    for (tc = tb->task_class_list; tc != NULL; tc = tc->task_class_flink)
+    {
+        tc->fold_by_count = FALSE;
+    }
+
+    int total_visible_count;
+    int max_visible_count;
+
+    do
+    {
+        total_visible_count = 0;
+        max_visible_count = 1;
+
+        TaskClass *  max_tc = NULL;
+
+        for (tc = tb->task_class_list; tc != NULL; tc = tc->task_class_flink)
+        {
+            int visible_count = tc->visible_count;
+            if (task_class_is_folded(tb, tc) && visible_count > 1)
+                visible_count = 1;
+
+            total_visible_count += visible_count;
+            if (visible_count > max_visible_count)
+            {
+                max_tc = tc;
+                max_visible_count = visible_count;
+            }
+        }
+
+        if (total_visible_count > tb->_panel_fold_threshold && max_visible_count > 1)
+        {
+            total_visible_count -= max_visible_count - 1;
+            max_tc->fold_by_count = TRUE;
+            recompute_group_visibility_for_class(tb, max_tc);
+        }
+    } while (total_visible_count > tb->_panel_fold_threshold && max_visible_count > 1) ;
 }
 
 /******************************************************************************/
@@ -804,9 +859,13 @@ static void taskbar_redraw(TaskbarPlugin * tb)
         return;
 
     icon_grid_defer_updates(tb->icon_grid);
+
+    taskbar_recompute_fold_by_count(tb);
+
     Task * tk;
     for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         task_button_redraw(tk);
+
     icon_grid_resume_updates(tb->icon_grid);
 }
 
@@ -1149,6 +1208,8 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
     /* Deallocate the task structure. */
     g_free(tk);
+
+    taskbar_recompute_fold_by_count(tb);
 
     RET();
 }
@@ -3419,6 +3480,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     tb->rebuild_gui = tb->_mode != tb->mode;
     tb->rebuild_gui |= tb->show_all_desks_prev_value != tb->show_all_desks;
     tb->rebuild_gui |= tb->_group_fold_threshold != tb->group_fold_threshold;
+    tb->rebuild_gui |= tb->_panel_fold_threshold != tb->panel_fold_threshold;
     tb->rebuild_gui |= tb->_group_by != group_by;
     tb->rebuild_gui |= tb->show_iconified_prev != tb->show_iconified;
     tb->rebuild_gui |= tb->show_mapped_prev != tb->show_mapped;
@@ -3428,6 +3490,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
         tb->_mode = tb->mode;
         tb->show_all_desks_prev_value = tb->show_all_desks;
         tb->_group_fold_threshold = tb->group_fold_threshold;
+        tb->_panel_fold_threshold = tb->panel_fold_threshold;
         tb->_group_by = group_by;
         tb->show_iconified_prev = tb->show_iconified;
         tb->show_mapped_prev = tb->show_mapped;
@@ -3469,7 +3532,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->spacing           = 1;
     tb->use_urgency_hint  = TRUE;
     tb->mode              = MODE_CLASSIC;
-    tb->group_fold_threshold = 1;
+    tb->group_fold_threshold = 5;
+    tb->panel_fold_threshold = 10;
     tb->group_by          = GROUP_BY_CLASS;
     tb->manual_grouping   = TRUE;
     tb->unfold_focused_group = FALSE;
@@ -3562,6 +3626,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->group_fold_threshold = atoi(s.t[1]);				/* For backward compatibility */
                 else if (g_ascii_strcasecmp(s.t[0], "GroupFoldThreshold") == 0)
                     tb->group_fold_threshold = atoi(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "FoldThreshold") == 0)
+                    tb->panel_fold_threshold = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupBy") == 0)
                     tb->group_by = str2num(group_by_pair, s.t[1], tb->group_by);
                 else if (g_ascii_strcasecmp(s.t[0], "ManualGrouping") == 0)
@@ -3771,7 +3837,9 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("|Mode|Classic|Group windows|Show only active window"), (gpointer)&tb->mode, (GType)CONF_TYPE_ENUM,
         _("|Group by|None|Window class|Workspace|Window state"), (gpointer)&tb->group_by, (GType)CONF_TYPE_ENUM,
-        _("Group fold threshold"), (gpointer)&tb->group_fold_threshold, (GType)CONF_TYPE_INT,
+        //_("Group fold threshold"), (gpointer)&tb->group_fold_threshold, (GType)CONF_TYPE_INT,
+        _("Fold group when it has Nr windows"), (gpointer)&tb->group_fold_threshold, (GType)CONF_TYPE_INT,
+        _("Fold groups when taskbar has Nr windows"), (gpointer)&tb->panel_fold_threshold, (GType)CONF_TYPE_INT,
         _("Unfold focused group"), (gpointer)&tb->unfold_focused_group, (GType)CONF_TYPE_BOOL,
 	_("Show only focused group"), (gpointer)&tb->show_single_group, (GType)CONF_TYPE_BOOL,
         _("Manual grouping"), (gpointer)&tb->manual_grouping, (GType)CONF_TYPE_BOOL,
@@ -3849,6 +3917,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_int(fp, "spacing", tb->spacing);
     lxpanel_put_enum(fp, "Mode", tb->mode, mode_pair);
     lxpanel_put_int(fp, "GroupFoldThreshold", tb->group_fold_threshold);
+    lxpanel_put_int(fp, "FoldThreshold", tb->panel_fold_threshold);
     lxpanel_put_enum(fp, "GroupBy", tb->group_by, group_by_pair);
     lxpanel_put_bool(fp, "ManualGrouping", tb->manual_grouping);
     lxpanel_put_bool(fp, "UnfoldFocusedGroup", tb->unfold_focused_group);

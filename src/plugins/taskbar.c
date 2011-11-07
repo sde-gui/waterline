@@ -633,6 +633,8 @@ static void taskbar_recompute_fold_by_count(TaskbarPlugin * tb)
     if (tb->_panel_fold_threshold < 1)
         return;
 
+    if (!tb->grouped_tasks)
+        return;
 
     TaskClass * tc;
     

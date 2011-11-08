@@ -860,6 +860,8 @@ static void taskbar_redraw(TaskbarPlugin * tb)
     if (!tb->icon_grid)
         return;
 
+    ENTER;
+
     icon_grid_defer_updates(tb->icon_grid);
 
     taskbar_recompute_fold_by_count(tb);
@@ -869,6 +871,8 @@ static void taskbar_redraw(TaskbarPlugin * tb)
         task_button_redraw(tk);
 
     icon_grid_resume_updates(tb->icon_grid);
+
+    RET();
 }
 
 /******************************************************************************/
@@ -2545,20 +2549,20 @@ static void task_reorder(Task * tk)
 
 static void task_update_grouping(Task * tk, int group_by)
 {
-    ENTER;
-    DBG("group_by = %d, tb->_group_by = %d\n", group_by, tk->tb->_group_by);
+//    ENTER;
+//    DBG("group_by = %d, tb->_group_by = %d\n", group_by, tk->tb->_group_by);
     if (tk->tb->_group_by == group_by || group_by < 0)
     {
         task_set_class(tk);
         task_reorder(tk);
         taskbar_redraw(tk->tb);
     }
-    RET();
+//    RET();
 }
 
 static void task_update_sorting(Task * tk, int sort_by)
 {
-    ENTER;
+//    ENTER;
     int i;
     for (i = 0; i < 3; i++)
     {
@@ -2569,7 +2573,7 @@ static void task_update_sorting(Task * tk, int sort_by)
            break;
         }
     }
-    RET();
+//    RET();
 }
 
 /******************************************************************************/
@@ -2756,6 +2760,8 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
 /* Set given desktop as current. */
 static void taskbar_set_current_desktop(TaskbarPlugin * tb, int desktop)
 {
+    ENTER;
+
     icon_grid_defer_updates(tb->icon_grid);
 
     /* Store the local copy of current desktops.  Redisplay the taskbar. */
@@ -2765,12 +2771,14 @@ static void taskbar_set_current_desktop(TaskbarPlugin * tb, int desktop)
     taskbar_redraw(tb);
 
     icon_grid_resume_updates(tb->icon_grid);
+
+    RET();
 }
 
 /* Switch to deferred desktop and window. */
 static gboolean taskbar_switch_desktop_and_window(TaskbarPlugin * tb)
 {
-    //g_print("[0x%x] taskbar_switch_desktop_and_window\n", (int) tb);
+    ENTER;
 
     icon_grid_defer_updates(tb->icon_grid);
 
@@ -2787,12 +2795,14 @@ static gboolean taskbar_switch_desktop_and_window(TaskbarPlugin * tb)
 
     icon_grid_resume_updates(tb->icon_grid);
 
-    return FALSE;
+    RET(FALSE);
 }
 
 /* Handler for "current-desktop" event from root window listener. */
 static void taskbar_net_current_desktop(GtkWidget * widget, TaskbarPlugin * tb)
 {
+    ENTER;
+
     int desktop = get_net_current_desktop();
 
     int desktop_switch_timeout = 350;
@@ -2804,6 +2814,8 @@ static void taskbar_net_current_desktop(GtkWidget * widget, TaskbarPlugin * tb)
     } else {
         taskbar_set_current_desktop(tb, desktop);
     }
+
+    RET();
 }
 
 /* Handler for "number-of-desktops" event from root window listener. */
@@ -2818,6 +2830,8 @@ static void taskbar_net_number_of_desktops(GtkWidget * widget, TaskbarPlugin * t
 /* Handler for "active-window" event from root window listener. */
 static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
+    ENTER;
+
     /* Get active window. */
     Window * p = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
     Window w = p ? *p : 0;
@@ -2841,6 +2855,8 @@ static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
             taskbar_switch_desktop_and_window(tb);
         }
     }
+
+    RET();
 }
 
 /* Determine if the "urgency" hint is set on a window. */

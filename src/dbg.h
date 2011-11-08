@@ -24,21 +24,24 @@
 #define RET2(args...)   do { fprintf(stderr, "%s:%s:%-5d: RETURN\n",  __FILE__,__FUNCTION__, __LINE__);\
 return args; } while(0)
 
-enum { LOG_NONE, LOG_ERR, LOG_WARN, LOG_INFO, LOG_ALL };
+enum { LOG_NONE, LOG_ERR, LOG_WARN, LOG_INFO, LOG_DBG, LOG_ALL };
+
+void log_message(int level, const char *string, ...);
+
 #ifdef DEBUG
 
-#define ENTER          do { fprintf(stderr, "%s:%s:%-5d: ENTER\n",  __FILE__,__FUNCTION__, __LINE__); } while(0)
-#define RET(args...)   do { fprintf(stderr, "%s:%s:%-5d: RETURN\n", __FILE__, __FUNCTION__, __LINE__);\
+#define ENTER          do { log_message(LOG_DBG, "%s:%s:%-5d: ENTER\n",  __FILE__,__FUNCTION__, __LINE__); } while(0)
+#define RET(args...)   do { log_message(LOG_DBG, "%s:%s:%-5d: RETURN\n", __FILE__, __FUNCTION__, __LINE__);\
 return args; } while(0)
-#define DBG(fmt, args...) fprintf(stderr, "%s:%s:%-5d: " fmt,  __FILE__,__FUNCTION__, __LINE__, ## args)
-#define LOG(level, fmt, args...) fprintf(stderr, fmt, ## args)
+#define DBG(fmt, args...) log_message(LOG_DBG, "%s:%s:%-5d: " fmt,  __FILE__,__FUNCTION__, __LINE__, ## args)
+#define LOG(level, fmt, args...) log_message(level, fmt, ## args)
 
 #else
 
 #define ENTER         do {  } while(0)
 #define RET(args...)   return args
 #define DBG(fmt, args...)   do {  } while(0)
-#define LOG(level, fmt, args...) do { if (level <= log_level) fprintf(stderr, fmt, ## args); } while(0)
+#define LOG(level, fmt, args...) do { if (level <= log_level) log_message(level, fmt, ## args); } while(0)
 
 #endif
 

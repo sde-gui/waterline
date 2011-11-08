@@ -2795,10 +2795,12 @@ static void taskbar_net_current_desktop(GtkWidget * widget, TaskbarPlugin * tb)
 {
     int desktop = get_net_current_desktop();
 
+    int desktop_switch_timeout = 350;
+
     /* If target desktop has visible tasks, use deferred switching to redice blinking. */
-    if (taskbar_has_visible_tasks_on_desktop(tb, desktop)) {
+    if (desktop_switch_timeout > 0 && taskbar_has_visible_tasks_on_desktop(tb, desktop)) {
         tb->deferred_current_desktop = desktop;
-        tb->deferred_desktop_switch_timer = g_timeout_add(350, (GSourceFunc) taskbar_switch_desktop_and_window, (gpointer) tb);
+        tb->deferred_desktop_switch_timer = g_timeout_add(desktop_switch_timeout, (GSourceFunc) taskbar_switch_desktop_and_window, (gpointer) tb);
     } else {
         taskbar_set_current_desktop(tb, desktop);
     }
@@ -2832,6 +2834,10 @@ static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
         tb->deferred_active_window = w;
         /* If window is not null, do referred switching now. */
         if (w) {
+            if (tb->deferred_desktop_switch_timer != 0) {
+                g_source_remove(tb->deferred_desktop_switch_timer);
+                tb->deferred_desktop_switch_timer = 0;
+            }
             taskbar_switch_desktop_and_window(tb);
         }
     }

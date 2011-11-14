@@ -33,6 +33,7 @@ typedef struct _file_name {
     struct _file_name * flink;
     char * file_name;
     char * file_name_collate_key;
+    char * path;
 } FileName;
 
 /* Private context for directory menu plugin. */
@@ -227,6 +228,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
                 fn_cursor = g_new0(FileName, 1);
                 fn_cursor->file_name = file_name;
                 fn_cursor->file_name_collate_key = file_name_collate_key;
+                fn_cursor->path = g_build_filename(path, file_name, NULL);
                 if (fn_pred == NULL)
                 {
                     fn_cursor->flink = list;
@@ -266,6 +268,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         dir_list = dir_cursor->flink;
         g_object_set_data_full(G_OBJECT(item), "name", dir_cursor->file_name, g_free);
         g_free(dir_cursor->file_name_collate_key);
+        g_free(dir_cursor->path);
         g_free(dir_cursor);
 
         /* Connect signals. */
@@ -295,10 +298,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         GtkWidget * item = gtk_image_menu_item_new_with_label(file_cursor->file_name);
         gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), item);
 
-        gchar * filepath = g_build_filename(path, file_cursor->file_name, NULL);
-        g_object_set_data_full(G_OBJECT(item), "path", filepath, g_free);
-
-        /* Unlink and free file name element. */
+        /* Unlink and free file name element, but reuse the file path. */
+        g_object_set_data_full(G_OBJECT(item), "path", file_cursor->path, g_free);
         file_list = file_cursor->flink;
         g_free(file_cursor->file_name);
         g_free(file_cursor->file_name_collate_key);

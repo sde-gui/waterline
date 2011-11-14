@@ -28,6 +28,8 @@
 #include "panel.h"
 #include "plugin.h"
 
+#include "configparser.h"
+
 enum {
     CONF_TYPE_STR,
     CONF_TYPE_INT,
@@ -45,42 +47,6 @@ enum {
     CONF_TYPE_COLOR,
     CONF_TYPE_SET_PROPERTY
 };
-
-enum { LINE_NONE, LINE_BLOCK_START, LINE_BLOCK_END, LINE_VAR };
-
-typedef struct {
-    int num, len, type;
-    gchar str[256];
-    gchar *t[3];
-} line;
-
-
-typedef struct {
-    int num;
-    gchar *str;
-} pair;
-
-extern pair allign_pair[];
-extern pair edge_pair[];
-extern pair width_pair[];
-extern pair height_pair[];
-extern pair bool_pair[];
-extern pair pos_pair[];
-
-int str2num(pair *p, gchar *str, int defval);
-gchar *num2str(pair *p, int num, gchar *defval);
-
-extern int lxpanel_get_line(char **fp, line *s);
-extern int lxpanel_put_line(FILE* fp, const char* format, ...);
-//#define lxpanel_put_str(fp, name, val) (G_UNLIKELY( !(val) || !*(val) )) ? 0 : lxpanel_put_line(fp, "%s=%s", name, val)
-//#define lxpanel_put_bool(fp, name, val) lxpanel_put_line(fp, "%s=%c", name, (val) ? '1' : '0')
-//#define lxpanel_put_int(fp, name, val) lxpanel_put_line(fp, "%s=%d", name, val)
-extern int lxpanel_put_str( FILE* fp, const char* name, const char* val );
-extern int lxpanel_put_bool( FILE* fp, const char* name, gboolean val );
-extern int lxpanel_put_int( FILE* fp, const char* name, int val );
-extern int lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair);
-
-int get_line_as_is(char **fp, line *s);
 
 void Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4);
 void Xclimsgwm(Window win, Atom type, Atom arg);

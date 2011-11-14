@@ -21,6 +21,9 @@
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <string.h>
 
 #include "panel.h"
@@ -28,12 +31,27 @@
 #include "plugin.h"
 #include "dbg.h"
 
+enum {
+    SORT_BY_NAME,
+    SORT_BY_MTIME,
+    SORT_BY_SIZE
+};
+
+static pair sort_by_pair[] = {
+    { SORT_BY_NAME , "Name"  },
+    { SORT_BY_MTIME, "MTime" },
+    { SORT_BY_SIZE , "Size"  },
+    { 0, NULL},
+};
+
 /* Temporary for sort of directory names. */
 typedef struct _file_name {
     struct _file_name * flink;
     char * file_name;
     char * file_name_collate_key;
     char * path;
+    struct stat stat_data;
+    gboolean directory;
 } FileName;
 
 /* Private context for directory menu plugin. */
@@ -46,6 +64,8 @@ typedef struct {
     gboolean show_hidden;
     gboolean show_files;
     int max_file_count;
+    int sort_directories;
+    int sort_files;
 } DirMenuPlugin;
 
 static void dirmenu_open_in_file_manager(Plugin * p, const char * path);
@@ -200,7 +220,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             }
 
             char * full = g_build_filename(path, name, NULL);
-            if (g_file_test(full, G_FILE_TEST_IS_DIR))
+            gboolean directory = g_file_test(full, G_FILE_TEST_IS_DIR);
+            if (directory)
                 plist = &dir_list,
                 dir_list_count++;
             else if (dm->show_files)
@@ -215,29 +236,48 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
                 char * file_name = g_filename_display_name(name);
                 char * file_name_collate_key = g_utf8_collate_key(file_name, -1);
 
+                /* Allocate and initialize file name entry. */
+                FileName * fn = g_new0(FileName, 1);
+                fn->file_name = file_name;
+                fn->file_name_collate_key = file_name_collate_key;
+                fn->path = g_build_filename(path, file_name, NULL);
+                fn->directory = directory;
+                stat(fn->path, &fn->stat_data);
+
+                int sort_by = directory ? dm->sort_directories : dm->sort_files;
+
                 /* Locate insertion point. */
                 FileName * fn_pred = NULL;
                 FileName * fn_cursor;
                 for (fn_cursor = list; fn_cursor != NULL; fn_pred = fn_cursor, fn_cursor = fn_cursor->flink)
                 {
-                    if (strcmp(file_name_collate_key, fn_cursor->file_name_collate_key) <= 0)
-                        break;
+                    if (sort_by == SORT_BY_MTIME)
+                    {
+                        if (fn->stat_data.st_mtime > fn_cursor->stat_data.st_mtime)
+                            break;
+                    }
+                    else if (sort_by == SORT_BY_SIZE)
+                    {
+                        if (fn->stat_data.st_size < fn_cursor->stat_data.st_size)
+                            break;
+                    }
+                    else
+                    {
+                        if (strcmp(file_name_collate_key, fn_cursor->file_name_collate_key) <= 0)
+                            break;
+                    }
                 }
 
-                /* Allocate and initialize sorted file name entry. */
-                fn_cursor = g_new0(FileName, 1);
-                fn_cursor->file_name = file_name;
-                fn_cursor->file_name_collate_key = file_name_collate_key;
-                fn_cursor->path = g_build_filename(path, file_name, NULL);
+                /* Insert file name entry into list. */
                 if (fn_pred == NULL)
                 {
-                    fn_cursor->flink = list;
-                    *plist = fn_cursor;
+                    fn->flink = list;
+                    *plist = fn;
                 }
                 else
                 {
-                    fn_cursor->flink = fn_pred->flink;
-                    fn_pred->flink = fn_cursor;
+                    fn->flink = fn_pred->flink;
+                    fn_pred->flink = fn;
                 }
             }
             g_free(full);
@@ -382,6 +422,9 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     dm->show_hidden = FALSE;
     dm->show_files = TRUE;
     dm->max_file_count = 10;
+    dm->sort_directories = SORT_BY_NAME;
+    dm->sort_files = SORT_BY_NAME;
+
 
     /* Load parameters from the configuration file. */
     line s;
@@ -409,6 +452,10 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
                     dm->show_files = str2num(bool_pair, s.t[1], dm->show_files);
                 else if (g_ascii_strcasecmp(s.t[0], "MaxFileCount") == 0)
                     dm->max_file_count = atoi(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "SortDirectoriesBy") == 0)
+                    dm->sort_directories = str2num(sort_by_pair, s.t[1], dm->sort_directories);
+                else if (g_ascii_strcasecmp(s.t[0], "SortFilesBy") == 0)
+                    dm->sort_files = str2num(sort_by_pair, s.t[1], dm->sort_files);
                 else
                     ERR( "dirmenu: unknown var %s\n", s.t[0]);
             }
@@ -483,6 +530,9 @@ static void dirmenu_apply_configuration(Plugin * p)
 /* Callback when the configuration dialog is to be shown. */
 static void dirmenu_configure(Plugin * p, GtkWindow * parent)
 {
+    const char* sort_by = _("|Name|Modification time (descending)|Size");
+    char* sort_directories = g_strdup_printf("%s%s", _("|Sort directories by"), sort_by);
+    char* sort_files = g_strdup_printf("%s%s", _("|Sort files by"), sort_by);
 
     DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
     GtkWidget * dlg = create_generic_config_dlg(
@@ -497,9 +547,17 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _("Show files"), &dm->show_files, (GType)CONF_TYPE_BOOL,
         _("Use submenu if number of files is more than"), &dm->max_file_count, (GType)CONF_TYPE_INT,
         _("Show hidden files or folders"), &dm->show_hidden, (GType)CONF_TYPE_BOOL,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        sort_directories, (gpointer)&dm->sort_directories, (GType)CONF_TYPE_ENUM,
+        sort_files, (gpointer)&dm->sort_files, (GType)CONF_TYPE_ENUM,
+        "", 0, (GType)CONF_TYPE_END_TABLE,
         NULL);
+
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
+
+    g_free(sort_directories);
+    g_free(sort_files);
 }
 
 /* Callback when the configuration is to be saved. */
@@ -512,6 +570,8 @@ static void dirmenu_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowHidden", dm->show_hidden);
     lxpanel_put_bool(fp, "ShowFiles", dm->show_files);
     lxpanel_put_int(fp, "MaxFileCount", dm->max_file_count);
+    lxpanel_put_enum(fp, "SortDirectoriesBy", dm->sort_directories, sort_by_pair);
+    lxpanel_put_enum(fp, "SortFilesBy", dm->sort_files, sort_by_pair);
 }
 
 /* Callback when panel configuration changes. */

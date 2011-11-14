@@ -31,6 +31,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
+#include "Xsupport.h"
+
 #include "ev.h"
 #include "misc.h"
 

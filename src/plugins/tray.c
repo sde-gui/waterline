@@ -33,6 +33,7 @@
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
+#include "Xsupport.h"
 #include "bg.h"
 #include "icon-grid.h"
 

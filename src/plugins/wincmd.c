@@ -24,6 +24,8 @@
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
+#include "Xsupport.h"
+
 #include "dbg.h"
 
 /* Commands that can be issued. */

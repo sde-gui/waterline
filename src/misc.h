@@ -48,23 +48,6 @@ enum {
     CONF_TYPE_SET_PROPERTY
 };
 
-void Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4);
-void Xclimsgwm(Window win, Atom type, Atom arg);
-void *get_xaproperty (Window win, Atom prop, Atom type, int *nitems);
-char *get_textproperty(Window win, Atom prop);
-void *get_utf8_property(Window win, Atom atom);
-char **get_utf8_property_list(Window win, Atom atom, int *count);
-
-void resolve_atoms();
-//Window Select_Window(Display *dpy);
-int get_net_number_of_desktops();
-int get_net_current_desktop ();
-int get_net_wm_desktop(Window win);
-int get_wm_state (Window win);
-void get_net_wm_state(Window win, NetWMState *nws);
-void get_net_wm_window_type(Window win, NetWMWindowType *nwwt);
-GPid get_net_wm_pid(Window win);
-
 void calculate_position(Panel *np);
 gchar *expand_tilda(gchar *file);
 

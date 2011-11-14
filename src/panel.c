@@ -35,6 +35,7 @@
 #include "panel.h"
 #include "misc.h"
 #include "bg.h"
+#include "Xsupport.h"
 
 #include "lxpanelctl.h"
 #include "dbg.h"

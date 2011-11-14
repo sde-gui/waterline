@@ -28,6 +28,7 @@ lxpanel_SOURCES = \
 	misc.c misc.h \
 	bg.c bg.h  \
 	configparser.c configparser.h \
+	Xsupport.c Xsupport.h \
 	configurator.c \
 	dbg.c dbg.h \
 	ev.c ev.h \

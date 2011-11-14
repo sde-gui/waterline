@@ -42,6 +42,7 @@ typedef struct {
     char * path;			/* Top level path for widget */
     char * name;			/* User's label for widget */
     GdkPixbuf * folder_icon;		/* Icon for folders */
+    gboolean show_hidden;
     gboolean show_files;
     int max_file_count;
 } DirMenuPlugin;
@@ -192,7 +193,10 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
             /* Omit hidden files. */
             if (name[0] == '.')
-                continue;
+            {
+                if (!dm->show_hidden || !strcmp(name, ".") || !strcmp(name, ".."))
+                    continue;
+            }
 
             char * full = g_build_filename(path, name, NULL);
             if (g_file_test(full, G_FILE_TEST_IS_DIR))
@@ -374,6 +378,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     dm->plugin = p;
     p->priv = dm;
 
+    dm->show_hidden = FALSE;
     dm->show_files = TRUE;
     dm->max_file_count = 10;
 
@@ -397,6 +402,8 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
                     dm->path = g_strdup(s.t[1]);
 		else if (g_ascii_strcasecmp(s.t[0], "name") == 0)
                     dm->name = g_strdup( s.t[1] );
+                else if (g_ascii_strcasecmp(s.t[0], "ShowHidden") == 0)
+                    dm->show_hidden = str2num(bool_pair, s.t[1], dm->show_hidden);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowFiles") == 0)
                     dm->show_files = str2num(bool_pair, s.t[1], dm->show_files);
                 else if (g_ascii_strcasecmp(s.t[0], "MaxFileCount") == 0)
@@ -488,6 +495,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         "", 0, (GType)CONF_TYPE_END_TABLE,
         _("Show files"), &dm->show_files, (GType)CONF_TYPE_BOOL,
         _("Use submenu if number of files is more than"), &dm->max_file_count, (GType)CONF_TYPE_INT,
+        _("Show hidden files or folders"), &dm->show_hidden, (GType)CONF_TYPE_BOOL,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
@@ -500,6 +508,7 @@ static void dirmenu_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_str(fp, "path", dm->path);
     lxpanel_put_str(fp, "name", dm->name);
     lxpanel_put_str(fp, "image", dm->image);
+    lxpanel_put_bool(fp, "ShowHidden", dm->show_hidden);
     lxpanel_put_bool(fp, "ShowFiles", dm->show_files);
     lxpanel_put_int(fp, "MaxFileCount", dm->max_file_count);
 }

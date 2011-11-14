@@ -234,7 +234,7 @@ static void wincmd_configure(Plugin * p, GtkWindow * parent)
         _(p->class->name),
         GTK_WIDGET(parent),
         (GSourceFunc) wincmd_apply_configuration, (gpointer) p,
-        _("Alternately iconify/shade and raise"), &wc->toggle_preference, CONF_TYPE_BOOL,
+        _("Alternately iconify/shade and raise"), &wc->toggle_preference, (GType)CONF_TYPE_BOOL,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));

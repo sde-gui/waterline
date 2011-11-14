@@ -576,17 +576,17 @@ static void config(Plugin *p, GtkWindow* parent) {
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
 #if 0
-            _("Hide if there is no battery"), &b->hide_if_no_battery, CONF_TYPE_BOOL,
+            _("Hide if there is no battery"), &b->hide_if_no_battery, (GType)CONF_TYPE_BOOL,
 #endif
-            _("Alarm command"), &b->alarmCommand, CONF_TYPE_STR,
-            _("Alarm time (minutes left)"), &b->alarmTime, CONF_TYPE_INT,
-            _("Background color"), &b->backgroundColor, CONF_TYPE_STR,
-            _("Charging color 1"), &b->chargingColor1, CONF_TYPE_STR,
-            _("Charging color 2"), &b->chargingColor2, CONF_TYPE_STR,
-            _("Discharging color 1"), &b->dischargingColor1, CONF_TYPE_STR,
-            _("Discharging color 2"), &b->dischargingColor2, CONF_TYPE_STR,
-            _("Border width"), &b->requestedBorder, CONF_TYPE_INT,
-            _("Size"), &b->thickness, CONF_TYPE_INT,
+            _("Alarm command"), &b->alarmCommand, (GType)CONF_TYPE_STR,
+            _("Alarm time (minutes left)"), &b->alarmTime, (GType)CONF_TYPE_INT,
+            _("Background color"), &b->backgroundColor, (GType)CONF_TYPE_STR,
+            _("Charging color 1"), &b->chargingColor1, (GType)CONF_TYPE_STR,
+            _("Charging color 2"), &b->chargingColor2, (GType)CONF_TYPE_STR,
+            _("Discharging color 1"), &b->dischargingColor1, (GType)CONF_TYPE_STR,
+            _("Discharging color 2"), &b->dischargingColor2, (GType)CONF_TYPE_STR,
+            _("Border width"), &b->requestedBorder, (GType)CONF_TYPE_INT,
+            _("Size"), &b->thickness, (GType)CONF_TYPE_INT,
             NULL);
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));

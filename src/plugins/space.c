@@ -118,7 +118,7 @@ static void space_configure(Plugin * p, GtkWindow * parent)
         _(p->class->name),
         GTK_WIDGET(parent),
         (GSourceFunc) space_apply_configuration, (gpointer) p,
-        _("Size"), &sp->size, CONF_TYPE_INT,  NULL);
+        _("Size"), &sp->size, (GType)CONF_TYPE_INT,  NULL);
     if (dlg)
     {
         gtk_widget_set_size_request(GTK_WIDGET(dlg), 200, -1);	/* Improve geometry */

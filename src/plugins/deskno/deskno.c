@@ -205,7 +205,7 @@ static void deskno_configure(Plugin * p, GtkWindow * parent)
         GTK_WIDGET(parent),
         (GSourceFunc) deskno_apply_configuration, (gpointer) p,
         _("Bold font"), &dc->bold, CONF_TYPE_BOOL,
-        _("Display desktop names"), &dc->wm_labels, CONF_TYPE_BOOL,
+        _("Display desktop names"), &dc->wm_labels, (GType)CONF_TYPE_BOOL,
         NULL);
     if (dlg)
     {

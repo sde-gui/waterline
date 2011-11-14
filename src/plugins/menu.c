@@ -1016,8 +1016,8 @@ static void menu_config( Plugin *p, GtkWindow* parent )
     dlg = create_generic_config_dlg( _(p->class->name),
                                      GTK_WIDGET(parent),
                                     (GSourceFunc) apply_config, (gpointer) p,
-                                     _("Icon"), &menu->fname, CONF_TYPE_FILE_ENTRY,
-                                     /* _("Caption"), &menu->caption, CONF_TYPE_STR, */
+                                     _("Icon"), &menu->fname, (GType)CONF_TYPE_FILE_ENTRY,
+                                     /* _("Caption"), &menu->caption, (GType)CONF_TYPE_STR, */
                                      NULL );
     if (dlg)
         gtk_window_present( GTK_WINDOW(dlg) );

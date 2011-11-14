@@ -301,14 +301,14 @@ static void config(Plugin *p, GtkWindow* parent) {
     dialog = create_generic_config_dlg(_(p->class->name),
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
-            _("Normal"), &th->str_cl_normal, CONF_TYPE_STR,
-            _("Warning1"), &th->str_cl_warning1, CONF_TYPE_STR,
-            _("Warning2"), &th->str_cl_warning2, CONF_TYPE_STR,
-            _("Automatic sensor location"), &th->auto_sensor, CONF_TYPE_BOOL,
-            _("Sensor"), &th->sensor, CONF_TYPE_STR,
-            _("Automatic temperature levels"), &th->custom_levels, CONF_TYPE_BOOL,
-            _("Warning1 Temperature"), &th->warning1, CONF_TYPE_INT,
-            _("Warning2 Temperature"), &th->warning2, CONF_TYPE_INT,
+            _("Normal"), &th->str_cl_normal, (GType)CONF_TYPE_STR,
+            _("Warning1"), &th->str_cl_warning1, (GType)CONF_TYPE_STR,
+            _("Warning2"), &th->str_cl_warning2, (GType)CONF_TYPE_STR,
+            _("Automatic sensor location"), &th->auto_sensor, (GType)CONF_TYPE_BOOL,
+            _("Sensor"), &th->sensor, (GType)CONF_TYPE_STR,
+            _("Automatic temperature levels"), &th->custom_levels, (GType)CONF_TYPE_BOOL,
+            _("Warning1 Temperature"), &th->warning1, (GType)CONF_TYPE_INT,
+            _("Warning2 Temperature"), &th->warning2, (GType)CONF_TYPE_INT,
             NULL);
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));

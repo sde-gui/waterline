@@ -176,8 +176,8 @@ static void netstatus_config( Plugin* p, GtkWindow* parent  )
                 _(p->class->name),
                 GTK_WIDGET(parent),
                 (GSourceFunc) apply_config, p,
-                _("Interface to monitor"), &ns->iface, CONF_TYPE_STR,
-                _("Config tool"), &ns->config_tool, CONF_TYPE_STR,
+                _("Interface to monitor"), &ns->iface, (GType)CONF_TYPE_STR,
+                _("Config tool"), &ns->config_tool, (GType)CONF_TYPE_STR,
                 NULL );
     if (dlg)
         gtk_window_present( GTK_WINDOW(dlg) );

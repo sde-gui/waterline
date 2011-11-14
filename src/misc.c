@@ -1758,3 +1758,31 @@ GtkWidget* create_entry_dialog(const char * title, const char * description, con
 }
 
 
+
+
+gchar * panel_translate_directory_name(const gchar * name)
+{
+    gchar * title = NULL;
+
+    if ( name )
+    {
+        /* load the name from *.directory file if needed */
+        if ( g_str_has_suffix( name, ".directory" ) )
+        {
+            GKeyFile* kf = g_key_file_new();
+            char* dir_file = g_build_filename( "desktop-directories", name, NULL );
+            if ( g_key_file_load_from_data_dirs( kf, dir_file, NULL, 0, NULL ) )
+            {
+                title = g_key_file_get_locale_string( kf, "Desktop Entry", "Name", NULL, NULL );
+            }
+            g_free( dir_file );
+            g_key_file_free( kf );
+        }
+    }
+
+    if ( !title )
+        title = g_strdup(name);
+
+    return title;
+}
+

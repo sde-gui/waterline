@@ -615,25 +615,9 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
 
     if( name )
     {
-        /* load the name from *.directory file if needed */
-        if( g_str_has_suffix( name, ".directory" ) )
-        {
-            GKeyFile* kf = g_key_file_new();
-            char* dir_file = g_build_filename( "desktop-directories", name, NULL );
-            if( g_key_file_load_from_data_dirs( kf, dir_file, NULL, 0, NULL ) )
-            {
-                title = g_key_file_get_locale_string( kf, "Desktop Entry", "Name", NULL, NULL );
-            }
-            g_free( dir_file );
-            g_key_file_free( kf );
-        }
-        else
-            title = name;
-
+        title = panel_translate_directory_name(name);
         m->img = fb_button_new_from_file_with_label(fname, -1, p->panel->icon_size, gcolor2rgb24(tint), TRUE, p->panel, title);
-
-        if( title != name )
-            g_free( title );
+        g_free(title);
     }
     else
     {

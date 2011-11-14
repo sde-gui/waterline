@@ -148,4 +148,6 @@ typedef void (*EntryDialogCallback)(char * value, gpointer payload);
 
 GtkWidget* create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload);
 
+gchar * panel_translate_directory_name(const gchar * name);
+
 #endif

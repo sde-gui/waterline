@@ -29,11 +29,11 @@
 #include "dbg.h"
 
 /* Temporary for sort of directory names. */
-typedef struct _directory_name {
-    struct _directory_name * flink;
-    char * directory_name;
-    char * directory_name_collate_key;
-} DirectoryName;
+typedef struct _file_name {
+    struct _file_name * flink;
+    char * file_name;
+    char * file_name_collate_key;
+} FileName;
 
 /* Private context for directory menu plugin. */
 typedef struct {
@@ -42,10 +42,13 @@ typedef struct {
     char * path;			/* Top level path for widget */
     char * name;			/* User's label for widget */
     GdkPixbuf * folder_icon;		/* Icon for folders */
+    gboolean show_files;
+    int max_file_count;
 } DirMenuPlugin;
 
 static void dirmenu_open_in_file_manager(Plugin * p, const char * path);
 static void dirmenu_open_in_terminal(Plugin * p, const char * path);
+static void dirmenu_menuitem_open_file(GtkWidget * item, Plugin * p);
 static void dirmenu_menuitem_open_directory(GtkWidget * item, Plugin * p);
 static void dirmenu_menuitem_open_in_terminal(GtkWidget * item, Plugin * p);
 static void dirmenu_menuitem_select(GtkMenuItem * item, Plugin * p);
@@ -85,6 +88,12 @@ static void dirmenu_open_in_terminal(Plugin * p, const char * path)
     g_spawn_async(path, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL);
     if (argv[0] != term)
         g_free(argv[0]);
+}
+
+/* Handler for activate event on file menu item. */
+static void dirmenu_menuitem_open_file(GtkWidget * item, Plugin * p)
+{
+    dirmenu_open_in_file_manager(p, g_object_get_data(G_OBJECT(item), "path"));
 }
 
 /* Handler for activate event on popup Open menu item. */
@@ -146,7 +155,7 @@ static void dirmenu_popup_set_position(GtkWidget * menu, gint * px, gint * py, g
     *push_in = TRUE;
 }
 
-/* Create a menu populated with all subdirectories. */
+/* Create a menu populated with all files and subdirectories. */
 static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top)
 {
     DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
@@ -168,63 +177,80 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
     g_object_set_data_full(G_OBJECT(menu), "path", g_strdup(path), g_free);
 
-    /* Scan the specified directory to populate the menu with its subdirectories. */
-    DirectoryName * dir_list = NULL;
+    /* Scan the specified directory to populate the menu. */
+    FileName * dir_list = NULL;
+    FileName * file_list = NULL;
+    int dir_list_count = 0;
+    int file_list_count = 0;
     GDir * dir = g_dir_open(path, 0, NULL);
     if (dir != NULL)
     {
         const char * name;
         while ((name = g_dir_read_name(dir)) != NULL)	/* Memory owned by glib */
         {
+            FileName ** plist = NULL;
+
             /* Omit hidden files. */
-            if (name[0] != '.')
+            if (name[0] == '.')
+                continue;
+
+            char * full = g_build_filename(path, name, NULL);
+            if (g_file_test(full, G_FILE_TEST_IS_DIR))
+                plist = &dir_list,
+                dir_list_count++;
+            else if (dm->show_files)
+                plist = &file_list,
+                file_list_count++;
+
+            if (plist)
             {
-                char * full = g_build_filename(path, name, NULL);
-                if (g_file_test(full, G_FILE_TEST_IS_DIR))
+                FileName * list = *plist;
+
+                /* Convert name to UTF-8 and to the collation key. */
+                char * file_name = g_filename_display_name(name);
+                char * file_name_collate_key = g_utf8_collate_key(file_name, -1);
+
+                /* Locate insertion point. */
+                FileName * fn_pred = NULL;
+                FileName * fn_cursor;
+                for (fn_cursor = list; fn_cursor != NULL; fn_pred = fn_cursor, fn_cursor = fn_cursor->flink)
                 {
-                    /* Convert name to UTF-8 and to the collation key. */
-                    char * directory_name = g_filename_display_name(name);
-                    char * directory_name_collate_key = g_utf8_collate_key(directory_name, -1);
-
-                    /* Locate insertion point. */
-                    DirectoryName * dir_pred = NULL;
-                    DirectoryName * dir_cursor;
-                    for (dir_cursor = dir_list; dir_cursor != NULL; dir_pred = dir_cursor, dir_cursor = dir_cursor->flink)
-                    {
-                        if (strcmp(directory_name_collate_key, dir_cursor->directory_name_collate_key) <= 0)
-                            break;
-                    }
-
-                    /* Allocate and initialize sorted directory name entry. */
-                    dir_cursor = g_new0(DirectoryName, 1);
-                    dir_cursor->directory_name = directory_name;
-                    dir_cursor->directory_name_collate_key = directory_name_collate_key;
-                    if (dir_pred == NULL)
-                    {
-                        dir_cursor->flink = dir_list;
-                        dir_list = dir_cursor;
-                    }
-                    else
-                    {
-                        dir_cursor->flink = dir_pred->flink;
-                        dir_pred->flink = dir_cursor;
-                    }
+                    if (strcmp(file_name_collate_key, fn_cursor->file_name_collate_key) <= 0)
+                        break;
                 }
-                g_free(full);
+
+                /* Allocate and initialize sorted file name entry. */
+                fn_cursor = g_new0(FileName, 1);
+                fn_cursor->file_name = file_name;
+                fn_cursor->file_name_collate_key = file_name_collate_key;
+                if (fn_pred == NULL)
+                {
+                    fn_cursor->flink = list;
+                    *plist = fn_cursor;
+                }
+                else
+                {
+                    fn_cursor->flink = fn_pred->flink;
+                    fn_pred->flink = fn_cursor;
+                }
             }
+            g_free(full);
         }
         g_dir_close(dir);
     }
 
-    gboolean not_empty = FALSE;
+    gboolean not_empty_dir_list = dir_list != NULL;
+    gboolean not_empty_file_list = file_list != NULL;
+    gboolean not_empty = not_empty_dir_list || not_empty_file_list;
 
     /* The sorted directory name list is complete.  Loop to create the menu. */
-    DirectoryName * dir_cursor;
+
+    /* Subdirectories. */
+    FileName * dir_cursor;
     while ((dir_cursor = dir_list) != NULL)
     {
-        not_empty = TRUE;
         /* Create and initialize menu item. */
-        GtkWidget * item = gtk_image_menu_item_new_with_label(dir_cursor->directory_name);
+        GtkWidget * item = gtk_image_menu_item_new_with_label(dir_cursor->file_name);
         gtk_image_menu_item_set_image(
             GTK_IMAGE_MENU_ITEM(item),
             gtk_image_new_from_stock(GTK_STOCK_DIRECTORY, GTK_ICON_SIZE_MENU));
@@ -234,13 +260,48 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
         /* Unlink and free sorted directory name element, but reuse the directory name string. */
         dir_list = dir_cursor->flink;
-        g_object_set_data_full(G_OBJECT(item), "name", dir_cursor->directory_name, g_free);
-        g_free(dir_cursor->directory_name_collate_key);
+        g_object_set_data_full(G_OBJECT(item), "name", dir_cursor->file_name, g_free);
+        g_free(dir_cursor->file_name_collate_key);
         g_free(dir_cursor);
 
         /* Connect signals. */
         g_signal_connect(G_OBJECT(item), "select", G_CALLBACK(dirmenu_menuitem_select), p);
         g_signal_connect(G_OBJECT(item), "deselect", G_CALLBACK(dirmenu_menuitem_deselect), p);
+    }
+
+    if (not_empty_dir_list && not_empty_file_list)
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+    /* File submenu. */
+    GtkWidget * filemenu = menu;
+    if (file_list_count > dm->max_file_count && not_empty_file_list)
+    {
+        GtkWidget * item = gtk_menu_item_new_with_mnemonic( _("Files") );
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_MENU_ITEM(item));
+        GtkWidget * submenu = gtk_menu_new();
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+        filemenu = submenu;
+    }
+
+    /* Files. */
+    FileName * file_cursor;
+    while ((file_cursor = file_list) != NULL)
+    {
+        /* Create and initialize menu item. */
+        GtkWidget * item = gtk_image_menu_item_new_with_label(file_cursor->file_name);
+        gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), item);
+
+        gchar * filepath = g_build_filename(path, file_cursor->file_name, NULL);
+        g_object_set_data_full(G_OBJECT(item), "path", filepath, g_free);
+
+        /* Unlink and free file name element. */
+        file_list = file_cursor->flink;
+        g_free(file_cursor->file_name);
+        g_free(file_cursor->file_name_collate_key);
+        g_free(file_cursor);
+
+        /* Connect signals. */
+        g_signal_connect(item, "activate", G_CALLBACK(dirmenu_menuitem_open_file), p);
     }
 
     /* Create "Open" and "Open in Terminal" items. */
@@ -313,6 +374,9 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     dm->plugin = p;
     p->priv = dm;
 
+    dm->show_files = TRUE;
+    dm->max_file_count = 10;
+
     /* Load parameters from the configuration file. */
     line s;
     s.len = 256;
@@ -333,6 +397,10 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
                     dm->path = g_strdup(s.t[1]);
 		else if (g_ascii_strcasecmp(s.t[0], "name") == 0)
                     dm->name = g_strdup( s.t[1] );
+                else if (g_ascii_strcasecmp(s.t[0], "ShowFiles") == 0)
+                    dm->show_files = str2num(bool_pair, s.t[1], dm->show_files);
+                else if (g_ascii_strcasecmp(s.t[0], "MaxFileCount") == 0)
+                    dm->max_file_count = atoi(s.t[1]);
                 else
                     ERR( "dirmenu: unknown var %s\n", s.t[0]);
             }
@@ -417,6 +485,9 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _("Directory"), &dm->path, (GType)CONF_TYPE_DIRECTORY_ENTRY,
         _("Label"), &dm->name, (GType)CONF_TYPE_STR,
         _("Icon"), &dm->image, (GType)CONF_TYPE_FILE_ENTRY,
+        "", 0, (GType)CONF_TYPE_END_TABLE,
+        _("Show files"), &dm->show_files, (GType)CONF_TYPE_BOOL,
+        _("Use submenu if number of files is more than"), &dm->max_file_count, (GType)CONF_TYPE_INT,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
@@ -429,6 +500,8 @@ static void dirmenu_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_str(fp, "path", dm->path);
     lxpanel_put_str(fp, "name", dm->name);
     lxpanel_put_str(fp, "image", dm->image);
+    lxpanel_put_bool(fp, "ShowFiles", dm->show_files);
+    lxpanel_put_int(fp, "MaxFileCount", dm->max_file_count);
 }
 
 /* Callback when panel configuration changes. */

@@ -63,6 +63,7 @@ typedef struct {
     GdkPixbuf * folder_icon;		/* Icon for folders */
     gboolean show_hidden;
     gboolean show_files;
+    gboolean show_file_size;
     int max_file_count;
     int sort_directories;
     int sort_files;
@@ -335,7 +336,17 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
     while ((file_cursor = file_list) != NULL)
     {
         /* Create and initialize menu item. */
-        GtkWidget * item = gtk_image_menu_item_new_with_label(file_cursor->file_name);
+        GtkWidget * item = NULL;
+        if (dm->show_file_size)
+        {
+            gchar * name = g_strdup_printf("%s [%llu]", file_cursor->file_name, (unsigned long long)file_cursor->stat_data.st_size);
+            item = gtk_image_menu_item_new_with_label(name);
+            g_free(name);
+        }
+        else
+        {
+            item = gtk_image_menu_item_new_with_label(file_cursor->file_name);
+        }
         gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), item);
 
         /* Unlink and free file name element, but reuse the file path. */
@@ -422,6 +433,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     dm->show_hidden = FALSE;
     dm->show_files = TRUE;
     dm->max_file_count = 10;
+    dm->show_file_size = FALSE;
     dm->sort_directories = SORT_BY_NAME;
     dm->sort_files = SORT_BY_NAME;
 
@@ -452,6 +464,8 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
                     dm->show_files = str2num(bool_pair, s.t[1], dm->show_files);
                 else if (g_ascii_strcasecmp(s.t[0], "MaxFileCount") == 0)
                     dm->max_file_count = atoi(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "ShowFileSize") == 0)
+                    dm->show_file_size = str2num(bool_pair, s.t[1], dm->show_file_size);
                 else if (g_ascii_strcasecmp(s.t[0], "SortDirectoriesBy") == 0)
                     dm->sort_directories = str2num(sort_by_pair, s.t[1], dm->sort_directories);
                 else if (g_ascii_strcasecmp(s.t[0], "SortFilesBy") == 0)
@@ -544,9 +558,10 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _("Label"), &dm->name, (GType)CONF_TYPE_STR,
         _("Icon"), &dm->image, (GType)CONF_TYPE_FILE_ENTRY,
         "", 0, (GType)CONF_TYPE_END_TABLE,
+        _("Show hidden files or folders"), &dm->show_hidden, (GType)CONF_TYPE_BOOL,
         _("Show files"), &dm->show_files, (GType)CONF_TYPE_BOOL,
         _("Use submenu if number of files is more than"), &dm->max_file_count, (GType)CONF_TYPE_INT,
-        _("Show hidden files or folders"), &dm->show_hidden, (GType)CONF_TYPE_BOOL,
+        _("Show file size"), &dm->show_file_size, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         sort_directories, (gpointer)&dm->sort_directories, (GType)CONF_TYPE_ENUM,
         sort_files, (gpointer)&dm->sort_files, (GType)CONF_TYPE_ENUM,
@@ -570,6 +585,7 @@ static void dirmenu_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowHidden", dm->show_hidden);
     lxpanel_put_bool(fp, "ShowFiles", dm->show_files);
     lxpanel_put_int(fp, "MaxFileCount", dm->max_file_count);
+    lxpanel_put_bool(fp, "ShowFileSize", dm->show_file_size);
     lxpanel_put_enum(fp, "SortDirectoriesBy", dm->sort_directories, sort_by_pair);
     lxpanel_put_enum(fp, "SortFilesBy", dm->sort_files, sort_by_pair);
 }

@@ -216,10 +216,13 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         g_dir_close(dir);
     }
 
+    gboolean not_empty = FALSE;
+
     /* The sorted directory name list is complete.  Loop to create the menu. */
     DirectoryName * dir_cursor;
     while ((dir_cursor = dir_list) != NULL)
     {
+        not_empty = TRUE;
         /* Create and initialize menu item. */
         GtkWidget * item = gtk_image_menu_item_new_with_label(dir_cursor->directory_name);
         gtk_image_menu_item_set_image(
@@ -249,12 +252,14 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
     /* Insert or append based on caller's preference. */
     if (open_at_top)
     {
-        gtk_menu_shell_insert(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new(), 0);
+        if (not_empty)
+            gtk_menu_shell_insert(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new(), 0);
         gtk_menu_shell_insert(GTK_MENU_SHELL(menu), term, 0);
         gtk_menu_shell_insert(GTK_MENU_SHELL(menu), item, 0);
     }
     else {
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+        if (not_empty)
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), term);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
     }

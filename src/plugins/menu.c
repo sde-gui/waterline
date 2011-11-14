@@ -987,7 +987,7 @@ static void save_config( Plugin* p, FILE* fp )
                 if( level == 0 )
                 {
                     /* skip image and caption since we already save these two items */
-                    if( g_str_has_prefix(*line, "image") || g_str_has_prefix(*line, "caption") )
+                    if( g_str_has_prefix(*line, "image") || g_str_has_prefix(*line, "name") )
                         continue;
                 }
                 g_strchomp(*line); /* remove trailing spaces */
@@ -1017,7 +1017,7 @@ static void menu_config( Plugin *p, GtkWindow* parent )
                                      GTK_WIDGET(parent),
                                     (GSourceFunc) apply_config, (gpointer) p,
                                      _("Icon"), &menu->fname, (GType)CONF_TYPE_FILE_ENTRY,
-                                     /* _("Caption"), &menu->caption, (GType)CONF_TYPE_STR, */
+                                     _("Caption"), &menu->caption, (GType)CONF_TYPE_STR,
                                      NULL );
     if (dlg)
         gtk_window_present( GTK_WINDOW(dlg) );

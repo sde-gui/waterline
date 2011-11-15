@@ -63,6 +63,8 @@ static char* terminal_cmd = NULL;
 static char* logout_cmd = NULL;
 static int kiosk_mode = 0;
 
+static int arg_kiosk_mode = 0;
+
 extern GSList* all_panels;
 extern gchar *cprofile;
 extern int config;
@@ -1642,5 +1644,10 @@ lxpanel_get_terminal()
 extern int
 lxpanel_is_in_kiosk_mode(void)
 {
-    return kiosk_mode;
+    return kiosk_mode || arg_kiosk_mode;
+}
+
+extern enable_kiosk_mode()
+{
+    arg_kiosk_mode = 1;
 }

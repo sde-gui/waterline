@@ -40,6 +40,8 @@
 #include "lxpanelctl.h"
 #include "dbg.h"
 
+extern enable_kiosk_mode();
+
 static gchar *cfgfile = NULL;
 static gchar version[] = VERSION;
 gchar *cprofile = "default";
@@ -1465,6 +1467,7 @@ usage()
     g_print(_(" --version   -- print version and exit\n"));
     g_print(_(" --log <number> -- set log level 0-5. 0 - none 5 - chatty\n"));
     g_print(_(" --profile name -- use specified profile\n"));
+    g_print(_(" --kiosk-mode -- enable kiosk mode\n"));
     g_print("\n");
     g_print(_(" -h  -- same as --help\n"));
     g_print(_(" -p  -- same as --profile\n"));
@@ -1610,6 +1613,7 @@ int main(int argc, char *argv[], char *env[])
     resolve_atoms();
 
     desktop_name = g_getenv("XDG_CURRENT_DESKTOP");
+    /* FIXME: Do we really need this? */
     is_in_lxde = desktop_name && (0 == strcmp(desktop_name, "LXDE"));
 
     for (i = 1; i < argc; i++) {
@@ -1637,6 +1641,8 @@ int main(int argc, char *argv[], char *env[])
             } else {
                 cprofile = g_strdup(argv[i]);
             }
+        } else if (!strcmp(argv[i], "--kiosk-mode")) {
+            enable_kiosk_mode();
         } else {
             printf("lxpanel: unknown option - %s\n", argv[i]);
             usage();

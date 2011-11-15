@@ -1461,17 +1461,21 @@ Panel* panel_new( const char* config_file, const char* config_name )
 static void
 usage()
 {
-    g_print(_("lxpanel %s - lightweight GTK2+ panel for UNIX desktops\n"), version);
-    g_print(_("Command line options:\n"));
-    g_print(_(" --help      -- print this help and exit\n"));
-    g_print(_(" --version   -- print version and exit\n"));
-    g_print(_(" --log <number> -- set log level 0-5. 0 - none 5 - chatty\n"));
-    g_print(_(" --profile name -- use specified profile\n"));
-    g_print(_(" --kiosk-mode -- enable kiosk mode\n"));
+    g_print(_("LXPanelX %s - lightweight GTK2+ panel for UNIX desktops\n"), version);
     g_print("\n");
-    g_print(_(" -h  -- same as --help\n"));
-    g_print(_(" -p  -- same as --profile\n"));
-    g_print(_(" -v  -- same as --version\n"));
+    g_print(_("Syntax: lxpanel [options]\n"));
+    g_print("\n");
+    g_print(_("Options:\n"));
+    g_print(_("  --help             Print this help and exit\n"));
+    g_print(_("  --version          Print version and exit\n"));
+    g_print(_("  --log <number>     Set log level 0-5. 0 - none 5 - chatty\n"));
+    g_print(_("  --profile <name>   Use specified profile\n"));
+    g_print(_("  --kiosk-mode       Enable kiosk mode\n"));
+    g_print("\n");
+    g_print(_("Short options:\n"));
+    g_print(_("  -h                 same as --help\n"));
+    g_print(_("  -p                 same as --profile\n"));
+    g_print(_("  -v                 same as --version\n"));
     g_print(_("\nVisit http://lxde.org/ for detail.\n\n"));
 }
 

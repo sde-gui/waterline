@@ -3244,17 +3244,24 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
     gboolean manual_grouping = tb->manual_grouping && tb->grouped_tasks;
     if (manual_grouping)
         task_adjust_menu_move_to_group(tk);
-    gtk_widget_set_visible(GTK_WIDGET(tb->move_to_group_menuitem), manual_grouping);
-    gtk_widget_set_visible(GTK_WIDGET(tb->ungroup_menuitem), manual_grouping && tk->task_class && tk->task_class->visible_count > 1);
+    if (tb->move_to_group_menuitem)
+        gtk_widget_set_visible(GTK_WIDGET(tb->move_to_group_menuitem), manual_grouping);
+    if (tb->ungroup_menuitem)
+        gtk_widget_set_visible(GTK_WIDGET(tb->ungroup_menuitem), manual_grouping && tk->task_class && tk->task_class->visible_count > 1);
 
-    gtk_widget_set_visible(GTK_WIDGET(tb->unfold_group_menuitem),
-        manual_grouping && !tb->_show_single_group && tk->task_class && task_is_folded(tk));
-    gtk_widget_set_visible(GTK_WIDGET(tk->tb->fold_group_menuitem),
-        manual_grouping && !tb->_show_single_group && tk->task_class && !task_is_folded(tk));
+    if (tb->unfold_group_menuitem)
+        gtk_widget_set_visible(GTK_WIDGET(tb->unfold_group_menuitem),
+            manual_grouping && !tb->_show_single_group && tk->task_class && task_is_folded(tk));
+    if (tb->fold_group_menuitem)
+        gtk_widget_set_visible(GTK_WIDGET(tb->fold_group_menuitem),
+            manual_grouping && !tb->_show_single_group && tk->task_class && !task_is_folded(tk));
 
-    gtk_widget_set_visible(GTK_WIDGET(tb->maximize_menuitem), !tk->maximized);
-    gtk_widget_set_visible(GTK_WIDGET(tb->restore_menuitem), tk->maximized);
+    if (tb->maximize_menuitem)
+        gtk_widget_set_visible(GTK_WIDGET(tb->maximize_menuitem), !tk->maximized);
+    if (tb->restore_menuitem)
+        gtk_widget_set_visible(GTK_WIDGET(tb->restore_menuitem), tk->maximized);
 
+    if (tb->iconify_menuitem)
     gtk_widget_set_sensitive(GTK_WIDGET(tb->iconify_menuitem), !tk->iconified);
 
     if (tb->undecorate_menuitem)
@@ -3277,7 +3284,8 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 #endif
         gtk_widget_set_sensitive(GTK_WIDGET(tb->title_menuitem), FALSE);
     }
-    gtk_widget_set_visible(GTK_WIDGET(tb->title_menuitem), from_popup_menu);
+    if (tb->title_menuitem)
+        gtk_widget_set_visible(GTK_WIDGET(tb->title_menuitem), from_popup_menu);
 
     adjust_separators(tb->menu);
 }

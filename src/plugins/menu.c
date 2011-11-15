@@ -35,6 +35,7 @@
 #include "plugin.h"
 #include "bg.h"
 #include "menu-policy.h"
+#include "commands.h"
 
 #include "dbg.h"
 

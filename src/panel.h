@@ -121,14 +121,6 @@ typedef struct _Panel {
 } Panel;
 
 
-typedef struct {
-    char *name;
-    char *disp_name;
-    void (*cmd)(void);
-} Command;
-
-extern Command commands[];
-
 extern gchar *cprofile;
 
 extern int verbose;
@@ -153,6 +145,7 @@ extern void panel_update_background( Panel* p );
 extern int panel_handle_x_error(Display * d, XErrorEvent * ev);
 extern int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent * ev);
 
+extern const char* lxpanel_get_logout_command();
 extern const char* lxpanel_get_file_manager();
 extern const char* lxpanel_get_terminal();
 

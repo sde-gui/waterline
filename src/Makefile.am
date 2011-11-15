@@ -28,6 +28,7 @@ endif
 lxpanel_SOURCES = \
 	misc.c misc.h \
 	bg.c bg.h  \
+	commands.c commands.h \
 	configparser.c configparser.h \
 	Xsupport.c Xsupport.h \
 	configurator.c \

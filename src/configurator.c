@@ -42,21 +42,8 @@ enum{
 };
 
 void panel_configure(Panel* p, int sel_page );
-void restart(void);
-void gtk_run(void);
 void panel_config_save(Panel* panel);
-static void logout(void);
 static void save_global_config();
-
-Command commands[] = {
-    //{ "configure", N_("Preferences"), configure },
-#ifndef DISABLE_MENU
-    { "run", N_("Run"), gtk_run },
-#endif
-    { "restart", N_("Restart"), restart },
-    { "logout", N_("Logout"), logout },
-    { NULL, NULL },
-};
 
 static char* file_manager_cmd = NULL;
 static char* terminal_cmd = NULL;
@@ -1136,36 +1123,6 @@ void panel_config_save( Panel* p )
     p->config_changed = 0;
 }
 
-void restart(void)
-{
-    /* This is defined in panel.c */
-    extern gboolean is_restarting;
-    ENTER;
-    is_restarting = TRUE;
-
-    gtk_main_quit();
-    RET();
-}
-
-void logout(void)
-{
-    const char* l_logout_cmd = logout_cmd;
-    /* If LXSession is running, _LXSESSION_PID will be set */
-    if( ! l_logout_cmd && getenv("_LXSESSION_PID") )
-        l_logout_cmd = "lxsession-logout";
-
-    if( l_logout_cmd ) {
-        GError* err = NULL;
-        if( ! g_spawn_command_line_async( l_logout_cmd, &err ) ) {
-            show_error( NULL, err->message );
-            g_error_free( err );
-        }
-    }
-    else {
-        show_error( NULL, _("Logout command is not set") );
-    }
-}
-
 static void notify_apply_config( GtkWidget* widget )
 {
     GSourceFunc apply_func;
@@ -1627,6 +1584,12 @@ void free_global_config()
     g_free( file_manager_cmd );
     g_free( terminal_cmd );
     g_free( logout_cmd );
+}
+
+extern const char*
+lxpanel_get_logout_command()
+{
+    return logout_cmd;
 }
 
 extern const char*

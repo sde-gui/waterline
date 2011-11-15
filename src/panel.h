@@ -76,6 +76,7 @@ typedef struct _Panel {
     int orientation;
     int widthtype, width;
     int heighttype, height;
+    int round_corners_radius;
     gulong strut_size;			/* Values for WM_STRUT_PARTIAL */
     gulong strut_lower;
     gulong strut_upper;

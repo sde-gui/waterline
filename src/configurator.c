@@ -1047,6 +1047,8 @@ panel_global_config_save( Panel* p, FILE *fp)
     lxpanel_put_str(fp, "widthtype", num2str(width_pair, p->widthtype, "none"));
     lxpanel_put_int(fp, "width", p->width);
     lxpanel_put_int(fp, "height", p->height);
+    lxpanel_put_bool(fp, "RoundCorners", p->round_corners );
+    lxpanel_put_int(fp, "RoundCornersRadius", p->round_corners_radius );
     lxpanel_put_bool(fp, "transparent", p->transparent );
     lxpanel_put_line(fp, "tintcolor=#%06x", gcolor2rgb24(&p->gtintcolor));
     lxpanel_put_int(fp, "alpha", p->alpha);

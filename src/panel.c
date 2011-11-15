@@ -54,6 +54,7 @@ GSList* all_panels = NULL;  /* a single-linked list storing all panels */
 
 gboolean is_restarting = FALSE;
 
+static void make_round_corners(Panel *p);
 static int panel_start( Panel *p, char **fp );
 static void panel_start_gui(Panel *p);
 void panel_config_save(Panel* panel);   /* defined in configurator.c */
@@ -99,6 +100,7 @@ static Panel* panel_allocate(void)
     p->setdocktype = 1;
     p->setstrut = 1;
     p->round_corners = 0;
+    p->round_corners_radius = 7;
     p->autohide = 0;
     p->visible = TRUE;
     p->height_when_hidden = 2;
@@ -532,6 +534,9 @@ panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 
     gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
     panel_set_wm_strut(p);
+    
+    make_round_corners(p);
+
     RET(TRUE);
 }
 
@@ -548,6 +553,8 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
 
     if (p->transparent)
         fb_bg_notify_changed_bg(p->bg);
+
+    make_round_corners(p);
 
     RET(FALSE);
 }
@@ -832,11 +839,48 @@ void lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * eve
  *         panel creation                           *
  ****************************************************/
 
-static void
-make_round_corners(Panel *p)
+static void make_round_corners(Panel *p)
 {
-    /* FIXME: This should be re-written with shape extension of X11 */
-    /* gdk_window_shape_combine_mask() can be used */
+    if (!p->round_corners || p->round_corners_radius < 1)
+    {
+        gtk_widget_shape_combine_mask(p->topgwin, NULL, 0, 0);
+        return;
+    }
+
+    GdkBitmap *b;
+    GdkGC* gc;
+    GdkColor black = { 0, 0, 0, 0};
+    GdkColor white = { 1, 0xffff, 0xffff, 0xffff};
+    int w, h, r, br;
+
+    ENTER;
+    w = p->aw;
+    h = p->ah;
+    r = p->round_corners_radius;
+    if (2*r > MIN(w, h)) {
+        r = MIN(w, h) / 2;
+        DBG("chaning radius to %d\n", r);
+    }
+    b = gdk_pixmap_new(NULL, w, h, 1);
+    gc = gdk_gc_new(GDK_DRAWABLE(b));
+    gdk_gc_set_foreground(gc, &black);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, 0, w, h);
+    gdk_gc_set_foreground(gc, &white);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, r, 0, w-2*r, h);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, r, r, h-2*r);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, w-r, r, r, h-2*r);
+
+    br = 2 * r;
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, 0, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, h-br-1, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, 0, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, h-br-1, br, br, 0*64, 360*64);
+
+    gtk_widget_shape_combine_mask(p->topgwin, b, 0, 0);
+    g_object_unref(gc);
+    g_object_unref(b);
+
+    RET();
 }
 
 void panel_set_dock_type(Panel *p)
@@ -1015,8 +1059,8 @@ panel_start_gui(Panel *p)
 //    gtk_container_add(GTK_CONTAINER(p->bbox), p->box);
     gtk_container_add(GTK_CONTAINER(p->topgwin), p->box);
     gtk_widget_show(p->box);
-    if (p->round_corners)
-        make_round_corners(p);
+    
+    make_round_corners(p);
 
     p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
     DBG("topxwin = %x\n", p->topxwin);
@@ -1240,6 +1284,8 @@ panel_parse_global(Panel *p, char **fp)
                     p->setstrut = str2num(bool_pair, s.t[1], 0);
                 } else if (!g_ascii_strcasecmp(s.t[0], "RoundCorners")) {
                     p->round_corners = str2num(bool_pair, s.t[1], 0);
+                } else if (!g_ascii_strcasecmp(s.t[0], "RoundCornersRadius")) {
+                    p->round_corners_radius = atoi(s.t[1]);
                 } else if (!g_ascii_strcasecmp(s.t[0], "Transparent")) {
                     p->transparent = str2num(bool_pair, s.t[1], 0);
                 } else if (!g_ascii_strcasecmp(s.t[0], "Alpha")) {

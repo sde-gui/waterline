@@ -12369,6 +12369,7 @@ fi
 
 
 
+
 # Check whether --with-menucache was given.
 if test "${with_menucache+set}" = set; then :
   withval=$with_menucache;
@@ -17025,6 +17026,16 @@ $as_echo "    cpufreq - CpuFreq frontend" >&6; }
 else
 echo Dynamic loader for plugins....... : disabled.
 fi
+
+echo
+echo 'PACKAGE_CFLAGS    = ' $PACKAGE_CFLAGS
+echo 'PACKAGE_LIBS      = ' $PACKAGE_LIBS
+echo 'X11_CFLAGS        = ' $X11_CFLAGS
+echo 'X11_LIBS          = ' $X11_LIBS
+#echo 'MENU_CACHE_CFLAGS = ' $MENU_CACHE_CFLAGS
+#echo 'MENU_CACHE_LIBS   = ' $MENU_CACHE_LIBS
+echo 'LDFLAGS           = ' $LDFLAGS
+echo 'CFLAGS            = ' $CFLAGS
 
 echo
 echo 'LXPanel requires menu-cache and lxmenu-data packages since'

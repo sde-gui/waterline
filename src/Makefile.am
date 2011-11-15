@@ -13,7 +13,8 @@ INCLUDES = \
 	-DPACKAGE_UI_DIR=\""$(datadir)/lxpanel/ui"\" \
 	-DPACKAGE_BIN_DIR=\""$(bindir)"\" \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
-	$(PACKAGE_CFLAGS)
+	$(PACKAGE_CFLAGS) \
+	$(XLIB_CFLAGS) \
 	$(G_CAST_CHECKS)
 
 BUILTIN_PLUGINS = $(top_builddir)/src/plugins/libbuiltin_plugins.a
@@ -48,6 +49,7 @@ lxpanel_LDFLAGS = $(DYNAMIC_FLAGS)
 lxpanel_LDADD = \
 		$(BUILTIN_PLUGINS) \
 		$(PACKAGE_LIBS) \
+		$(X11_LIBS) \
 		$(INTLLIBS)
 
 lxpanelctl_SOURCES = lxpanelctl.c lxpanelctl.h

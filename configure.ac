@@ -26,6 +26,7 @@ AC_SUBST(PACKAGE_LIBS)
 
 pkg_modules="x11"
 PKG_CHECK_MODULES(X11, [$pkg_modules])
+AC_SUBST(X11_CFLAGS)
 AC_SUBST(X11_LIBS)
 
 AC_ARG_WITH(menucache, [  --without-menucache     Compile without menucache support])
@@ -380,6 +381,16 @@ echo Building dynamic plugins:
 else
 echo Dynamic loader for plugins....... : disabled.
 fi
+
+echo
+echo 'PACKAGE_CFLAGS    = ' $PACKAGE_CFLAGS
+echo 'PACKAGE_LIBS      = ' $PACKAGE_LIBS
+echo 'X11_CFLAGS        = ' $X11_CFLAGS
+echo 'X11_LIBS          = ' $X11_LIBS
+#echo 'MENU_CACHE_CFLAGS = ' $MENU_CACHE_CFLAGS
+#echo 'MENU_CACHE_LIBS   = ' $MENU_CACHE_LIBS
+echo 'LDFLAGS           = ' $LDFLAGS
+echo 'CFLAGS            = ' $CFLAGS
 
 echo
 echo 'LXPanel requires menu-cache and lxmenu-data packages since'

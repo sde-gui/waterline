@@ -132,6 +132,7 @@ extern Atom a_NET_SYSTEM_TRAY_ORIENTATION;
 extern Atom a_MANAGER;
 
 extern Atom a_LXPANEL_CMD; /* for private client message */
+extern Atom a_LXPANEL_TEXT_CMD;
 
 /* if current window manager is EWMH conforming. */
 extern gboolean is_ewmh_supported;

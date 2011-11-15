@@ -59,7 +59,7 @@ int main( int argc, char** argv )
     XEvent ev;
     Window root;
     Atom cmd_atom;
-    int cmd;
+    int cmd = -1;
     /* int restart; */
 
     if( argc < 2 )
@@ -68,39 +68,67 @@ int main( int argc, char** argv )
         return 1;
     }
 
-    /*
-    if( restart = !strcmp( argv[1], "restart" ) )
-        argv[1] = "exit";
-    */
+    if (argc == 2)
+        cmd = get_cmd(argv[1]);
 
-    if( ( cmd = get_cmd( argv[1] ) ) == -1 )
-        return 1;
+    if (cmd != -1)
+    {
+        dpy = XOpenDisplay(display_name);
+        if (dpy == NULL) {
+            printf("Cant connect to display: %s\n", display_name);
+            exit(1);
+        }
+        root = DefaultRootWindow(dpy);
+        cmd_atom = XInternAtom(dpy, "_LXPANEL_CMD", False);
+        memset(&ev, '\0', sizeof ev);
+        ev.xclient.type = ClientMessage;
+        ev.xclient.window = root;
+        ev.xclient.message_type = cmd_atom;
+        ev.xclient.format = 8;
 
-    dpy = XOpenDisplay(display_name);
-    if (dpy == NULL) {
-        printf("Cant connect to display: %s\n", display_name);
-        exit(1);
+        ev.xclient.data.b[0] = cmd;
+
+        XSendEvent(dpy, root, False,
+                   SubstructureRedirectMask|SubstructureNotifyMask, &ev);
+        XSync(dpy, False);
+        XCloseDisplay(dpy);
     }
-    root = DefaultRootWindow(dpy);
-    cmd_atom = XInternAtom(dpy, "_LXPANEL_CMD", False);
-    memset(&ev, '\0', sizeof ev);
-    ev.xclient.type = ClientMessage;
-    ev.xclient.window = root;
-    ev.xclient.message_type = cmd_atom;
-    ev.xclient.format = 8;
+    else
+    {
+        size_t buff_size = 0;
+        int i;
+        for (i = 1; i < argc; i++)
+        {
+            buff_size += strlen(argv[i]) + 1;
+        }
 
-    ev.xclient.data.b[0] = cmd;
+        char * buff = (char *) calloc(buff_size, sizeof(char));
 
-    XSendEvent(dpy, root, False,
-               SubstructureRedirectMask|SubstructureNotifyMask, &ev);
-    XSync(dpy, False);
-    XCloseDisplay(dpy);
+        size_t buff_pos = 0;
+        for (i = 1; i < argc; i++)
+        {
+            size_t s = strlen(argv[i]) + 1;
+            memcpy(buff + buff_pos, argv[i], s * sizeof(char));
+            buff_pos += s;
+        }
 
-/*
-    if( restart ) {
-        system( PACKAGE_BIN_DIR "/lxpanel &" );
+        
+        dpy = XOpenDisplay(display_name);
+        if (dpy == NULL) {
+            printf("Cant connect to display: %s\n", display_name);
+            exit(1);
+        }
+        root = DefaultRootWindow(dpy);
+        cmd_atom = XInternAtom(dpy, "_LXPANEL_TEXT_CMD", False);
+
+        Atom type_atom = XInternAtom(dpy, "UTF8_STRING", False);
+
+        XChangeProperty (dpy, root, cmd_atom, type_atom, 8, PropModeReplace,
+                         (unsigned char *) buff, buff_size);
+        XSync(dpy, False);
+        XCloseDisplay(dpy);
     }
-*/
+
     return 0;
 }
 

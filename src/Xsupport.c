@@ -21,6 +21,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
+#include <string.h>
 
 #include "Xsupport.h"
 
@@ -90,6 +91,7 @@ Atom a_NET_SYSTEM_TRAY_ORIENTATION;
 Atom a_MANAGER;
 
 Atom a_LXPANEL_CMD; /* for private client message */
+Atom a_LXPANEL_TEXT_CMD;
 
 /* if current window manager is EWMH conforming. */
 gboolean is_ewmh_supported;
@@ -151,6 +153,7 @@ enum{
     I_MANAGER,
 
     I_LXPANEL_CMD,
+    I_LXPANEL_TEXT_CMD,
     N_ATOMS
 };
 
@@ -215,6 +218,7 @@ void resolve_atoms()
     atom_names[ I_MANAGER ] = "MANAGER";
 
     atom_names[ I_LXPANEL_CMD ] = "_LXPANEL_CMD";
+    atom_names[ I_LXPANEL_TEXT_CMD ] = "_LXPANEL_TEXT_CMD";
 
     Atom atoms[ N_ATOMS ];
 
@@ -296,6 +300,7 @@ void resolve_atoms()
     a_MANAGER = atoms[ I_MANAGER ];
 
     a_LXPANEL_CMD = atoms[ I_LXPANEL_CMD ];
+    a_LXPANEL_TEXT_CMD = atoms[ I_LXPANEL_TEXT_CMD ];
 
     RET();
 }

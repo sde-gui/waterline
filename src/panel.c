@@ -233,6 +233,11 @@ void restart(void);
 void gtk_run(void);
 void panel_destroy(Panel *p);
 
+static void process_command(char ** argv, int argc)
+{
+    //g_print("%s\n", argv[0]);
+}
+
 static void process_client_msg ( XClientMessageEvent* ev )
 {
     int cmd = ev->data.b[0];
@@ -357,6 +362,19 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gpointer not_used)
                 p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
                 /* print_wmdata(p); */
             }
+        }
+        else if (at == a_LXPANEL_TEXT_CMD)
+        {
+            int remoute_command_argc = 0;;
+            char ** remoute_command_argv = NULL;
+            remoute_command_argv = get_utf8_property_list(GDK_ROOT_WINDOW(), a_LXPANEL_TEXT_CMD, &remoute_command_argc);
+            if (remoute_command_argc > 0 && remoute_command_argv)
+            {
+                char b[1];
+                XChangeProperty (GDK_DISPLAY(), GDK_ROOT_WINDOW(), a_LXPANEL_TEXT_CMD, XA_STRING, 8, PropModeReplace, b, 0);
+                process_command(remoute_command_argv, remoute_command_argc);
+            }
+            g_strfreev(remoute_command_argv);
         }
         else
             return GDK_FILTER_CONTINUE;

@@ -46,7 +46,6 @@ gchar *cprofile = "default";
 
 static GtkWindowGroup* win_grp; /* window group used to limit the scope of model dialog. */
 
-static int config = 0;
 FbEv *fbev = NULL;
 
 GSList* all_panels = NULL;  /* a single-linked list storing all panels */
@@ -1465,13 +1464,11 @@ usage()
     g_print(_(" --help      -- print this help and exit\n"));
     g_print(_(" --version   -- print version and exit\n"));
     g_print(_(" --log <number> -- set log level 0-5. 0 - none 5 - chatty\n"));
-//    g_print(_(" --configure -- launch configuration utility\n"));
     g_print(_(" --profile name -- use specified profile\n"));
     g_print("\n");
     g_print(_(" -h  -- same as --help\n"));
     g_print(_(" -p  -- same as --profile\n"));
     g_print(_(" -v  -- same as --version\n"));
- //   g_print(_(" -C  -- same as --configure\n"));
     g_print(_("\nVisit http://lxde.org/ for detail.\n\n"));
 }
 
@@ -1631,8 +1628,6 @@ int main(int argc, char *argv[], char *env[])
             } else {
                 log_level = atoi(argv[i]);
             }
-        } else if (!strcmp(argv[i], "--configure") || !strcmp(argv[i], "-C")) {
-            config = 1;
         } else if (!strcmp(argv[i], "--profile") || !strcmp(argv[i], "-p")) {
             i++;
             if (i == argc) {
@@ -1650,7 +1645,7 @@ int main(int argc, char *argv[], char *env[])
     }
 
     /* Check for duplicated lxpanel instances */
-    if (!check_main_lock() && !config) {
+    if (!check_main_lock()) {
         printf("There is already an instance of LXPanel.  Now to exit\n");
         exit(1);
     }
@@ -1675,11 +1670,7 @@ restart:
 
     if( G_UNLIKELY( ! start_all_panels() ) )
         g_warning( "Config files are not found.\n" );
-/*
- * FIXME: configure??
-    if (config)
-        configure();
-*/
+
     gtk_main();
 
     XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), NoEventMask);

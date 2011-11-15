@@ -273,6 +273,8 @@ typedef struct _taskbar {
     GtkWidget * restore_menuitem;
     GtkWidget * maximize_menuitem;
     GtkWidget * iconify_menuitem;
+    GtkWidget * roll_menuitem;
+    GtkWidget * undecorate_menuitem;
     GtkWidget * ungroup_menuitem;
     GtkWidget * move_to_group_menuitem;
     GtkWidget * unfold_group_menuitem;
@@ -3034,6 +3036,18 @@ static void menu_iconify_window(GtkWidget * widget, TaskbarPlugin * tb)
     task_group_menu_destroy(tb);
 }
 
+static void menu_roll_window(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    task_shade(tb->menutask);
+    task_group_menu_destroy(tb);
+}
+
+static void menu_undecorate_window(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    task_undecorate(tb->menutask);
+    task_group_menu_destroy(tb);
+}
+
 static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb)
 {
     int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "num"));
@@ -3243,6 +3257,12 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 
     gtk_widget_set_sensitive(GTK_WIDGET(tb->iconify_menuitem), !tk->iconified);
 
+    if (tb->undecorate_menuitem)
+        gtk_widget_set_visible(GTK_WIDGET(tb->undecorate_menuitem), TRUE);
+
+    if (tb->roll_menuitem)
+        gtk_widget_set_visible(GTK_WIDGET(tb->roll_menuitem), TRUE);
+
     if (from_popup_menu) {
 #if GTK_CHECK_VERSION(2,16,0)
         gtk_menu_item_set_use_underline(GTK_MENU_ITEM(tb->title_menuitem), FALSE);
@@ -3293,7 +3313,7 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     GtkWidget * mi;
 
     gchar * menu_description =
-         "close2 raise restore maximize iconify move_to_this_workspace move_to_workspace - "
+         "close2 raise restore maximize iconify roll undecorate - move_to_this_workspace move_to_workspace - "
          "ungroup move_to_group - unfold_group fold_group - copy_title";
 
     tb->workspace_submenu = NULL;
@@ -3301,6 +3321,8 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     tb->restore_menuitem = NULL;
     tb->maximize_menuitem = NULL;
     tb->iconify_menuitem = NULL;
+    tb->roll_menuitem = NULL;
+    tb->undecorate_menuitem = NULL;
     tb->ungroup_menuitem = NULL;
     tb->move_to_group_menuitem = NULL;
     tb->unfold_group_menuitem = NULL;
@@ -3333,6 +3355,10 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
             create_menu_item(tb, _("Ma_ximize"), (GCallback) menu_maximize_window, &tb->maximize_menuitem);
         } else IF("iconify") {
             create_menu_item(tb, _("Ico_nify"), (GCallback) menu_iconify_window, &tb->iconify_menuitem);
+        } else IF("undecorate") {
+            create_menu_item(tb, _("Un/_decorate"), (GCallback) menu_undecorate_window, &tb->undecorate_menuitem);
+        } else IF("roll") {
+            create_menu_item(tb, _("_Roll up/down"), (GCallback) menu_roll_window, &tb->roll_menuitem);
         } else IF("move_to_this_workspace") {
             if (tb->number_of_desktops > 1)
             {
@@ -3596,6 +3622,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->restore_menuitem  = NULL;
     tb->maximize_menuitem = NULL;
     tb->iconify_menuitem  = NULL;
+    tb->roll_menuitem  = NULL;
+    tb->undecorate_menuitem  = NULL;
     tb->ungroup_menuitem  = NULL;
     tb->move_to_group_menuitem  = NULL;
     tb->title_menuitem    = NULL;

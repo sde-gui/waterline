@@ -110,6 +110,8 @@ static Panel* panel_allocate(void)
     p->tintcolor = gcolor2rgb24(&p->gtintcolor);
     p->usefontcolor = 0;
     p->fontcolor = 0x00000000;
+    p->usefontsize = 0;
+    p->fontsize = 10;
     p->spacing = 0;
     p->preferred_icon_size = PANEL_ICON_SIZE;
     return p;
@@ -1139,7 +1141,9 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean b
     {
         /* Compute an appropriate size so the font will scale with the panel's icon size. */
         int font_desc;
-        if (p->icon_size < 20) 
+        if (p->usefontsize)
+            font_desc = p->fontsize;
+        else if (p->icon_size < 20) 
             font_desc = 9;
         else if (p->icon_size >= 20 && p->icon_size < 36)
             font_desc = 10;
@@ -1301,13 +1305,17 @@ panel_parse_global(Panel *p, char **fp)
                         gdk_color_parse ("white", &p->gtintcolor);
                     p->tintcolor = gcolor2rgb24(&p->gtintcolor);
                     DBG("tintcolor=%x\n", p->tintcolor);
-                } else if (!g_ascii_strcasecmp(s.t[0], "useFontColor")) {
+                } else if (!g_ascii_strcasecmp(s.t[0], "UseFontColor")) {
                     p->usefontcolor = str2num(bool_pair, s.t[1], 0);
                 } else if (!g_ascii_strcasecmp(s.t[0], "FontColor")) {
                     if (!gdk_color_parse (s.t[1], &p->gfontcolor))
                         gdk_color_parse ("black", &p->gfontcolor);
                     p->fontcolor = gcolor2rgb24(&p->gfontcolor);
                     DBG("fontcolor=%x\n", p->fontcolor);
+                } else if (!g_ascii_strcasecmp(s.t[0], "UseFontSize")) {
+                    p->usefontsize = str2num(bool_pair, s.t[1], 0);
+                } else if (!g_ascii_strcasecmp(s.t[0], "FontSize")) {
+                    p->fontsize = atoi(s.t[1]);   
                 } else if (!g_ascii_strcasecmp(s.t[0], "Background")) {
                     p->background = str2num(bool_pair, s.t[1], 0);
                 } else if( !g_ascii_strcasecmp(s.t[0], "BackgroundFile") ) {

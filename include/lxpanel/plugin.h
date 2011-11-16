@@ -63,6 +63,8 @@ typedef struct _Panel {
     guint32 fontcolor;
     GdkColor gtintcolor;
     GdkColor gfontcolor;
+    guint fontsize;
+    int round_corners_radius;
 
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) allocation */
@@ -81,6 +83,7 @@ typedef struct _Panel {
     guint setstrut : 1;
     guint round_corners : 1;
     guint usefontcolor : 1;
+    guint usefontsize : 1;
     guint transparent : 1;
     guint background : 1;
     guint spacing;

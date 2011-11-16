@@ -63,7 +63,11 @@ static void update_opt_menu(GtkWidget *w, int ind);
 static void update_toggle_button(GtkWidget *w, gboolean n);
 static void modify_plugin( GtkTreeView* view );
 
+/* from generic_config_dlg.c */
+
 gboolean on_entry_focus_out( GtkWidget* edit, GdkEventFocus *evt, gpointer user_data );
+
+/******************************************************************************/
 
 static void
 response_event(GtkDialog *widget, gint arg1, Panel* panel )

@@ -163,8 +163,20 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 
     gchar** params = NULL;
 
+    /*
+      Widgets can be added either directly to the dialog box (GTK_DIALOG(dlg)->vbox) or to the notebook widget.
+      The notebook widget and its first page created on first CONF_TYPE_BEGIN_PAGE entry.
+      Next CONF_TYPE_BEGIN_PAGE entries create new pages in the notebook.
+    */
+
     GtkWidget* notebook = NULL;
     GtkWidget* frame = NULL;
+
+    /*
+      Widgets can also be arranged in table.
+      CONF_TYPE_BEGIN_PAGE creates a new table. Next widgets will be placed on the table.
+      CONF_TYPE_END_TABLE resers the table pointer, so next widgets will be placed directly on the dialog box (or notebook page).
+    */
 
     GtkWidget* table = NULL;
     int table_row_count = 0;
@@ -173,14 +185,20 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
     gboolean create_browse_button = FALSE;
     gboolean ignore_frame = FALSE;
 
+    /* Previous widget data. Used to deal with widget properties. */
+
     GType prev_type = -1;
     GtkWidget* prev_entry = NULL;
     GtkWidget* prev_label = NULL;
+
+    /*  */
 
     const char* name = nm;
     va_start( args, nm );
     while( name )
     {
+        /* Read next entry data */
+
         gpointer val = va_arg( args, gpointer );
         GType type = va_arg( args, GType );
 
@@ -190,12 +208,13 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
             name = params[1];
         }
 
-        GtkWidget* entry = NULL;
-        only_entry = FALSE;
-        create_browse_button = FALSE;
-        ignore_frame = FALSE;
+        /* These variables are filled in entry switch statement: */
 
-        gboolean is_property = FALSE;
+        GtkWidget* entry = NULL; /* Widget to add. */
+        only_entry = FALSE;      /* Do not add label. */
+        create_browse_button = FALSE; /* Create browse button for the widget. */
+        ignore_frame = FALSE;    /* Ignore notebook page, i.e. act as if frame == NULL. Used to create notebook itself. */
+        gboolean is_property = FALSE; /* The entry is property for previous widget. */
 
 
         switch( type )

@@ -30,6 +30,7 @@ lxpanel_SOURCES = \
 	bg.c bg.h  \
 	commands.c commands.h \
 	configparser.c configparser.h \
+	generic_config_dlg.c \
 	Xsupport.c Xsupport.h \
 	configurator.c \
 	dbg.c dbg.h \

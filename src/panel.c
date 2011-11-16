@@ -40,9 +40,38 @@
 #include "lxpanelctl.h"
 #include "dbg.h"
 
-extern enable_kiosk_mode();
+/******************************************************************************/
 
-static gchar *cfgfile = NULL;
+/* defined in gtk-run.c */
+
+extern void gtk_run(void);
+
+/* defined in plugins/menu.c */
+
+extern gboolean show_system_menu(gpointer system_menu);
+
+/* defined in configurator.c */
+
+extern void restart(void);
+extern void panel_configure(Panel* p, int sel_page);
+extern gboolean panel_edge_available(Panel* p, int edge);
+extern void load_global_config(void);
+extern void free_global_config(void);
+extern void enable_kiosk_mode(void);
+extern void panel_config_save(Panel* panel);
+
+/******************************************************************************/
+
+/* forward declarations */
+
+static void make_round_corners(Panel *p);
+static int panel_start( Panel *p, char **fp );
+static void panel_start_gui(Panel *p);
+
+/******************************************************************************/
+
+/* Globals */
+
 static gchar version[] = VERSION;
 gchar *cprofile = "default";
 
@@ -54,12 +83,9 @@ GSList* all_panels = NULL;  /* a single-linked list storing all panels */
 
 gboolean is_restarting = FALSE;
 
-static void make_round_corners(Panel *p);
-static int panel_start( Panel *p, char **fp );
-static void panel_start_gui(Panel *p);
-void panel_config_save(Panel* panel);   /* defined in configurator.c */
-
 gboolean is_in_lxde = FALSE;
+
+/******************************************************************************/
 
 /* A hack used to be compatible with Gnome panel for gtk+ themes.
  * Some gtk+ themes define special styles for desktop panels.
@@ -86,6 +112,8 @@ static void panel_toplevel_class_init(PanelToplevelClass *klass)
 static void panel_toplevel_init(PanelToplevel *self)
 {
 }
+
+/******************************************************************************/
 
 /* Allocate and initialize new Panel structure. */
 static Panel* panel_allocate(void)
@@ -225,17 +253,6 @@ void panel_set_wm_strut(Panel *p)
     }
 }
 
-/* defined in plugins/menu.c */
-gboolean show_system_menu( gpointer system_menu );
-
-/* defined in configurator.c */
-void panel_configure(Panel* p, int sel_page );
-gboolean panel_edge_available(Panel* p, int edge);
-
-/* built-in commands, defined in configurator.c */
-void restart(void);
-void gtk_run(void);
-void panel_destroy(Panel *p);
 
 static void process_command(char ** argv, int argc)
 {
@@ -1534,30 +1551,39 @@ Panel* panel_new( const char* config_file, const char* config_name )
     return panel;
 }
 
-static void
-usage()
+static gboolean start_all_panels( )
 {
-    g_print(_("LXPanelX %s - lightweight GTK2+ panel for UNIX desktops"), version);
-    g_print("\n\n");
-    g_print(_("Syntax: lxpanel [options]"));
-    g_print("\n\n");
-    g_print(_("Options:"));
-    g_print("\n");
-    g_print("  --help             %s\n", _("Print this help and exit"));
-    g_print("  --version          %s\n", _("Print version and exit"));
-    g_print("  --log <number>     %s\n", _("Set log level 0-5. 0 - none 5 - chatty"));
-    g_print("  --profile <name>   %s\n", _("Use specified profile"));
-    g_print("  --kiosk-mode       %s\n", _("Enable kiosk mode"));
-    g_print("\n");
-    g_print(_("Short options:"));
-    g_print("\n");
-    g_print("  -h                 %s\n", _("same as --help"));
-    g_print("  -p                 %s\n", _("same as --profile"));
-    g_print("  -v                 %s\n", _("same as --version"));
-    g_print("\n");
-    g_print(_("Visit http://lxde.org/ for detail."));
-    g_print("\n\n");
+    gboolean is_global;
+    for( is_global = 0; ! all_panels && is_global < 3; ++is_global )
+    {
+        char* panel_dir = is_global == 2 ? get_config_file( "default", "panels", TRUE ) : get_config_file( cprofile, "panels", is_global );
+        GDir* dir = g_dir_open( panel_dir, 0, NULL );
+        const gchar* name;
+
+        if( ! dir )
+        {
+            g_free( panel_dir );
+            continue;
+        }
+
+        while((name = g_dir_read_name(dir)) != NULL)
+        {
+            char* panel_config = g_build_filename( panel_dir, name, NULL );
+            if (strchr(panel_config, '~') == NULL)	/* Skip editor backup files in case user has hand edited in this directory */
+            {
+                Panel* panel = panel_new( panel_config, name );
+                if( panel )
+                    all_panels = g_slist_prepend( all_panels, panel );
+            }
+            g_free( panel_config );
+        }
+        g_dir_close( dir );
+        g_free( panel_dir );
+    }
+    return all_panels != NULL;
 }
+
+/******************************************************************************/
 
 int panel_handle_x_error(Display * d, XErrorEvent * ev)
 {
@@ -1576,6 +1602,8 @@ int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent 
         panel_handle_x_error(d, ev);
     return 0;	/* Ignored */
 }
+
+/******************************************************************************/
 
 /* Lightweight lock related functions - X clipboard hacks */
 
@@ -1638,40 +1666,34 @@ out:
 }
 #undef CLIPBOARD_NAME
 
-static gboolean start_all_panels( )
+/******************************************************************************/
+
+static void
+usage()
 {
-    gboolean is_global;
-    for( is_global = 0; ! all_panels && is_global < 3; ++is_global )
-    {
-        char* panel_dir = is_global == 2 ? get_config_file( "default", "panels", TRUE ) : get_config_file( cprofile, "panels", is_global );
-        GDir* dir = g_dir_open( panel_dir, 0, NULL );
-        const gchar* name;
-
-        if( ! dir )
-        {
-            g_free( panel_dir );
-            continue;
-        }
-
-        while((name = g_dir_read_name(dir)) != NULL)
-        {
-            char* panel_config = g_build_filename( panel_dir, name, NULL );
-            if (strchr(panel_config, '~') == NULL)	/* Skip editor backup files in case user has hand edited in this directory */
-            {
-                Panel* panel = panel_new( panel_config, name );
-                if( panel )
-                    all_panels = g_slist_prepend( all_panels, panel );
-            }
-            g_free( panel_config );
-        }
-        g_dir_close( dir );
-        g_free( panel_dir );
-    }
-    return all_panels != NULL;
+    g_print(_("LXPanelX %s - lightweight GTK2+ panel for UNIX desktops"), version);
+    g_print("\n\n");
+    g_print(_("Syntax: lxpanel [options]"));
+    g_print("\n\n");
+    g_print(_("Options:"));
+    g_print("\n");
+    g_print("  --help             %s\n", _("Print this help and exit"));
+    g_print("  --version          %s\n", _("Print version and exit"));
+    g_print("  --log <number>     %s\n", _("Set log level 0-5. 0 - none 5 - chatty"));
+    g_print("  --profile <name>   %s\n", _("Use specified profile"));
+    g_print("  --kiosk-mode       %s\n", _("Enable kiosk mode"));
+    g_print("\n");
+    g_print(_("Short options:"));
+    g_print("\n");
+    g_print("  -h                 %s\n", _("same as --help"));
+    g_print("  -p                 %s\n", _("same as --profile"));
+    g_print("  -v                 %s\n", _("same as --version"));
+    g_print("\n");
+    g_print(_("Visit http://lxde.org/ for detail."));
+    g_print("\n\n");
 }
 
-void load_global_config();
-void free_global_config();
+/******************************************************************************/
 
 int main(int argc, char *argv[], char *env[])
 {
@@ -1771,7 +1793,6 @@ restart:
     g_slist_foreach( all_panels, (GFunc) panel_destroy, NULL );
     g_slist_free( all_panels );
     all_panels = NULL;
-    g_free( cfgfile );
 
     free_global_config();
 

@@ -1249,31 +1249,29 @@ void free_global_config()
     g_free( logout_cmd );
 }
 
-extern const char*
-lxpanel_get_logout_command()
+/******************************************************************************/
+
+extern const char* lxpanel_get_logout_command()
 {
     return logout_cmd;
 }
 
-extern const char*
-lxpanel_get_file_manager()
+extern const char* lxpanel_get_file_manager()
 {
     return file_manager_cmd ? file_manager_cmd : "pcmanfm %s";
 }
 
-extern const char*
-lxpanel_get_terminal()
+extern const char* lxpanel_get_terminal()
 {
     return terminal_cmd ? terminal_cmd : "lxterminal -e %s";
 }
 
-extern int
-lxpanel_is_in_kiosk_mode(void)
+extern int lxpanel_is_in_kiosk_mode(void)
 {
     return kiosk_mode || arg_kiosk_mode;
 }
 
-extern enable_kiosk_mode()
+extern void enable_kiosk_mode(void)
 {
     arg_kiosk_mode = 1;
 }

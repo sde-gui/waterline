@@ -66,6 +66,8 @@ Atom a_NET_WM_STATE_ABOVE;
 Atom a_NET_WM_STATE_BELOW;
 Atom a_NET_WM_STATE_DEMANDS_ATTENTION;
 
+Atom a_OB_WM_STATE_UNDECORATED;
+
 Atom a_NET_WM_WINDOW_TYPE;
 Atom a_NET_WM_WINDOW_TYPE_DESKTOP;
 Atom a_NET_WM_WINDOW_TYPE_DOCK;
@@ -89,6 +91,8 @@ Atom a_NET_SYSTEM_TRAY_OPCODE;
 Atom a_NET_SYSTEM_TRAY_MESSAGE_DATA;
 Atom a_NET_SYSTEM_TRAY_ORIENTATION;
 Atom a_MANAGER;
+
+Atom a_MOTIF_WM_HINTS;
 
 Atom a_LXPANEL_CMD; /* for private client message */
 Atom a_LXPANEL_TEXT_CMD;
@@ -129,6 +133,8 @@ enum{
     I_NET_WM_STATE_BELOW,
     I_NET_WM_STATE_DEMANDS_ATTENTION,
 
+    I_OB_WM_STATE_UNDECORATED,
+
     I_NET_WM_WINDOW_TYPE,
     I_NET_WM_WINDOW_TYPE_DESKTOP,
     I_NET_WM_WINDOW_TYPE_DOCK,
@@ -151,6 +157,8 @@ enum{
     I_NET_SYSTEM_TRAY_MESSAGE_DATA,
     I_NET_SYSTEM_TRAY_ORIENTATION,
     I_MANAGER,
+
+    I_MOTIF_WM_HINTS,
 
     I_LXPANEL_CMD,
     I_LXPANEL_TEXT_CMD,
@@ -194,6 +202,8 @@ void resolve_atoms()
     atom_names[ I_NET_WM_STATE_BELOW ] = "_NET_WM_STATE_BELOW";
     atom_names[ I_NET_WM_STATE_DEMANDS_ATTENTION ] = "_NET_WM_STATE_DEMANDS_ATTENTION";
 
+    atom_names[ I_OB_WM_STATE_UNDECORATED ] = "_OB_WM_STATE_UNDECORATED";
+
     atom_names[ I_NET_WM_WINDOW_TYPE ] = "_NET_WM_WINDOW_TYPE";
     atom_names[ I_NET_WM_WINDOW_TYPE_DESKTOP ] = "_NET_WM_WINDOW_TYPE_DESKTOP";
     atom_names[ I_NET_WM_WINDOW_TYPE_DOCK ] = "_NET_WM_WINDOW_TYPE_DOCK";
@@ -216,6 +226,8 @@ void resolve_atoms()
     atom_names[ I_NET_SYSTEM_TRAY_MESSAGE_DATA ] = "_NET_SYSTEM_TRAY_MESSAGE_DATA";
     atom_names[ I_NET_SYSTEM_TRAY_ORIENTATION ] = "_NET_SYSTEM_TRAY_ORIENTATION";
     atom_names[ I_MANAGER ] = "MANAGER";
+
+    atom_names[ I_MOTIF_WM_HINTS ] = "_MOTIF_WM_HINTS";
 
     atom_names[ I_LXPANEL_CMD ] = "_LXPANEL_CMD";
     atom_names[ I_LXPANEL_TEXT_CMD ] = "_LXPANEL_TEXT_CMD";
@@ -276,6 +288,8 @@ void resolve_atoms()
     a_NET_WM_STATE_BELOW = atoms[ I_NET_WM_STATE_BELOW ];
     a_NET_WM_STATE_DEMANDS_ATTENTION = atoms[ I_NET_WM_STATE_DEMANDS_ATTENTION ];
 
+    a_OB_WM_STATE_UNDECORATED = atoms[ I_OB_WM_STATE_UNDECORATED ];
+
     a_NET_WM_WINDOW_TYPE = atoms[ I_NET_WM_WINDOW_TYPE ];
     a_NET_WM_WINDOW_TYPE_DESKTOP = atoms[ I_NET_WM_WINDOW_TYPE_DESKTOP ];
     a_NET_WM_WINDOW_TYPE_DOCK = atoms[ I_NET_WM_WINDOW_TYPE_DOCK ];
@@ -298,6 +312,8 @@ void resolve_atoms()
     a_NET_SYSTEM_TRAY_MESSAGE_DATA = atoms [ I_NET_SYSTEM_TRAY_MESSAGE_DATA ];
     a_NET_SYSTEM_TRAY_ORIENTATION = atoms[ I_NET_SYSTEM_TRAY_ORIENTATION ];
     a_MANAGER = atoms[ I_MANAGER ];
+
+    a_MOTIF_WM_HINTS = atoms[ I_MOTIF_WM_HINTS ];
 
     a_LXPANEL_CMD = atoms[ I_LXPANEL_CMD ];
     a_LXPANEL_TEXT_CMD = atoms[ I_LXPANEL_TEXT_CMD ];
@@ -603,6 +619,9 @@ get_net_wm_state(Window win, NetWMState *nws)
         } else if (state[num3] == a_NET_WM_STATE_DEMANDS_ATTENTION) {
             DBG( "NET_WM_STATE_DEMANDS_ATTENTION ");
             nws->demands_attention = 1;
+        } else if (state[num3] == a_OB_WM_STATE_UNDECORATED) {
+            DBG( "OB_WM_STATE_UNDECORATED ");
+            nws->ob_undecorated = 1;
         } else {
             DBG( "... ");
         }
@@ -674,3 +693,129 @@ get_wm_state (Window win)
     RET(ret);
 }
 
+typedef enum
+{
+    _MWM_DECOR_ALL      = 1 << 0, /*!< All decorations */
+    _MWM_DECOR_BORDER   = 1 << 1, /*!< Show a border */
+    _MWM_DECOR_HANDLE   = 1 << 2, /*!< Show a handle (bottom) */
+    _MWM_DECOR_TITLE    = 1 << 3, /*!< Show a titlebar */
+#if 0
+    _MWM_DECOR_MENU     = 1 << 4, /*!< Show a menu */
+#endif
+    _MWM_DECOR_ICONIFY  = 1 << 5, /*!< Show an iconify button */
+    _MWM_DECOR_MAXIMIZE = 1 << 6  /*!< Show a maximize button */
+} MwmDecorations;
+
+#define PROP_MOTIF_WM_HINTS_ELEMENTS 5
+#define MWM_HINTS_DECORATIONS (1L << 1)
+struct MwmHints {
+    unsigned long flags;
+    unsigned long functions;
+    unsigned long decorations;
+    long inputMode;
+    unsigned long status;
+};
+
+void
+set_decorations (Window win, gboolean decorate)
+{
+    struct MwmHints hints = {0,};
+    hints.flags = MWM_HINTS_DECORATIONS;
+    hints.decorations = decorate ? _MWM_DECOR_ALL : (_MWM_DECOR_BORDER | _MWM_DECOR_HANDLE) ;
+
+    /* Set Motif hints, most window managers handle these */
+    XChangeProperty(GDK_DISPLAY(), win,
+                    a_MOTIF_WM_HINTS, 
+                    a_MOTIF_WM_HINTS, 32, PropModeReplace, 
+                    (unsigned char *)&hints, PROP_MOTIF_WM_HINTS_ELEMENTS);
+
+    Xclimsg(win, a_NET_WM_STATE,
+                decorate ? 0 : 1,
+                a_OB_WM_STATE_UNDECORATED,
+                0, 0, 0);
+}
+
+int
+get_mvm_decorations(Window win)
+{
+    gboolean result = -1;
+
+    struct MwmHints * hints;
+    int nitems = 0;
+
+    hints = (struct MwmHints *) get_xaproperty(win, a_MOTIF_WM_HINTS, a_MOTIF_WM_HINTS, &nitems);
+
+    if (!hints || nitems < PROP_MOTIF_WM_HINTS_ELEMENTS)
+    {
+        /* nothing */
+    }
+    else
+    {
+        if (hints->flags & MWM_HINTS_DECORATIONS)
+        {
+            result = (hints->decorations & (_MWM_DECOR_ALL | _MWM_DECOR_TITLE)) ? 1 : 0;
+        }
+        else
+        {
+            result = 1;
+        }
+    }
+
+    if (hints)
+        XFree(hints);
+
+    return result;
+}
+
+gboolean get_decorations (Window win, NetWMState * nws)
+{
+    if (check_net_supported(a_OB_WM_STATE_UNDECORATED))
+    {
+        NetWMState n;
+        if (!nws)
+        {
+            nws = &n;
+            get_net_wm_state(win, nws);
+        }
+        return !nws->ob_undecorated;
+    }
+    else
+    {
+        return get_mvm_decorations(win) != 0;
+    }
+}
+
+
+static Atom * _net_supported = NULL;
+static int _net_supported_nitems = 0;
+
+void update_net_supported()
+{
+    ENTER;
+
+    if (_net_supported)
+    {
+        XFree(_net_supported);
+        _net_supported = NULL;
+        _net_supported_nitems = 0;
+    }
+    
+    _net_supported = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_SUPPORTED, XA_ATOM, &_net_supported_nitems);
+
+    RET();
+}
+
+gboolean check_net_supported(Atom atom)
+{
+    if (_net_supported_nitems < 1 || !_net_supported_nitems)
+        return FALSE;
+
+    int i;
+    for (i = 0; i < _net_supported_nitems; i++)
+    {
+        if (_net_supported[i] == atom)
+            return TRUE;
+    }
+
+    return FALSE;
+}

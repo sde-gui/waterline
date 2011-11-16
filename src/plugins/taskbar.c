@@ -230,6 +230,7 @@ typedef struct _task {
     unsigned int focused : 1;			/* True if window has focus */
     unsigned int iconified : 1;			/* True if window is iconified, from WM_STATE */
     unsigned int maximized : 1;			/* True if window is maximized, from WM_STATE */
+    unsigned int decorated : 1;			/* True if window is decorated, from _MOTIF_WM_HINTS or _OB_WM_STATE_UNDECORATED */
     unsigned int urgency : 1;			/* True if window has an urgency hint, from WM_HINTS */
     unsigned int flash_state : 1;		/* One-bit counter to flash taskbar */
     unsigned int entered_state : 1;		/* True if cursor is inside taskbar button */
@@ -1709,11 +1710,8 @@ static void task_shade(Task * tk)
 
 static void task_undecorate(Task * tk)
 {
-    /* Toggle the undecorated state of the window. */
-    Xclimsg(tk->win, a_NET_WM_STATE,
-                2,		/* a_NET_WM_STATE_TOGGLE */
-                tk->tb->a_OB_WM_STATE_UNDECORATED,
-                0, 0, 0);
+    set_decorations(tk->win, !tk->decorated);
+    tk->decorated = !tk->decorated;
 }
 
 static void task_fullscreen(Task * tk)
@@ -2631,12 +2629,16 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     tk->tb = tb;
                     tk->name_source = None;
                     tk->image_source = None;
+
                     tk->iconified = (get_wm_state(tk->win) == IconicState);
                     tk->maximized = nws.maximized_vert || nws.maximized_horz;
+                    tk->decorated = get_decorations(tk->win, &nws);
+
                     tk->desktop = get_net_wm_desktop(tk->win);
                     tk->override_class_name = (char*) -1;
                     if (tb->use_urgency_hint)
                         tk->urgency = task_has_urgency(tk);
+
                     task_build_gui(tb, tk);
                     task_set_names(tk, None);
 
@@ -2974,6 +2976,11 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         taskbar_redraw(tb);
                     }
                     tk->maximized = nws.maximized_vert || nws.maximized_horz;
+                    tk->decorated = get_decorations(tk->win, &nws);
+                }
+                else if (at == a_MOTIF_WM_HINTS)
+                {
+                    tk->decorated = get_mvm_decorations(tk->win) != 0;
                 }
                 else if (at == a_NET_WM_ICON)
                 {

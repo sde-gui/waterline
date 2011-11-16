@@ -36,6 +36,7 @@ typedef struct {
     unsigned int above : 1;
     unsigned int below : 1;
     unsigned int demands_attention : 1;
+    unsigned int ob_undecorated : 1;
 } NetWMState;
 
 /* Decoded value of _NET_WM_WINDOW_TYPE property. */
@@ -68,7 +69,12 @@ void get_net_wm_state(Window win, NetWMState *nws);
 void get_net_wm_window_type(Window win, NetWMWindowType *nwwt);
 GPid get_net_wm_pid(Window win);
 
+void set_decorations (Window win, gboolean decorate);
+int get_mvm_decorations(Window win);
+gboolean get_decorations (Window win, NetWMState * nws);
 
+void update_net_supported();
+gboolean check_net_supported(Atom atom);
 
 extern Atom a_UTF8_STRING;
 extern Atom a_XROOTPMAP_ID;
@@ -103,6 +109,8 @@ extern Atom a_NET_WM_STATE_ABOVE;
 extern Atom a_NET_WM_STATE_BELOW;
 extern Atom a_NET_WM_STATE_DEMANDS_ATTENTION;
 
+extern Atom a_OB_WM_STATE_UNDECORATED;
+
 
 #define a_NET_WM_STATE_REMOVE        0    /* remove/unset property */
 #define a_NET_WM_STATE_ADD           1    /* add/set property */
@@ -130,6 +138,8 @@ extern Atom a_NET_SYSTEM_TRAY_OPCODE;
 extern Atom a_NET_SYSTEM_TRAY_MESSAGE_DATA;
 extern Atom a_NET_SYSTEM_TRAY_ORIENTATION;
 extern Atom a_MANAGER;
+
+extern Atom a_MOTIF_WM_HINTS;
 
 extern Atom a_LXPANEL_CMD; /* for private client message */
 extern Atom a_LXPANEL_TEXT_CMD;

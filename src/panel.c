@@ -380,6 +380,10 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gpointer not_used)
             }
             g_strfreev(remoute_command_argv);
         }
+        else if (at = a_NET_SUPPORTED)
+        {
+            update_net_supported();
+        }
         else
             return GDK_FILTER_CONTINUE;
 
@@ -1691,6 +1695,7 @@ int main(int argc, char *argv[], char *env[])
     XSetErrorHandler((XErrorHandler) panel_handle_x_error);
 
     resolve_atoms();
+    update_net_supported();
 
     desktop_name = g_getenv("XDG_CURRENT_DESKTOP");
     /* FIXME: Do we really need this? */

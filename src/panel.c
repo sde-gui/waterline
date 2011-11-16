@@ -1162,15 +1162,21 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean b
     else
     {
         /* Compute an appropriate size so the font will scale with the panel's icon size. */
-        int font_desc;
+        int font_desc = 0;
+
         if (p->usefontsize)
+        {
             font_desc = p->fontsize;
-        else if (p->icon_size < 20) 
-            font_desc = 9;
-        else if (p->icon_size >= 20 && p->icon_size < 36)
-            font_desc = 10;
-        else
-            font_desc = 12;
+            if (p->fontsize == 0)
+            {
+                if (p->icon_size < 20)
+                   font_desc = 9;
+                else if (p->icon_size >= 20 && p->icon_size < 36)
+                   font_desc = 10;
+                else
+                   font_desc = 12;
+            }
+        }
 
         /* Check the string for characters that need to be escaped.
          * If any are found, create the properly escaped string and use it instead. */

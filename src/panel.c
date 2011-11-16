@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2011 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -75,7 +76,7 @@ static void panel_start_gui(Panel *p);
 static gchar version[] = VERSION;
 gchar *cprofile = "default";
 
-static GtkWindowGroup* win_grp; /* window group used to limit the scope of model dialog. */
+static GtkWindowGroup* window_group; /* window group used to limit the scope of model dialog. */
 
 FbEv *fbev = NULL;
 
@@ -1051,7 +1052,7 @@ panel_start_gui(Panel *p)
     gtk_window_set_position(GTK_WINDOW(p->topgwin), GTK_WIN_POS_NONE);
     gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
 
-    gtk_window_group_add_window( win_grp, (GtkWindow*)p->topgwin );
+    gtk_window_group_add_window( window_group, (GtkWindow*)p->topgwin );
 
     g_signal_connect(G_OBJECT(p->topgwin), "delete-event",
           G_CALLBACK(panel_delete_event), p);
@@ -1508,7 +1509,7 @@ void panel_destroy(Panel *p)
         } while ( g_source_remove_by_user_data( p->system_menus ) );
     }
 
-    gtk_window_group_remove_window( win_grp, GTK_WINDOW(  p->topgwin ) );
+    gtk_window_group_remove_window( window_group, GTK_WINDOW(  p->topgwin ) );
 
     if( p->topgwin )
         gtk_widget_destroy(p->topgwin);
@@ -1768,7 +1769,7 @@ int main(int argc, char *argv[], char *env[])
                                        PACKAGE_DATA_DIR "/lxpanel/images" );
 
     fbev = fb_ev_new();
-    win_grp = gtk_window_group_new();
+    window_group = gtk_window_group_new();
 
 restart:
     is_restarting = FALSE;
@@ -1799,7 +1800,7 @@ restart:
     if( is_restarting )
         goto restart;
 
-    g_object_unref(win_grp);
+    g_object_unref(window_group);
     g_object_unref(fbev);
 
     return 0;

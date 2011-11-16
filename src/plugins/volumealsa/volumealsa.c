@@ -228,10 +228,36 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
 {
     /* Mute status. */
     gboolean mute = asound_is_muted(vol);
-    
-    if ( ! panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, ((mute) ? "audio-volume-muted" : "audio-volume-high")))
+    int level = asound_get_volume(vol);
+
+    gboolean icon_updated = FALSE;
+
+    if (mute)
     {
-         panel_image_set_from_file(vol->plugin->panel, vol->tray_icon, ((mute) ? ICONS_MUTE : ICONS_VOLUME));
+         icon_updated = panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, "audio-volume-muted");
+         if (!icon_updated)
+             panel_image_set_from_file(vol->plugin->panel, vol->tray_icon, ICONS_MUTE);
+         icon_updated = TRUE;
+    }
+    
+    if (!icon_updated && level < 30)
+    {
+        icon_updated = panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, "audio-volume-low");
+    }
+
+    if (!icon_updated && level < 70)
+    {
+        icon_updated = panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, "audio-volume-medium");
+    }
+
+    if (!icon_updated)
+    {
+        icon_updated = panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, "audio-volume-high");
+    }
+
+    if (!icon_updated)
+    {
+        panel_image_set_from_file(vol->plugin->panel, vol->tray_icon, ICONS_VOLUME);
     }
 
     g_signal_handler_block(vol->mute_check, vol->mute_check_handler);
@@ -240,7 +266,6 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
     g_signal_handler_unblock(vol->mute_check, vol->mute_check_handler);
 
     /* Volume. */
-    int level = asound_get_volume(vol);
     if (vol->volume_scale != NULL)
     {
         g_signal_handler_block(vol->volume_scale, vol->volume_scale_handler);

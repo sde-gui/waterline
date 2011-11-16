@@ -231,6 +231,7 @@ typedef struct _task {
     unsigned int iconified : 1;			/* True if window is iconified, from WM_STATE */
     unsigned int maximized : 1;			/* True if window is maximized, from WM_STATE */
     unsigned int decorated : 1;			/* True if window is decorated, from _MOTIF_WM_HINTS or _OB_WM_STATE_UNDECORATED */
+    unsigned int shaded : 1;			/* True if window is shaded, from WM_STATE */
     unsigned int urgency : 1;			/* True if window has an urgency hint, from WM_HINTS */
     unsigned int flash_state : 1;		/* One-bit counter to flash taskbar */
     unsigned int entered_state : 1;		/* True if cursor is inside taskbar button */
@@ -2632,6 +2633,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
 
                     tk->iconified = (get_wm_state(tk->win) == IconicState);
                     tk->maximized = nws.maximized_vert || nws.maximized_horz;
+                    tk->shaded    = nws.shaded;
                     tk->decorated = get_decorations(tk->win, &nws);
 
                     tk->desktop = get_net_wm_desktop(tk->win);
@@ -2976,6 +2978,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         taskbar_redraw(tb);
                     }
                     tk->maximized = nws.maximized_vert || nws.maximized_horz;
+                    tk->shaded    = nws.shaded;
                     tk->decorated = get_decorations(tk->win, &nws);
                 }
                 else if (at == a_MOTIF_WM_HINTS)
@@ -3272,10 +3275,16 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
     gtk_widget_set_sensitive(GTK_WIDGET(tb->iconify_menuitem), !tk->iconified);
 
     if (tb->undecorate_menuitem)
+    {
         gtk_widget_set_visible(GTK_WIDGET(tb->undecorate_menuitem), TRUE);
+        gtk_widget_set_sensitive(GTK_WIDGET(tb->undecorate_menuitem), !tk->shaded || !tk->decorated);
+    }
 
     if (tb->roll_menuitem)
+    {
         gtk_widget_set_visible(GTK_WIDGET(tb->roll_menuitem), TRUE);
+        gtk_widget_set_sensitive(GTK_WIDGET(tb->roll_menuitem), tk->shaded || tk->decorated);
+    }
 
     if (from_popup_menu) {
 #if GTK_CHECK_VERSION(2,16,0)

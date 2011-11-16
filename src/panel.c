@@ -1187,29 +1187,27 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean b
             }
         }
 
+        gchar * attr_color = "";
+        gchar * attr_color_allocated = NULL;
         if ((custom_color) && (p->usefontcolor))
-        {
-            /* Color, optionally bold. */
-            gchar * text = g_strdup_printf("<span font_desc=\"%d\" color=\"#%06x\">%s%s%s</span>",
-                font_desc,
-                gcolor2rgb24(&p->gfontcolor),
+            attr_color_allocated =  attr_color = g_strdup_printf(" color=\"#%06x\"", gcolor2rgb24(&p->gfontcolor));
+
+        gchar * attr_desc = "";
+        gchar * attr_desc_allocated = NULL;
+        if (font_desc > 0)
+            attr_desc_allocated = attr_desc = g_strdup_printf(" font_desc=\"%d\"", font_desc);
+
+        gchar * text = g_strdup_printf("<span%s%s>%s%s%s</span>",
+                attr_desc, attr_color,
                 ((bold) ? "<b>" : ""),
                 valid_markup,
                 ((bold) ? "</b>" : ""));
-            gtk_label_set_markup(GTK_LABEL(label), text);
-            g_free(text);
-        }
-        else
-        {
-            /* No color, optionally bold. */
-            gchar * text = g_strdup_printf("<span font_desc=\"%d\">%s%s%s</span>",
-                font_desc,
-                ((bold) ? "<b>" : ""),
-                valid_markup,
-                ((bold) ? "</b>" : ""));
-            gtk_label_set_markup(GTK_LABEL(label), text);
-            g_free(text);
-        }
+        gtk_label_set_markup(GTK_LABEL(label), text);
+
+        g_free(text);
+
+        g_free(attr_desc_allocated);
+        g_free(attr_color_allocated);
         g_free(escaped_text);
     }
 }

@@ -64,6 +64,8 @@ typedef struct _icon_grid {
     int allocated_child_height;
     int deferred;
     int deferred_resize;
+
+    guint placement_idle_cb;
 } IconGrid;
 
 extern IconGrid * icon_grid_new(

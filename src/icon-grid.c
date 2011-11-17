@@ -24,6 +24,10 @@
 #include "panel.h"
 #include "plugin.h"
 
+//#define DEBUG
+
+#include "dbg.h"
+
 static gboolean icon_grid_placement(IconGrid * ig);
 static void icon_grid_geometry(IconGrid * ig, gboolean layout);
 static void icon_grid_element_size_request(GtkWidget * widget, GtkRequisition * requisition, IconGridElement * ige);
@@ -40,6 +44,10 @@ enum {
 /* Establish the widget placement of an icon grid. */
 static gboolean icon_grid_placement(IconGrid * ig)
 {
+    ENTER;
+    
+    ig->placement_idle_cb = 0;
+
     //g_print("[0x%x] icon_grid_placement\n", (int)ig);
 
     /* Make sure the container is visible. */
@@ -182,13 +190,15 @@ static gboolean icon_grid_placement(IconGrid * ig)
     if (contains_sockets)
         plugin_widget_set_background(ig->widget, ig->panel);
 
-    return FALSE;
+    RET(FALSE);
 }
 
 /* Establish the geometry of an icon grid. */
 static void icon_grid_geometry(IconGrid * ig, int reason)
 {
     //g_print("[0x%x] icon_grid_geometry: reason = %d\n", (int)ig, reason);
+
+    ENTER;
 
     /* Count visible children. */
     int visible_children = 0;
@@ -273,23 +283,29 @@ static void icon_grid_geometry(IconGrid * ig, int reason)
             ig->actual_dimension = TRUE;
             ig->children_changed = FALSE;
             //g_print("[0x%x] g_idle_add((GSourceFunc) icon_grid_placement, ig)\n", (int)ig);
-            g_idle_add((GSourceFunc) icon_grid_placement, ig);
+            if (ig->placement_idle_cb == 0)
+                ig->placement_idle_cb = g_idle_add((GSourceFunc) icon_grid_placement, ig);
         }
     }
+
+    RET();
 }
 
 /* Handler for "size-request" event on the icon grid element. */
 static void icon_grid_element_size_request(GtkWidget * widget, GtkRequisition * requisition, IconGridElement * ige)
 {
+    ENTER;
     /* This is our opportunity to request space for the element. */
     IconGrid * ig = ige->ig;
     requisition->width = ig->allocated_child_width;
     requisition->height = ig->allocated_child_height;
+    RET();
 }
 
 /* Handler for "size-request" event on the icon grid's container. */
 static void icon_grid_size_request(GtkWidget * widget, GtkRequisition * requisition, IconGrid * ig)
 {
+    ENTER;
     /* This is our opportunity to request space for the layout container.
      * Compute the geometry.  Do not lay out children at this time to avoid a recursive loop. */
     icon_grid_geometry(ig, GEOMETRY_SIZE_REQUEST);
@@ -303,23 +319,28 @@ static void icon_grid_size_request(GtkWidget * widget, GtkRequisition * requisit
         gtk_widget_hide(ig->widget);	/* Necessary to get the plugin to disappear */
     else
         gtk_widget_show(ig->widget);
+    RET();
 }
 
 /* Handler for "size-allocate" event on the icon grid's container. */
 static void icon_grid_size_allocate(GtkWidget * widget, GtkAllocation * allocation, IconGrid * ig)
 {
+    ENTER;
     //g_print("[0x%x] icon_grid_size_allocate: %d %d %d %d\n", (int)ig, allocation->x, allocation->y, allocation->width, allocation->height);
 
     /* This is our notification that there is a resize of the entire panel.
      * Compute the geometry and recompute layout if the geometry changed. */
     icon_grid_geometry(ig, GEOMETRY_SIZE_ALLOCATED);
+    RET();
 }
 
 /* Initiate a resize. */
 static void icon_grid_demand_resize(IconGrid * ig)
 {
+    ENTER;
     ig->children_changed = TRUE;
     icon_grid_geometry(ig, GEOMETRY_DEMAND_RESIZE);
+    RET();
 }
 
 /* Establish an icon grid in a specified container widget.
@@ -329,6 +350,8 @@ IconGrid * icon_grid_new(
     Panel * panel, GtkWidget * container,
     GtkOrientation orientation, gint child_width, gint child_height, gint spacing, gint border, gint target_dimension)
 {
+    ENTER;
+
     /* Create a structure representing the icon grid and collect the parameters. */
     IconGrid * ig = g_new0(IconGrid, 1);
     ig->panel = panel;
@@ -357,12 +380,15 @@ IconGrid * icon_grid_new(
     g_signal_connect(G_OBJECT(ig->widget), "size-request", G_CALLBACK(icon_grid_size_request), (gpointer) ig);
     g_signal_connect(G_OBJECT(container), "size-request", G_CALLBACK(icon_grid_size_request), (gpointer) ig);
     g_signal_connect(G_OBJECT(container), "size-allocate", G_CALLBACK(icon_grid_size_allocate), (gpointer) ig);
-    return ig;
+
+    RET(ig);
 }
 
 /* Add an icon grid element and establish its initial visibility. */
 void icon_grid_add(IconGrid * ig, GtkWidget * child, gboolean visible)
 {
+    ENTER;
+
     /* Create and initialize a structure representing the child. */
     IconGridElement * ige = g_new0(IconGridElement, 1);
     ige->ig = ig;
@@ -387,6 +413,8 @@ void icon_grid_add(IconGrid * ig, GtkWidget * child, gboolean visible)
 
     /* Do a relayout. */
     icon_grid_demand_resize(ig);
+
+    RET();
 }
 
 extern void icon_grid_set_expand(IconGrid * ig, gboolean expand)
@@ -397,6 +425,8 @@ extern void icon_grid_set_expand(IconGrid * ig, gboolean expand)
 /* Remove an icon grid element. */
 void icon_grid_remove(IconGrid * ig, GtkWidget * child)
 {
+    ENTER;
+
     IconGridElement * ige_pred = NULL;
     IconGridElement * ige;
     for (ige = ig->child_list; ige != NULL; ige_pred = ige, ige = ige->flink)
@@ -417,6 +447,8 @@ void icon_grid_remove(IconGrid * ig, GtkWidget * child)
             break;
         }
     }
+
+    RET();
 }
 
 extern void icon_grid_place_child_after(IconGrid * ig, GtkWidget * child, GtkWidget * after)
@@ -544,6 +576,8 @@ void icon_grid_set_geometry(IconGrid * ig,
 /* Change the visibility of an icon grid element. */
 void icon_grid_set_visible(IconGrid * ig, GtkWidget * child, gboolean visible)
 {
+    ENTER;
+
     IconGridElement * ige;
     for (ige = ig->child_list; ige != NULL; ige = ige->flink)
     {
@@ -567,11 +601,20 @@ void icon_grid_set_visible(IconGrid * ig, GtkWidget * child, gboolean visible)
             break;
         }
     }
+
+    RET();
 }
 
 /* Deallocate the icon grid structures. */
 void icon_grid_free(IconGrid * ig)
 {
+    ENTER;
+
+    if (ig->placement_idle_cb)
+    {
+        g_source_remove(ig->placement_idle_cb);
+    }
+
     /* Hide the layout container. */
     if (ig->widget != NULL)
         gtk_widget_hide(ig->widget);
@@ -585,6 +628,8 @@ void icon_grid_free(IconGrid * ig)
         ige = ige_succ;
     }
     g_free(ig);
+
+    RET();
 }
 
 extern void icon_grid_defer_updates(IconGrid * ig)

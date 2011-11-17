@@ -849,18 +849,24 @@ static void panel_popupmenu_create_panel( GtkMenuItem* item, Panel* panel )
 
 static void panel_popupmenu_delete_panel( GtkMenuItem* item, Panel* panel )
 {
-    GtkWidget* dlg;
-    gboolean ok;
-    dlg = gtk_message_dialog_new_with_markup( GTK_WINDOW(panel->topgwin),
-                                                    GTK_DIALOG_MODAL,
-                                                    GTK_MESSAGE_QUESTION,
-                                                    GTK_BUTTONS_OK_CANCEL,
-                                                    _("Really delete this panel?\n<b>Warning: This can not be recovered.</b>") );
-    panel_apply_icon(GTK_WINDOW(dlg));
-    gtk_window_set_title( (GtkWindow*)dlg, _("Confirm") );
-    ok = ( gtk_dialog_run( (GtkDialog*)dlg ) == GTK_RESPONSE_OK );
-    gtk_widget_destroy( dlg );
-    if( ok )
+    gboolean ok = TRUE;
+    
+    if (panel->plugins)
+    {
+        GtkWidget* dlg;
+        
+        dlg = gtk_message_dialog_new_with_markup( GTK_WINDOW(panel->topgwin),
+                                                  GTK_DIALOG_MODAL,
+                                                  GTK_MESSAGE_QUESTION,
+                                                  GTK_BUTTONS_OK_CANCEL,
+                                                  _("Really delete this panel?\n<b>Warning: This can not be recovered.</b>") );
+        panel_apply_icon(GTK_WINDOW(dlg));
+        gtk_window_set_title( (GtkWindow*)dlg, _("Confirm") );
+        ok = ( gtk_dialog_run( (GtkDialog*)dlg ) == GTK_RESPONSE_OK );
+        gtk_widget_destroy( dlg );
+    }
+    
+    if (ok)
     {
         gchar *fname, *dir;
         all_panels = g_slist_remove( all_panels, panel );

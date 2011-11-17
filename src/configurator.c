@@ -220,10 +220,10 @@ static void set_width_type( GtkWidget *item, Panel* p )
             gtk_spin_button_set_range( (GtkSpinButton*)spin, 0, gdk_screen_height() );
             gtk_spin_button_set_value( (GtkSpinButton*)spin, gdk_screen_height() );
         }
-    } else
-        return;
+    }
 
     update_panel_geometry(p);
+    panel_set_panel_configuration_changed(p);
 }
 
 static void transparency_toggle( GtkWidget *b, Panel* p)

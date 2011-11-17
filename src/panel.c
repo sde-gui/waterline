@@ -181,27 +181,27 @@ void panel_set_wm_strut(Panel *p)
     {
         case EDGE_LEFT:
             index = 0;
-            strut_size = p->aw;
-            strut_lower = p->ay;
-            strut_upper = p->ay + p->ah;
+            strut_size = p->cw;
+            strut_lower = p->cy;
+            strut_upper = p->cy + p->ch;
             break;
         case EDGE_RIGHT:
             index = 1;
-            strut_size = p->aw;
-            strut_lower = p->ay;
-            strut_upper = p->ay + p->ah;
+            strut_size = p->cw;
+            strut_lower = p->cy;
+            strut_upper = p->cy + p->ch;
             break;
         case EDGE_TOP:
             index = 2;
-            strut_size = p->ah;
-            strut_lower = p->ax;
-            strut_upper = p->ax + p->aw;
+            strut_size = p->ch;
+            strut_lower = p->cx;
+            strut_upper = p->cx + p->cw;
             break;
         case EDGE_BOTTOM:
             index = 3;
-            strut_size = p->ah;
-            strut_lower = p->ax;
-            strut_upper = p->ax + p->aw;
+            strut_size = p->ch;
+            strut_lower = p->cx;
+            strut_upper = p->cx + p->cw;
             break;
         default:
             return;
@@ -646,7 +646,15 @@ update_panel_geometry(Panel* p)
     if (p->topgwin != NULL)
     {
         panel_calculate_position(p);
-        gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
+        if (p->widthtype == WIDTH_REQUEST || p->heighttype == HEIGHT_REQUEST)
+        {
+            gtk_widget_set_size_request(p->topgwin, -1, -1);
+            gtk_widget_queue_resize(p->topgwin);
+        }
+        else
+        {
+            gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
+        }
         gdk_window_move(p->topgwin->window, p->ax, p->ay);
         panel_update_background(p);
         panel_establish_autohide(p);
@@ -712,6 +720,7 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
     if (p->transparent)
         fb_bg_notify_changed_bg(p->bg);
 
+    panel_set_wm_strut(p);
     make_round_corners(p);
 
     if (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)

@@ -67,7 +67,8 @@ void xkb_redraw(XkbPlugin * xkb)
                 /* Loaded successfully. */
                 int width = gdk_pixbuf_get_width(unscaled_pixbuf);
                 int height = gdk_pixbuf_get_height(unscaled_pixbuf);
-                GdkPixbuf * pixbuf = gdk_pixbuf_scale_simple(unscaled_pixbuf, size * width / height, size, GDK_INTERP_BILINEAR);
+                //GdkPixbuf * pixbuf = gdk_pixbuf_scale_simple(unscaled_pixbuf, size * width / height, size, GDK_INTERP_BILINEAR);
+                GdkPixbuf * pixbuf = gdk_pixbuf_scale_simple(unscaled_pixbuf, size, size * height / width, GDK_INTERP_BILINEAR);
                 if (pixbuf != NULL)
                 {
                     gtk_image_set_from_pixbuf(GTK_IMAGE(xkb->image), pixbuf);

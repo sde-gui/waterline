@@ -89,7 +89,7 @@ calculate_width(int scrw, int wtype, int allign, int margin,
 
 
 void
-calculate_position(Panel *np)
+calculate_position(Panel *np, int margin_top, int margin_bottom)
 {
     int sswidth, ssheight, minx, miny;
 
@@ -116,6 +116,9 @@ calculate_position(Panel *np)
         np->ay = miny + ((np->edge == EDGE_TOP) ? 0 : (ssheight - np->ah));
 
     } else {
+        miny += margin_top;
+        ssheight -= (margin_top + margin_bottom);
+
         np->ah = np->width;
         np->ay = miny;
         calculate_width(ssheight, np->widthtype, np->allign, np->margin,

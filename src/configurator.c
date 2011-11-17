@@ -63,9 +63,15 @@ static void update_opt_menu(GtkWidget *w, int ind);
 static void update_toggle_button(GtkWidget *w, gboolean n);
 static void modify_plugin( GtkTreeView* view );
 
-/* from generic_config_dlg.c */
+/******************************************************************************/
 
-gboolean on_entry_focus_out( GtkWidget* edit, GdkEventFocus *evt, gpointer user_data );
+/* defined in  panel.c */
+
+extern void panel_calculate_position(Panel *p);
+
+/* defined in  generic_config_dlg.c */
+
+extern gboolean on_entry_focus_out( GtkWidget* edit, GdkEventFocus *evt, gpointer user_data );
 
 /******************************************************************************/
 
@@ -87,13 +93,13 @@ response_event(GtkDialog *widget, gint arg1, Panel* panel )
     return;
 }
 
-static void
+void
 update_panel_geometry( Panel* p )
 {
     /* Guard against being called early in panel creation. */
     if (p->topgwin != NULL)
     {
-        calculate_position(p);
+        panel_calculate_position(p);
         gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
         gdk_window_move(p->topgwin->window, p->ax, p->ay);
         panel_update_background(p);

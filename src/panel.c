@@ -60,6 +60,7 @@ extern void load_global_config(void);
 extern void free_global_config(void);
 extern void enable_kiosk_mode(void);
 extern void panel_config_save(Panel* panel);
+void update_panel_geometry( Panel* p );
 
 /******************************************************************************/
 
@@ -526,6 +527,31 @@ panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
                 (GSourceFunc)delay_update_background, p, NULL );
 }
 
+
+void
+panel_calculate_position(Panel *p)
+{
+    int margin_top = 0;
+    int margin_bottom = 0;
+
+    if (p->edge == EDGE_LEFT || p->edge == EDGE_RIGHT)
+    {
+        GSList* l;
+        for( l = all_panels; l; l = l->next )
+        {
+            Panel* lp = (Panel*)l->data;
+            if (lp->autohide || !lp->visible)
+                continue;
+            if (lp->edge == EDGE_TOP)
+                margin_top += lp->ch;
+            else if (lp->edge == EDGE_BOTTOM)
+                margin_bottom += lp->ch;
+        }
+    }
+
+    calculate_position(p, margin_top, margin_bottom);
+}
+
 static gint
 panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
 {
@@ -535,7 +561,7 @@ panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
         p->width = (p->orientation == ORIENT_HORIZ) ? req->width : req->height;
     if (p->heighttype == HEIGHT_REQUEST)
         p->height = (p->orientation == ORIENT_HORIZ) ? req->height : req->width;
-    calculate_position(p);
+    panel_calculate_position(p);
     req->width  = p->aw;
     req->height = p->ah;
 
@@ -550,7 +576,7 @@ panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
         p->width = (p->orientation == ORIENT_HORIZ) ? a->width : a->height;
     if (p->heighttype == HEIGHT_REQUEST)
         p->height = (p->orientation == ORIENT_HORIZ) ? a->height : a->width;
-    calculate_position(p);
+    panel_calculate_position(p);
 
     if (a->width == p->aw && a->height == p->ah && a->x == p->ax && a->y == p ->ay) {
         RET(TRUE);
@@ -558,7 +584,7 @@ panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 
     gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
     panel_set_wm_strut(p);
-    
+
     make_round_corners(p);
 
     RET(TRUE);
@@ -579,6 +605,19 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
         fb_bg_notify_changed_bg(p->bg);
 
     make_round_corners(p);
+
+    if (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)
+    {
+        GSList* l;
+        for( l = all_panels; l; l = l->next )
+        {
+            Panel* lp = (Panel*)l->data;
+            if (lp->edge == EDGE_LEFT || lp->edge == EDGE_RIGHT)
+            {
+                update_panel_geometry(lp);
+            }
+        }
+    }
 
     RET(FALSE);
 }
@@ -924,7 +963,7 @@ static void panel_set_visibility(Panel *p, gboolean visible)
 {
     if ( ! visible) gtk_widget_hide(p->box);
     p->visible = visible;
-    calculate_position(p);
+    panel_calculate_position(p);
     gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
     gdk_window_move(p->topgwin->window, p->ax, p->ay);
     if (visible) gtk_widget_show(p->box);
@@ -1120,7 +1159,7 @@ panel_start_gui(Panel *p)
     XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STATE, XA_ATOM,
           32, PropModeReplace, (unsigned char *) state, 3);
 
-    calculate_position(p);
+    panel_calculate_position(p);
     gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);
     panel_set_wm_strut(p);
 

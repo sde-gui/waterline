@@ -553,6 +553,13 @@ get_net_wm_desktop(Window win)
     RET(desk);
 }
 
+void
+set_net_wm_desktop(Window win, int num)
+{
+    Xclimsg(win, a_NET_WM_DESKTOP, num, 0, 0, 0, 0);
+}
+
+
 GPid
 get_net_wm_pid(Window win)
 {

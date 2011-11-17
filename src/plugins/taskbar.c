@@ -3061,13 +3061,13 @@ static void menu_undecorate_window(GtkWidget * widget, TaskbarPlugin * tb)
 static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb)
 {
     int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "num"));
-    Xclimsg(tb->menutask->win, a_NET_WM_DESKTOP, num, 0, 0, 0, 0);
+    set_net_wm_desktop(tb->menutask->win, num);
     task_group_menu_destroy(tb);
 }
 
 static void menu_move_to_this_workspace(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    Xclimsg(tb->menutask->win, a_NET_WM_DESKTOP, tb->current_desktop, 0, 0, 0, 0);
+    set_net_wm_desktop(tb->menutask->win, tb->current_desktop);
     task_group_menu_destroy(tb);
 }
 

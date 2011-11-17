@@ -337,7 +337,7 @@ static gboolean desk_scroll_event(GtkWidget * widget, GdkEventScroll * event, Pa
 {
     /* Compute the new desktop from the scroll direction, wrapping at either extreme. */
     int current_desktop = d->pg->current_desktop;
-    if ((event->direction == GDK_SCROLL_UP) || (event->direction == GDK_SCROLL_RIGHT))
+    if ((event->direction == GDK_SCROLL_DOWN) || (event->direction == GDK_SCROLL_RIGHT))
     {
         current_desktop += 1;
         if (current_desktop >= d->pg->number_of_desktops)

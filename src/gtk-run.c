@@ -355,5 +355,7 @@ void gtk_run()
         app_list = (GSList*)menu_cache_list_all_apps(menu_cache);
         reload_notify_id = menu_cache_add_reload_notify(menu_cache, reload_apps, NULL);
     }
+
+    gtk_window_present(GTK_WINDOW(win));
 }
 

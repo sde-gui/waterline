@@ -3823,6 +3823,7 @@ static void taskbar_destructor(Plugin * p)
     }
 
     /* Deallocate other memory. */
+    icon_grid_free(tb->icon_grid);
     gtk_widget_destroy(tb->menu);
     g_free(tb);
 }

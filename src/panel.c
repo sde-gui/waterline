@@ -60,7 +60,6 @@ extern void load_global_config(void);
 extern void free_global_config(void);
 extern void enable_kiosk_mode(void);
 extern void panel_config_save(Panel* panel);
-void update_panel_geometry( Panel* p );
 
 /******************************************************************************/
 
@@ -527,6 +526,92 @@ panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
                 (GSourceFunc)delay_update_background, p, NULL );
 }
 
+/******************************************************************************/
+
+/* Panel size and position */
+
+/* Calculate real width of a horizontal panel (or height of a vertical panel) */
+static void
+calculate_width(int scrw, int wtype, int allign, int margin,
+      int *panw, int *x)
+{
+    ENTER;
+    DBG("scrw=%d\n", scrw);
+    DBG("IN panw=%d, margin=%d\n", *panw, margin);
+    //scrw -= 2;
+    if (wtype == WIDTH_PERCENT) {
+        /* sanity check */
+        if (*panw > 100)
+            *panw = 100;
+        else if (*panw < 0)
+            *panw = 1;
+        *panw = ((gfloat) scrw * (gfloat) *panw) / 100.0;
+    }
+    if (allign != ALLIGN_CENTER) {
+        if (margin > scrw) {
+            ERR( "margin is bigger then edge size %d > %d. Ignoring margin\n",
+                  margin, scrw);
+            margin = 0;
+        }
+	*panw = MIN(scrw - margin, *panw);
+    }
+    DBG("OUT panw=%d\n", *panw);
+    if (allign == ALLIGN_LEFT)
+        *x += margin;
+    else if (allign == ALLIGN_RIGHT) {
+        *x += scrw - *panw - margin;
+        if (*x < 0)
+            *x = 0;
+    } else if (allign == ALLIGN_CENTER)
+        *x += (scrw - *panw) / 2;
+    RET();
+}
+
+/* Calculate panel size and position with given margins. */
+
+void
+calculate_position(Panel *np, int margin_top, int margin_bottom)
+{
+    int sswidth, ssheight, minx, miny;
+
+    ENTER;
+    /* FIXME: Why this doesn't work? */
+    if (0)  {
+//        if (np->curdesk < np->wa_len/4) {
+        minx = np->workarea[np->curdesk*4 + 0];
+        miny = np->workarea[np->curdesk*4 + 1];
+        sswidth  = np->workarea[np->curdesk*4 + 2];
+        ssheight = np->workarea[np->curdesk*4 + 3];
+    } else {
+        minx = miny = 0;
+        sswidth  = gdk_screen_get_width( gtk_widget_get_screen(np->topgwin) );
+        ssheight = gdk_screen_get_height( gtk_widget_get_screen(np->topgwin) );
+    }
+
+    if (np->edge == EDGE_TOP || np->edge == EDGE_BOTTOM) {
+        np->aw = np->width;
+        np->ax = minx;
+        calculate_width(sswidth, np->widthtype, np->allign, np->margin,
+              &np->aw, &np->ax);
+        np->ah = ((( ! np->autohide) || (np->visible)) ? np->height : np->height_when_hidden);
+        np->ay = miny + ((np->edge == EDGE_TOP) ? 0 : (ssheight - np->ah));
+
+    } else {
+        miny += margin_top;
+        ssheight -= (margin_top + margin_bottom);
+
+        np->ah = np->width;
+        np->ay = miny;
+        calculate_width(ssheight, np->widthtype, np->allign, np->margin,
+              &np->ah, &np->ay);
+        np->aw = ((( ! np->autohide) || (np->visible)) ? np->height : np->height_when_hidden);
+        np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));
+    }
+    //g_debug("%s - x=%d y=%d w=%d h=%d\n", __FUNCTION__, np->ax, np->ay, np->aw, np->ah);
+    RET();
+}
+
+/* Calculate panel size and position. */
 
 void
 panel_calculate_position(Panel *p)
@@ -552,6 +637,25 @@ panel_calculate_position(Panel *p)
     calculate_position(p, margin_top, margin_bottom);
 }
 
+/* Force panel geometry update. */
+
+void
+update_panel_geometry(Panel* p)
+{
+    /* Guard against being called early in panel creation. */
+    if (p->topgwin != NULL)
+    {
+        panel_calculate_position(p);
+        gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
+        gdk_window_move(p->topgwin->window, p->ax, p->ay);
+        panel_update_background(p);
+        panel_establish_autohide(p);
+        panel_set_wm_strut(p);
+    }
+}
+
+/* size-request signal handler */
+
 static gint
 panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
 {
@@ -567,6 +671,8 @@ panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
 
     RET( TRUE );
 }
+
+/* size-allocate signal handler */
 
 static gint
 panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
@@ -589,6 +695,8 @@ panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 
     RET(TRUE);
 }
+
+/* configure-event signal handler */
 
 static  gboolean
 panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
@@ -621,6 +729,8 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
 
     RET(FALSE);
 }
+
+/******************************************************************************/
 
 static gint
 panel_popupmenu_configure(GtkWidget *widget, gpointer user_data)

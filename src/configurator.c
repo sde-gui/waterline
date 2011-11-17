@@ -68,6 +68,7 @@ static void modify_plugin( GtkTreeView* view );
 /* defined in  panel.c */
 
 extern void panel_calculate_position(Panel *p);
+extern void update_panel_geometry(Panel* p);
 
 /* defined in  generic_config_dlg.c */
 
@@ -91,21 +92,6 @@ response_event(GtkDialog *widget, gint arg1, Panel* panel )
         break;
     }
     return;
-}
-
-void
-update_panel_geometry( Panel* p )
-{
-    /* Guard against being called early in panel creation. */
-    if (p->topgwin != NULL)
-    {
-        panel_calculate_position(p);
-        gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
-        gdk_window_move(p->topgwin->window, p->ax, p->ay);
-        panel_update_background(p);
-        panel_establish_autohide(p);
-        panel_set_wm_strut(p);
-    }
 }
 
 static gboolean edge_selector(Panel* p, int edge)

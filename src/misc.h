@@ -48,7 +48,6 @@ enum {
     CONF_TYPE_SET_PROPERTY
 };
 
-void calculate_position(Panel *np, int margin_top, int margin_bottom);
 gchar *expand_tilda(gchar *file);
 
 GtkWidget *_gtk_image_new_from_file_scaled(const gchar *file, gint width,

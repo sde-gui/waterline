@@ -337,6 +337,9 @@ static void icon_grid_size_allocate(GtkWidget * widget, GtkAllocation * allocati
 /* Initiate a resize. */
 static void icon_grid_demand_resize(IconGrid * ig)
 {
+    if (ig->to_be_removed)
+        return;
+
     ENTER;
     ig->children_changed = TRUE;
     icon_grid_geometry(ig, GEOMETRY_DEMAND_RESIZE);
@@ -649,3 +652,7 @@ extern void icon_grid_resume_updates(IconGrid * ig)
     }
 }
 
+void icon_grid_to_be_removed(IconGrid * ig)
+{
+    ig->to_be_removed = TRUE;
+}

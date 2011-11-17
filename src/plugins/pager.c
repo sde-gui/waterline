@@ -752,6 +752,8 @@ static void pager_destructor(Plugin * p)
 {
     PagerPlugin * pg = (PagerPlugin *) p->priv;
 
+    icon_grid_to_be_removed(pg->icon_grid);
+
     /* Remove GDK event filter. */
     gdk_window_remove_filter(NULL, (GdkFilterFunc) pager_event_filter, pg);
 

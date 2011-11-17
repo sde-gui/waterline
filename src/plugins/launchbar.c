@@ -449,6 +449,8 @@ static void launchbar_destructor(Plugin * p)
 {
     LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
 
+    icon_grid_to_be_removed(lb->icon_grid);
+
     /* Free the launchbar. */
     g_slist_foreach(lb->buttons, (GFunc) launchbutton_free, NULL);
     icon_grid_free(lb->icon_grid);

@@ -3809,6 +3809,8 @@ static void taskbar_destructor(Plugin * p)
     if (tb->desktop_names != NULL)
         g_strfreev(tb->desktop_names);
 
+    icon_grid_to_be_removed(tb->icon_grid);
+
     /* Deallocate task list. */
     while (tb->task_list != NULL)
         task_delete(tb, tb->task_list, TRUE);

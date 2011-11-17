@@ -674,6 +674,8 @@ static void tray_destructor(Plugin * p)
     while (tr->messages != NULL)
         balloon_message_advance(tr, TRUE, FALSE);
 
+    icon_grid_to_be_removed(tr->icon_grid);
+
     /* Deallocate client list. */
     while (tr->client_list != NULL)
         client_delete(tr, tr->client_list, TRUE);

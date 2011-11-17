@@ -65,6 +65,8 @@ typedef struct _icon_grid {
     int deferred;
     int deferred_resize;
 
+    gboolean to_be_removed;
+
     guint placement_idle_cb;
 } IconGrid;
 
@@ -91,5 +93,7 @@ extern void icon_grid_free(IconGrid * ig);	/* Free the icon grid */
 
 extern void icon_grid_defer_updates(IconGrid * ig);
 extern void icon_grid_resume_updates(IconGrid * ig);
+
+extern void icon_grid_to_be_removed(IconGrid * ig);
 
 #endif

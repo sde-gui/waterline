@@ -216,8 +216,9 @@ static void asound_set_volume(VolumeALSAPlugin * vol, int volume)
 {
     if (vol->master_element != NULL)
     {
-        snd_mixer_selem_set_playback_volume(vol->master_element, SND_MIXER_SCHN_FRONT_LEFT, volume);
-        snd_mixer_selem_set_playback_volume(vol->master_element, SND_MIXER_SCHN_FRONT_RIGHT, volume);
+//        snd_mixer_selem_set_playback_volume(vol->master_element, SND_MIXER_SCHN_FRONT_LEFT, volume);
+//        snd_mixer_selem_set_playback_volume(vol->master_element, SND_MIXER_SCHN_FRONT_RIGHT, volume);
+          snd_mixer_selem_set_playback_volume_all(vol->master_element, volume);
     }
 }
 

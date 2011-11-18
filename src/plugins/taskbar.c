@@ -185,6 +185,8 @@ typedef struct _task_class {
     int visible_count;				/* Count of tasks that are visible in current desktop */
     int timestamp;
 
+    int manual_order;
+
     gboolean fold_by_count;
 
     gboolean unfold;
@@ -433,7 +435,7 @@ static GdkPixbuf * apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask);
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 static void task_update_icon(Task * tk, Atom source);
 
-static void task_reorder(Task * tk);
+static void task_reorder(Task * tk, gboolean and_others);
 static void task_update_grouping(Task * tk, int group_by);
 static void task_update_sorting(Task * tk, int sort_by);
 
@@ -1077,11 +1079,20 @@ static void task_set_class(Task * tk)
     g_assert(tk != NULL);
 
     gchar * class_name = NULL;
-    
-    if (tk->override_class_name != (char*) -1) {
-         class_name = g_strdup(tk->override_class_name);
+
+    TaskbarPlugin * tb = tk->tb;
+
+    if (tb->rearrange) {
+        /* FIXME: Dirty hack for current implementation of task_reorder. */
+        gchar * class_name_1 = task_get_res_class(tk);
+        gchar * class_name_2 = task_get_desktop_name(tk, NULL);
+        class_name = g_strdup_printf("%s %s", class_name_1, class_name_2);
+        g_free(class_name_1);
+        g_free(class_name_2);
+    } else if (tk->override_class_name != (char*) -1) {
+        class_name = task_get_desktop_name(tk, NULL);
     } else {
-        switch (tk->tb->_group_by) {
+        switch (tb->_group_by) {
             case GROUP_BY_CLASS:
                 class_name = task_get_res_class(tk); break;
             case GROUP_BY_WORKSPACE:
@@ -1101,7 +1112,7 @@ static void task_set_class(Task * tk)
         DBG("Task %s has class name %s\n", tk->name, class_name);
 
         gboolean name_consumed;
-        TaskClass * tc = taskbar_enter_class(tk->tb, class_name, &name_consumed);
+        TaskClass * tc = taskbar_enter_class(tb, class_name, &name_consumed);
         if ( ! name_consumed)
             g_free(class_name);
 
@@ -1130,7 +1141,7 @@ static void task_set_class(Task * tk)
             tk->task_class = tc;
 
             /* Recompute group visibility. */
-            recompute_group_visibility_for_class(tk->tb, tc);
+            recompute_group_visibility_for_class(tb, tc);
         }
     }
 
@@ -2039,6 +2050,46 @@ static void task_group_menu_destroy(TaskbarPlugin * tb)
     }
 }
 
+#if 0
+static void debug_print_tasklist(Task * tk, char * text)
+{
+    Task* tk_cursor;
+    TaskClass * tc = NULL;
+
+    g_print("%s => ", text);
+
+    gboolean space = FALSE;
+    for (tk_cursor = tk->tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+    {
+        if (tc != tk_cursor->task_class)
+        {
+            if (tc)
+                g_print(") ");
+            if (tk_cursor->task_class)
+                g_print("(");
+            tc = tk_cursor->task_class;
+            space = FALSE;
+        }
+
+        if (space)
+            g_print(" ");
+
+        if (tk_cursor != tk)
+            g_print(" %2d ", tk_cursor->manual_order);
+        else
+            g_print("[%2d]", tk_cursor->manual_order);
+        space = TRUE;
+    }
+
+    if (tc)
+        g_print(")");
+
+    g_print("\n");
+}
+#else
+#define debug_print_tasklist(tk, text)
+#endif
+
 static gboolean taskbar_button_motion_notify_event(GtkWidget * widget, GdkEventMotion * event, Task * tk)
 {
     if (tk->tb->button_pressed_task != tk)
@@ -2088,20 +2139,10 @@ static gboolean taskbar_button_motion_notify_event(GtkWidget * widget, GdkEventM
 
     if (old_manual_order != tk->manual_order)
     {
-/*
-g_print("1 => ");
-for (tk_cursor = tk->tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
-{
-    if (tk_cursor != tk)
-        g_print("%d ", tk_cursor->manual_order);
-    else
-        g_print("[%d] ", tk_cursor->manual_order);
-}
-g_print("\n");
-*/
-        g_print("%d, %s\n", tk->manual_order, tk->name);
+        debug_print_tasklist(tk, "1");
         tk->tb->moving_task_now = TRUE;
-        task_reorder(tk);
+        task_reorder(tk, FALSE);
+        debug_print_tasklist(tk, "3");
         taskbar_redraw(tk->tb);
     }
 
@@ -2502,7 +2543,14 @@ static int task_compare(Task * tk1, Task * tk2)
     
     if (tk1->tb->rearrange)
     {
-        result = tk2->manual_order - tk1->manual_order;
+        if (tk1->tb->grouped_tasks)
+        {
+            int w1 = tk1->task_class ? tk1->task_class->manual_order : tk1->manual_order;
+            int w2 = tk2->task_class ? tk2->task_class->manual_order : tk2->manual_order;
+            result = w2 - w1;
+        }
+        if (result == 0)
+            result = tk2->manual_order - tk1->manual_order;
         return result;
     }
 
@@ -2579,65 +2627,131 @@ static int task_compare(Task * tk1, Task * tk2)
     return result;
 }
 
-static void task_reorder(Task * tk)
+/* FIXME: We MUST use double linked list instead of this crap. */
+static Task * task_get_prev(Task * tk)
 {
-    Task* tk_prev_old = NULL;
-    Task* tk_prev_new = NULL;
-    Task* tk_cursor;
-    int tk_prev_new_found = 0;
-    for (tk_cursor = tk->tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+    TaskbarPlugin * tb = tk->tb;
+
+    Task* tk_cursor = NULL;
+    if (tb->task_list == tk)
+        return NULL;
+    
+    for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
     {
-         if (tk_cursor == tk)
-             continue;
-         if (!tk_prev_new_found)
-         {
-             DBG("[0x%x] [\"%s\" (0x%x), \"%s\" (0x%x)] => %d\n", tk->tb, tk->name,tk, tk_cursor->name,tk_cursor, task_compare(tk, tk_cursor));
-
-             if (task_compare(tk, tk_cursor) <= 0)
-                 tk_prev_new = tk_cursor;
-             else
-                 tk_prev_new_found = 1;
-         }
-         if (tk_cursor->task_flink == tk)
-             tk_prev_old = tk_cursor;
-
-         if (tk_prev_new_found && tk_prev_old)
-             break;
+        if (tk_cursor->task_flink == tk)
+            return tk_cursor;
     }
+    return NULL;
+}
+
+static void task_insert_after(Task * tk, Task * tk_prev_new)
+{
+    TaskbarPlugin * tb = tk->tb;
+
+    Task* tk_prev_old = task_get_prev(tk);
 
     if (tk_prev_new) {
         if (tk_prev_old != tk_prev_new) {
             if (tk_prev_old)
                 tk_prev_old->task_flink = tk->task_flink;
             else
-                tk->tb->task_list = tk->task_flink;
+                tb->task_list = tk->task_flink;
             tk->task_flink = tk_prev_new->task_flink;
             tk_prev_new->task_flink = tk;
 
-            DBG("[0x%x] task \"%s\" (0x%x) moved after \"%s\" (0x%x)\n", tk->tb, tk->name, tk, tk_prev_new->name, tk_prev_new);
+            DBG("[0x%x] task \"%s\" (0x%x) moved after \"%s\" (0x%x)\n", tb, tk->name, tk, tk_prev_new->name, tk_prev_new);
 
-            icon_grid_place_child_after(tk->tb->icon_grid, tk->button, tk_prev_new->button);
+            icon_grid_place_child_after(tb->icon_grid, tk->button, tk_prev_new->button);
         } else {
-            DBG("[0x%x] task \"%s\" (0x%x) is in rigth place\n", tk->tb, tk->name, tk);
+            DBG("[0x%x] task \"%s\" (0x%x) is in rigth place\n", tb, tk->name, tk);
         }
     } else {
         if (tk_prev_old)
             tk_prev_old->task_flink = tk->task_flink;
         else
-            tk->tb->task_list = tk->task_flink;
+            tb->task_list = tk->task_flink;
 
-        tk->task_flink = tk->tb->task_list;
-        tk->tb->task_list = tk;
+        tk->task_flink = tb->task_list;
+        tb->task_list = tk;
 
-        DBG("[0x%x] task \"%s\" (0x%x) moved to head\n", tk->tb, tk->name, tk);
+        DBG("[0x%x] task \"%s\" (0x%x) moved to head\n", tb, tk->name, tk);
 
-        icon_grid_place_child_after(tk->tb->icon_grid, tk->button, NULL);
+        icon_grid_place_child_after(tb->icon_grid, tk->button, NULL);
     }
 
-    if (tk->tb->rearrange)
+}
+
+static void task_reorder(Task * tk, gboolean and_others)
+{
+    Task* tk_cursor;
+    TaskbarPlugin * tb = tk->tb;
+
+    /*
+      FIXME:
+      There is nothing to do. We need to switch to Model-view-controller model
+      and also implement a new widget container.
+    */
+
+    if (tb->rearrange && tb->grouped_tasks)
+    {
+        TaskClass * tc;
+        for (tc = tb->task_class_list; tc != NULL; tc = tc->task_class_flink)
+        {
+            int class_manual_order = INT_MAX;
+            if (tc == tk->task_class)
+            {
+                class_manual_order = tk->manual_order;
+            }
+            else
+            {
+                for (tk_cursor = tc->task_class_head; tk_cursor != NULL; tk_cursor = tk_cursor->task_class_flink)
+                {
+                    if (tk_cursor->manual_order < class_manual_order)
+                        class_manual_order = tk_cursor->manual_order;
+                }
+            }
+            tc->manual_order = class_manual_order;
+        }
+        and_others = TRUE;
+    }
+
+    debug_print_tasklist(tk, "2");
+
+
+again: ;
+    
+    Task* tk_prev_new = NULL;
+    for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+    {
+        if (tk_cursor == tk)
+            continue;
+        DBG("[0x%x] [\"%s\" (0x%x), \"%s\" (0x%x)] => %d\n", tb, tk->name,tk, tk_cursor->name,tk_cursor, task_compare(tk, tk_cursor));
+
+        if (task_compare(tk, tk_cursor) > 0)
+            break;
+        tk_prev_new = tk_cursor;
+    }
+
+    task_insert_after(tk, tk_prev_new);
+
+    if (and_others)
+    {
+        tk = tk->tb->task_list;
+        while (tk && tk->task_flink)
+        {
+             if (task_compare(tk, tk->task_flink) < 0)
+             {
+                 tk = tk->task_flink;
+                 goto again;
+             }
+             tk = tk->task_flink;
+        }
+    }
+
+    if (tb->rearrange)
     {
         int manual_order = 0;
-        for (tk_cursor = tk->tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+        for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
         {
             tk_cursor->manual_order = manual_order++;
         }
@@ -2651,7 +2765,7 @@ static void task_update_grouping(Task * tk, int group_by)
     if (tk->tb->_group_by == group_by || group_by < 0)
     {
         task_set_class(tk);
-        task_reorder(tk);
+        task_reorder(tk, FALSE);
         taskbar_redraw(tk->tb);
     }
 //    RET();
@@ -2665,7 +2779,7 @@ static void task_update_sorting(Task * tk, int sort_by)
     {
         if (tk->tb->sort_by[i] == sort_by || sort_by < 0)
         {
-           task_reorder(tk);
+           task_reorder(tk, FALSE);
            taskbar_redraw(tk->tb);
            break;
         }
@@ -2719,7 +2833,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     tk = g_new0(Task, 1);
                     tk->timestamp = ++tb->task_timestamp;
                     tk->focus_timestamp = 0;
-                    tk->manual_order = INT_MAX;
+                    tk->manual_order = INT_MAX / 4;
                     tk->click_on = NULL;
                     tk->present_in_client_list = TRUE;
                     tk->win = client_list[i];
@@ -2755,7 +2869,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                         tk->task_flink = tk_pred->task_flink;
                         tk_pred->task_flink = tk;
                     }
-                    task_reorder(tk);
+                    task_reorder(tk, FALSE);
                     icon_grid_set_visible(tb->icon_grid, tk->button, TRUE);
                     redraw = TRUE;
                 }
@@ -3641,6 +3755,12 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     }
 
     sort_settings_hash += tb->rearrange ? 0 : 10000;
+
+    if (tb->rearrange)
+    {
+        tb->manual_grouping = FALSE;
+        tb->group_by = GROUP_BY_CLASS;
+    }
 
     tb->grouped_tasks = tb->mode == MODE_GROUP;
     tb->single_window = tb->mode == MODE_SINGLE_WINDOW;

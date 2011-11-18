@@ -204,7 +204,7 @@ typedef struct _task {
     Atom name_source;				/* Atom that is the source of taskbar label */
     gboolean name_changed;
 
-    
+
     TaskClass * task_class;			/* Task class (group) */
     struct _task * task_class_flink;		/* Forward link to task in same class */
     char * override_class_name;
@@ -241,6 +241,7 @@ typedef struct _task {
 
     int focus_timestamp;
 
+    int manual_order;
 
     GtkWidget* click_on;
 
@@ -339,6 +340,8 @@ typedef struct _taskbar {
     int sort_by[3];
     gboolean sort_reverse[3];
 
+    gboolean rearrange;
+
     gboolean highlight_modified_titles;		/* User preference: highlight modified titles */
 
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
@@ -374,6 +377,7 @@ typedef struct _taskbar {
 
 
     Task * button_pressed_task;
+    gboolean moving_task_now;
 
 
     Atom a_OB_WM_STATE_UNDECORATED;
@@ -2035,6 +2039,75 @@ static void task_group_menu_destroy(TaskbarPlugin * tb)
     }
 }
 
+static gboolean taskbar_button_motion_notify_event(GtkWidget * widget, GdkEventMotion * event, Task * tk)
+{
+    if (tk->tb->button_pressed_task != tk)
+        return FALSE;
+
+    int old_manual_order = tk->manual_order;
+
+    Task* tk_cursor;
+    int manual_order = 0;
+    gboolean before = TRUE;
+    for (tk_cursor = tk->tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+    {
+        if (tk_cursor == tk)
+            continue;
+
+        if (!task_is_visible(tk_cursor))
+        {
+            tk_cursor->manual_order = manual_order++;
+            continue;
+        }
+
+        int x = 0;
+        gtk_widget_get_pointer(tk_cursor->button, &x, NULL);
+        int mid = tk_cursor->button_alloc.width / 2;
+        if (mid < 0)
+            mid = 0;
+        if (x >= mid)
+        {
+            tk_cursor->manual_order = manual_order++;
+            continue;
+        }
+
+        if (before)
+        {
+            tk->manual_order = manual_order++;
+            before = FALSE;
+        }
+
+        tk_cursor->manual_order = manual_order++;
+    }
+
+    if (before)
+    {
+        tk->manual_order = manual_order++;
+        before = FALSE;
+    }
+
+    if (old_manual_order != tk->manual_order)
+    {
+/*
+g_print("1 => ");
+for (tk_cursor = tk->tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+{
+    if (tk_cursor != tk)
+        g_print("%d ", tk_cursor->manual_order);
+    else
+        g_print("[%d] ", tk_cursor->manual_order);
+}
+g_print("\n");
+*/
+        g_print("%d, %s\n", tk->manual_order, tk->name);
+        tk->tb->moving_task_now = TRUE;
+        task_reorder(tk);
+        taskbar_redraw(tk->tb);
+    }
+
+    return TRUE;
+}
+
 /* Handler for "button-press-event" event from taskbar button,
  * or "activate" event from grouped-task popup menu item. */
 static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * event, Task * tk, gboolean popup_menu)
@@ -2085,14 +2158,17 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
     if (popup_menu) {
         click = TRUE;
         tb->button_pressed_task = NULL;
+        tb->moving_task_now = FALSE;
     } else if ( (action_opens_menu && tb->menu_actions_click_press) || (!action_opens_menu && tb->other_actions_click_press) ) {
         if (event->type == GDK_BUTTON_PRESS)
             click = TRUE;
     } else if (event->type == GDK_BUTTON_PRESS) {
         tb->button_pressed_task = tk;
+        tb->moving_task_now = FALSE;
     } else if (event->type == GDK_BUTTON_RELEASE) {
-        click = tk->entered_state && tb->button_pressed_task == tk;
+        click = tk->entered_state && tb->button_pressed_task == tk && !tb->moving_task_now;
         tb->button_pressed_task = NULL;
+        tb->moving_task_now = FALSE;
     }
 
     if (!click)
@@ -2369,12 +2445,15 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
     /* Connect signals to the button. */
     g_signal_connect(tk->button, "button_press_event", G_CALLBACK(taskbar_button_press_event), (gpointer) tk);
     g_signal_connect(tk->button, "button_release_event", G_CALLBACK(taskbar_button_release_event), (gpointer) tk);
+    g_signal_connect(tk->button, "motion-notify-event", G_CALLBACK(taskbar_button_motion_notify_event), (gpointer) tk);
     g_signal_connect(G_OBJECT(tk->button), "drag-motion", G_CALLBACK(taskbar_button_drag_motion), (gpointer) tk);
     g_signal_connect(G_OBJECT(tk->button), "drag-leave", G_CALLBACK(taskbar_button_drag_leave), (gpointer) tk);
     g_signal_connect_after(G_OBJECT (tk->button), "enter", G_CALLBACK(taskbar_button_enter), (gpointer) tk);
     g_signal_connect_after(G_OBJECT (tk->button), "leave", G_CALLBACK(taskbar_button_leave), (gpointer) tk);
     g_signal_connect_after(G_OBJECT(tk->button), "scroll-event", G_CALLBACK(taskbar_button_scroll_event), (gpointer) tk);
     g_signal_connect(tk->button, "size-allocate", G_CALLBACK(taskbar_button_size_allocate), (gpointer) tk);
+
+    gtk_widget_add_events(tk->button, GDK_POINTER_MOTION_MASK);
 
     /* Create a box to contain the application icon and window title. */
     tk->container = gtk_hbox_new(FALSE, 1);
@@ -2420,6 +2499,13 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
 static int task_compare(Task * tk1, Task * tk2)
 {
     int result = 0;
+    
+    if (tk1->tb->rearrange)
+    {
+        result = tk2->manual_order - tk1->manual_order;
+        return result;
+    }
+
     if (tk1->tb->grouped_tasks) switch (tk1->tb->_group_by)
     {
         case GROUP_BY_WORKSPACE:
@@ -2547,6 +2633,15 @@ static void task_reorder(Task * tk)
 
         icon_grid_place_child_after(tk->tb->icon_grid, tk->button, NULL);
     }
+
+    if (tk->tb->rearrange)
+    {
+        int manual_order = 0;
+        for (tk_cursor = tk->tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+        {
+            tk_cursor->manual_order = manual_order++;
+        }
+    }
 }
 
 static void task_update_grouping(Task * tk, int group_by)
@@ -2624,6 +2719,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     tk = g_new0(Task, 1);
                     tk->timestamp = ++tb->task_timestamp;
                     tk->focus_timestamp = 0;
+                    tk->manual_order = INT_MAX;
                     tk->click_on = NULL;
                     tk->present_in_client_list = TRUE;
                     tk->win = client_list[i];
@@ -3544,6 +3640,8 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
         sort_settings_hash += v;
     }
 
+    sort_settings_hash += tb->rearrange ? 0 : 10000;
+
     tb->grouped_tasks = tb->mode == MODE_GROUP;
     tb->single_window = tb->mode == MODE_SINGLE_WINDOW;
 
@@ -3731,6 +3829,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->sort_reverse[1] = str2num(bool_pair, s.t[1], tb->sort_reverse[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "SortReverse3") == 0)
                     tb->sort_reverse[2] = str2num(bool_pair, s.t[1], tb->sort_reverse[2]);
+                else if (g_ascii_strcasecmp(s.t[0], "RearrangeTasks") == 0)
+                    tb->rearrange = str2num(bool_pair, s.t[1], tb->rearrange);
                 else if (g_ascii_strcasecmp(s.t[0], "Button1Action") == 0)
                     tb->button1_action = str2num(action_pair, s.t[1], tb->button1_action);
                 else if (g_ascii_strcasecmp(s.t[0], "Button2Action") == 0)
@@ -3937,7 +4037,8 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         sort_by_2, (gpointer)&tb->sort_by[1], (GType)CONF_TYPE_ENUM,
         sort_by_3, (gpointer)&tb->sort_by[2], (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
-        
+        _("Rearrange manually"), (gpointer)&tb->rearrange, (GType)CONF_TYPE_BOOL,
+
         _("Bindings"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
 
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
@@ -4009,6 +4110,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "SortReverse1", tb->sort_reverse[0]);
     lxpanel_put_bool(fp, "SortReverse2", tb->sort_reverse[1]);
     lxpanel_put_bool(fp, "SortReverse3", tb->sort_reverse[2]);
+    lxpanel_put_bool(fp, "RearrangeTasks", tb->rearrange);
     lxpanel_put_enum(fp, "Button1Action", tb->button1_action, action_pair);
     lxpanel_put_enum(fp, "Button2Action", tb->button2_action, action_pair);
     lxpanel_put_enum(fp, "Button3Action", tb->button3_action, action_pair);

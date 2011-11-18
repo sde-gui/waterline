@@ -828,7 +828,8 @@ static void task_button_redraw_button_state(Task * tk, TaskbarPlugin * tb)
     }
     else
     {
-        gtk_toggle_button_set_active((GtkToggleButton*)tk->button, tk->focused);
+        gboolean pressed = tk->focused /*|| (tb->button_pressed_task == tk)*/;
+        gtk_toggle_button_set_active((GtkToggleButton*)tk->button, pressed);
         gtk_button_set_relief(GTK_BUTTON(tk->button), GTK_RELIEF_NORMAL);
     }
 }
@@ -2211,6 +2212,8 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
         tb->button_pressed_task = NULL;
         tb->moving_task_now = FALSE;
     }
+
+    task_button_redraw_button_state(tk, tb);
 
     if (!click)
         return TRUE;

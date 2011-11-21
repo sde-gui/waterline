@@ -44,6 +44,7 @@ typedef struct {
     char * action;				/* Command to execute on a click */
     gboolean bold;				/* True if bold font */
     gboolean icon_only;				/* True if icon only (no clock value) */
+    gboolean center_text;
     guint timer;				/* Timer for periodic update */
     enum {
 	AWAITING_FIRST_CHANGE,			/* Experimenting to determine interval, waiting for first change */
@@ -311,6 +312,8 @@ static int dclock_constructor(Plugin * p, char ** fp)
                     dc->bold = str2num(bool_pair, s.t[1], 0);
                 else if (g_ascii_strcasecmp(s.t[0], "IconOnly") == 0)
                     dc->icon_only = str2num(bool_pair, s.t[1], 0);
+                else if (g_ascii_strcasecmp(s.t[0], "CenterText") == 0)
+                    dc->center_text = str2num(bool_pair, s.t[1], 0);
                 else
                     ERR( "dclock: unknown var %s\n", s.t[0]);
             }
@@ -394,6 +397,11 @@ static void dclock_apply_configuration(Plugin * p)
         gtk_widget_hide(dc->clock_icon);
     }
 
+    if (dc->center_text)
+        gtk_label_set_justify(dc->clock_label, GTK_JUSTIFY_CENTER);
+    else
+        gtk_label_set_justify(dc->clock_label, GTK_JUSTIFY_LEFT);
+
     /* Rerun the experiment to determine update interval and update the display. */
     g_free(dc->prev_clock_value);
     g_free(dc->prev_tooltip_value);
@@ -427,6 +435,7 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         _("Action when clicked (default: display calendar)"), &dc->action, (GType)CONF_TYPE_STR,
         _("Bold font"), &dc->bold, (GType)CONF_TYPE_BOOL,
         _("Tooltip only"), &dc->icon_only, (GType)CONF_TYPE_BOOL,
+        _("Center text"), &dc->center_text, CONF_TYPE_BOOL,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
@@ -441,6 +450,7 @@ static void dclock_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_str(fp, "Action", dc->action);
     lxpanel_put_int(fp, "BoldFont", dc->bold);
     lxpanel_put_int(fp, "IconOnly", dc->icon_only);
+    lxpanel_put_int(fp, "CenterText", dc->center_text);    
 }
 
 /* Callback when panel configuration changes. */

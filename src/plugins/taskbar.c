@@ -3768,6 +3768,8 @@ static void taskbar_build_gui(Plugin * p)
     GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     tb->icon_grid = icon_grid_new(p->panel, p->pwid, bo, tb->task_width_max, tb->icon_size, tb->spacing, 0, p->panel->height);
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
+    icon_grid_use_separators(tb->icon_grid, tb->use_group_separators);
+    icon_grid_set_separator_size(tb->icon_grid, tb->group_separator_size);
     taskbar_update_style(tb);
 
     /* Add GDK event filter. */

@@ -655,6 +655,8 @@ static void taskbar_recompute_fold_by_count(TaskbarPlugin * tb)
     if (!tb->grouped_tasks)
         return;
 
+    ENTER;
+
     TaskClass * tc;
     
     for (tc = tb->task_class_list; tc != NULL; tc = tc->task_class_flink)
@@ -675,11 +677,11 @@ static void taskbar_recompute_fold_by_count(TaskbarPlugin * tb)
         for (tc = tb->task_class_list; tc != NULL; tc = tc->task_class_flink)
         {
             int visible_count = tc->visible_count;
-            if (task_class_is_folded(tb, tc) && visible_count > 1)
+            if (visible_count > 1 && task_class_is_folded(tb, tc))
                 visible_count = 1;
 
             total_visible_count += visible_count;
-            if (visible_count > max_visible_count)
+            if (visible_count > max_visible_count && !tc->fold_by_count)
             {
                 max_tc = tc;
                 max_visible_count = visible_count;
@@ -693,6 +695,8 @@ static void taskbar_recompute_fold_by_count(TaskbarPlugin * tb)
             recompute_group_visibility_for_class(tb, max_tc);
         }
     } while (total_visible_count > tb->_panel_fold_threshold && max_visible_count > 1) ;
+
+    RET();
 }
 
 /******************************************************************************/
@@ -862,6 +866,8 @@ static void task_button_redraw(Task * tk)
 {
     TaskbarPlugin * tb = tk->tb;
 
+    ENTER;
+
     if (task_is_visible(tk))
     {
         task_button_redraw_button_state(tk, tb);
@@ -872,6 +878,8 @@ static void task_button_redraw(Task * tk)
     {
         icon_grid_set_visible(tb->icon_grid, tk->button, FALSE);
     }
+
+    RET();
 }
 
 /* Redraw all tasks in the taskbar. */
@@ -2553,6 +2561,8 @@ static void taskbar_update_separators(TaskbarPlugin * tb)
     if (!tb->use_group_separators)
         return;
 
+    ENTER;
+
     Task * tk_cursor;
     Task * tk_prev = NULL;
 
@@ -2572,6 +2582,8 @@ static void taskbar_update_separators(TaskbarPlugin * tb)
         }
         tk_prev = tk_cursor;
     }
+
+    RET();
 }
 
 /******************************************************************************/

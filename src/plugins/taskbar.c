@@ -247,6 +247,7 @@ typedef struct _task {
 
     GtkWidget* click_on;
 
+    gboolean separator;
     
     int allocated_icon_size;
     int icon_size;
@@ -330,6 +331,9 @@ typedef struct _taskbar {
     
     gboolean use_urgency_hint;			/* User preference: windows with urgency will flash */
     gboolean flat_button;			/* User preference: taskbar buttons have visible background */
+
+    gboolean use_group_separators;
+    int group_separator_size;
     
     int mode;                                   /* User preference: view mode */
     int group_fold_threshold;                   /* User preference: threshold for fold grouped tasks into one button */
@@ -367,6 +371,8 @@ typedef struct _taskbar {
 
     gboolean show_mapped_prev;
     gboolean show_iconified_prev;
+
+    gboolean use_group_separators_prev;
 
     int sort_settings_hash;
 
@@ -414,6 +420,8 @@ static gboolean task_is_visible(Task * tk);
 
 static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass * tc);
 static void recompute_group_visibility_on_current_desktop(TaskbarPlugin * tb);
+
+static void taskbar_update_separators(TaskbarPlugin * tb);
 
 static void task_draw_label(Task * tk);
 static void task_button_redraw(Task * tk);
@@ -881,6 +889,8 @@ static void taskbar_redraw(TaskbarPlugin * tb)
     Task * tk;
     for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         task_button_redraw(tk);
+
+    taskbar_update_separators(tb);
 
     icon_grid_resume_updates(tb->icon_grid);
 
@@ -2538,6 +2548,34 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
 
 /******************************************************************************/
 
+static void taskbar_update_separators(TaskbarPlugin * tb)
+{
+    if (!tb->use_group_separators)
+        return;
+
+    Task * tk_cursor;
+    Task * tk_prev = NULL;
+
+    for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+    {
+        if (!task_is_visible(tk_cursor))
+            continue;
+
+        if (tk_prev)
+        {
+            int separator = tk_prev->task_class != tk_cursor->task_class;
+            if (separator != tk_prev->separator)
+            {
+                icon_grid_set_separator(tb->icon_grid, tk_prev->button, separator);
+                tk_prev->separator = separator;
+            }
+        }
+        tk_prev = tk_cursor;
+    }
+}
+
+/******************************************************************************/
+
 /* Task reordering. */
 
 static int task_compare(Task * tk1, Task * tk2)
@@ -2759,6 +2797,7 @@ again: ;
             tk_cursor->manual_order = manual_order++;
         }
     }
+
 }
 
 static void task_update_grouping(Task * tk, int group_by)
@@ -3800,10 +3839,19 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
 
     gboolean recompute_visibility = tb->_unfold_focused_group != unfold_focused_group;
     recompute_visibility |= tb->_show_single_group != show_single_group;
+    recompute_visibility |= tb->use_group_separators_prev != tb->use_group_separators;
+
+    if (tb->icon_grid)
+    {
+        icon_grid_use_separators(tb->icon_grid, tb->use_group_separators);
+        icon_grid_set_separator_size(tb->icon_grid, tb->group_separator_size);
+    }
+
     if (recompute_visibility)
     {
         tb->_unfold_focused_group = unfold_focused_group;
 	tb->_show_single_group = show_single_group;
+	tb->use_group_separators_prev = tb->use_group_separators;
         recompute_group_visibility_on_current_desktop(tb);
         taskbar_redraw(tb);
     }
@@ -3980,6 +4028,10 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->other_actions_click_press = str2num(action_trigged_by_pair, s.t[1], tb->other_actions_click_press);
                 else if (g_ascii_strcasecmp(s.t[0], "HighlightModifiedTitles") == 0)
                     tb->highlight_modified_titles = str2num(bool_pair, s.t[1], tb->highlight_modified_titles);
+                else if (g_ascii_strcasecmp(s.t[0], "UseGroupSeparators") == 0)
+                    tb->use_group_separators = str2num(bool_pair, s.t[1], tb->use_group_separators);
+                else if (g_ascii_strcasecmp(s.t[0], "GroupSeparatorSize") == 0)
+                    tb->group_separator_size = atoi(s.t[1]);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -4114,6 +4166,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     int min_width_max = 16;
     int max_width_max = 10000;
     int max_spacing = 50;
+    int max_group_separator_size = 50;
 
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     GtkWidget* dlg = create_generic_config_dlg(
@@ -4133,6 +4186,9 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         "int-max-value", (gpointer)&max_width_max, (GType)CONF_TYPE_SET_PROPERTY,
         _("Spacing"), (gpointer)&tb->spacing, (GType)CONF_TYPE_INT,
         "int-max-value", (gpointer)&max_spacing, (GType)CONF_TYPE_SET_PROPERTY,
+        _("Use group separators"), (gpointer)&tb->use_group_separators, (GType)CONF_TYPE_BOOL,
+        _("Group separator size"), (gpointer)&tb->group_separator_size, (GType)CONF_TYPE_INT,
+        "int-max-value", (gpointer)&max_group_separator_size, (GType)CONF_TYPE_SET_PROPERTY,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
         _("Behavior"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
@@ -4247,6 +4303,8 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "MenuActionsTriggeredBy", tb->menu_actions_click_press, action_trigged_by_pair);
     lxpanel_put_enum(fp, "OtherActionsTriggeredBy", tb->other_actions_click_press, action_trigged_by_pair);
     lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
+    lxpanel_put_bool(fp, "UseGroupSeparators", tb->use_group_separators);
+    lxpanel_put_int(fp, "GroupSeparatorSize", tb->group_separator_size);
 }
 
 /* Callback when panel configuration changes. */

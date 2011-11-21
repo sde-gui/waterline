@@ -33,6 +33,7 @@ typedef struct _icon_grid_element {
     GtkWidget * widget;				/* Customer's widget */
     gboolean visible;				/* True if widget is visible */
     gboolean deferred_hide;
+    gboolean separator;
 } IconGridElement;
 
 /* Representative of an icon grid.  This is a manager that packs widgets into a rectangular grid whose size adapts to conditions. */
@@ -54,6 +55,11 @@ typedef struct _icon_grid {
     int rows;					/* Computed layout rows */
     int columns;				/* Computed layout columns */
 
+    gboolean use_separators;
+    int separator_size;
+    int col_separators;
+    int row_separators;
+    
     int requisition_width;			/* Computed preferred width */
     int requisition_height;			/* Computed preferred height */
     gboolean requisition_changed;		/* True if preferred size has been changed since last size-request */
@@ -95,5 +101,9 @@ extern void icon_grid_defer_updates(IconGrid * ig);
 extern void icon_grid_resume_updates(IconGrid * ig);
 
 extern void icon_grid_to_be_removed(IconGrid * ig);
+
+extern void icon_grid_set_separator(IconGrid * ig, GtkWidget * child, gboolean separator);
+extern void icon_grid_use_separators(IconGrid * ig, gboolean use_separators);
+extern void icon_grid_set_separator_size(IconGrid * ig, int separator_size);
 
 #endif

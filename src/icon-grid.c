@@ -65,8 +65,8 @@ static gboolean icon_grid_placement(IconGrid * ig)
     int child_height = ig->child_height;
 
     /* Get the required container geometry if all elements get the client's desired allocation. */
-    int container_width_needed = (ig->columns * (child_width + ig->spacing)) - ig->spacing;
-    int container_height_needed = (ig->rows * (child_height + ig->spacing)) - ig->spacing;
+    int container_width_needed = (ig->columns * (child_width + ig->spacing)) - ig->spacing + ig->separator_size * ig->col_separators;
+    int container_height_needed = (ig->rows * (child_height + ig->spacing)) - ig->spacing + ig->separator_size * ig->row_separators;;
 
     int centering_offset_x = 0;
     int centering_offset_y = 0;
@@ -79,7 +79,7 @@ static gboolean icon_grid_placement(IconGrid * ig)
         int height_delta = ig->container_height - container_height_needed;
 
         if (width_delta < 0) {
-            child_width = (ig->container_width - ((ig->columns - 1) * ig->spacing)) / ig->columns;
+            child_width = (ig->container_width - ((ig->columns - 1) * ig->spacing) - ig->separator_size * ig->col_separators) / ig->columns;
         } else {
             if (ig->expand) {
                 int extra_child_width = width_delta / ig->columns;
@@ -91,7 +91,7 @@ static gboolean icon_grid_placement(IconGrid * ig)
         }
 
         if (height_delta < 0) {
-            child_height = (ig->container_height - ((ig->rows - 1) * ig->spacing)) / ig->rows;
+            child_height = (ig->container_height - ((ig->rows - 1) * ig->spacing) - ig->separator_size * ig->row_separators) / ig->rows;
         } else {
             if (ig->expand) {
                 int extra_child_height = height_delta / ig->rows;
@@ -131,54 +131,70 @@ static gboolean icon_grid_placement(IconGrid * ig)
         ige->deferred_hide = 0;
     }
 
+    gboolean prev_is_separator = FALSE;
+
     /* Reposition each visible child. */
     int x = x_initial;
     int y = centering_offset_y;
     gboolean contains_sockets = FALSE;
+    gboolean first = TRUE;
     for (ige = ig->child_list; ige != NULL; ige = ige->flink)
     {
-        if (ige->visible)
+        if (!ige->visible)
+            continue;
+
+        /* Advance to the next grid position. */
+        if (!first)
         {
-            /* Do necessary operations on the child. */
-            gtk_widget_show(ige->widget);
-            if (((child_width != ige->widget->allocation.width) || (child_height != ige->widget->allocation.height))
-            && (child_width > 0) && (child_height > 0))
-                {
-                GtkAllocation alloc;
-                alloc.x = x;
-                alloc.y = y;
-                alloc.width = child_width;
-                alloc.height = child_height;
-                gtk_widget_size_allocate(ige->widget, &alloc);
-                gtk_widget_queue_resize(ige->widget);		/* Get labels to redraw ellipsized */
-                }
-            gtk_fixed_move(GTK_FIXED(ig->widget), ige->widget, x, y);
-            gtk_widget_queue_draw(ige->widget);
-
-            /* Note if a socket is placed. */
-            if (GTK_IS_SOCKET(ige->widget))
-                contains_sockets = TRUE;
-
-            /* Advance to the next grid position. */
             if (ig->orientation == GTK_ORIENTATION_HORIZONTAL)
             {
                 y += child_height + ig->spacing;
-                if (y >= limit)
+                if (y >= limit || prev_is_separator)
                 {
                     y = centering_offset_y;
                     x += x_delta;
                 }
+                if (prev_is_separator)
+                    x += ig->separator_size;
             }
             else
             {
                 x += x_delta;
-                if ((direction == GTK_TEXT_DIR_RTL) ? (x <= 0) : (x >= limit))
+                if ( ((direction == GTK_TEXT_DIR_RTL) ? (x <= 0) : (x >= limit)) || prev_is_separator)
                 {
                     x = x_initial;
                     y += child_height + ig->spacing;
                 }
+                if (prev_is_separator)
+                    y += ig->separator_size;
             }
         }
+        else
+        {
+            first = FALSE;
+        }
+
+        /* Do necessary operations on the child. */
+        gtk_widget_show(ige->widget);
+        if (((child_width != ige->widget->allocation.width) || (child_height != ige->widget->allocation.height))
+        && (child_width > 0) && (child_height > 0))
+        {
+            GtkAllocation alloc;
+            alloc.x = x;
+            alloc.y = y;
+            alloc.width = child_width;
+            alloc.height = child_height;
+            gtk_widget_size_allocate(ige->widget, &alloc);
+            gtk_widget_queue_resize(ige->widget);		/* Get labels to redraw ellipsized */
+        }
+        gtk_fixed_move(GTK_FIXED(ig->widget), ige->widget, x, y);
+        gtk_widget_queue_draw(ige->widget);
+
+        /* Note if a socket is placed. */
+        if (GTK_IS_SOCKET(ige->widget))
+            contains_sockets = TRUE;
+
+        prev_is_separator = ige->separator && ig->use_separators;
     }
 
     /* Redraw the container. */
@@ -213,6 +229,9 @@ static void icon_grid_geometry(IconGrid * ig, int reason)
    int original_requisition_width = ig->requisition_width;
    int original_requisition_height = ig->requisition_height;
 
+   ig->col_separators = 0;
+   ig->row_separators = 0;
+
    int target_dimension = ig->target_dimension;
    if (ig->orientation == GTK_ORIENTATION_HORIZONTAL)
     {
@@ -225,7 +244,37 @@ static void icon_grid_geometry(IconGrid * ig, int reason)
             ig->rows = (target_dimension + ig->spacing - ig->border * 2) / (ig->child_height + ig->spacing);
         if (ig->rows == 0)
             ig->rows = 1;
-        ig->columns = (visible_children + (ig->rows - 1)) / ig->rows;
+
+        if (ig->use_separators)
+        {
+            ig->columns = 0;
+            int childs_in_chunk = 0;
+            IconGridElement * child;
+            for (child = ig->child_list; child;  child = child->flink)
+            {
+                if (!child->visible)
+                    continue;
+
+                childs_in_chunk++;
+                if (child->separator)
+                {
+                    if (childs_in_chunk)
+                    {
+                        ig->col_separators++;
+                        ig->columns += (childs_in_chunk + (ig->rows - 1)) / ig->rows;
+                    }
+                    childs_in_chunk = 0;
+                }
+            }
+
+            if (childs_in_chunk)
+                ig->columns += (childs_in_chunk + (ig->rows - 1)) / ig->rows;
+        }
+        else
+        {
+            ig->columns = (visible_children + (ig->rows - 1)) / ig->rows;
+        }
+
         if ((ig->columns == 1) && (ig->rows > visible_children))
             ig->rows = visible_children;
     }
@@ -240,7 +289,37 @@ static void icon_grid_geometry(IconGrid * ig, int reason)
             ig->columns = (target_dimension + ig->spacing - ig->border * 2) / (ig->child_width + ig->spacing);
         if (ig->columns == 0)
             ig->columns = 1;
-        ig->rows = (visible_children + (ig->columns - 1)) / ig->columns;
+            
+        if (ig->use_separators)
+        {
+            ig->rows = 0;
+            int childs_in_chunk = 0;
+            IconGridElement * child;
+            for (child = ig->child_list; child;  child = child->flink)
+            {
+                if (!child->visible)
+                    continue;
+
+                childs_in_chunk++;
+                if (child->separator)
+                {
+                    if (childs_in_chunk)
+                    {
+                        ig->row_separators++;
+                        ig->rows += (childs_in_chunk + (ig->columns - 1)) / ig->columns;
+                    }
+                    childs_in_chunk = 0;
+                }
+            }
+
+            if (childs_in_chunk)
+                ig->rows += (childs_in_chunk + (ig->columns - 1)) / ig->columns;
+        }
+        else
+        {
+            ig->rows = (visible_children + (ig->columns - 1)) / ig->columns;
+        }
+
         if ((ig->rows == 1) && (ig->columns > visible_children))
             ig->columns = visible_children;
     }
@@ -257,8 +336,8 @@ static void icon_grid_geometry(IconGrid * ig, int reason)
         int row_spaces = ig->rows - 1;
         if (column_spaces < 0) column_spaces = 0;
         if (row_spaces < 0) row_spaces = 0;
-        ig->requisition_width = ig->child_width * ig->columns + column_spaces * ig->spacing + 2 * ig->border;
-        ig->requisition_height = ig->child_height * ig->rows + row_spaces * ig->spacing + 2 * ig->border;
+        ig->requisition_width = ig->child_width * ig->columns + column_spaces * ig->spacing + 2 * ig->border + ig->separator_size * ig->col_separators;
+        ig->requisition_height = ig->child_height * ig->rows + row_spaces * ig->spacing + 2 * ig->border + ig->separator_size * ig->row_separators;
     }
 
     if (reason != GEOMETRY_SIZE_ALLOCATED)
@@ -608,6 +687,54 @@ void icon_grid_set_visible(IconGrid * ig, GtkWidget * child, gboolean visible)
     RET();
 }
 
+/* Change the visibility of an icon grid element. */
+void icon_grid_set_separator(IconGrid * ig, GtkWidget * child, gboolean separator)
+{
+    ENTER;
+
+    IconGridElement * ige;
+    for (ige = ig->child_list; ige != NULL; ige = ige->flink)
+    {
+        if (ige->widget == child)
+        {
+            if (ige->separator != separator)
+            {
+                ige->separator = separator;
+                if (ig->deferred < 1) {
+                    icon_grid_demand_resize(ig);
+                } else {
+                    ig->deferred_resize = 1;
+                    ige->deferred_hide = 1;
+                }
+            }
+            break;
+        }
+    }
+
+    RET();
+}
+
+extern void icon_grid_use_separators(IconGrid * ig, gboolean use_separators)
+{
+    if (use_separators != ig->use_separators)
+    {
+        ig->use_separators = use_separators;
+        icon_grid_demand_resize(ig);
+    }
+}
+
+extern void icon_grid_set_separator_size(IconGrid * ig, int separator_size)
+{
+    if (separator_size < 0)
+        separator_size = 0;
+    if (separator_size != ig->separator_size)
+    {
+        ig->separator_size = separator_size;
+        icon_grid_demand_resize(ig);
+    }
+}
+
+
 /* Deallocate the icon grid structures. */
 void icon_grid_free(IconGrid * ig)
 {
@@ -652,7 +779,7 @@ extern void icon_grid_resume_updates(IconGrid * ig)
     }
 }
 
-void icon_grid_to_be_removed(IconGrid * ig)
+extern void icon_grid_to_be_removed(IconGrid * ig)
 {
     ig->to_be_removed = TRUE;
 }

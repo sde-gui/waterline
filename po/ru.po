@@ -780,6 +780,10 @@ msgstr "Действие по щелчку (по умолчанию: отобр�
 msgid "Tooltip only"
 msgstr "Только подсказки"
 
+#: ../src/plugins/dclock.c:446
+msgid "Timezone"
+msgstr "Часовой пояс"
+
 #: ../src/plugins/dclock.c:458
 msgid "Digital Clock"
 msgstr "Цифровые часы"

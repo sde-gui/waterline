@@ -42,6 +42,7 @@ typedef struct {
     char * clock_format;			/* Format string for clock value */
     char * tooltip_format;			/* Format string for tooltip value */
     char * action;				/* Command to execute on a click */
+    char * timezone;				/* Timezone */
     gboolean bold;				/* True if bold font */
     gboolean icon_only;				/* True if icon only (no clock value) */
     gboolean center_text;
@@ -170,18 +171,30 @@ static gboolean dclock_update_display(DClockPlugin * dc)
     /* Determine the current time. */
     time_t now;
     time(&now);
-    struct tm * current_time = localtime(&now);
+
+    gchar* oldtz = NULL;
+    struct tm * current_time;
+    if (dc->timezone) {
+        oldtz = g_strdup(g_getenv("TZ"));
+        g_setenv("TZ", dc->timezone, 1);
+        current_time = localtime(&now);
+        if(oldtz) 
+            g_setenv("TZ", oldtz, 1);
+        else 
+            g_unsetenv("TZ");
+    } else 
+        current_time = localtime(&now);
 
     /* Determine the content of the clock label and tooltip. */
     char clock_value[64];
     char tooltip_value[64];
+
     clock_value[0] = '\0';
     if (dc->clock_format != NULL)
         strftime(clock_value, sizeof(clock_value), dc->clock_format, current_time);
     tooltip_value[0] = '\0';
     if (dc->tooltip_format != NULL)
         strftime(tooltip_value, sizeof(tooltip_value), dc->tooltip_format, current_time);
-
     /* When we write the clock value, it causes the panel to do a full relayout.
      * Since this function may be called too often while the timing experiment is underway,
      * we take the trouble to check if the string actually changed first. */
@@ -314,6 +327,8 @@ static int dclock_constructor(Plugin * p, char ** fp)
                     dc->icon_only = str2num(bool_pair, s.t[1], 0);
                 else if (g_ascii_strcasecmp(s.t[0], "CenterText") == 0)
                     dc->center_text = str2num(bool_pair, s.t[1], 0);
+                else if (g_ascii_strcasecmp(s.t[0], "TZ") == 0)
+                    dc->timezone = g_strdup(s.t[1]);
                 else
                     ERR( "dclock: unknown var %s\n", s.t[0]);
             }
@@ -376,6 +391,7 @@ static void dclock_destructor(Plugin * p)
     g_free(dc->action);
     g_free(dc->prev_clock_value);
     g_free(dc->prev_tooltip_value);
+    g_free(dc->timezone);
     g_free(dc);
 }
 
@@ -436,6 +452,7 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         _("Bold font"), &dc->bold, (GType)CONF_TYPE_BOOL,
         _("Tooltip only"), &dc->icon_only, (GType)CONF_TYPE_BOOL,
         _("Center text"), &dc->center_text, CONF_TYPE_BOOL,
+        _("Timezone")  , &dc->timezone , (GType)CONF_TYPE_STR,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
@@ -450,7 +467,8 @@ static void dclock_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_str(fp, "Action", dc->action);
     lxpanel_put_int(fp, "BoldFont", dc->bold);
     lxpanel_put_int(fp, "IconOnly", dc->icon_only);
-    lxpanel_put_int(fp, "CenterText", dc->center_text);    
+    lxpanel_put_int(fp, "CenterText", dc->center_text);
+    lxpanel_put_str(fp, "TZ", dc->timezone);
 }
 
 /* Callback when panel configuration changes. */

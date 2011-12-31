@@ -251,6 +251,8 @@ typedef struct _task {
     
     int allocated_icon_size;
     int icon_size;
+
+    int x_window_position;
 } Task;
 
 /* Private context for taskbar plugin. */
@@ -353,7 +355,8 @@ typedef struct _taskbar {
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
     int spacing;				/* Spacing between taskbar buttons */
 
-    gboolean use_net_wm_icon_geometry;
+    gboolean use_x_net_wm_icon_geometry;
+    gboolean use_x_window_position;
 
 
     /* Effective config values, evaluated from "User preference" variables: */
@@ -389,9 +392,11 @@ typedef struct _taskbar {
     Task * button_pressed_task;
     gboolean moving_task_now;
 
-
-    Atom a_OB_WM_STATE_UNDECORATED;
 } TaskbarPlugin;
+
+/******************************************************************************/
+
+static Atom atom_LXPANEL_TASKBAR_WINDOW_POSITION;
 
 /******************************************************************************/
 
@@ -809,6 +814,31 @@ static void recompute_group_visibility_on_current_desktop(TaskbarPlugin * tb)
 
 /******************************************************************************/
 
+static void taskbar_update_x_window_position(TaskbarPlugin * tb)
+{
+    if (!tb->use_x_window_position)
+        return;
+
+    Task * tk;
+    int position = 0;
+    for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
+    {
+        int p = -1;
+        if (task_is_visible(tk))
+            p = position++;
+        if (p != tk->x_window_position)
+        {
+            tk->x_window_position = p;
+            gint32 data = p;
+            XChangeProperty(GDK_DISPLAY(), tk->win,
+                atom_LXPANEL_TASKBAR_WINDOW_POSITION,
+                XA_CARDINAL, 32, PropModeReplace, (guchar *) &data, 1);
+        }
+    }
+}
+
+/******************************************************************************/
+
 /* Draw the label and tooltip on a taskbar button. */
 static void task_draw_label(Task * tk)
 {
@@ -903,6 +933,8 @@ static void taskbar_redraw(TaskbarPlugin * tb)
     taskbar_update_separators(tb);
 
     icon_grid_resume_updates(tb->icon_grid);
+
+    taskbar_update_x_window_position(tb);
 
     RET();
 }
@@ -2376,7 +2408,7 @@ static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc,
         gdk_window_get_origin(GTK_BUTTON(btn)->event_window, &x, &y);
 
         /* Send a NET_WM_ICON_GEOMETRY property change on the window. */
-        if (tk->tb->use_net_wm_icon_geometry)
+        if (tk->tb->use_x_net_wm_icon_geometry)
         {
             guint32 data[4];
             data[0] = x;
@@ -2899,6 +2931,8 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     tk->tb = tb;
                     tk->name_source = None;
                     tk->image_source = None;
+
+                    tk->x_window_position = -1;
 
                     tk->iconified = (get_wm_state(tk->win) == IconicState);
                     tk->maximized = nws.maximized_vert || nws.maximized_horz;
@@ -3879,6 +3913,8 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
 /* Plugin constructor. */
 static int taskbar_constructor(Plugin * p, char ** fp)
 {
+    atom_LXPANEL_TASKBAR_WINDOW_POSITION = XInternAtom( GDK_DISPLAY(), "_LXPANEL_TASKBAR_WINDOW_POSITION", False );
+
     /* Allocate plugin context and set into Plugin private data pointer. */
     TaskbarPlugin * tb = g_new0(TaskbarPlugin, 1);
     tb->plug = p;
@@ -3927,8 +3963,6 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->show_all_desks_prev_value = FALSE;
     tb->_show_close_buttons = FALSE;
     tb->extra_size        = 0;
-
-    tb->a_OB_WM_STATE_UNDECORATED  = XInternAtom(GDK_DISPLAY(), "_OB_WM_STATE_UNDECORATED", False);
 
     tb->workspace_submenu = NULL;
     tb->restore_menuitem  = NULL;
@@ -4051,8 +4085,10 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->use_group_separators = str2num(bool_pair, s.t[1], tb->use_group_separators);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupSeparatorSize") == 0)
                     tb->group_separator_size = atoi(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "UseNetWmIconGeometry") == 0)
-                    tb->use_net_wm_icon_geometry = str2num(bool_pair, s.t[1], tb->use_net_wm_icon_geometry);
+                else if (g_ascii_strcasecmp(s.t[0], "UseXNetWmIconGeometry") == 0)
+                    tb->use_x_net_wm_icon_geometry = str2num(bool_pair, s.t[1], tb->use_x_net_wm_icon_geometry);
+                else if (g_ascii_strcasecmp(s.t[0], "UseXWindowPosition") == 0)
+                    tb->use_x_window_position = str2num(bool_pair, s.t[1], tb->use_x_window_position);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -4262,7 +4298,8 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 
         _("Integration"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
 
-        _("Use _NET_WM_ICON_GEOMETRY"), (gpointer)&tb->use_net_wm_icon_geometry, (GType)CONF_TYPE_BOOL,
+        _("_NET_WM_ICON_GEOMETRY"), (gpointer)&tb->use_x_net_wm_icon_geometry, (GType)CONF_TYPE_BOOL,
+        _("_LXPANEL_TASKBAR_WINDOW_POSITION"), (gpointer)&tb->use_x_window_position, (GType)CONF_TYPE_BOOL,
 
         NULL);
 
@@ -4330,7 +4367,8 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
     lxpanel_put_bool(fp, "UseGroupSeparators", tb->use_group_separators);
     lxpanel_put_int(fp, "GroupSeparatorSize", tb->group_separator_size);
-    lxpanel_put_bool(fp, "UseNetWmIconGeometry", tb->use_net_wm_icon_geometry);
+    lxpanel_put_bool(fp, "UseXNetWmIconGeometry", tb->use_x_net_wm_icon_geometry);
+    lxpanel_put_bool(fp, "UseXWindowPosition", tb->use_x_window_position);
 }
 
 /* Callback when panel configuration changes. */

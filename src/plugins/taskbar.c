@@ -353,6 +353,8 @@ typedef struct _taskbar {
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
     int spacing;				/* Spacing between taskbar buttons */
 
+    gboolean use_net_wm_icon_geometry;
+
 
     /* Effective config values, evaluated from "User preference" variables: */
     gboolean grouped_tasks;			/* Group task of the same class into single button. */
@@ -2374,14 +2376,17 @@ static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc,
         gdk_window_get_origin(GTK_BUTTON(btn)->event_window, &x, &y);
 
         /* Send a NET_WM_ICON_GEOMETRY property change on the window. */
-        guint32 data[4];
-        data[0] = x;
-        data[1] = y;
-        data[2] = alloc->width;
-        data[3] = alloc->height;
-        XChangeProperty(GDK_DISPLAY(), tk->win,
-            gdk_x11_get_xatom_by_name("_NET_WM_ICON_GEOMETRY"),
-            XA_CARDINAL, 32, PropModeReplace, (guchar *) &data, 4);
+        if (tk->tb->use_net_wm_icon_geometry)
+        {
+            guint32 data[4];
+            data[0] = x;
+            data[1] = y;
+            data[2] = alloc->width;
+            data[3] = alloc->height;
+            XChangeProperty(GDK_DISPLAY(), tk->win,
+                gdk_x11_get_xatom_by_name("_NET_WM_ICON_GEOMETRY"),
+                XA_CARDINAL, 32, PropModeReplace, (guchar *) &data, 4);
+        }
     }
 }
 
@@ -4046,6 +4051,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->use_group_separators = str2num(bool_pair, s.t[1], tb->use_group_separators);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupSeparatorSize") == 0)
                     tb->group_separator_size = atoi(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "UseNetWmIconGeometry") == 0)
+                    tb->use_net_wm_icon_geometry = str2num(bool_pair, s.t[1], tb->use_net_wm_icon_geometry);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -4253,6 +4260,10 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         other_actions_click_press, (gpointer)&tb->other_actions_click_press, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
+        _("Integration"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
+
+        _("Use _NET_WM_ICON_GEOMETRY"), (gpointer)&tb->use_net_wm_icon_geometry, (GType)CONF_TYPE_BOOL,
+
         NULL);
 
     if (dlg)
@@ -4319,6 +4330,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
     lxpanel_put_bool(fp, "UseGroupSeparators", tb->use_group_separators);
     lxpanel_put_int(fp, "GroupSeparatorSize", tb->group_separator_size);
+    lxpanel_put_bool(fp, "UseNetWmIconGeometry", tb->use_net_wm_icon_geometry);
 }
 
 /* Callback when panel configuration changes. */

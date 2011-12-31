@@ -63,28 +63,6 @@ static int strempty(const char* s) {
 }
 
 
-static int lb_run_command(const char* command) {
-
-    if (!command)
-        return -1;
-
-    while (*command == ' ' || *command == '\t')
-        command++;
-
-    int use_terminal = FALSE;
-
-    if (*command == '&')
-        use_terminal = TRUE,
-        command++;
-
-    if (!*command)
-        return -1;
-
-    lxpanel_launch_app(command, NULL, use_terminal);
-    return 0;
-}
-
-
 /* Handler for "button-press-event" event from launch button. */
 static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t * lb)
 {
@@ -106,8 +84,8 @@ static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t 
 
     if (command != (void*)-1)
     {
-        int r = lb_run_command(command);
-        if (r)
+        gboolean r = lxpanel_launch(command, NULL);
+        if (!r)
         {
               lxpanel_show_panel_menu( lb->plug->panel, lb->plug, event );
         }

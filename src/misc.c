@@ -719,6 +719,26 @@ _finish:
     return g_string_free( cmd, FALSE );
 }
 
+gboolean lxpanel_launch(const char* command, GList* files)
+{
+    if (!command)
+        return FALSE;
+
+    while (*command == ' ' || *command == '\t')
+        command++;
+
+    int use_terminal = FALSE;
+
+    if (*command == '&')
+        use_terminal = TRUE,
+        command++;
+
+    if (!*command)
+        return FALSE;
+
+    return lxpanel_launch_app(command, files, use_terminal);
+}
+
 gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal)
 {
     GError *error = NULL;

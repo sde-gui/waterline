@@ -50,6 +50,9 @@ typedef struct {
     snd_mixer_selem_id_t * sid;			/* The element ID */
     snd_mixer_elem_t * master_element;		/* The Master element */
     guint mixer_evt_idle;			/* Timer to handle restarting poll */
+
+    /* Settings. */
+    gchar * double_click_action;
 } VolumeALSAPlugin;
 
 static gboolean asound_find_element(VolumeALSAPlugin * vol, const char * ename);
@@ -290,15 +293,27 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
     /* Left-click.  Show or hide the popup window. */
     if (event->button == 1)
     {
-        if (vol->show_popup)
+        if (event->type==GDK_2BUTTON_PRESS)
         {
-            gtk_widget_hide(vol->popup_window);
-            vol->show_popup = FALSE;
+            if (vol->show_popup)
+            {
+                gtk_widget_hide(vol->popup_window);
+                vol->show_popup = FALSE;
+            }
+            lxpanel_launch(vol->double_click_action, NULL);
         }
         else
         {
-            gtk_widget_show_all(vol->popup_window);
-            vol->show_popup = TRUE;
+            if (vol->show_popup)
+            {
+                gtk_widget_hide(vol->popup_window);
+                vol->show_popup = FALSE;
+            }
+            else
+            {
+                gtk_widget_show_all(vol->popup_window);
+                vol->show_popup = TRUE;
+            }
         }
     }
 
@@ -442,6 +457,46 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
     if ( ! asound_initialize(vol))
         return 1;
 
+    vol->double_click_action = NULL;
+
+    /* Load parameters from the configuration file. */
+    line s;
+    s.len = 256;
+    if (fp)
+    {
+        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
+        {
+            if (s.type == LINE_NONE)
+            {
+                ERR( "launchbutton: illegal token %s\n", s.str);
+                return 0;
+            }
+            if (s.type == LINE_VAR)
+            {
+                if (g_ascii_strcasecmp(s.t[0], "DoubleClickAction") == 0)
+                    vol->double_click_action = g_strdup(s.t[1]);
+                else
+                    ERR( "dclock: unknown var %s\n", s.t[0]);
+            }
+            else
+            {
+                ERR( "dclock: illegal in this context %s\n", s.str);
+                return 0;
+            }
+        }
+
+    }
+
+    #define DEFAULT_STRING(f, v) \
+      if (vol->f == NULL) \
+          vol->f = g_strdup(v);
+
+    DEFAULT_STRING(double_click_action, "pavucontrol");
+
+    #undef DEFAULT_STRING
+
+
+
     /* Allocate top level widget and set into Plugin widget pointer. */
     p->pwid = gtk_event_box_new();
     gtk_widget_add_events(p->pwid, GDK_BUTTON_PRESS_MASK);
@@ -477,9 +532,39 @@ static void volumealsa_destructor(Plugin * p)
     if (vol->popup_window != NULL)
         gtk_widget_destroy(vol->popup_window);
 
+    g_free(vol->double_click_action);
+
     /* Deallocate all memory. */
     g_free(vol);
 }
+
+/* Callback when the configuration dialog has recorded a configuration change. */
+static void volumealsa_apply_configuration(Plugin * p)
+{
+    volumealsa_panel_configuration_changed(p);
+}
+
+/* Callback when the configuration dialog is to be shown. */
+static void volumealsa_configure(Plugin * p, GtkWindow * parent)
+{
+    VolumeALSAPlugin * vol = (VolumeALSAPlugin *) p->priv;
+    GtkWidget * dlg = create_generic_config_dlg(
+        _(p->class->name),
+        GTK_WIDGET(parent),
+        (GSourceFunc) volumealsa_apply_configuration, (gpointer) p,
+        _("Double click action"), &vol->double_click_action , (GType)CONF_TYPE_STR,
+        NULL);
+    if (dlg)
+        gtk_window_present(GTK_WINDOW(dlg));
+}
+
+/* Save the configuration to the configuration file. */
+static void volumealsa_save_configuration(Plugin * p, FILE * fp)
+{
+    VolumeALSAPlugin * vol = (VolumeALSAPlugin *) p->priv;
+    lxpanel_put_str(fp, "DoubleClickAction", vol->double_click_action);
+}
+
 
 /* Callback when panel configuration changes. */
 static void volumealsa_panel_configuration_changed(Plugin * p)
@@ -500,8 +585,8 @@ PluginClass volumealsa_plugin_class = {
 
     constructor : volumealsa_constructor,
     destructor  : volumealsa_destructor,
-    config : NULL,
-    save : NULL,
+    config : volumealsa_configure,
+    save : volumealsa_save_configuration,
     panel_configuration_changed : volumealsa_panel_configuration_changed
 
 };

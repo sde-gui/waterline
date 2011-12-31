@@ -90,6 +90,7 @@ extern GdkPixbuf* lxpanel_load_icon( const char* name, int width, int height, gb
 void fb_button_set_from_file(GtkWidget* btn, const char* img_file, gint width, gint height, gboolean keep_ratio);
 
 gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal);
+gboolean lxpanel_launch(const char* exec, GList* files);
 
 
 typedef void (*EntryDialogCallback)(char * value, gpointer payload);

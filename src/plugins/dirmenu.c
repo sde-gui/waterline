@@ -67,6 +67,7 @@ typedef struct {
     int max_file_count;
     int sort_directories;
     int sort_files;
+    gboolean plain_view;
 } DirMenuPlugin;
 
 static void dirmenu_open_in_file_manager(Plugin * p, const char * path);
@@ -129,6 +130,18 @@ static void dirmenu_menuitem_open_directory(GtkWidget * item, Plugin * p)
 static void dirmenu_menuitem_open_in_terminal(GtkWidget * item, Plugin * p)
 {
     dirmenu_open_in_terminal(p, g_object_get_data(G_OBJECT(gtk_widget_get_parent(item)), "path"));
+}
+
+/* Handler for select event on popup menu item. */
+static void dirmenu_menuitem_open_directory_plain(GtkWidget * item, Plugin * p)
+{
+    GtkMenu * parent = GTK_MENU(gtk_widget_get_parent(GTK_WIDGET(item)));
+    char * path = g_build_filename(
+        (char *) g_object_get_data(G_OBJECT(parent), "path"),
+        (char *) g_object_get_data(G_OBJECT(item), "name"),
+        NULL);
+    dirmenu_open_in_file_manager(p, path);
+    g_free(path);
 }
 
 /* Handler for select event on popup menu item. */
@@ -302,7 +315,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             GTK_IMAGE_MENU_ITEM(item),
             gtk_image_new_from_stock(GTK_STOCK_DIRECTORY, GTK_ICON_SIZE_MENU));
         GtkWidget * dummy = gtk_menu_new();
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), dummy);
+        if (!dm->plain_view)
+            gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), dummy);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 
         /* Unlink and free sorted directory name element, but reuse the directory name string. */
@@ -313,8 +327,15 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         g_free(dir_cursor);
 
         /* Connect signals. */
-        g_signal_connect(G_OBJECT(item), "select", G_CALLBACK(dirmenu_menuitem_select), p);
-        g_signal_connect(G_OBJECT(item), "deselect", G_CALLBACK(dirmenu_menuitem_deselect), p);
+        if (dm->plain_view)
+        {
+            g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dirmenu_menuitem_open_directory_plain), p);
+        }
+        else
+        {
+            g_signal_connect(G_OBJECT(item), "select", G_CALLBACK(dirmenu_menuitem_select), p);
+            g_signal_connect(G_OBJECT(item), "deselect", G_CALLBACK(dirmenu_menuitem_deselect), p);
+        }
     }
 
     if (not_empty_dir_list && not_empty_file_list)
@@ -360,25 +381,28 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         g_signal_connect(item, "activate", G_CALLBACK(dirmenu_menuitem_open_file), p);
     }
 
-    /* Create "Open" and "Open in Terminal" items. */
-    GtkWidget * item = gtk_image_menu_item_new_from_stock( GTK_STOCK_OPEN, NULL );
-    g_signal_connect(item, "activate", G_CALLBACK(dirmenu_menuitem_open_directory), p);
-    GtkWidget * term = gtk_menu_item_new_with_mnemonic( _("Open in _Terminal") );
-    g_signal_connect(term, "activate", G_CALLBACK(dirmenu_menuitem_open_in_terminal), p);
-
-    /* Insert or append based on caller's preference. */
-    if (open_at_top)
+    if (!dm->plain_view)
     {
-        if (not_empty)
-            gtk_menu_shell_insert(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new(), 0);
-        gtk_menu_shell_insert(GTK_MENU_SHELL(menu), term, 0);
-        gtk_menu_shell_insert(GTK_MENU_SHELL(menu), item, 0);
-    }
-    else {
-        if (not_empty)
-            gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), term);
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	/* Create "Open" and "Open in Terminal" items. */
+	GtkWidget * item = gtk_image_menu_item_new_from_stock( GTK_STOCK_OPEN, NULL );
+	g_signal_connect(item, "activate", G_CALLBACK(dirmenu_menuitem_open_directory), p);
+	GtkWidget * term = gtk_menu_item_new_with_mnemonic( _("Open in _Terminal") );
+	g_signal_connect(term, "activate", G_CALLBACK(dirmenu_menuitem_open_in_terminal), p);
+
+	/* Insert or append based on caller's preference. */
+	if (open_at_top)
+	{
+	    if (not_empty)
+		gtk_menu_shell_insert(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new(), 0);
+	    gtk_menu_shell_insert(GTK_MENU_SHELL(menu), term, 0);
+	    gtk_menu_shell_insert(GTK_MENU_SHELL(menu), item, 0);
+	}
+	else {
+	    if (not_empty)
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+	    gtk_menu_shell_append(GTK_MENU_SHELL(menu), term);
+	    gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+	}
     }
 
     /* Show the menu and return. */
@@ -436,6 +460,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     dm->show_file_size = FALSE;
     dm->sort_directories = SORT_BY_NAME;
     dm->sort_files = SORT_BY_NAME;
+    dm->plain_view = FALSE;
 
 
     /* Load parameters from the configuration file. */
@@ -470,6 +495,8 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
                     dm->sort_directories = str2num(sort_by_pair, s.t[1], dm->sort_directories);
                 else if (g_ascii_strcasecmp(s.t[0], "SortFilesBy") == 0)
                     dm->sort_files = str2num(sort_by_pair, s.t[1], dm->sort_files);
+                else if (g_ascii_strcasecmp(s.t[0], "PlainView") == 0)
+                    dm->plain_view = str2num(bool_pair, s.t[1], dm->plain_view);
                 else
                     ERR( "dirmenu: unknown var %s\n", s.t[0]);
             }
@@ -558,6 +585,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _("Label"), &dm->name, (GType)CONF_TYPE_STR,
         _("Icon"), &dm->image, (GType)CONF_TYPE_FILE_ENTRY,
         "", 0, (GType)CONF_TYPE_END_TABLE,
+        _("Plain view"), &dm->plain_view, (GType)CONF_TYPE_BOOL,
         _("Show hidden files or folders"), &dm->show_hidden, (GType)CONF_TYPE_BOOL,
         _("Show files"), &dm->show_files, (GType)CONF_TYPE_BOOL,
         _("Use submenu if number of files is more than"), &dm->max_file_count, (GType)CONF_TYPE_INT,
@@ -588,6 +616,7 @@ static void dirmenu_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowFileSize", dm->show_file_size);
     lxpanel_put_enum(fp, "SortDirectoriesBy", dm->sort_directories, sort_by_pair);
     lxpanel_put_enum(fp, "SortFilesBy", dm->sort_files, sort_by_pair);
+    lxpanel_put_bool(fp, "PlainView", dm->plain_view);
 }
 
 /* Callback when panel configuration changes. */

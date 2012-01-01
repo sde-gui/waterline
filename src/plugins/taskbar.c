@@ -3542,6 +3542,21 @@ static void task_adjust_menu_move_to_group(Task * tk)
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(tk->tb->move_to_group_menuitem), move_to_group_menu);
 }
 
+static void menu_set_sensitive(GtkWidget * widget, gboolean value)
+{
+     char * p = (char *) g_object_get_data(G_OBJECT(widget), "hide_inactive");
+     gboolean hide_inactive = (p && strcmp(p, "true") == 0) ? TRUE : FALSE;
+     if (hide_inactive)
+     {
+         gtk_widget_set_visible(widget, value);
+     }
+     else
+     {
+         gtk_widget_set_visible(widget, TRUE);
+         gtk_widget_set_sensitive(widget, value);
+     }
+}
+
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 {
     TaskbarPlugin * tb = tk->tb;
@@ -3551,42 +3566,56 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
     }
 
     if (tb->move_to_this_workspace_menuitem) {
-        gtk_widget_set_visible(GTK_WIDGET(tb->move_to_this_workspace_menuitem), tk->desktop != tb->current_desktop && tk->desktop >= 0);
+        menu_set_sensitive(GTK_WIDGET(tb->move_to_this_workspace_menuitem), tk->desktop != tb->current_desktop && tk->desktop >= 0);
     }
 
     gboolean manual_grouping = tb->manual_grouping && tb->grouped_tasks;
-    if (manual_grouping)
-        task_adjust_menu_move_to_group(tk);
-    if (tb->move_to_group_menuitem)
-        gtk_widget_set_visible(GTK_WIDGET(tb->move_to_group_menuitem), manual_grouping);
-    if (tb->ungroup_menuitem)
-        gtk_widget_set_visible(GTK_WIDGET(tb->ungroup_menuitem), manual_grouping && tk->task_class && tk->task_class->visible_count > 1);
 
-    if (tb->unfold_group_menuitem)
-        gtk_widget_set_visible(GTK_WIDGET(tb->unfold_group_menuitem),
-            manual_grouping && !tb->_show_single_group && tk->task_class && task_is_folded(tk));
-    if (tb->fold_group_menuitem)
-        gtk_widget_set_visible(GTK_WIDGET(tb->fold_group_menuitem),
-            manual_grouping && !tb->_show_single_group && tk->task_class && !task_is_folded(tk));
+    if (manual_grouping)
+    {
+        task_adjust_menu_move_to_group(tk);
+        if (tb->move_to_group_menuitem)
+            gtk_widget_set_visible(GTK_WIDGET(tb->move_to_group_menuitem), TRUE);
+
+	if (tb->ungroup_menuitem)
+	    menu_set_sensitive(GTK_WIDGET(tb->ungroup_menuitem),
+	        tk->task_class && tk->task_class->visible_count > 1);
+
+	if (tb->unfold_group_menuitem)
+	    menu_set_sensitive(GTK_WIDGET(tb->unfold_group_menuitem),
+		!tb->_show_single_group && tk->task_class && task_is_folded(tk));
+
+	if (tb->fold_group_menuitem)
+	    menu_set_sensitive(GTK_WIDGET(tb->fold_group_menuitem),
+		!tb->_show_single_group && tk->task_class && !task_is_folded(tk));
+    }
+    else
+    {
+        gtk_widget_set_visible(GTK_WIDGET(tb->move_to_group_menuitem), FALSE);
+        gtk_widget_set_visible(GTK_WIDGET(tb->ungroup_menuitem), FALSE);
+        gtk_widget_set_visible(GTK_WIDGET(tb->unfold_group_menuitem), FALSE);
+        gtk_widget_set_visible(GTK_WIDGET(tb->fold_group_menuitem), FALSE);
+    }
+
 
     if (tb->maximize_menuitem)
-        gtk_widget_set_visible(GTK_WIDGET(tb->maximize_menuitem), !tk->maximized);
+        menu_set_sensitive(GTK_WIDGET(tb->maximize_menuitem), !tk->maximized);
     if (tb->restore_menuitem)
-        gtk_widget_set_visible(GTK_WIDGET(tb->restore_menuitem), tk->maximized);
+        menu_set_sensitive(GTK_WIDGET(tb->restore_menuitem), tk->maximized);
 
     if (tb->iconify_menuitem)
-    gtk_widget_set_sensitive(GTK_WIDGET(tb->iconify_menuitem), !tk->iconified);
+        menu_set_sensitive(GTK_WIDGET(tb->iconify_menuitem), !tk->iconified);
 
     if (tb->undecorate_menuitem)
     {
-        gtk_widget_set_visible(GTK_WIDGET(tb->undecorate_menuitem), TRUE);
-        gtk_widget_set_sensitive(GTK_WIDGET(tb->undecorate_menuitem), !tk->shaded || !tk->decorated);
+        //gtk_widget_set_visible(GTK_WIDGET(tb->undecorate_menuitem), TRUE);
+        menu_set_sensitive(GTK_WIDGET(tb->undecorate_menuitem), !tk->shaded || !tk->decorated);
     }
 
     if (tb->roll_menuitem)
     {
-        gtk_widget_set_visible(GTK_WIDGET(tb->roll_menuitem), TRUE);
-        gtk_widget_set_sensitive(GTK_WIDGET(tb->roll_menuitem), tk->shaded || tk->decorated);
+        //gtk_widget_set_visible(GTK_WIDGET(tb->roll_menuitem), TRUE);
+        menu_set_sensitive(GTK_WIDGET(tb->roll_menuitem), tk->shaded || tk->decorated);
     }
 
     if (from_popup_menu) {
@@ -3614,12 +3643,16 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 /* Functions to build task context menu. */
 
 /* Helper function to create menu items for taskbar_make_menu() */
-static GtkWidget * create_menu_item(TaskbarPlugin * tb, char * name, GCallback activate_cb, GtkWidget ** menuitem)
+static GtkWidget * create_menu_item(TaskbarPlugin * tb, char * name, GCallback activate_cb, GtkWidget ** menuitem, gboolean hide_inactive)
 {
     GtkWidget * mi = gtk_menu_item_new_with_mnemonic(name);
     gtk_menu_shell_append(GTK_MENU_SHELL(tb->menu), mi);
     if (activate_cb)
         g_signal_connect(G_OBJECT(mi), "activate", activate_cb, tb);
+    if (hide_inactive)
+    {
+        g_object_set_data(G_OBJECT(mi), "hide_inactive", "true");
+    }
     if (menuitem)
         *menuitem = mi;
     return mi;
@@ -3640,8 +3673,8 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     GtkWidget * mi;
 
     gchar * menu_description =
-         "close2 raise restore maximize iconify roll undecorate - move_to_this_workspace move_to_workspace - "
-         "ungroup move_to_group - unfold_group fold_group - copy_title";
+         "close2 raise @restore @maximize @iconify @roll @undecorate - @move_to_this_workspace move_to_workspace - "
+         "@ungroup move_to_group - @unfold_group @fold_group - copy_title";
 
     tb->workspace_submenu = NULL;
     tb->move_to_this_workspace_menuitem = NULL;
@@ -3668,6 +3701,16 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     {
         gchar * element = elements[element_nr];
 
+        gboolean hide_inactive = FALSE;
+        if (element[0] != 0)
+        {
+            if (element[0] == '@')
+            {
+                element++;
+                hide_inactive = TRUE;
+            }
+        }
+
         #define IF(v) if (strcmp(element, v) == 0)
 
         IF("") {
@@ -3675,21 +3718,21 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
         } else IF("-") {
             gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
         } else IF("raise") {
-            create_menu_item(tb, _("_Raise"), (GCallback) menu_raise_window, NULL);
+            create_menu_item(tb, _("_Raise"), (GCallback) menu_raise_window, NULL, hide_inactive);
         } else IF("restore") {
-            create_menu_item(tb, _("R_estore"), (GCallback) menu_restore_window, &tb->restore_menuitem);
+            create_menu_item(tb, _("R_estore"), (GCallback) menu_restore_window, &tb->restore_menuitem, hide_inactive);
         } else IF("maximize") {
-            create_menu_item(tb, _("Ma_ximize"), (GCallback) menu_maximize_window, &tb->maximize_menuitem);
+            create_menu_item(tb, _("Ma_ximize"), (GCallback) menu_maximize_window, &tb->maximize_menuitem, hide_inactive);
         } else IF("iconify") {
-            create_menu_item(tb, _("Ico_nify"), (GCallback) menu_iconify_window, &tb->iconify_menuitem);
+            create_menu_item(tb, _("Ico_nify"), (GCallback) menu_iconify_window, &tb->iconify_menuitem, hide_inactive);
         } else IF("undecorate") {
-            create_menu_item(tb, _("Un/_decorate"), (GCallback) menu_undecorate_window, &tb->undecorate_menuitem);
+            create_menu_item(tb, _("Un/_decorate"), (GCallback) menu_undecorate_window, &tb->undecorate_menuitem, hide_inactive);
         } else IF("roll") {
-            create_menu_item(tb, _("_Roll up/down"), (GCallback) menu_roll_window, &tb->roll_menuitem);
+            create_menu_item(tb, _("_Roll up/down"), (GCallback) menu_roll_window, &tb->roll_menuitem, hide_inactive);
         } else IF("move_to_this_workspace") {
             if (tb->number_of_desktops > 1)
             {
-                create_menu_item(tb, _("Move to this workspace"), (GCallback) menu_move_to_this_workspace, &tb->move_to_this_workspace_menuitem);
+                create_menu_item(tb, _("Move to this workspace"), (GCallback) menu_move_to_this_workspace, &tb->move_to_this_workspace_menuitem, hide_inactive);
             }
         } else IF("move_to_workspace") {
             if (tb->number_of_desktops > 1)
@@ -3723,23 +3766,23 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
                 gtk_menu_shell_append(GTK_MENU_SHELL(workspace_menu), mi);
 
                 /* Add Move to Workspace menu item as a submenu. */
-                mi = create_menu_item(tb, _("_Move to Workspace"), NULL, NULL);
+                mi = create_menu_item(tb, _("_Move to Workspace"), NULL, NULL, hide_inactive);
                 gtk_menu_item_set_submenu(GTK_MENU_ITEM(mi), workspace_menu);
 
                 tb->workspace_submenu = workspace_menu;
             }
         } else IF("ungroup") {
-            create_menu_item(tb, _("_Ungroup"), (GCallback) menu_ungroup_window, &tb->ungroup_menuitem);
+            create_menu_item(tb, _("_Ungroup"), (GCallback) menu_ungroup_window, &tb->ungroup_menuitem, hide_inactive);
         } else IF("move_to_group") {
-            create_menu_item(tb, _("M_ove to Group"), NULL, &tb->move_to_group_menuitem);
+            create_menu_item(tb, _("M_ove to Group"), NULL, &tb->move_to_group_menuitem, hide_inactive);
         } else IF("unfold_group") {
-            create_menu_item(tb, _("Unfold _Group"), (GCallback) menu_unfold_group_window, &tb->unfold_group_menuitem);
+            create_menu_item(tb, _("Unfold _Group"), (GCallback) menu_unfold_group_window, &tb->unfold_group_menuitem, hide_inactive);
         } else IF("fold_group") {
-            create_menu_item(tb, _("Fold _Group"), (GCallback) menu_fold_group_window, &tb->fold_group_menuitem);
+            create_menu_item(tb, _("Fold _Group"), (GCallback) menu_fold_group_window, &tb->fold_group_menuitem, hide_inactive);
         } else IF("copy_title") {
-            create_menu_item(tb, _("Cop_y title"), (GCallback) menu_copy_title, NULL);
+            create_menu_item(tb, _("Cop_y title"), (GCallback) menu_copy_title, NULL, hide_inactive);
         } else IF("close") {
-            create_menu_item(tb, _("_Close Window"), (GCallback) menu_close_window, NULL);
+            create_menu_item(tb, _("_Close Window"), (GCallback) menu_close_window, NULL, hide_inactive);
         } else IF("close2") {
             close2 = 1;
         } else {
@@ -3749,8 +3792,7 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
         #undef IF
 
     }
-    
-    
+
     /* Add Close menu item.  By popular demand, we place this menu item closest to the cursor. */
     if (close2)
     {

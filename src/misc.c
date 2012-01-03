@@ -826,8 +826,6 @@ GtkWidget* create_entry_dialog(const char * title, const char * description, con
 }
 
 
-
-
 gchar * panel_translate_directory_name(const gchar * name)
 {
     gchar * title = NULL;
@@ -854,3 +852,11 @@ gchar * panel_translate_directory_name(const gchar * name)
     return title;
 }
 
+
+int strempty(const char* s) {
+    if (!s)
+        return 1;
+    while (*s == ' ' || *s == '\t')
+        s++;
+    return strlen(s) == 0;
+}

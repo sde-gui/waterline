@@ -54,15 +54,6 @@ typedef struct {
 } lb_t;
 
 
-static int strempty(const char* s) {
-    if (!s)
-        return 1;
-    while (*s == ' ' || *s == '\t')
-        s++;
-    return strlen(s) == 0;
-}
-
-
 /* Handler for "button-press-event" event from launch button. */
 static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t * lb)
 {

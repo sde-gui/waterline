@@ -300,7 +300,30 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
                 gtk_widget_hide(vol->popup_window);
                 vol->show_popup = FALSE;
             }
-            lxpanel_launch(vol->double_click_action, NULL);
+            if (strempty(vol->double_click_action))
+            {
+                gchar * p = g_find_program_in_path("pulseaudio");
+                if (p)
+                {
+                    g_free(p);
+                    p = g_find_program_in_path("gnome-sound-applet");
+                    if (!p)
+                        p = g_find_program_in_path("pavucontrol");
+                }
+                else
+                {
+                    p = g_find_program_in_path("gnome-alsamixer");
+                    if (!p)
+                        p = g_find_program_in_path("alsamixer");
+                }
+                if (p)
+                    lxpanel_launch_app(p, NULL, strstr(p, "/alsamixer") != NULL);
+                g_free(p);
+            }
+            else
+            {
+                lxpanel_launch(vol->double_click_action, NULL);
+            }
         }
         else
         {
@@ -486,7 +509,7 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
         }
 
     }
-
+/*
     #define DEFAULT_STRING(f, v) \
       if (vol->f == NULL) \
           vol->f = g_strdup(v);
@@ -494,7 +517,7 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
     DEFAULT_STRING(double_click_action, "pavucontrol");
 
     #undef DEFAULT_STRING
-
+*/
 
 
     /* Allocate top level widget and set into Plugin widget pointer. */

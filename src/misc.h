@@ -99,4 +99,6 @@ GtkWidget* create_entry_dialog(const char * title, const char * description, con
 
 gchar * panel_translate_directory_name(const gchar * name);
 
+int strempty(const char* s);
+
 #endif

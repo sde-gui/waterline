@@ -56,6 +56,7 @@ typedef struct {
     int experiment_count;			/* Count of experiments that have been done to determine interval */
     char * prev_clock_value;			/* Previous value of clock */
     char * prev_tooltip_value;			/* Previous value of tooltip */
+    char * timezones;
 } DClockPlugin;
 
 static void dclock_popup_map(GtkWidget * widget, DClockPlugin * dc);
@@ -69,6 +70,39 @@ static void dclock_apply_configuration(Plugin * p);
 static void dclock_configure(Plugin * p, GtkWindow * parent);
 static void dclock_save_configuration(Plugin * p, FILE * fp);
 static void dclock_panel_configuration_changed(Plugin * p);
+
+
+static char * dclock_get_timezones(DClockPlugin * dc)
+{
+    if (!dc->timezones)
+    {
+        FILE * fpipe;
+        char * command = "find /usr/share/zoneinfo/ -type f -printf '%P\\n'";
+
+        if ( !(fpipe = popen(command,"r")) )
+        {
+            return NULL;
+        }
+
+        GIOChannel * channel = g_io_channel_unix_new(fileno(fpipe));
+        if (channel)
+        {
+            gchar * data;
+            gsize data_size;
+            GIOStatus status = g_io_channel_read_to_end(channel, &data, &data_size, NULL);
+            if (status == G_IO_STATUS_NORMAL)
+            {
+                dc->timezones = g_strdup_printf("\n%s", data);
+                g_free(data);
+            }
+            g_io_channel_unref(channel);
+        }
+
+        pclose(fpipe);
+    }
+
+    return dc->timezones;
+}
 
 /* Handler for "map" signal on popup window. */
 static void dclock_popup_map(GtkWidget * widget, DClockPlugin * dc)
@@ -392,6 +426,7 @@ static void dclock_destructor(Plugin * p)
     g_free(dc->prev_clock_value);
     g_free(dc->prev_tooltip_value);
     g_free(dc->timezone);
+    g_free(dc->timezones);
     g_free(dc);
 }
 
@@ -453,6 +488,7 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         _("Tooltip only"), &dc->icon_only, (GType)CONF_TYPE_BOOL,
         _("Center text"), &dc->center_text, CONF_TYPE_BOOL,
         _("Timezone")  , &dc->timezone , (GType)CONF_TYPE_STR,
+        "completion-list", (gpointer)dclock_get_timezones(dc), (GType)CONF_TYPE_SET_PROPERTY,
         NULL);
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));

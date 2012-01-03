@@ -224,6 +224,8 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                  is_property = TRUE;
                  if (!prev_entry)
                      break;
+                 if (!val)
+                     break;
                  if (strcmp(name, "tooltip-text") == 0) {
                      gtk_widget_set_tooltip_text(prev_entry, (const gchar *) val);
                      if (prev_label)
@@ -242,6 +244,43 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                          else
                              max_v = *(int*)val;
                          gtk_spin_button_set_range(GTK_SPIN_BUTTON(prev_entry), min_v, max_v);
+                     }
+                 } else if (strcmp(name, "completion-list") == 0) {
+                     if (prev_type == CONF_TYPE_STR)
+                     {
+                         GtkEntryCompletion *completion;
+                         GtkTreeModel *completion_model;
+  
+                         /* Create the completion object */
+                         completion = gtk_entry_completion_new ();
+
+                         /* Assign the completion to the entry */
+                         gtk_entry_set_completion (GTK_ENTRY (prev_entry), completion);
+                         g_object_unref (completion);
+    
+                         /* Create a tree model and use it as the completion model */
+                         GtkListStore *store;
+                         GtkTreeIter iter;
+                         int i;
+                         store = gtk_list_store_new (1, G_TYPE_STRING);
+
+                         char d[2] = {((char *)val)[0], 0};
+                         char ** strings = g_strsplit((char *)val, d, 9999);
+
+                         for (i = 0; strings[i]; i++)
+                         {
+                             gtk_list_store_append (store, &iter);
+                             gtk_list_store_set (store, &iter, 0, strings[i], -1);
+                         }
+
+                         g_strfreev(strings);
+
+                         completion_model = GTK_TREE_MODEL (store);
+                         gtk_entry_completion_set_model (completion, completion_model);
+                         g_object_unref (completion_model);
+    
+                         /* Use model column 0 as the text column */
+                         gtk_entry_completion_set_text_column (completion, 0);
                      }
                  }
                  break;

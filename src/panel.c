@@ -76,6 +76,7 @@ static void panel_start_gui(Panel *p);
 static gchar version[] = VERSION;
 gchar *cprofile = "default";
 
+static gboolean quit_in_menu = FALSE;
 static GtkWindowGroup* window_group; /* window group used to limit the scope of model dialog. */
 
 FbEv *fbev = NULL;
@@ -913,6 +914,11 @@ static void panel_popupmenu_about( GtkMenuItem* item, Panel* panel )
     gtk_widget_destroy(about); 
 }
 
+static void panel_popupmenu_quit( GtkMenuItem* item, Panel* panel )
+{
+    gtk_main_quit();
+}
+
 void panel_apply_icon( GtkWindow *w )
 {
     gtk_window_set_icon_from_file(w, PACKAGE_DATA_DIR "/lxpanel/images/my-computer.png", NULL);
@@ -1002,6 +1008,17 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
     g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_about), panel );
 
+    if (quit_in_menu)
+    {
+	menu_item = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+	img = gtk_image_new_from_stock( GTK_STOCK_QUIT, GTK_ICON_SIZE_MENU );
+	menu_item = gtk_image_menu_item_new_with_label(_("Quit"));
+	gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+	g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_quit), panel );
+    }
 
     if( use_sub_menu )
     {
@@ -1851,6 +1868,7 @@ usage()
     g_print("  --log <number>     %s\n", _("Set log level 0-5. 0 - none 5 - chatty"));
     g_print("  --profile <name>   %s\n", _("Use specified profile"));
     g_print("  --kiosk-mode       %s\n", _("Enable kiosk mode"));
+    g_print("  --quit-in-menu     %s\n", _("Display 'quit' command in popup menu"));
     g_print("\n");
     g_print(_("Short options:"));
     g_print("\n");
@@ -1919,6 +1937,8 @@ int main(int argc, char *argv[], char *env[])
             }
         } else if (!strcmp(argv[i], "--kiosk-mode")) {
             enable_kiosk_mode();
+        } else if (!strcmp(argv[i], "--quit-in-menu")) {
+            quit_in_menu = TRUE;
         } else {
             printf("lxpanel: unknown option - %s\n", argv[i]);
             usage();

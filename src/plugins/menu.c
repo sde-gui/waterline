@@ -732,6 +732,158 @@ static void on_reload_menu( MenuCache* cache, menup* m )
     reload_system_menu( m, GTK_MENU(m->menu) );
 }
 
+static void open_in_file_manager(Plugin * p, const char * path)
+{
+    char * quote = g_shell_quote(path);
+    const char * fm = lxpanel_get_file_manager();
+    char * cmd = ((strstr(fm, "%s") != NULL) ? g_strdup_printf(fm, quote) : g_strdup_printf("%s %s", fm, quote));
+    g_free(quote);
+    g_spawn_command_line_async(cmd, NULL);
+    g_free(cmd);
+}
+
+#if 0
+static void ru_menuitem_open(GtkWidget * item, Plugin * p)
+{
+    open_in_file_manager(p, g_object_get_data(G_OBJECT(item), "uri"));
+}
+
+static void
+read_recently_used_menu(GtkMenu* menu, Plugin *p, char** fp)
+{
+    menup *m = (menup *)p->priv;
+
+    line s;
+    s.len = 256;
+    if( fp )
+    {
+        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
+            ERR("menu: error - system can not have paramteres\n");
+            return;
+        }
+    }
+
+    GtkRecentManager * rm = gtk_recent_manager_get_default();
+    GList * rl = gtk_recent_manager_get_items(rm);
+    GList *l;
+    for (l = rl; l; l = l->next)
+    {
+        GtkRecentInfo *info = l->data;
+        const char * uri = gtk_recent_info_get_uri(info);
+
+        //GFile * file = g_file_new_for_uri(uri);
+        //if (g_file_query_exists(file, NULL) || gtk_recent_info_get_private_hint(info))
+        if (!gtk_recent_info_get_private_hint(info) && gtk_recent_info_exists(info))
+        {
+	    const char * display_name = gtk_recent_info_get_display_name(info);
+
+	    GdkPixbuf * pixbuf = gtk_recent_info_get_icon(info, m->iconsize);
+	    GtkWidget* img = gtk_image_new_from_pixbuf(pixbuf);
+	    g_object_unref(pixbuf);
+
+	    GtkWidget* mi = gtk_image_menu_item_new_with_label(display_name);
+	    gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(mi), img);
+	    g_object_set_data_full(G_OBJECT(mi), "uri", g_strdup(uri), g_free);
+
+            gchar * tooltip = g_strdup_printf("%d", gtk_recent_info_get_age(info));
+            gtk_widget_set_tooltip_text(mi, tooltip);
+            g_free(tooltip);
+
+	    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(ru_menuitem_open), p);
+
+	    gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
+	    gtk_widget_show(mi);
+        }
+
+        //g_object_unref(file);
+        gtk_recent_info_unref(info);
+    }
+    g_list_free(rl);
+
+    //GtkWidget* mi = gtk_menu_item_new();
+    //gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
+}
+#endif
+
+static void
+recent_documents_activate_cb (GtkRecentChooser *chooser, Plugin * p)
+{
+    GtkRecentInfo * recent_info = gtk_recent_chooser_get_current_item (chooser);
+    const char    * uri = gtk_recent_info_get_uri (recent_info);
+
+    open_in_file_manager(p, uri);
+
+    gtk_recent_info_unref (recent_info);
+}
+
+static void
+read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
+{
+    menup *m = (menup *)p->priv;
+
+    int limit = 20;
+    gboolean show_private = FALSE;
+    gboolean local_only = FALSE;
+    gboolean show_tips = TRUE;
+
+    line s;
+    s.len = 256;
+    if( fp )
+    {
+        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
+            if (s.type == LINE_VAR) {
+		m->config_start = *fp;
+		if (!g_ascii_strcasecmp(s.t[0], "limit"))
+		    limit = atoi(s.t[1]);
+		else if (!g_ascii_strcasecmp(s.t[0], "showprivate"))
+		    show_private = str2num(bool_pair, s.t[1], show_private);
+		else if (!g_ascii_strcasecmp(s.t[0], "localonly"))
+		    local_only = str2num(bool_pair, s.t[1], local_only);
+		else if (!g_ascii_strcasecmp(s.t[0], "showtips"))
+		    show_tips = str2num(bool_pair, s.t[1], show_tips);
+		else {
+		    ERR("menu: unknown var %s\n", s.t[0]);
+		}
+	    } else {
+		ERR("menu: illegal in this context %s\n", s.str);
+		goto error;
+	    }
+        }
+    }
+
+    GtkRecentManager * rm = gtk_recent_manager_get_default();
+
+    GtkWidget      *recent_menu;
+    GtkWidget      *menu_item;
+    int             size;
+
+    menu_item = gtk_image_menu_item_new_with_label(_("Recent Documents"));
+    recent_menu = gtk_recent_chooser_menu_new_for_manager(rm);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), recent_menu);
+
+    GdkPixbuf * pixbuf = lxpanel_load_icon("document-open-recent", m->iconsize, m->iconsize, FALSE);
+    if (pixbuf)
+    {
+        GtkWidget* img = gtk_image_new_from_pixbuf(pixbuf);
+        g_object_unref(pixbuf);
+        gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(menu_item), img);
+    }
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+    gtk_widget_show_all(menu_item);
+
+    gtk_recent_chooser_set_show_private(GTK_RECENT_CHOOSER(recent_menu), show_private);
+    gtk_recent_chooser_set_local_only(GTK_RECENT_CHOOSER(recent_menu), local_only);
+    gtk_recent_chooser_set_show_not_found(GTK_RECENT_CHOOSER(recent_menu), FALSE); // XXX: Seems not working.
+    gtk_recent_chooser_set_show_tips(GTK_RECENT_CHOOSER(recent_menu), show_tips);
+    gtk_recent_chooser_set_sort_type(GTK_RECENT_CHOOSER(recent_menu), GTK_RECENT_SORT_MRU);
+    gtk_recent_chooser_set_limit(GTK_RECENT_CHOOSER(recent_menu), limit);
+
+    g_signal_connect(G_OBJECT(recent_menu), "item-activated", G_CALLBACK(recent_documents_activate_cb), p);
+    
+    error: ;
+}
+
 static void
 read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
 {
@@ -755,7 +907,7 @@ read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
     if( fp )
     {
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
-            ERR("menu: error - system can not have paramteres\n");
+            ERR("menu: error - system can not have parameters\n");
             return;
         }
     }
@@ -829,6 +981,9 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
                 mi = read_separator(p, fp);
             } else if (!g_ascii_strcasecmp(s.t[0], "system")) {
                 read_system_menu(GTK_MENU(menu), p, fp); /* add system menu items */
+                continue;
+            } else if (!g_ascii_strcasecmp(s.t[0], "recentdocuments")) {
+                read_recent_documents_menu(GTK_MENU(menu), p, fp);
                 continue;
             } else if (!g_ascii_strcasecmp(s.t[0], "menu")) {
                 mi = read_submenu(p, fp, TRUE);
@@ -905,6 +1060,14 @@ menu_constructor(Plugin *p, char **fp)
     menup *m;
     static char default_config[] =
         "system {\n"
+        "}\n"
+        "separator {\n"
+        "}\n"
+        "recentdocuments {\n"
+            "showprivate=0\n"
+            "limit=20\n"
+            "localonly=0\n"
+            "showtips=1\n"
         "}\n"
         "separator {\n"
         "}\n"

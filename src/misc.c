@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2011-2012 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -14,6 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+/*
+ * SuxPanel version 0.1
+ * Copyright (c) 2003 Leandro Pereira <leandro@linuxmag.com.br>
+ *
+ * This program may be distributed under the terms of GNU General
+ * Public License version 2. You should have received a copy of the
+ * license with this program; if not, please consult http://www.fsf.org/.
+ *
+ * This program comes with no warranty. Use at your own risk.
+ *
  */
 
 #include <X11/Xatom.h>
@@ -33,6 +46,324 @@
 
 #include "dbg.h"
 
+/********************************************************************/
+
+int strempty(const char* s) {
+    if (!s)
+        return 1;
+    while (*s == ' ' || *s == '\t')
+        s++;
+    return strlen(s) == 0;
+}
+
+/********************************************************************/
+
+gchar *
+expand_tilda(gchar *file)
+{
+    ENTER;
+    RET((file[0] == '~') ?
+        g_strdup_printf("%s%s", getenv("HOME"), file+1)
+        : g_strdup(file));
+
+}
+
+/********************************************************************/
+
+char* translate_exec_to_cmd( const char* exec, const char* icon,
+                             const char* title, const char* fpath )
+{
+    GString* cmd = g_string_sized_new( 256 );
+    for( ; *exec; ++exec )
+    {
+        if( G_UNLIKELY(*exec == '%') )
+        {
+            ++exec;
+            if( !*exec )
+                break;
+            switch( *exec )
+            {
+                case 'c':
+                    g_string_append( cmd, title );
+                    break;
+                case 'i':
+                    if( icon )
+                    {
+                        g_string_append( cmd, "--icon " );
+                        g_string_append( cmd, icon );
+                    }
+                    break;
+                case 'k':
+                {
+                    char* uri = g_filename_to_uri( fpath, NULL, NULL );
+                    g_string_append( cmd, uri );
+                    g_free( uri );
+                    break;
+                }
+                case '%':
+                    g_string_append_c( cmd, '%' );
+                    break;
+            }
+        }
+        else
+            g_string_append_c( cmd, *exec );
+    }
+    return g_string_free( cmd, FALSE );
+}
+
+/********************************************************************/
+
+/*
+ * Taken from pcmanfm:
+ * Parse Exec command line of app desktop file, and translate
+ * it into a real command which can be passed to g_spawn_command_line_async().
+ * file_list is a null-terminated file list containing full
+ * paths of the files passed to app.
+ * returned char* should be freed when no longer needed.
+ */
+static char* translate_app_exec_to_command_line( const char* pexec,
+                                                 GList* file_list )
+{
+    char* file;
+    GList* l;
+    gchar *tmp;
+    GString* cmd = g_string_new("");
+    gboolean add_files = FALSE;
+
+    for( ; *pexec; ++pexec )
+    {
+        if( *pexec == '%' )
+        {
+            ++pexec;
+            switch( *pexec )
+            {
+            case 'U':
+                for( l = file_list; l; l = l->next )
+                {
+                    tmp = g_filename_to_uri( (char*)l->data, NULL, NULL );
+                    file = g_shell_quote( tmp );
+                    g_free( tmp );
+                    g_string_append( cmd, file );
+                    g_string_append_c( cmd, ' ' );
+                    g_free( file );
+                }
+                add_files = TRUE;
+                break;
+            case 'u':
+                if( file_list && file_list->data )
+                {
+                    file = (char*)file_list->data;
+                    tmp = g_filename_to_uri( file, NULL, NULL );
+                    file = g_shell_quote( tmp );
+                    g_free( tmp );
+                    g_string_append( cmd, file );
+                    g_free( file );
+                    add_files = TRUE;
+                }
+                break;
+            case 'F':
+            case 'N':
+                for( l = file_list; l; l = l->next )
+                {
+                    file = (char*)l->data;
+                    tmp = g_shell_quote( file );
+                    g_string_append( cmd, tmp );
+                    g_string_append_c( cmd, ' ' );
+                    g_free( tmp );
+                }
+                add_files = TRUE;
+                break;
+            case 'f':
+            case 'n':
+                if( file_list && file_list->data )
+                {
+                    file = (char*)file_list->data;
+                    tmp = g_shell_quote( file );
+                    g_string_append( cmd, tmp );
+                    g_free( tmp );
+                    add_files = TRUE;
+                }
+                break;
+            case 'D':
+                for( l = file_list; l; l = l->next )
+                {
+                    tmp = g_path_get_dirname( (char*)l->data );
+                    file = g_shell_quote( tmp );
+                    g_free( tmp );
+                    g_string_append( cmd, file );
+                    g_string_append_c( cmd, ' ' );
+                    g_free( file );
+                }
+                add_files = TRUE;
+                break;
+            case 'd':
+                if( file_list && file_list->data )
+                {
+                    tmp = g_path_get_dirname( (char*)file_list->data );
+                    file = g_shell_quote( tmp );
+                    g_free( tmp );
+                    g_string_append( cmd, file );
+                    g_free( tmp );
+                    add_files = TRUE;
+                }
+                break;
+            case 'c':
+                #if 0
+                g_string_append( cmd, vfs_app_desktop_get_disp_name( app ) );
+                #endif
+                break;
+            case 'i':
+                /* Add icon name */
+                #if 0
+                if( vfs_app_desktop_get_icon_name( app ) )
+                {
+                    g_string_append( cmd, "--icon " );
+                    g_string_append( cmd, vfs_app_desktop_get_icon_name( app ) );
+                }
+                #endif
+                break;
+            case 'k':
+                /* Location of the desktop file */
+                break;
+            case 'v':
+                /* Device name */
+                break;
+            case '%':
+                g_string_append_c ( cmd, '%' );
+                break;
+            case '\0':
+                goto _finish;
+                break;
+            }
+        }
+        else  /* not % escaped part */
+        {
+            g_string_append_c ( cmd, *pexec );
+        }
+    }
+_finish:
+    if( ! add_files )
+    {
+        g_string_append_c ( cmd, ' ' );
+        for( l = file_list; l; l = l->next )
+        {
+            file = (char*)l->data;
+            tmp = g_shell_quote( file );
+            g_string_append( cmd, tmp );
+            g_string_append_c( cmd, ' ' );
+            g_free( tmp );
+        }
+    }
+
+    return g_string_free( cmd, FALSE );
+}
+
+gboolean lxpanel_launch(const char* command, GList* files)
+{
+    if (!command)
+        return FALSE;
+
+    while (*command == ' ' || *command == '\t')
+        command++;
+
+    int use_terminal = FALSE;
+
+    if (*command == '&')
+        use_terminal = TRUE,
+        command++;
+
+    if (!*command)
+        return FALSE;
+
+    return lxpanel_launch_app(command, files, use_terminal);
+}
+
+gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal)
+{
+    GError *error = NULL;
+    char* cmd;
+    if( ! exec )
+        return FALSE;
+    cmd = translate_app_exec_to_command_line(exec, files);
+    if( in_terminal )
+    {
+	char * escaped_cmd = g_shell_quote(cmd);
+        char* term_cmd;
+        const char* term = lxpanel_get_terminal();
+        if( strstr(term, "%s") )
+            term_cmd = g_strdup_printf(term, escaped_cmd);
+        else
+            term_cmd = g_strconcat( term, " -e ", escaped_cmd, NULL );
+	g_free(escaped_cmd);
+        if( cmd != exec )
+            g_free(cmd);
+        cmd = term_cmd;
+    }
+    if (! g_spawn_command_line_async(cmd, &error) ) {
+        ERR("can't spawn %s\nError is %s\n", cmd, error->message);
+        g_error_free (error);
+    }
+    g_free(cmd);
+
+    return (error == NULL);
+}
+
+/********************************************************************/
+
+gchar * panel_translate_directory_name(const gchar * name)
+{
+    gchar * title = NULL;
+
+    if ( name )
+    {
+        /* load the name from *.directory file if needed */
+        if ( g_str_has_suffix( name, ".directory" ) )
+        {
+            GKeyFile* kf = g_key_file_new();
+            char* dir_file = g_build_filename( "desktop-directories", name, NULL );
+            if ( g_key_file_load_from_data_dirs( kf, dir_file, NULL, 0, NULL ) )
+            {
+                title = g_key_file_get_locale_string( kf, "Desktop Entry", "Name", NULL, NULL );
+            }
+            g_free( dir_file );
+            g_key_file_free( kf );
+        }
+    }
+
+    if ( !title )
+        title = g_strdup(name);
+
+    return title;
+}
+
+/********************************************************************/
+
+/* Open a specified path in a file manager. */
+void lxpanel_open_in_file_manager(const char * path)
+{
+    char * quote = g_shell_quote(path);
+    const char * fm = lxpanel_get_file_manager();
+    char * cmd = ((strstr(fm, "%s") != NULL) ? g_strdup_printf(fm, quote) : g_strdup_printf("%s %s", fm, quote));
+    g_free(quote);
+    g_spawn_command_line_async(cmd, NULL);
+    g_free(cmd);
+}
+
+/* Open a specified path in a terminal. */
+void lxpanel_open_in_terminal(const char * path)
+{
+    const char * term = lxpanel_get_terminal();
+    char * argv[2];
+    char * sp = strchr(term, ' ');
+    argv[0] = ((sp != NULL) ? g_strndup(term, sp - term) : (char *) term);
+    argv[1] = NULL;
+    g_spawn_async(path, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL);
+    if (argv[0] != term)
+        g_free(argv[0]);
+}
+
+/********************************************************************/
+
 /* data used by themed images buttons */
 typedef struct {
     char* fname;
@@ -49,28 +380,6 @@ static GQuark img_data_id = 0;
 
 static void on_theme_changed(GtkIconTheme* theme, GtkWidget* img);
 static void _gtk_image_set_from_file_scaled( GtkWidget* img, const gchar *file, gint width, gint height, gboolean keep_ratio, gboolean use_dummy_image);
-
-gchar *
-expand_tilda(gchar *file)
-{
-    ENTER;
-    RET((file[0] == '~') ?
-        g_strdup_printf("%s%s", getenv("HOME"), file+1)
-        : g_strdup(file));
-
-}
-
-/*
- * SuxPanel version 0.1
- * Copyright (c) 2003 Leandro Pereira <leandro@linuxmag.com.br>
- *
- * This program may be distributed under the terms of GNU General
- * Public License version 2. You should have received a copy of the
- * license with this program; if not, please consult http://www.fsf.org/.
- *
- * This program comes with no warranty. Use at your own risk.
- *
- */
 
 /* DestroyNotify handler for image data in _gtk_image_new_from_file_scaled. */
 static void img_data_free(ImgData * data)
@@ -365,46 +674,7 @@ GtkWidget * fb_button_new_from_file_with_label(
     return event_box;
 }
 
-char* translate_exec_to_cmd( const char* exec, const char* icon,
-                             const char* title, const char* fpath )
-{
-    GString* cmd = g_string_sized_new( 256 );
-    for( ; *exec; ++exec )
-    {
-        if( G_UNLIKELY(*exec == '%') )
-        {
-            ++exec;
-            if( !*exec )
-                break;
-            switch( *exec )
-            {
-                case 'c':
-                    g_string_append( cmd, title );
-                    break;
-                case 'i':
-                    if( icon )
-                    {
-                        g_string_append( cmd, "--icon " );
-                        g_string_append( cmd, icon );
-                    }
-                    break;
-                case 'k':
-                {
-                    char* uri = g_filename_to_uri( fpath, NULL, NULL );
-                    g_string_append( cmd, uri );
-                    g_free( uri );
-                    break;
-                }
-                case '%':
-                    g_string_append_c( cmd, '%' );
-                    break;
-            }
-        }
-        else
-            g_string_append_c( cmd, *exec );
-    }
-    return g_string_free( cmd, FALSE );
-}
+/********************************************************************/
 
 /*
  This function is used to re-create a new box with different
@@ -453,15 +723,7 @@ GtkWidget* recreate_box( GtkBox* oldbox, GtkOrientation orientation )
     return GTK_WIDGET(newbox);
 }
 
-void show_error( GtkWindow* parent_win, const char* msg )
-{
-    GtkWidget* dlg = gtk_message_dialog_new( parent_win,
-                                             GTK_DIALOG_MODAL,
-                                             GTK_MESSAGE_ERROR,
-                                             GTK_BUTTONS_OK, "%s", msg );
-    gtk_dialog_run( (GtkDialog*)dlg );
-    gtk_widget_destroy( dlg );
-}
+/********************************************************************/
 
 /* Try to load an icon from a named file via the freedesktop.org data directories path.
  * http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html */
@@ -586,201 +848,7 @@ GdkPixbuf * lxpanel_load_icon(const char * name, int width, int height, gboolean
     return icon;
 }
 
-/*
- * Taken from pcmanfm:
- * Parse Exec command line of app desktop file, and translate
- * it into a real command which can be passed to g_spawn_command_line_async().
- * file_list is a null-terminated file list containing full
- * paths of the files passed to app.
- * returned char* should be freed when no longer needed.
- */
-static char* translate_app_exec_to_command_line( const char* pexec,
-                                                 GList* file_list )
-{
-    char* file;
-    GList* l;
-    gchar *tmp;
-    GString* cmd = g_string_new("");
-    gboolean add_files = FALSE;
-
-    for( ; *pexec; ++pexec )
-    {
-        if( *pexec == '%' )
-        {
-            ++pexec;
-            switch( *pexec )
-            {
-            case 'U':
-                for( l = file_list; l; l = l->next )
-                {
-                    tmp = g_filename_to_uri( (char*)l->data, NULL, NULL );
-                    file = g_shell_quote( tmp );
-                    g_free( tmp );
-                    g_string_append( cmd, file );
-                    g_string_append_c( cmd, ' ' );
-                    g_free( file );
-                }
-                add_files = TRUE;
-                break;
-            case 'u':
-                if( file_list && file_list->data )
-                {
-                    file = (char*)file_list->data;
-                    tmp = g_filename_to_uri( file, NULL, NULL );
-                    file = g_shell_quote( tmp );
-                    g_free( tmp );
-                    g_string_append( cmd, file );
-                    g_free( file );
-                    add_files = TRUE;
-                }
-                break;
-            case 'F':
-            case 'N':
-                for( l = file_list; l; l = l->next )
-                {
-                    file = (char*)l->data;
-                    tmp = g_shell_quote( file );
-                    g_string_append( cmd, tmp );
-                    g_string_append_c( cmd, ' ' );
-                    g_free( tmp );
-                }
-                add_files = TRUE;
-                break;
-            case 'f':
-            case 'n':
-                if( file_list && file_list->data )
-                {
-                    file = (char*)file_list->data;
-                    tmp = g_shell_quote( file );
-                    g_string_append( cmd, tmp );
-                    g_free( tmp );
-                    add_files = TRUE;
-                }
-                break;
-            case 'D':
-                for( l = file_list; l; l = l->next )
-                {
-                    tmp = g_path_get_dirname( (char*)l->data );
-                    file = g_shell_quote( tmp );
-                    g_free( tmp );
-                    g_string_append( cmd, file );
-                    g_string_append_c( cmd, ' ' );
-                    g_free( file );
-                }
-                add_files = TRUE;
-                break;
-            case 'd':
-                if( file_list && file_list->data )
-                {
-                    tmp = g_path_get_dirname( (char*)file_list->data );
-                    file = g_shell_quote( tmp );
-                    g_free( tmp );
-                    g_string_append( cmd, file );
-                    g_free( tmp );
-                    add_files = TRUE;
-                }
-                break;
-            case 'c':
-                #if 0
-                g_string_append( cmd, vfs_app_desktop_get_disp_name( app ) );
-                #endif
-                break;
-            case 'i':
-                /* Add icon name */
-                #if 0
-                if( vfs_app_desktop_get_icon_name( app ) )
-                {
-                    g_string_append( cmd, "--icon " );
-                    g_string_append( cmd, vfs_app_desktop_get_icon_name( app ) );
-                }
-                #endif
-                break;
-            case 'k':
-                /* Location of the desktop file */
-                break;
-            case 'v':
-                /* Device name */
-                break;
-            case '%':
-                g_string_append_c ( cmd, '%' );
-                break;
-            case '\0':
-                goto _finish;
-                break;
-            }
-        }
-        else  /* not % escaped part */
-        {
-            g_string_append_c ( cmd, *pexec );
-        }
-    }
-_finish:
-    if( ! add_files )
-    {
-        g_string_append_c ( cmd, ' ' );
-        for( l = file_list; l; l = l->next )
-        {
-            file = (char*)l->data;
-            tmp = g_shell_quote( file );
-            g_string_append( cmd, tmp );
-            g_string_append_c( cmd, ' ' );
-            g_free( tmp );
-        }
-    }
-
-    return g_string_free( cmd, FALSE );
-}
-
-gboolean lxpanel_launch(const char* command, GList* files)
-{
-    if (!command)
-        return FALSE;
-
-    while (*command == ' ' || *command == '\t')
-        command++;
-
-    int use_terminal = FALSE;
-
-    if (*command == '&')
-        use_terminal = TRUE,
-        command++;
-
-    if (!*command)
-        return FALSE;
-
-    return lxpanel_launch_app(command, files, use_terminal);
-}
-
-gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal)
-{
-    GError *error = NULL;
-    char* cmd;
-    if( ! exec )
-        return FALSE;
-    cmd = translate_app_exec_to_command_line(exec, files);
-    if( in_terminal )
-    {
-	char * escaped_cmd = g_shell_quote(cmd);
-        char* term_cmd;
-        const char* term = lxpanel_get_terminal();
-        if( strstr(term, "%s") )
-            term_cmd = g_strdup_printf(term, escaped_cmd);
-        else
-            term_cmd = g_strconcat( term, " -e ", escaped_cmd, NULL );
-	g_free(escaped_cmd);
-        if( cmd != exec )
-            g_free(cmd);
-        cmd = term_cmd;
-    }
-    if (! g_spawn_command_line_async(cmd, &error) ) {
-        ERR("can't spawn %s\nError is %s\n", cmd, error->message);
-        g_error_free (error);
-    }
-    g_free(cmd);
-
-    return (error == NULL);
-}
-
+/********************************************************************/
 
 static void entry_dlg_response(GtkWidget * widget, int response, gpointer p)
 {
@@ -837,62 +905,14 @@ GtkWidget* create_entry_dialog(const char * title, const char * description, con
     return dlg;
 }
 
+/********************************************************************/
 
-gchar * panel_translate_directory_name(const gchar * name)
+void show_error( GtkWindow* parent_win, const char* msg )
 {
-    gchar * title = NULL;
-
-    if ( name )
-    {
-        /* load the name from *.directory file if needed */
-        if ( g_str_has_suffix( name, ".directory" ) )
-        {
-            GKeyFile* kf = g_key_file_new();
-            char* dir_file = g_build_filename( "desktop-directories", name, NULL );
-            if ( g_key_file_load_from_data_dirs( kf, dir_file, NULL, 0, NULL ) )
-            {
-                title = g_key_file_get_locale_string( kf, "Desktop Entry", "Name", NULL, NULL );
-            }
-            g_free( dir_file );
-            g_key_file_free( kf );
-        }
-    }
-
-    if ( !title )
-        title = g_strdup(name);
-
-    return title;
-}
-
-
-int strempty(const char* s) {
-    if (!s)
-        return 1;
-    while (*s == ' ' || *s == '\t')
-        s++;
-    return strlen(s) == 0;
-}
-
-/* Open a specified path in a file manager. */
-void lxpanel_open_in_file_manager(const char * path)
-{
-    char * quote = g_shell_quote(path);
-    const char * fm = lxpanel_get_file_manager();
-    char * cmd = ((strstr(fm, "%s") != NULL) ? g_strdup_printf(fm, quote) : g_strdup_printf("%s %s", fm, quote));
-    g_free(quote);
-    g_spawn_command_line_async(cmd, NULL);
-    g_free(cmd);
-}
-
-/* Open a specified path in a terminal. */
-void lxpanel_open_in_terminal(const char * path)
-{
-    const char * term = lxpanel_get_terminal();
-    char * argv[2];
-    char * sp = strchr(term, ' ');
-    argv[0] = ((sp != NULL) ? g_strndup(term, sp - term) : (char *) term);
-    argv[1] = NULL;
-    g_spawn_async(path, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL);
-    if (argv[0] != term)
-        g_free(argv[0]);
+    GtkWidget* dlg = gtk_message_dialog_new( parent_win,
+                                             GTK_DIALOG_MODAL,
+                                             GTK_MESSAGE_ERROR,
+                                             GTK_BUTTONS_OK, "%s", msg );
+    gtk_dialog_run( (GtkDialog*)dlg );
+    gtk_widget_destroy( dlg );
 }

@@ -462,5 +462,5 @@ void plugin_adjust_popup_position(GtkWidget * popup, Plugin * plugin)
     if ((y + popup->allocation.height) > screen_height) y = screen_height - popup->allocation.height;
 
     /* Move the popup to position. */
-    gdk_window_move(popup->window, x, y);
+    gtk_window_move(GTK_WINDOW(popup), x, y);
 }

@@ -160,6 +160,7 @@ static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * e
         if (dc->calendar_window == NULL)
         {
             dc->calendar_window = dclock_create_calendar(dc);
+            plugin_adjust_popup_position(dc->calendar_window, plugin);
             gtk_widget_show_all(dc->calendar_window);
         }
         else

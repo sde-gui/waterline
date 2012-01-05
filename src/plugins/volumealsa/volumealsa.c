@@ -334,6 +334,7 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
             }
             else
             {
+                plugin_adjust_popup_position(vol->popup_window, vol->plugin);
                 gtk_widget_show_all(vol->popup_window);
                 vol->show_popup = TRUE;
             }

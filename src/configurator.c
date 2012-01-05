@@ -345,6 +345,25 @@ on_use_font_size_toggled( GtkToggleButton* btn,   Panel* p )
 }
 
 static void
+on_round_corners_radius_set( GtkSpinButton* spin, Panel* p )
+{
+    p->round_corners_radius = (int)gtk_spin_button_get_value(spin);
+    panel_set_panel_configuration_changed(p);
+}
+
+static void
+on_use_round_corners_toggled( GtkToggleButton* btn,   Panel* p )
+{
+    GtkWidget* clr = (GtkWidget*)g_object_get_data( G_OBJECT(btn), "clr" );
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn)))
+        gtk_widget_set_sensitive( clr, TRUE );
+    else
+        gtk_widget_set_sensitive( clr, FALSE );
+    p->round_corners = gtk_toggle_button_get_active( btn );
+    panel_set_panel_configuration_changed(p);
+}
+
+static void
 set_dock_type(GtkToggleButton* toggle,  Panel* p )
 {
     p->setdocktype = gtk_toggle_button_get_active(toggle) ? 1 : 0;
@@ -1000,6 +1019,20 @@ void panel_configure( Panel* p, int sel_page )
     g_signal_connect(w2, "toggled", G_CALLBACK(on_use_font_size_toggled), p);
     if( ! p->usefontsize )
         gtk_widget_set_sensitive( w, FALSE );
+
+    /* round corners */
+    w = (GtkWidget*)gtk_builder_get_object( builder, "round_corners_radius" );
+    gtk_spin_button_set_value( (GtkSpinButton*)w, p->round_corners_radius );
+    g_signal_connect( w, "value-changed",
+                      G_CALLBACK(on_round_corners_radius_set), p);
+
+    w2 = (GtkWidget*)gtk_builder_get_object( builder, "use_round_corners" );
+    gtk_toggle_button_set_active( (GtkToggleButton*)w2, p->round_corners );
+    g_object_set_data( G_OBJECT(w2), "clr", w );
+    g_signal_connect(w2, "toggled", G_CALLBACK(on_use_round_corners_toggled), p);
+    if( ! p->round_corners )
+        gtk_widget_set_sensitive( w, FALSE );
+
 
     /* plugin list */
     {

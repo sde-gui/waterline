@@ -401,6 +401,43 @@ static void on_theme_changed(GtkIconTheme * theme, GtkWidget * img)
     _gtk_image_set_from_file_scaled(img, data->fname, data->dw, data->dh, data->keep_ratio, data->use_dummy_image);
 }
 
+void fb_button_set_label(GtkWidget * btn, Panel * panel, gchar * label)
+{
+    /* Locate the label within the button. */
+    GtkWidget * child = gtk_bin_get_child(GTK_BIN(btn));
+    GtkWidget * lbl = NULL;
+    if (GTK_IS_IMAGE(child))
+    {
+        /* No label. Create new. */
+
+        GtkWidget * img = child;
+        
+        GtkWidget * inner = gtk_hbox_new(FALSE, 0);
+        gtk_container_set_border_width(GTK_CONTAINER(inner), 0);
+        GTK_WIDGET_UNSET_FLAGS (inner, GTK_CAN_FOCUS);
+
+        gtk_box_pack_start(GTK_BOX(inner), img, FALSE, FALSE, 0);
+
+        gtk_container_add(GTK_CONTAINER(btn), inner);
+
+        lbl = gtk_label_new("");
+        gtk_misc_set_padding(GTK_MISC(lbl), 2, 0);
+        gtk_box_pack_start(GTK_BOX(inner), lbl, FALSE, FALSE, 0);
+
+    }
+    else if (GTK_IS_BOX(child))
+    {
+        GList * children = gtk_container_get_children(GTK_CONTAINER(child));
+        lbl = GTK_WIDGET(GTK_IMAGE(children->next->data));
+        g_list_free(children);
+    }
+
+
+    /* Update label text. */
+    if (lbl)
+        panel_draw_label_text(panel, lbl, label, FALSE, TRUE);
+}
+
 void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width, gint height, gboolean keep_ratio)
 {
     /* Locate the image within the button. */

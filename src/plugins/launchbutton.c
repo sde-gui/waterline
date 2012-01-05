@@ -87,6 +87,7 @@ static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t 
 
 
 /* Recursively apply a configuration change. */
+/*
 static void lb_apply_configuration_to_children(GtkWidget * w, Plugin * p)
 {
     if (GTK_IS_CONTAINER(w)) {
@@ -96,7 +97,7 @@ static void lb_apply_configuration_to_children(GtkWidget * w, Plugin * p)
         panel_draw_label_text(p->panel, w, lb->title, FALSE, TRUE);
     }
 }
-
+*/
 
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void lb_apply_configuration(Plugin * p)
@@ -107,16 +108,23 @@ static void lb_apply_configuration(Plugin * p)
         p->pwid = gtk_event_box_new(),
         gtk_widget_show(p->pwid);
 
-    if (lb->button)
+/*    if (lb->button)
         gtk_widget_destroy(lb->button),
         lb->button = NULL;
-
-
-    lb->button = fb_button_new_from_file_with_label(lb->icon_path,
-                 p->panel->icon_size, p->panel->icon_size, PANEL_ICON_HIGHLIGHT, TRUE, p->panel, lb->title);
-    gtk_container_add(GTK_CONTAINER(p->pwid), lb->button);
-    g_signal_connect(lb->button, "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
-    gtk_widget_show(lb->button);
+*/
+    if (!lb->button)
+    {
+        lb->button = fb_button_new_from_file_with_label(lb->icon_path,
+                     p->panel->icon_size, p->panel->icon_size, PANEL_ICON_HIGHLIGHT, TRUE, p->panel, lb->title);
+        gtk_container_add(GTK_CONTAINER(p->pwid), lb->button);
+        g_signal_connect(lb->button, "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
+        gtk_widget_show(lb->button);
+    }
+    else
+    {
+        fb_button_set_label(lb->button, p->panel, lb->title);
+        fb_button_set_from_file(lb->button, lb->icon_path, p->panel->icon_size, p->panel->icon_size, TRUE);
+    }
 
     if (!strempty(lb->tooltip)) {
         gtk_widget_set_tooltip_text(lb->button, lb->tooltip);
@@ -169,7 +177,7 @@ static void lb_apply_configuration(Plugin * p)
         g_free(tooltip);
     }
 
-    gtk_container_foreach(GTK_CONTAINER(p->pwid), (GtkCallback) lb_apply_configuration_to_children, (gpointer) p);
+    //gtk_container_foreach(GTK_CONTAINER(p->pwid), (GtkCallback) lb_apply_configuration_to_children, (gpointer) p);
 }
 
 

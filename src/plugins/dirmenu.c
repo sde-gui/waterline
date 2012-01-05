@@ -558,20 +558,6 @@ static void dirmenu_destructor(Plugin * p)
     g_free(dm);
 }
 
-/* Recursively apply a configuration change. */
-static void dirmenu_apply_configuration_to_children(GtkWidget * w, DirMenuPlugin * dm)
-{
-    if (GTK_IS_CONTAINER(w))
-	gtk_container_foreach(GTK_CONTAINER(w), (GtkCallback) dirmenu_apply_configuration_to_children, (gpointer) dm);
-    else if (GTK_IS_LABEL(w))
-    {
-        if (dm->name == NULL)
-	    gtk_label_set_text(GTK_LABEL(w), NULL);
-        else
-            panel_draw_label_text(dm->plugin->panel, w, dm->name, FALSE, TRUE);
-    }
-}
-
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void dirmenu_apply_configuration(Plugin * p)
 {
@@ -601,9 +587,8 @@ static void dirmenu_apply_configuration(Plugin * p)
     fb_button_set_from_file(p->pwid,
         ((dm->image != NULL) ? dm->image : (icon_name != NULL) ? icon_name : "file-manager"),
         ((dm->image != NULL) ? -1 : p->panel->icon_size), p->panel->icon_size, TRUE);
-
+    fb_button_set_label(p->pwid, p->panel, dm->name);
     gtk_widget_set_tooltip_text(p->pwid, ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()));
-    gtk_container_foreach(GTK_CONTAINER(p->pwid), (GtkCallback) dirmenu_apply_configuration_to_children, (gpointer) dm);
 
     g_free(icon_name);
 }

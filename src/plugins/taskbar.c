@@ -330,7 +330,8 @@ typedef struct _taskbar {
     gboolean tooltips;				/* User preference: show tooltips */
     int show_icons_titles;			/* User preference: show icons, titles */
     gboolean show_close_buttons;		/* User preference: show close button */
-    
+
+    gboolean show_urgency_all_desks;		/* User preference: show windows from other workspaces if they set urgent hint*/
     gboolean use_urgency_hint;			/* User preference: windows with urgency will flash */
     gboolean flat_button;			/* User preference: taskbar buttons have visible background */
 
@@ -619,7 +620,10 @@ static gboolean task_has_visible_close_button(Task * tk)
 /* Determine if a task is visible considering only its desktop placement. */
 static gboolean task_is_visible_on_desktop(Task * tk, int desktop)
 {
-    return ( (tk->desktop == ALL_WORKSPACES) || (tk->desktop == desktop) || (tk->tb->show_all_desks) );
+    return ( (tk->desktop == ALL_WORKSPACES)
+          || (tk->desktop == desktop)
+          || (tk->tb->show_all_desks)
+          || (tk->tb->show_urgency_all_desks && tk->urgency) );
 }
 
 /* Determine if a task is visible considering only its desktop placement. */
@@ -3967,6 +3971,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->tooltips          = TRUE;
     tb->show_icons_titles = SHOW_BOTH;
     tb->show_all_desks    = FALSE;
+    tb->show_urgency_all_desks = TRUE;
     tb->show_mapped       = TRUE;
     tb->show_iconified    = TRUE;
     tb->task_width_max    = TASK_WIDTH_MAX;
@@ -4049,6 +4054,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->show_mapped = str2num(bool_pair, s.t[1], tb->show_mapped);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowAllDesks") == 0)
                     tb->show_all_desks = str2num(bool_pair, s.t[1], tb->show_all_desks);
+                else if (g_ascii_strcasecmp(s.t[0], "ShowUrgencyAllDesks") == 0)
+                    tb->show_urgency_all_desks = str2num(bool_pair, s.t[1], tb->show_urgency_all_desks);
                 else if (g_ascii_strcasecmp(s.t[0], "MaxTaskWidth") == 0)
                     tb->task_width_max = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "spacing") == 0)
@@ -4309,6 +4316,8 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 
         _("Flash when there is any window requiring attention"), (gpointer)&tb->use_urgency_hint, (GType)CONF_TYPE_BOOL,
 
+        _("Show windows from all desktops, if they requires attention"), (gpointer)&tb->show_urgency_all_desks, (GType)CONF_TYPE_BOOL,
+
         _("Sorting"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         sort_by_1, (gpointer)&tb->sort_by[0], (GType)CONF_TYPE_ENUM,
@@ -4375,6 +4384,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowIconified", tb->show_iconified);
     lxpanel_put_bool(fp, "ShowMapped", tb->show_mapped);
     lxpanel_put_bool(fp, "ShowAllDesks", tb->show_all_desks);
+    lxpanel_put_bool(fp, "ShowUrgencyAllDesks", tb->show_urgency_all_desks);
     lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);
     lxpanel_put_bool(fp, "FlatButton", tb->flat_button);
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);

@@ -68,10 +68,9 @@ typedef struct {
     int sort_directories;
     int sort_files;
     gboolean plain_view;
+    gboolean show_icons;
 } DirMenuPlugin;
 
-static void dirmenu_open_in_file_manager(Plugin * p, const char * path);
-static void dirmenu_open_in_terminal(Plugin * p, const char * path);
 static void dirmenu_menuitem_open_file(GtkWidget * item, Plugin * p);
 static void dirmenu_menuitem_open_directory(GtkWidget * item, Plugin * p);
 static void dirmenu_menuitem_open_in_terminal(GtkWidget * item, Plugin * p);
@@ -90,46 +89,22 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent);
 static void dirmenu_save_configuration(Plugin * p, FILE * fp);
 static void dirmenu_panel_configuration_changed(Plugin * p);
 
-/* Open a specified path in a file manager. */
-static void dirmenu_open_in_file_manager(Plugin * p, const char * path)
-{
-    char * quote = g_shell_quote(path);
-    const char * fm = lxpanel_get_file_manager();
-    char * cmd = ((strstr(fm, "%s") != NULL) ? g_strdup_printf(fm, quote) : g_strdup_printf("%s %s", fm, quote));
-    g_free(quote);
-    g_spawn_command_line_async(cmd, NULL);
-    g_free(cmd);
-}
-
-/* Open a specified path in a terminal. */
-static void dirmenu_open_in_terminal(Plugin * p, const char * path)
-{
-    const char * term = lxpanel_get_terminal();
-    char * argv[2];
-    char * sp = strchr(term, ' ');
-    argv[0] = ((sp != NULL) ? g_strndup(term, sp - term) : (char *) term);
-    argv[1] = NULL;
-    g_spawn_async(path, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL);
-    if (argv[0] != term)
-        g_free(argv[0]);
-}
-
 /* Handler for activate event on file menu item. */
 static void dirmenu_menuitem_open_file(GtkWidget * item, Plugin * p)
 {
-    dirmenu_open_in_file_manager(p, g_object_get_data(G_OBJECT(item), "path"));
+    lxpanel_open_in_file_manager(g_object_get_data(G_OBJECT(item), "path"));
 }
 
 /* Handler for activate event on popup Open menu item. */
 static void dirmenu_menuitem_open_directory(GtkWidget * item, Plugin * p)
 {
-    dirmenu_open_in_file_manager(p, g_object_get_data(G_OBJECT(gtk_widget_get_parent(item)), "path"));
+    lxpanel_open_in_file_manager(g_object_get_data(G_OBJECT(gtk_widget_get_parent(item)), "path"));
 }
 
 /* Handler for activate event on popup Open In Terminal menu item. */
 static void dirmenu_menuitem_open_in_terminal(GtkWidget * item, Plugin * p)
 {
-    dirmenu_open_in_terminal(p, g_object_get_data(G_OBJECT(gtk_widget_get_parent(item)), "path"));
+    lxpanel_open_in_terminal(g_object_get_data(G_OBJECT(gtk_widget_get_parent(item)), "path"));
 }
 
 /* Handler for select event on popup menu item. */
@@ -140,7 +115,7 @@ static void dirmenu_menuitem_open_directory_plain(GtkWidget * item, Plugin * p)
         (char *) g_object_get_data(G_OBJECT(parent), "path"),
         (char *) g_object_get_data(G_OBJECT(item), "name"),
         NULL);
-    dirmenu_open_in_file_manager(p, path);
+    lxpanel_open_in_file_manager(path);
     g_free(path);
 }
 
@@ -311,9 +286,31 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
     {
         /* Create and initialize menu item. */
         GtkWidget * item = gtk_image_menu_item_new_with_label(dir_cursor->file_name);
-        gtk_image_menu_item_set_image(
-            GTK_IMAGE_MENU_ITEM(item),
-            gtk_image_new_from_stock(GTK_STOCK_DIRECTORY, GTK_ICON_SIZE_MENU));
+
+        if (dm->show_icons)
+        {
+            GFile * file = g_file_new_for_path(dir_cursor->path);
+            GFileInfo * file_info =g_file_query_info(file,
+                G_FILE_ATTRIBUTE_STANDARD_ICON,
+                G_FILE_QUERY_INFO_NONE,
+                NULL,
+                NULL);
+            GIcon * icon = g_file_info_get_icon(file_info);
+            if (icon)
+            {
+                GtkImage * img = gtk_image_new_from_gicon(icon, GTK_ICON_SIZE_MENU);
+                gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(item), img);
+            }
+            g_object_unref(G_OBJECT(file_info));
+            g_object_unref(G_OBJECT(file));
+        }
+        else
+        {
+            gtk_image_menu_item_set_image(
+                GTK_IMAGE_MENU_ITEM(item),
+                gtk_image_new_from_stock(GTK_STOCK_DIRECTORY, GTK_ICON_SIZE_MENU));
+        }
+
         GtkWidget * dummy = gtk_menu_new();
         if (!dm->plain_view)
             gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), dummy);
@@ -369,6 +366,24 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             item = gtk_image_menu_item_new_with_label(file_cursor->file_name);
         }
         gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), item);
+
+        if (dm->show_icons)
+        {
+            GFile * file = g_file_new_for_path(file_cursor->path);
+            GFileInfo * file_info =g_file_query_info(file,
+                G_FILE_ATTRIBUTE_STANDARD_ICON,
+                G_FILE_QUERY_INFO_NONE,
+                NULL,
+                NULL);
+            GIcon * icon = g_file_info_get_icon(file_info);
+            if (icon)
+            {
+                GtkImage * img = gtk_image_new_from_gicon(icon, GTK_ICON_SIZE_MENU);
+                gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(item), img);
+            }
+            g_object_unref(G_OBJECT(file_info));
+            g_object_unref(G_OBJECT(file));
+        }
 
         /* Unlink and free file name element, but reuse the file path. */
         g_object_set_data_full(G_OBJECT(item), "path", file_cursor->path, g_free);
@@ -441,7 +456,7 @@ static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * 
     }
     else
     {
-        dirmenu_open_in_terminal(p, ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()));
+        lxpanel_open_in_terminal( ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()) );
     }
     return TRUE;
 }
@@ -458,10 +473,10 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     dm->show_files = TRUE;
     dm->max_file_count = 10;
     dm->show_file_size = FALSE;
+    dm->show_icons = TRUE;
     dm->sort_directories = SORT_BY_NAME;
     dm->sort_files = SORT_BY_NAME;
     dm->plain_view = FALSE;
-
 
     /* Load parameters from the configuration file. */
     line s;
@@ -491,6 +506,8 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
                     dm->max_file_count = atoi(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowFileSize") == 0)
                     dm->show_file_size = str2num(bool_pair, s.t[1], dm->show_file_size);
+                else if (g_ascii_strcasecmp(s.t[0], "ShowIcons") == 0)
+                    dm->show_icons = str2num(bool_pair, s.t[1], dm->show_icons);
                 else if (g_ascii_strcasecmp(s.t[0], "SortDirectoriesBy") == 0)
                     dm->sort_directories = str2num(sort_by_pair, s.t[1], dm->sort_directories);
                 else if (g_ascii_strcasecmp(s.t[0], "SortFilesBy") == 0)
@@ -590,6 +607,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _("Show files"), &dm->show_files, (GType)CONF_TYPE_BOOL,
         _("Use submenu if number of files is more than"), &dm->max_file_count, (GType)CONF_TYPE_INT,
         _("Show file size"), &dm->show_file_size, (GType)CONF_TYPE_BOOL,
+        _("Show MIME type icons"), &dm->show_icons, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         sort_directories, (gpointer)&dm->sort_directories, (GType)CONF_TYPE_ENUM,
         sort_files, (gpointer)&dm->sort_files, (GType)CONF_TYPE_ENUM,
@@ -614,6 +632,7 @@ static void dirmenu_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowFiles", dm->show_files);
     lxpanel_put_int(fp, "MaxFileCount", dm->max_file_count);
     lxpanel_put_bool(fp, "ShowFileSize", dm->show_file_size);
+    lxpanel_put_bool(fp, "ShowIcons", dm->show_icons);
     lxpanel_put_enum(fp, "SortDirectoriesBy", dm->sort_directories, sort_by_pair);
     lxpanel_put_enum(fp, "SortFilesBy", dm->sort_files, sort_by_pair);
     lxpanel_put_bool(fp, "PlainView", dm->plain_view);

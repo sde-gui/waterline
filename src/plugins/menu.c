@@ -732,16 +732,6 @@ static void on_reload_menu( MenuCache* cache, menup* m )
     reload_system_menu( m, GTK_MENU(m->menu) );
 }
 
-static void open_in_file_manager(Plugin * p, const char * path)
-{
-    char * quote = g_shell_quote(path);
-    const char * fm = lxpanel_get_file_manager();
-    char * cmd = ((strstr(fm, "%s") != NULL) ? g_strdup_printf(fm, quote) : g_strdup_printf("%s %s", fm, quote));
-    g_free(quote);
-    g_spawn_command_line_async(cmd, NULL);
-    g_free(cmd);
-}
-
 #if 0
 static void ru_menuitem_open(GtkWidget * item, Plugin * p)
 {
@@ -811,7 +801,7 @@ recent_documents_activate_cb (GtkRecentChooser *chooser, Plugin * p)
     GtkRecentInfo * recent_info = gtk_recent_chooser_get_current_item (chooser);
     const char    * uri = gtk_recent_info_get_uri (recent_info);
 
-    open_in_file_manager(p, uri);
+    lxpanel_open_in_file_manager(uri);
 
     gtk_recent_info_unref (recent_info);
 }

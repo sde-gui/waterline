@@ -1147,6 +1147,7 @@ static void apply_config(Plugin* p)
     menup* m = (menup*)p->priv;
     if( m->fname )
         fb_button_set_from_file( m->img, m->fname, -1, p->panel->icon_size, TRUE );
+    fb_button_set_label( m->img, p->panel, m->caption);
 }
 
 static void menu_config( Plugin *p, GtkWindow* parent )

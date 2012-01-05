@@ -577,12 +577,35 @@ static void dirmenu_apply_configuration(Plugin * p)
 {
     DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
 
+    gchar * icon_name = NULL;
+
+    if (!dm->image)
+    {
+	GFile * file = g_file_new_for_path( ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()) );
+	GFileInfo * file_info =g_file_query_info(file,
+	    G_FILE_ATTRIBUTE_STANDARD_ICON,
+	    G_FILE_QUERY_INFO_NONE,
+	    NULL,
+	    NULL);
+	GIcon * icon = g_file_info_get_icon(file_info);
+	if (icon)
+	{
+	    gchar * name = g_icon_to_string(icon);
+	    icon_name = g_strdup_printf("GIcon %s", name);
+	    g_free(name);
+	}
+	g_object_unref(G_OBJECT(file_info));
+	g_object_unref(G_OBJECT(file));
+    }
+
     fb_button_set_from_file(p->pwid,
-        ((dm->image != NULL) ? dm->image : "file-manager"),
+        ((dm->image != NULL) ? dm->image : (icon_name != NULL) ? icon_name : "file-manager"),
         ((dm->image != NULL) ? -1 : p->panel->icon_size), p->panel->icon_size, TRUE);
 
     gtk_widget_set_tooltip_text(p->pwid, ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()));
     gtk_container_foreach(GTK_CONTAINER(p->pwid), (GtkCallback) dirmenu_apply_configuration_to_children, (gpointer) dm);
+
+    g_free(icon_name);
 }
 
 /* Callback when the configuration dialog is to be shown. */

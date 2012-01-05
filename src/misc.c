@@ -485,7 +485,19 @@ static GdkPixbuf * load_icon_from_theme(GtkIconTheme * theme, const char * icon_
     GdkPixbuf * icon = NULL;
 
     /* Look up the icon in the current theme. */
-    GtkIconInfo * icon_info = gtk_icon_theme_lookup_icon(theme, icon_name, height, GTK_ICON_LOOKUP_USE_BUILTIN);
+    GtkIconInfo * icon_info = NULL;
+
+    if (icon_name && strlen(icon_name) > 7 && memcmp("GIcon ", icon_name, 6) == 0)
+    {
+        GIcon * gicon = g_icon_new_for_string(icon_name + 6, NULL);
+        icon_info = gtk_icon_theme_lookup_by_gicon(theme, gicon, width, GTK_ICON_LOOKUP_USE_BUILTIN);
+        g_object_unref(G_OBJECT(gicon));
+    }
+    else
+    {
+        icon_info = gtk_icon_theme_lookup_icon(theme, icon_name, height, GTK_ICON_LOOKUP_USE_BUILTIN);
+    }
+
     if (icon_info != NULL)
     {
         /* If that succeeded, get the filename of the icon.

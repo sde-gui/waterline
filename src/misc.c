@@ -671,6 +671,10 @@ GtkWidget * fb_button_new_from_file_with_label(
     gtk_misc_set_padding (GTK_MISC(image), 0, 0);
 
     gtk_widget_show_all(event_box);
+
+    if (panel)
+        panel_require_update_background(panel);
+
     return event_box;
 }
 

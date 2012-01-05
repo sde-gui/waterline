@@ -121,6 +121,8 @@ typedef struct _Panel {
     GtkWidget* width_control;		/* Width control in preference dialog */
 
     int preferred_icon_size;
+
+    int update_background_idle_cb;
 } Panel;
 
 
@@ -144,6 +146,8 @@ extern void panel_set_wm_strut(Panel *p);
 extern void panel_set_dock_type(Panel *p);
 extern void panel_set_panel_configuration_changed(Panel *p);
 extern void panel_update_background( Panel* p );
+
+extern void panel_require_update_background( Panel* p );
 
 extern int panel_handle_x_error(Display * d, XErrorEvent * ev);
 extern int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent * ev);

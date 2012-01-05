@@ -484,6 +484,12 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
  * This function should only be called after the panel has been realized. */
 void panel_update_background(Panel * p)
 {
+    if (p->update_background_idle_cb)
+    {
+        g_source_remove(p->update_background_idle_cb);
+        p->update_background_idle_cb = 0;
+    }
+
     /* Redraw the top level widget. */
     panel_determine_background_pixmap(p, p->topgwin, p->topgwin->window);
     gdk_window_clear(p->topgwin->window);
@@ -502,6 +508,8 @@ void panel_update_background(Panel * p)
 
 static gboolean delay_update_background( Panel* p )
 {
+    p->update_background_idle_cb = 0;
+
     /* Panel could be destroyed while background update scheduled */
     if ( p->topgwin && GTK_WIDGET_REALIZED ( p->topgwin ) ) {
 	gdk_display_sync( gtk_widget_get_display(p->topgwin) );
@@ -511,11 +519,19 @@ static gboolean delay_update_background( Panel* p )
     return FALSE;
 }
 
+void panel_require_update_background( Panel* p )
+{
+    if (!p->update_background_idle_cb)
+    {
+        p->update_background_idle_cb = g_idle_add_full( G_PRIORITY_LOW, 
+            (GSourceFunc)delay_update_background, p, NULL );
+    }
+}
+
 static void
 panel_realize(GtkWidget *widget, Panel *p)
 {
-    g_idle_add_full( G_PRIORITY_LOW, 
-            (GSourceFunc)delay_update_background, p, NULL );
+    panel_require_update_background(p);
 }
 
 static void
@@ -523,8 +539,7 @@ panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
 {
     /* FIXME: This dirty hack is used to fix the background of systray... */
     if( GTK_WIDGET_REALIZED( widget ) )
-        g_idle_add_full( G_PRIORITY_LOW, 
-                (GSourceFunc)delay_update_background, p, NULL );
+        panel_require_update_background(p);
 }
 
 /******************************************************************************/
@@ -1667,6 +1682,9 @@ delete_plugin(gpointer data, gpointer udata)
 void panel_destroy(Panel *p)
 {
     ENTER;
+
+    if (p->update_background_idle_cb)
+        g_source_remove(p->update_background_idle_cb);
 
     if (p->pref_dialog != NULL)
         gtk_widget_destroy(p->pref_dialog);

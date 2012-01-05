@@ -13,9 +13,9 @@ Global {
     alpha=0
     setdocktype=1
     setpartialstrut=1
-    usefontcolor=1
+    usefontcolor=0
     fontcolor=#ffffff
-    background=1
+    background=0
     backgroundfile=@prefix@/share/lxpanel/images/background.png
 }
 
@@ -29,8 +29,16 @@ Plugin {
 Plugin {
     type = menu
     Config {
-        image=@prefix@/share/lxpanel/images/my-computer.png
+        image=start-here
         system {
+        }
+        separator {
+        }
+        recentdocuments {
+            showprivate=0
+            limit=30
+            localonly=0
+            showtips=1
         }
         separator {
         }

@@ -411,19 +411,24 @@ void fb_button_set_label(GtkWidget * btn, Panel * panel, gchar * label)
         /* No label. Create new. */
 
         GtkWidget * img = child;
-        
+
         GtkWidget * inner = gtk_hbox_new(FALSE, 0);
         gtk_container_set_border_width(GTK_CONTAINER(inner), 0);
         GTK_WIDGET_UNSET_FLAGS (inner, GTK_CAN_FOCUS);
 
+        g_object_ref(G_OBJECT(img));
+        gtk_container_remove(GTK_CONTAINER(btn), img);
+        gtk_container_add(GTK_CONTAINER(btn), inner);
+
         gtk_box_pack_start(GTK_BOX(inner), img, FALSE, FALSE, 0);
 
-        gtk_container_add(GTK_CONTAINER(btn), inner);
+        g_object_unref(G_OBJECT(img));
 
         lbl = gtk_label_new("");
         gtk_misc_set_padding(GTK_MISC(lbl), 2, 0);
         gtk_box_pack_start(GTK_BOX(inner), lbl, FALSE, FALSE, 0);
 
+        gtk_widget_show_all(inner);
     }
     else if (GTK_IS_BOX(child))
     {

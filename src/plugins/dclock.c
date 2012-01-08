@@ -77,7 +77,8 @@ static char * dclock_get_timezones(DClockPlugin * dc)
     if (!dc->timezones)
     {
         FILE * fpipe;
-        char * command = "find /usr/share/zoneinfo/ -type f -printf '%P\\n'";
+        //char * command = "find /usr/share/zoneinfo/ -type f -printf '%P\\n'";
+        char * command = "grep -v '^#' /usr/share/zoneinfo/zone.tab | awk '{print $3}' | sort";
 
         if ( !(fpipe = popen(command,"r")) )
         {

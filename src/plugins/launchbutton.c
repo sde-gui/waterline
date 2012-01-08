@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
+ * Copyright (c) 2011 Vadim Ushakov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -209,11 +209,11 @@ static int lb_constructor(Plugin *p, char **fp)
                 else if (g_ascii_strcasecmp(s.t[0], "Command3") == 0)
                     lb->command3 = g_strdup(s.t[1]);
                 else
-                    ERR( "dclock: unknown var %s\n", s.t[0]);
+                    ERR( "launchbutton: unknown var %s\n", s.t[0]);
             }
             else
             {
-                ERR( "dclock: illegal in this context %s\n", s.str);
+                ERR( "launchbutton: illegal in this context %s\n", s.str);
                 return 0;
             }
         }

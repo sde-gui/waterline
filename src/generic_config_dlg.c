@@ -136,6 +136,40 @@ static void generic_config_dlg_response(GtkWidget * widget, int response, Plugin
     gtk_widget_destroy(widget);
 }
 
+gboolean  completion_match_cb(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter, gpointer user_data)
+{
+    gboolean ret = FALSE;
+
+    gchar *item = NULL;
+    gchar *normalized_string;
+    gchar *case_normalized_string;
+  
+    GtkTreeModel * completion_model = (GtkTreeModel *) user_data;
+
+    if (completion_model)
+        gtk_tree_model_get(completion_model, iter, 0, &item, -1);
+
+    if (item != NULL)
+    {
+        normalized_string = g_utf8_normalize(item, -1, G_NORMALIZE_ALL);
+
+        if (normalized_string != NULL)
+        {
+            case_normalized_string = g_utf8_casefold(normalized_string, -1);
+
+            if (strstr(case_normalized_string, key))
+                ret = TRUE;
+
+            g_free (case_normalized_string);
+        }
+        g_free (normalized_string);
+    }
+
+    g_free (item);
+
+    return ret;
+}
+
 /* Parameters: const char* name, gpointer ret_value, GType type, ....NULL */
 GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                                       GSourceFunc apply_func, Plugin * plugin,
@@ -278,7 +312,9 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                          completion_model = GTK_TREE_MODEL (store);
                          gtk_entry_completion_set_model (completion, completion_model);
                          g_object_unref (completion_model);
-    
+
+                         gtk_entry_completion_set_match_func(completion, completion_match_cb, completion_model, NULL);
+
                          /* Use model column 0 as the text column */
                          gtk_entry_completion_set_text_column (completion, 0);
                      }

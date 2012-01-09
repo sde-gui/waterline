@@ -1835,6 +1835,10 @@ static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, Tas
             mi = gtk_image_menu_item_new_with_label(name);
             g_free(name);
             g_free(wname);
+        } else if (tk_cursor->focused) {
+            name = g_strdup_printf("* %s *", name);
+            mi = gtk_image_menu_item_new_with_label(name);
+            g_free(name);
         } else {
             mi = gtk_image_menu_item_new_with_label(name);
         }

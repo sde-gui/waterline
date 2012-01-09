@@ -207,6 +207,7 @@ typedef struct _task {
     Atom name_source;				/* Atom that is the source of taskbar label */
     gboolean name_changed;
 
+    char * wm_class;
 
     TaskClass * task_class;			/* Task class (group) */
     struct _task * task_class_flink;		/* Forward link to task in same class */
@@ -339,6 +340,9 @@ typedef struct _taskbar {
     gboolean show_iconified;			/* User preference: show iconified windows */
     gboolean tooltips;				/* User preference: show tooltips */
     int show_icons_titles;			/* User preference: show icons, titles */
+
+    char* custom_fallback_icon; /* User preference: use as fallback icon */
+
     gboolean show_close_buttons;		/* User preference: show close button */
 
     gboolean show_urgency_all_desks;		/* User preference: show windows from other workspaces if they set urgent hint*/
@@ -1167,7 +1171,7 @@ static TaskClass * taskbar_enter_class(TaskbarPlugin * tb, char * class_name, gb
     RET(tc);
 }
 
-static gchar* task_get_res_class(Task * tk) {
+static gchar* task_read_wm_class(Task * tk) {
     ENTER;
     /* Read the WM_CLASS property. */
     XClassHint ch;
@@ -1194,6 +1198,11 @@ static gchar* task_get_res_class(Task * tk) {
     RET(res_class);
 }
 
+static void task_update_wm_class(Task * tk) {
+    g_free(tk->wm_class);
+    tk->wm_class = task_read_wm_class(tk);
+}
+
 /* Set the class associated with a task. */
 static void task_set_class(Task * tk)
 {
@@ -1207,17 +1216,16 @@ static void task_set_class(Task * tk)
 
     if (tb->rearrange) {
         /* FIXME: Dirty hack for current implementation of task_reorder. */
-        gchar * class_name_1 = task_get_res_class(tk);
+        gchar * class_name_1 = tk->wm_class;
         gchar * class_name_2 = task_get_desktop_name(tk, NULL);
         class_name = g_strdup_printf("%s %s", class_name_1, class_name_2);
-        g_free(class_name_1);
         g_free(class_name_2);
     } else if (tk->override_class_name != (char*) -1) {
         class_name = task_get_desktop_name(tk, NULL);
     } else {
         switch (tb->_group_by) {
             case GROUP_BY_CLASS:
-                class_name = task_get_res_class(tk); break;
+                class_name = g_strdup(tk->wm_class); break;
             case GROUP_BY_WORKSPACE:
                 class_name = task_get_desktop_name(tk, NULL); break;
             case GROUP_BY_STATE:
@@ -1717,10 +1725,26 @@ static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
     && ((source == None) || (tk->image_source == None)))
     {
         /* Establish the fallback task icon.  This is used when no other icon is available. */
-        if (tb->fallback_pixbuf == NULL)
-            tb->fallback_pixbuf = gdk_pixbuf_new_from_xpm_data((const char **) icon_xpm);
-        g_object_ref(tb->fallback_pixbuf);
-        pixbuf = tb->fallback_pixbuf;
+
+        /* try to get one from class name at first */
+        if (tk->wm_class) {
+            gchar* classname = g_utf8_strdown(tk->wm_class, -1);
+            pixbuf = lxpanel_load_icon(classname,
+                                       icon_size, icon_size, FALSE);
+            g_free(classname);
+        }
+
+        if (pixbuf == NULL) {
+
+            if (tb->custom_fallback_icon != NULL)
+                tb->fallback_pixbuf = lxpanel_load_icon(tb->custom_fallback_icon,
+                                                        icon_size, icon_size, TRUE);
+            else
+                tb->fallback_pixbuf = gdk_pixbuf_new_from_xpm_data((const char **) icon_xpm);
+            g_object_ref(tb->fallback_pixbuf);
+            pixbuf = tb->fallback_pixbuf;
+        }
+
     }
 
     /* Return what we have.  This may be NULL to indicate that no change should be made to the icon. */
@@ -3148,6 +3172,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     if (tb->use_urgency_hint)
                         tk->urgency = task_has_urgency(tk);
 
+                    task_update_wm_class(tk);
                     task_build_gui(tb, tk);
                     task_set_names(tk, None);
 
@@ -3443,6 +3468,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 else if (at == XA_WM_CLASS)
                 {
                     /* Window changed class. */
+                    task_update_wm_class(tk);
                     task_update_grouping(tk, GROUP_BY_CLASS);
                 }
                 else if (at == a_WM_STATE)
@@ -4193,6 +4219,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->icon_size         = p->panel->icon_size;
     tb->tooltips          = TRUE;
     tb->show_icons_titles = SHOW_BOTH;
+    tb->custom_fallback_icon = "xorg";
     tb->show_all_desks    = FALSE;
     tb->show_urgency_all_desks = TRUE;
     tb->show_mapped       = TRUE;
@@ -4271,6 +4298,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "AcceptSkipPager") == 0)		/* For backward compatibility */
                     ;
+                else if (g_ascii_strcasecmp(s.t[0], "FallbackIcon") == 0)
+                    tb->custom_fallback_icon = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowIconified") == 0)
                     tb->show_iconified = str2num(bool_pair, s.t[1], tb->show_iconified);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowMapped") == 0)
@@ -4505,7 +4534,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     GtkWidget* dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
-        (GSourceFunc) taskbar_apply_configuration, (gpointer) p,
+    	    (GSourceFunc) taskbar_apply_configuration, (gpointer) p,
         _("Appearance"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
 
         _("|Show:|Icons only|Titles only|Icons and titles"), (gpointer)&tb->show_icons_titles, (GType)CONF_TYPE_ENUM,
@@ -4611,6 +4640,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     lxpanel_put_bool(fp, "tooltips", tb->tooltips);
     lxpanel_put_enum(fp, "ShowIconsTitles", tb->show_icons_titles, show_pair);
+    lxpanel_put_str(fp, "FallbackIcon", tb->custom_fallback_icon);
     lxpanel_put_bool(fp, "ShowIconified", tb->show_iconified);
     lxpanel_put_bool(fp, "ShowMapped", tb->show_mapped);
     lxpanel_put_bool(fp, "ShowAllDesks", tb->show_all_desks);

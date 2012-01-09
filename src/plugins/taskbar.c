@@ -253,6 +253,8 @@ typedef struct _task {
     int icon_size;
 
     int x_window_position;
+
+    guint open_group_menu_delay_timer;
 } Task;
 
 /* Private context for taskbar plugin. */
@@ -290,6 +292,8 @@ typedef struct _taskbar {
     GtkWidget * title_menuitem;
 
     GtkWidget * group_menu;			/* Popup menu for grouping selection */
+    GtkAllocation group_menu_alloc;
+    guint close_group_menu_delay_timer;
 
     /* NETWM stuff */
 
@@ -323,6 +327,7 @@ typedef struct _taskbar {
     int menu_actions_click_press;
     int other_actions_click_press;
 
+    gboolean open_group_menu_on_mouse_over;
 
     gboolean show_all_desks;			/* User preference: show windows from all desktops */
     gboolean show_mapped;			/* User preference: show mapped windows */
@@ -337,7 +342,7 @@ typedef struct _taskbar {
 
     gboolean use_group_separators;
     int group_separator_size;
-    
+
     int mode;                                   /* User preference: view mode */
     int group_fold_threshold;                   /* User preference: threshold for fold grouped tasks into one button */
     int panel_fold_threshold;
@@ -413,6 +418,7 @@ static gchar *taskbar_rc = "style 'taskbar-style'\n"
 "widget '*.taskbar.*' style 'taskbar-style'";
 
 #define DRAG_ACTIVE_DELAY    1000
+#define OPEN_GROUP_MENU_DELAY 500
 #define TASK_WIDTH_MAX       200
 #define TASK_PADDING         4
 #define ALL_WORKSPACES       0xFFFFFFFF		/* 64-bit clean */
@@ -1248,11 +1254,13 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     if (tb->button_pressed_task == tk)
         tb->button_pressed_task = NULL;
 
-    /* If there are deferred calls, remove them. */
+    /* Remove deferred calls and timers. */
     if (tk->adapt_to_allocated_size_idle_cb != 0)
         g_source_remove(tk->adapt_to_allocated_size_idle_cb);
     if (tk->update_icon_idle_cb != 0)
         g_source_remove(tk->update_icon_idle_cb);
+    if (tk->open_group_menu_delay_timer != 0)
+        g_source_remove(tk->open_group_menu_delay_timer);
 
     if (tk->override_class_name != (char*) -1 && tk->override_class_name)
          g_free(tk->override_class_name);
@@ -1840,6 +1848,53 @@ static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, Tas
     }
 }
 
+static gboolean taskbar_close_group_menu_timeout(TaskbarPlugin * tb)
+{
+    tb->close_group_menu_delay_timer = 0;
+    gtk_menu_popdown(tb->group_menu);
+    return FALSE;
+}
+
+/* Handler for "leave" event from group menu. */
+static gboolean group_menu_motion(GtkWidget * widget, GdkEvent  *event, Task * tk)
+{
+    TaskbarPlugin * tb = tk->tb;
+
+    int x = 0, y = 0;
+    gboolean out = FALSE;
+    
+    gtk_widget_get_pointer(tk->button, &x, &y);
+    out = x < 0 || y < 0 || x > tk->button_alloc.width || y > tk->button_alloc.height;
+
+    if (out)
+    {
+        gtk_widget_get_pointer(tb->group_menu, &x, &y);
+        out = x < 0 || y < 0 || x > tb->group_menu_alloc.width || y > tb->group_menu_alloc.height;
+    }
+
+    if (out)
+    {
+    	if (tb->close_group_menu_delay_timer == 0)
+	    tb->close_group_menu_delay_timer =
+		g_timeout_add(OPEN_GROUP_MENU_DELAY / 2, (GSourceFunc) taskbar_close_group_menu_timeout, tb);
+    }
+    else
+    {
+	if (tb->close_group_menu_delay_timer != 0)
+	{
+	    g_source_remove(tb->close_group_menu_delay_timer);
+	    tb->close_group_menu_delay_timer = 0;
+	}
+    }
+
+    return FALSE;
+}
+
+static void group_menu_size_allocate(GtkWidget * w, GtkAllocation * alloc, Task * tk)
+{
+    tk->tb->group_menu_alloc = *alloc;
+}
+
 static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean similar)
 {
     TaskbarPlugin * tb = tk->tb;
@@ -1871,11 +1926,25 @@ static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean si
         }
     }
 
+    if (!event)
+    {
+        g_signal_connect_after(G_OBJECT (menu), "motion-notify-event", G_CALLBACK(group_menu_motion), (gpointer) tk);
+        g_signal_connect(G_OBJECT (menu), "size-allocate", G_CALLBACK(group_menu_size_allocate), (gpointer) tk);
+    }
+
+    /* Destroy already opened menu, if any. */
+    task_group_menu_destroy(tb);
+    gtk_menu_popdown(tb->menu);
+
     /* Show the menu.  Set context so we can find the menu later to dismiss it.
      * Use a position-calculation callback to get the menu nicely positioned with respect to the button. */
     gtk_widget_show_all(menu);
     tb->group_menu = menu;
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) tk, event->button, event->time);
+
+    guint event_button = event ? event->button : 0;
+    guint32 event_time = event ? event->time: gtk_get_current_event_time();
+
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) tk, event_button, event_time);
 
 }
 
@@ -2100,6 +2169,12 @@ static void taskbar_popup_set_position(GtkWidget * menu, gint * px, gint * py, g
 /* Remove the grouped-task popup menu from the screen. */
 static void task_group_menu_destroy(TaskbarPlugin * tb)
 {
+    if (tb->close_group_menu_delay_timer != 0)
+    {
+	g_source_remove(tb->close_group_menu_delay_timer);
+	tb->close_group_menu_delay_timer = 0;
+    }
+
     if (tb->group_menu != NULL)
     {
         gtk_widget_destroy(tb->group_menu);
@@ -2358,18 +2433,41 @@ static void taskbar_button_drag_leave(GtkWidget * widget, GdkDragContext * drag_
     return;
 }
 
+/* Handler for group menu timeout. */
+static gboolean taskbar_open_group_menu_timeout(Task * tk)
+{
+    tk->open_group_menu_delay_timer = 0;
+    task_show_window_list(tk, NULL, TRUE);
+    return FALSE;
+}
+
 /* Handler for "enter" event from taskbar button.  This indicates that the cursor position has entered the button. */
 static void taskbar_button_enter(GtkWidget * widget, Task * tk)
 {
+    TaskbarPlugin * tb = tk->tb;
+
     tk->entered_state = TRUE;
-    if (taskbar_task_button_is_really_flat(tk->tb))
+    if (taskbar_task_button_is_really_flat(tb))
         gtk_widget_set_state(widget, GTK_STATE_NORMAL);
     task_draw_label(tk);
+
+    if (tb->open_group_menu_on_mouse_over && task_class_is_folded(tb, tk->task_class))
+    {
+	if (tk->open_group_menu_delay_timer == 0)
+	    tk->open_group_menu_delay_timer =
+		g_timeout_add(OPEN_GROUP_MENU_DELAY, (GSourceFunc) taskbar_open_group_menu_timeout, tk);
+    }
 }
 
 /* Handler for "leave" event from taskbar button.  This indicates that the cursor position has left the button. */
 static void taskbar_button_leave(GtkWidget * widget, Task * tk)
 {
+    if (tk->open_group_menu_delay_timer != 0)
+    {
+        g_source_remove(tk->open_group_menu_delay_timer);
+        tk->open_group_menu_delay_timer = 0;
+    }
+
     tk->entered_state = FALSE;
     task_draw_label(tk);
 }
@@ -4138,6 +4236,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->use_x_net_wm_icon_geometry = str2num(bool_pair, s.t[1], tb->use_x_net_wm_icon_geometry);
                 else if (g_ascii_strcasecmp(s.t[0], "UseXWindowPosition") == 0)
                     tb->use_x_window_position = str2num(bool_pair, s.t[1], tb->use_x_window_position);
+                else if (g_ascii_strcasecmp(s.t[0], "OpenGroupMenuOnMouseOver") == 0)
+                    tb->open_group_menu_on_mouse_over = str2num(bool_pair, s.t[1], tb->open_group_menu_on_mouse_over);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -4347,6 +4447,8 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         other_actions_click_press, (gpointer)&tb->other_actions_click_press, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
+        _("Open group menu on mouse over"), (gpointer)&tb->open_group_menu_on_mouse_over, (GType)CONF_TYPE_BOOL,
+
         _("Integration"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
 
         _("_NET_WM_ICON_GEOMETRY"), (gpointer)&tb->use_x_net_wm_icon_geometry, (GType)CONF_TYPE_BOOL,
@@ -4416,6 +4518,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "ShiftScrollDownAction", tb->shift_scroll_down_action, action_pair);
     lxpanel_put_enum(fp, "MenuActionsTriggeredBy", tb->menu_actions_click_press, action_trigged_by_pair);
     lxpanel_put_enum(fp, "OtherActionsTriggeredBy", tb->other_actions_click_press, action_trigged_by_pair);
+    lxpanel_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
     lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
     lxpanel_put_bool(fp, "UseGroupSeparators", tb->use_group_separators);
     lxpanel_put_int(fp, "GroupSeparatorSize", tb->group_separator_size);

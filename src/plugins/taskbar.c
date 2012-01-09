@@ -1,5 +1,7 @@
 /**
- * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
+ * Copyright (c) 2011-2012 Vadim Ushakov
+ * Copyright (c) 2006 LxDE Developers
+ * Copyright (c) 2006 Hong Jen Yee (PCMan)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +17,12 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+
+/********************\
+ = HC SVNT DRACONES =
+\********************/
+
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,21 +47,9 @@
 #include "gtkbar.h"
 #include "icon-grid.h"
 
-/*
- * 2006.09.10 modified by Hong Jen Yee (PCMan) pcman.tw (AT) gmail.com
- * Following features are added:
- * 1. Add XUrgencyHint support. (Flashing task bar buttons, can be disabled)
- * 2. Raise window when files get dragged over taskbar buttons.
- * 3. Add Restore & Maximize menu items to popup menu of task bar buttons.
- */
-
 //#define DEBUG
 
 #include "dbg.h"
-
-struct _taskbar;
-struct _task_class;
-struct _task;
 
 /******************************************************************************/
 
@@ -174,6 +170,10 @@ static pair sort_by_pair[] = {
 };
 
 /******************************************************************************/
+
+struct _taskbar;
+struct _task_class;
+struct _task;
 
 /* Structure representing a class. */
 typedef struct _task_class {

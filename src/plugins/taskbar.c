@@ -203,6 +203,7 @@ typedef struct _task {
 
     char * name;				/* Taskbar label when normal, from WM_NAME or NET_WM_NAME */
     char * name_iconified;			/* Taskbar label when iconified */
+    char * name_shaded;				/* Taskbar label when shaded */
     Atom name_source;				/* Atom that is the source of taskbar label */
     gboolean name_changed;
 
@@ -598,7 +599,13 @@ static int task_class_is_folded(TaskbarPlugin * tb, TaskClass * tc)
 
 static char* task_get_displayed_name(Task * tk)
 {
-    if (tk->iconified) {
+    if (tk->shaded) {
+        if (!tk->name_shaded) {
+            tk->name_shaded = g_strdup_printf("=%s=", tk->name);
+        }
+        return tk->name_shaded;
+    }
+    else if (tk->iconified) {
         if (!tk->name_iconified) {
             tk->name_iconified = g_strdup_printf("[%s]", tk->name);
         }
@@ -970,7 +977,8 @@ static void task_free_names(Task * tk)
 {
     g_free(tk->name);
     g_free(tk->name_iconified);
-    tk->name = tk->name_iconified = NULL;
+    g_free(tk->name_shaded);
+    tk->name = tk->name_iconified = tk->name_shaded = NULL;
 }
 
 /* Set the names associated with a task.

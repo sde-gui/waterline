@@ -23,6 +23,11 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
+#include <signal.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <pty.h>
+
 //#include <menu-cache.h>
 
 //#include <sys/types.h>
@@ -38,7 +43,26 @@
 
 #include "dbg.h"
 
+struct _lb_t;
+
 typedef struct {
+    guint input_source_id;
+    guint input_hup_source_id;
+    guint input_err_source_id;
+    guint process_source_id;
+    GIOChannel * input_channel;
+    pid_t child_pid;
+
+    gboolean eof;
+
+    gchar * input_buffer;
+
+    gchar * command;
+
+    struct _lb_t * lb;
+} input_t;
+
+typedef struct _lb_t {
     char * icon_path;
     char * title;
     char * tooltip;
@@ -51,8 +75,261 @@ typedef struct {
     GtkWidget * label;
 
     Plugin * plug;
+
+    input_t input_title;
+    input_t input_icon;
+    input_t input_tooltip;
+    input_t input_general;
+
+    int input_restart_interval;
+
+    gboolean use_pipes;
+
+    guint input_timeout;
 } lb_t;
 
+/*****************************************************************************/
+
+static void lb_input(lb_t * lb, input_t * input, gchar * line);
+
+/*****************************************************************************/
+
+static int _set_nonblocking(int fd)
+{
+    int flags;
+    if (-1 == (flags = fcntl(fd, F_GETFL, 0)))
+        flags = 0;
+    return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+}     
+
+static gboolean input_on_child_input(GIOChannel *source, GIOCondition condition, input_t * input)
+{
+    int i;
+
+    if (!source)
+        return TRUE;
+
+    gchar buf[1024];
+    buf[0] = 0;
+    gsize bytes_read = 0;
+
+    input->eof |= (condition == G_IO_HUP) || (condition == G_IO_ERR);
+
+    GIOStatus status = 0;
+    
+    if (!input->eof)
+    {
+        status = g_io_channel_read_chars(source, buf, 1023, &bytes_read, NULL);
+        buf[bytes_read] = 0;
+    }
+
+    //g_print("condition %d\n", (int)condition);
+    //g_print("bs %d\n", (int)bytes_read);
+    //g_print("input->eof %d\n", (int)input->eof);
+
+    input->eof |= (status == G_IO_STATUS_EOF) || (status == G_IO_STATUS_ERROR);
+
+    if (bytes_read > 0)
+    {
+	gchar * newbuffer = g_strconcat(input->input_buffer ? input->input_buffer : "", buf, NULL);
+	g_free(input->input_buffer);
+	input->input_buffer = newbuffer;
+
+	gchar ** lines = g_strsplit(input->input_buffer, "\n", 0);
+	int line_nr = g_strv_length(lines);
+
+	g_free(input->input_buffer);
+
+	for (i = 0; i < line_nr - (input->eof ? 0 : 1); i++)
+	{
+	    int l = strlen(lines[i]);
+	    if (lines[i][l - 1] == '\r')
+		lines[i][l - 1] = 0;
+
+	    //g_print("== %s\n", lines[i]);
+
+	    lb_input(input->lb, input, lines[i]);
+	}
+
+	if (!input->eof)
+	    input->input_buffer = g_strdup(lines[line_nr - 1]);
+
+	g_strfreev(lines);
+    }
+
+    if (input->eof)
+    {
+	if (input->input_source_id)
+	{
+	    g_source_remove(input->input_source_id);
+	    input->input_source_id = 0;
+	}
+
+	if (input->input_hup_source_id)
+	{
+	    g_source_remove(input->input_hup_source_id);
+	    input->input_hup_source_id = 0;
+	}
+
+	if (input->input_err_source_id)
+	{
+	    g_source_remove(input->input_err_source_id);
+	    input->input_err_source_id = 0;
+	}
+
+	if (input->input_channel)
+	{
+	    g_io_channel_shutdown(input->input_channel, FALSE, NULL);
+	    g_io_channel_unref(input->input_channel);
+	    input->input_channel = NULL;
+	}
+    }
+
+    return input->eof ? FALSE : TRUE;
+}
+
+static void input_on_child_exit(GPid pid, gint status, input_t * input)
+{
+    input->child_pid = 0;
+    input_on_child_input(input->input_channel, 0, input);
+}
+
+static input_stop(input_t * input)
+{
+    if (input->input_source_id)
+    {
+        g_source_remove(input->input_source_id);
+        input->input_source_id = 0;
+    }
+
+    if (input->input_hup_source_id)
+    {
+        g_source_remove(input->input_hup_source_id);
+        input->input_hup_source_id = 0;
+    }
+
+    if (input->input_err_source_id)
+    {
+        g_source_remove(input->input_err_source_id);
+        input->input_err_source_id = 0;
+    }
+
+    if (input->input_channel)
+    {
+        g_io_channel_shutdown(input->input_channel, FALSE, NULL);
+        g_io_channel_unref(input->input_channel);
+        input->input_channel = NULL;
+    }
+
+    if (input->process_source_id)
+    {
+        g_source_remove(input->process_source_id);
+        input->process_source_id = 0;
+    }
+
+    if (input->child_pid)
+    {
+        kill(input->child_pid, SIGKILL);
+        int stat_loc;
+        waitpid(input->child_pid, &stat_loc, 0);
+        input->child_pid = 0;
+    }
+
+    if (input->input_buffer)
+    {
+        g_free(input->input_buffer);
+        input->input_buffer = NULL;
+    }
+
+}
+
+static input_start(input_t * input)
+{
+    input_stop(input);
+
+    input->eof = TRUE;
+
+    if (strempty(input->command))
+        return;
+
+    gboolean use_pty = TRUE;
+
+    int fds[2];
+    if (use_pty)
+    {
+        openpty(&fds[0], &fds[1], NULL, NULL, NULL);
+    }
+    else
+    {
+        pipe(fds);
+    }
+
+    pid_t pid = fork();
+
+    if (pid == 0)
+    {
+        if (use_pty)
+        {
+            setsid();
+            ioctl(fds[1], TIOCSCTTY, (char *)NULL);
+        }
+
+        close(fds[0]);
+
+        dup2(fds[1],1);
+        close(fds[1]);
+
+        execlp ("sh", "sh", "-c", input->command, (char *) NULL);
+        _exit(-1);
+    }
+
+    close(fds[1]);
+
+    if (pid < 0)
+    {
+        close(fds[0]);
+    }
+    else
+    {
+        input->eof = FALSE;
+        input->child_pid = pid;
+        _set_nonblocking(fds[0]);
+        input->input_channel = g_io_channel_unix_new(fds[0]);
+        input->input_source_id = g_io_add_watch(input->input_channel, G_IO_IN, input_on_child_input, input);
+        input->input_hup_source_id = g_io_add_watch(input->input_channel, G_IO_HUP, input_on_child_input, input);
+        input->input_err_source_id = g_io_add_watch(input->input_channel, G_IO_ERR, input_on_child_input, input);
+        input->process_source_id = g_child_watch_add(pid, input_on_child_exit, input);
+    }
+
+}
+
+/*****************************************************************************/
+
+/* Handler for "button-press-event" event from launch button. */
+static void lb_input(lb_t * lb, input_t * input, gchar * line)
+{
+    if (input == &lb->input_title)
+    {
+        fb_button_set_label(lb->button, lb->plug->panel, line);
+    }
+    else if (input == &lb->input_tooltip)
+    {
+        gtk_widget_set_tooltip_text(lb->button, line);
+    }
+    else if (input == &lb->input_icon)
+    {
+        int icon_size = lb->plug->panel->icon_size;
+        fb_button_set_from_file(lb->button, line, icon_size, icon_size, TRUE);
+    }
+    else if (input == &lb->input_general)
+    {
+        // FIXME: to be implemented
+    }
+
+}
+
+
+/*****************************************************************************/
 
 /* Handler for "button-press-event" event from launch button. */
 static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t * lb)
@@ -81,6 +358,21 @@ static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t 
               lxpanel_show_panel_menu( lb->plug->panel, lb->plug, event );
         }
     }
+
+    return TRUE;
+}
+
+
+static gboolean lb_input_timeout(lb_t * lb)
+{
+    if (lb->input_title.eof)
+        input_start(&lb->input_title);
+    if (lb->input_tooltip.eof)
+        input_start(&lb->input_tooltip);
+    if (lb->input_icon.eof)
+        input_start(&lb->input_icon);
+    if (lb->input_general.eof)
+        input_start(&lb->input_general);
 
     return TRUE;
 }
@@ -160,6 +452,29 @@ static void lb_apply_configuration(Plugin * p)
         g_free(tooltip);
     }
 
+    if (lb->input_timeout)
+    {
+        g_source_remove(lb->input_timeout);
+        lb->input_timeout = 0;
+    }
+
+    if (lb->use_pipes)
+    {
+        input_start(&lb->input_title);
+        input_start(&lb->input_tooltip);
+        input_start(&lb->input_icon);
+        input_start(&lb->input_general);
+
+        if (lb->input_restart_interval)
+            lb->input_timeout = g_timeout_add(lb->input_restart_interval, (GSourceFunc) lb_input_timeout, lb);
+    }
+    else
+    {
+        input_stop(&lb->input_title);
+        input_stop(&lb->input_tooltip);
+        input_stop(&lb->input_icon);
+        input_stop(&lb->input_general);
+    }
 }
 
 
@@ -170,6 +485,11 @@ static int lb_constructor(Plugin *p, char **fp)
     lb_t * lb = g_new0(lb_t, 1);
     lb->plug = p;
     p->priv = lb;
+
+    lb->input_title.lb = lb;
+    lb->input_icon.lb = lb;
+    lb->input_tooltip.lb = lb;
+    lb->input_general.lb = lb;
 
     lb->icon_path = NULL;
     lb->title     = NULL;
@@ -208,6 +528,18 @@ static int lb_constructor(Plugin *p, char **fp)
                     lb->command2 = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "Command3") == 0)
                     lb->command3 = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdates") == 0)
+                    lb->use_pipes = str2num(bool_pair, s.t[1], lb->use_pipes);
+                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateTitle") == 0)
+                    lb->input_title.command = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateTooltip") == 0)
+                    lb->input_tooltip.command = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateIconPath") == 0)
+                    lb->input_icon.command = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateGeneral") == 0)
+                    lb->input_general.command = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateRestartInterval") == 0)
+                    lb->input_restart_interval = atoi(s.t[1]);
                 else
                     ERR( "launchbutton: unknown var %s\n", s.t[0]);
             }
@@ -249,6 +581,14 @@ static void lb_destructor(Plugin * p)
 {
     lb_t * lb = (lb_t *) p->priv;
 
+    if (lb->input_timeout)
+        g_source_remove(lb->input_timeout);
+
+    input_stop(&lb->input_title);
+    input_stop(&lb->input_tooltip);
+    input_stop(&lb->input_icon);
+    input_stop(&lb->input_general);
+
     /* Deallocate all memory. */
     g_free(lb->icon_path);
     g_free(lb->title);
@@ -256,6 +596,10 @@ static void lb_destructor(Plugin * p)
     g_free(lb->command1);
     g_free(lb->command2);
     g_free(lb->command3);
+    g_free(lb->input_title.command);
+    g_free(lb->input_tooltip.command);
+    g_free(lb->input_icon.command);
+    g_free(lb->input_general.command);
     g_free(lb);
 }
 
@@ -264,10 +608,17 @@ static void lb_destructor(Plugin * p)
 static void lb_configure(Plugin * p, GtkWindow * parent)
 {
     lb_t * lb = (lb_t *) p->priv;
+
+    int min_input_restart_interval = 0;
+    int max_input_restart_interval = 100000;
+    
     GtkWidget * dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
         (GSourceFunc) lb_apply_configuration, (gpointer) p,
+
+        _("General"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
+
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Title")  , &lb->title    , (GType)CONF_TYPE_STR,
         _("Tooltip"), &lb->tooltip  , (GType)CONF_TYPE_STR,
@@ -276,7 +627,21 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
         _("Left button command")  , &lb->command1, (GType)CONF_TYPE_STR,
         _("Middle button command"), &lb->command2, (GType)CONF_TYPE_STR,
         _("Right button command") , &lb->command3, (GType)CONF_TYPE_STR,
+
+        _("Interactive updates"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
+        _("Enable interactive updates"), (gpointer)&lb->use_pipes, (GType)CONF_TYPE_BOOL,
+        _("Command restart interval"), (gpointer)&lb->input_restart_interval, (GType)CONF_TYPE_INT,
+        "int-min-value", (gpointer)&min_input_restart_interval, (GType)CONF_TYPE_SET_PROPERTY,
+        "int-max-value", (gpointer)&max_input_restart_interval, (GType)CONF_TYPE_SET_PROPERTY,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        _("Title update command")  , &lb->input_title.command, (GType)CONF_TYPE_STR,
+        _("Tooltip  update command"), &lb->input_tooltip.command, (GType)CONF_TYPE_STR,
+        _("Icon path update command"), &lb->input_icon.command, (GType)CONF_TYPE_STR,
+//        _("General update command"), &lb->input_general.command, (GType)CONF_TYPE_STR,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+
         NULL);
+
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
 }
@@ -292,6 +657,13 @@ static void lb_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_str(fp, "Command1", lb->command1);
     lxpanel_put_str(fp, "Command2", lb->command2);
     lxpanel_put_str(fp, "Command3", lb->command3);
+
+    lxpanel_put_bool(fp, "InteractiveUpdates", lb->use_pipes);
+    lxpanel_put_int(fp, "InteractiveUpdateRestartInterval", lb->input_restart_interval);
+    lxpanel_put_str(fp, "InteractiveUpdateTitle", lb->input_title.command);
+    lxpanel_put_str(fp, "InteractiveUpdateTooltip", lb->input_tooltip.command);
+    lxpanel_put_str(fp, "InteractiveUpdateIconPath", lb->input_icon.command);
+    lxpanel_put_str(fp, "InteractiveUpdateRestartInterval", lb->input_general.command);
 }
 
 

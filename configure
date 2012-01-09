@@ -12478,7 +12478,7 @@ fi
 
 
 PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"
-PACKAGE_LIBS="$PACKAGE_LIBS $MENU_CACHE_LIBS"
+PACKAGE_LIBS="$PACKAGE_LIBS $MENU_CACHE_LIBS -lutil"
 
 # Check whether --enable-man was given.
 if test "${enable_man+set}" = set; then :

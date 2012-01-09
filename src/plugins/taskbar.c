@@ -212,6 +212,8 @@ typedef struct _task {
     struct _task * task_class_flink;		/* Forward link to task in same class */
     char * override_class_name;
 
+    GdkPixbuf * icon_pixbuf;
+    GdkPixbuf * icon_pixbuf_iconified;
 
     GtkWidget * button;				/* Button representing task in taskbar */
     GtkWidget * container;			/* Container for image, label and close button. */
@@ -239,6 +241,8 @@ typedef struct _task {
     unsigned int flash_state : 1;		/* One-bit counter to flash taskbar */
     unsigned int entered_state : 1;		/* True if cursor is inside taskbar button */
     unsigned int present_in_client_list : 1;	/* State during WM_CLIENT_LIST processing to detect deletions */
+
+    unsigned int deferred_iconified_update : 1;
 
     int timestamp;
 
@@ -344,6 +348,8 @@ typedef struct _taskbar {
     gboolean use_group_separators;
     int group_separator_size;
 
+    gboolean dimm_iconified;
+
     int mode;                                   /* User preference: view mode */
     int group_fold_threshold;                   /* User preference: threshold for fold grouped tasks into one button */
     int panel_fold_threshold;
@@ -383,6 +389,8 @@ typedef struct _taskbar {
 
     gboolean show_mapped_prev;
     gboolean show_iconified_prev;
+
+    gboolean dimm_iconified_prev;
 
     gboolean use_group_separators_prev;
 
@@ -456,6 +464,7 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink);
 static GdkPixbuf * _wnck_gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, int height);
 static GdkPixbuf * apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask);
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
+static void task_update_icon2(Task * tk, Atom source, gboolean use_old);
 static void task_update_icon(Task * tk, Atom source);
 
 static void task_reorder(Task * tk, gboolean and_others);
@@ -514,6 +523,44 @@ static void taskbar_apply_configuration(Plugin * p);
 static void taskbar_configure(Plugin * p, GtkWindow * parent);
 static void taskbar_save_configuration(Plugin * p, FILE * fp);
 static void taskbar_panel_configuration_changed(Plugin * p);
+
+/******************************************************************************/
+
+/* http://git.gnome.org/browse/libwnck/tree/libwnck/tasklist.c?h=gnome-2-30 */
+
+static void
+_wnck_dimm_icon (GdkPixbuf *pixbuf)
+{
+  int x, y, pixel_stride, row_stride;
+  guchar *row, *pixels;
+  int w, h;
+
+  g_assert (pixbuf != NULL);
+
+  w = gdk_pixbuf_get_width (pixbuf);
+  h = gdk_pixbuf_get_height (pixbuf);
+
+  g_assert (gdk_pixbuf_get_has_alpha (pixbuf));
+
+  pixel_stride = 4;
+
+  row = gdk_pixbuf_get_pixels (pixbuf);
+  row_stride = gdk_pixbuf_get_rowstride (pixbuf);
+
+  for (y = 0; y < h; y++)
+    {
+      pixels = row;
+
+      for (x = 0; x < w; x++)
+	{
+	  pixels[3] /= 2;
+
+	  pixels += pixel_stride;
+	}
+
+      row += row_stride;
+    }
+}
 
 /******************************************************************************/
 
@@ -920,6 +967,11 @@ static void task_button_redraw(Task * tk)
     if (task_is_visible(tk))
     {
         task_button_redraw_button_state(tk, tb);
+        if (tk->deferred_iconified_update)
+        {
+            tk->deferred_iconified_update = FALSE;
+            task_update_icon2(tk, None, TRUE);
+        }
         task_draw_label(tk);
         icon_grid_set_visible(tb->icon_grid, tk->button, TRUE);
     }
@@ -1279,6 +1331,11 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     /* If there is an urgency timeout, remove it. */
     if (tk->flash_timeout != 0)
         g_source_remove(tk->flash_timeout);
+
+    if (tk->icon_pixbuf)
+	g_object_unref(tk->icon_pixbuf);
+    if (tk->icon_pixbuf_iconified)
+	g_object_unref(tk->icon_pixbuf_iconified);
 
     /* Deallocate structures. */
     icon_grid_remove(tb->icon_grid, tk->button);
@@ -1670,20 +1727,53 @@ static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
     return pixbuf;
 }
 
-static void task_update_icon(Task * tk, Atom source)
+static void task_update_icon2(Task * tk, Atom source, gboolean use_old)
 {
-    int icon_size = tk->tb->expected_icon_size > 0 ? tk->tb->expected_icon_size : tk->tb->icon_size;
-    if (tk->allocated_icon_size > 0 && tk->allocated_icon_size < icon_size)
-        icon_size = tk->allocated_icon_size;
-
-    GdkPixbuf * pixbuf = task_create_icon(tk, source, icon_size);
-    if (pixbuf != NULL)
+    if (!use_old)
     {
-        gtk_image_set_from_pixbuf(GTK_IMAGE(tk->image), pixbuf);
-        g_object_unref(pixbuf);
+        if (tk->icon_pixbuf)
+        {
+            g_object_unref(tk->icon_pixbuf);
+            tk->icon_pixbuf = NULL;
+        }
+        if (tk->icon_pixbuf_iconified)
+        {
+            g_object_unref(tk->icon_pixbuf_iconified);
+            tk->icon_pixbuf_iconified = NULL;
+        }
     }
 
-    tk->icon_size = icon_size;
+    if (!tk->icon_pixbuf)
+    {
+        int icon_size = tk->tb->expected_icon_size > 0 ? tk->tb->expected_icon_size : tk->tb->icon_size;
+        if (tk->allocated_icon_size > 0 && tk->allocated_icon_size < icon_size)
+            icon_size = tk->allocated_icon_size;
+
+        tk->icon_pixbuf = task_create_icon(tk, source, icon_size);
+
+        tk->icon_size = icon_size;
+    }
+
+    if (tk->icon_pixbuf)
+    {
+        GdkPixbuf * pixbuf = tk->icon_pixbuf;
+        if (tk->tb->dimm_iconified && tk->iconified)
+        {
+            if (!tk->icon_pixbuf_iconified)
+            {
+                tk->icon_pixbuf_iconified = gdk_pixbuf_add_alpha(tk->icon_pixbuf, FALSE, 0, 0, 0);;
+                _wnck_dimm_icon(tk->icon_pixbuf_iconified);
+            }
+            pixbuf = tk->icon_pixbuf_iconified;
+        }
+        gtk_image_set_from_pixbuf(GTK_IMAGE(tk->image), pixbuf);
+    }
+
+}
+
+static void task_update_icon(Task * tk, Atom source)
+{
+	task_update_icon2(tk, source, FALSE);
 }
 
 static gboolean task_update_icon_cb(Task * tk)
@@ -3358,14 +3448,25 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 else if (at == a_WM_STATE)
                 {
                     /* Window changed state. */
-                    tk->iconified = (get_wm_state(win) == IconicState);
-                    /* Do not update task label, if we a waiting for deferred desktop switching. */
-                    if (tb->deferred_current_desktop < 0)
+                    gboolean iconified = get_wm_state(win) == IconicState;
+                    if (tk->iconified != iconified)
                     {
-                       task_draw_label(tk);
+                        tk->iconified = iconified;
+                        /* Do not update task label, if we a waiting for deferred desktop switching. */
+                        if (tb->deferred_current_desktop < 0)
+                        {
+                           tk->deferred_iconified_update = FALSE;
+                           task_draw_label(tk);
+                           task_update_icon2(tk, None, TRUE);
+                        }
+                        else
+                        {
+                            if (tb->dimm_iconified)
+                                tk->deferred_iconified_update = TRUE;
+                        }
+                        task_update_grouping(tk, GROUP_BY_STATE);
+                        task_update_sorting(tk, SORT_BY_STATE);
                     }
-                    task_update_grouping(tk, GROUP_BY_STATE);
-                    task_update_sorting(tk, SORT_BY_STATE);
                 }
                 else if (at == XA_WM_HINTS)
                 {
@@ -4050,6 +4151,18 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     recompute_visibility |= tb->_show_single_group != show_single_group;
     recompute_visibility |= tb->use_group_separators_prev != tb->use_group_separators;
 
+    if (tb->dimm_iconified_prev != tb->dimm_iconified)
+    {
+        tb->dimm_iconified_prev = tb->dimm_iconified;
+        Task * tk;
+        int position = 0;
+        for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
+        {
+            tk->deferred_iconified_update = TRUE;
+        }
+        taskbar_redraw(tb);
+    }
+
     if (tb->icon_grid)
     {
         icon_grid_use_separators(tb->icon_grid, tb->use_group_separators);
@@ -4174,6 +4287,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "UseUrgencyHint") == 0)
                     tb->use_urgency_hint = str2num(bool_pair, s.t[1], tb->use_urgency_hint);
+                else if (g_ascii_strcasecmp(s.t[0], "DimmIconified") == 0)
+                    tb->dimm_iconified = str2num(bool_pair, s.t[1], tb->dimm_iconified);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatButton") == 0)
                     tb->flat_button = str2num(bool_pair, s.t[1], tb->flat_button);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupedTasks") == 0)		/* For backward compatibility */
@@ -4396,6 +4511,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("|Show:|Icons only|Titles only|Icons and titles"), (gpointer)&tb->show_icons_titles, (GType)CONF_TYPE_ENUM,
         _("Show tooltips"), (gpointer)&tb->tooltips, (GType)CONF_TYPE_BOOL,
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
+        _("Dimm iconified"), (gpointer)&tb->dimm_iconified, (GType)CONF_TYPE_BOOL,
         _("Flat buttons"), (gpointer)&tb->flat_button, (GType)CONF_TYPE_BOOL,
         _("Highlight modified titles"), (gpointer)&tb->highlight_modified_titles, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
@@ -4501,6 +4617,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowUrgencyAllDesks", tb->show_urgency_all_desks);
     lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);
     lxpanel_put_bool(fp, "FlatButton", tb->flat_button);
+    lxpanel_put_bool(fp, "DimmIconified", tb->dimm_iconified);
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
     lxpanel_put_int(fp, "spacing", tb->spacing);
     lxpanel_put_enum(fp, "Mode", tb->mode, mode_pair);

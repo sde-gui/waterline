@@ -70,6 +70,10 @@ typedef struct _lb_t {
     char * command2;
     char * command3;
 
+    char * command1_override;
+    char * command2_override;
+    char * command3_override;
+
     GtkWidget * button;
     GtkWidget * img;
     GtkWidget * label;
@@ -323,7 +327,35 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
     }
     else if (input == &lb->input_general)
     {
-        // FIXME: to be implemented
+        gchar ** parts = g_strsplit_set(line, " \t", 2);
+        if (g_strv_length(parts) == 2)
+        {
+            if (g_ascii_strcasecmp(parts[0], "Title") == 0)
+                fb_button_set_label(lb->button, lb->plug->panel, parts[1]);
+            else if (g_ascii_strcasecmp(parts[0], "Tooltip") == 0)
+                gtk_widget_set_tooltip_text(lb->button, parts[1]);
+            else if (g_ascii_strcasecmp(parts[0], "IconPath") == 0 || g_ascii_strcasecmp(parts[0], "Icon") == 0)
+	    {
+		int icon_size = lb->plug->panel->icon_size;
+		fb_button_set_from_file(lb->button, parts[1], icon_size, icon_size, TRUE);
+	    }
+            else if (g_ascii_strcasecmp(parts[0], "Command1") == 0)
+            {
+                 g_free(lb->command1_override);
+                 lb->command1_override = g_strdup(parts[1]);
+            }
+            else if (g_ascii_strcasecmp(parts[0], "Command2") == 0)
+            {
+                 g_free(lb->command2_override);
+                 lb->command2_override = g_strdup(parts[1]);
+            }
+            else if (g_ascii_strcasecmp(parts[0], "Command3") == 0)
+            {
+                 g_free(lb->command3_override);
+                 lb->command3_override = g_strdup(parts[1]);
+            }
+        }
+        g_strfreev(parts);
     }
 
 }
@@ -341,22 +373,22 @@ static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t 
             return TRUE;
     }
 
-    const char* command = (void*)-1;
+    const char* command = NULL;
 
     if (event->button == 1)
-       command = lb->command1;
+       command = strempty(lb->command1_override) ? lb->command1 : lb->command1_override;
     else if (event->button == 2)
-       command = lb->command2;
+       command = strempty(lb->command2_override) ? lb->command2 : lb->command2_override;
     else if (event->button == 3)
-       command = lb->command3;
+       command = strempty(lb->command3_override) ? lb->command3 : lb->command3_override;
 
-    if (command != (void*)-1)
+    if (!strempty(command))
     {
-        gboolean r = lxpanel_launch(command, NULL);
-        if (!r)
-        {
-              lxpanel_show_panel_menu( lb->plug->panel, lb->plug, event );
-        }
+        lxpanel_launch(command, NULL);
+    }
+    else
+    {
+        lxpanel_show_panel_menu( lb->plug->panel, lb->plug, event );
     }
 
     return TRUE;
@@ -596,6 +628,9 @@ static void lb_destructor(Plugin * p)
     g_free(lb->command1);
     g_free(lb->command2);
     g_free(lb->command3);
+    g_free(lb->command1_override);
+    g_free(lb->command2_override);
+    g_free(lb->command3_override);
     g_free(lb->input_title.command);
     g_free(lb->input_tooltip.command);
     g_free(lb->input_icon.command);
@@ -637,7 +672,7 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
         _("Title update command")  , &lb->input_title.command, (GType)CONF_TYPE_STR,
         _("Tooltip  update command"), &lb->input_tooltip.command, (GType)CONF_TYPE_STR,
         _("Icon path update command"), &lb->input_icon.command, (GType)CONF_TYPE_STR,
-//        _("General update command"), &lb->input_general.command, (GType)CONF_TYPE_STR,
+        _("General update command"), &lb->input_general.command, (GType)CONF_TYPE_STR,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
 
         NULL);

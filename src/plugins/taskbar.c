@@ -1855,9 +1855,6 @@ static GdkPixbuf * scale_pixbuf(GdkPixbuf * pixmap, int required_width, int requ
 
         if ((w > required_width) || (h > required_height))
         {
-//            w = required_width;
-//            h = required_height;
-
             float rw = required_width;
             float rh = required_height;
             float sw = w;
@@ -1921,8 +1918,13 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
                     GdkPixbuf * p3 = scale_pixbuf(p2, icon_size / 4, icon_size / 4);
                     gulong w = gdk_pixbuf_get_width(p3);
                     gulong h = gdk_pixbuf_get_height(p3);
-                    gdk_pixbuf_copy_area(p3, 0, 0, w, h,
-                        p1, icon_size - w, icon_size - h);
+                    //gdk_pixbuf_copy_area(p3, 0, 0, w, h,
+                    //    p1, icon_size - w, icon_size - h);
+                    gdk_pixbuf_composite(p3, p1,
+                        icon_size - w, icon_size - h, w, h,
+                        icon_size - w, icon_size - h, 1, 1,
+                        GDK_INTERP_TILES,
+                        255);
                     g_object_unref(p3);
                     g_object_unref(p2);
                 }

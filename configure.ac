@@ -24,7 +24,7 @@ PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 
-pkg_modules="x11"
+pkg_modules="x11 xcomposite"
 PKG_CHECK_MODULES(X11, [$pkg_modules])
 AC_SUBST(X11_CFLAGS)
 AC_SUBST(X11_LIBS)

@@ -12277,7 +12277,7 @@ fi
 
 
 
-pkg_modules="x11"
+pkg_modules="x11 xcomposite"
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for X11" >&5

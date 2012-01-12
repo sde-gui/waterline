@@ -32,6 +32,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/Xcomposite.h>
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
@@ -261,6 +262,12 @@ typedef struct _task {
     int x_window_position;
 
     guint open_group_menu_delay_timer;
+
+    Pixmap backing_pixmap;
+    GdkPixbuf * thumbnail;
+    GdkPixbuf * thumbnail_icon;
+    GdkPixbuf * thumbnail_preview;
+    guint update_composite_thumbnail_idle;
 } Task;
 
 /* Private context for taskbar plugin. */
@@ -354,6 +361,9 @@ typedef struct _taskbar {
 
     gboolean dimm_iconified;
 
+    gboolean thumbnails_preview;
+    gboolean use_thumbnails_as_icons;
+
     int mode;                                   /* User preference: view mode */
     int group_fold_threshold;                   /* User preference: threshold for fold grouped tasks into one button */
     int panel_fold_threshold;
@@ -407,6 +417,7 @@ typedef struct _taskbar {
     int deferred_active_window_valid;
     Window deferred_active_window;
 
+    gboolean thumbnails;
 
     Task * button_pressed_task;
     gboolean moving_task_now;
@@ -470,6 +481,7 @@ static GdkPixbuf * apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask);
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 static void task_update_icon2(Task * tk, Atom source, gboolean use_old);
 static void task_update_icon(Task * tk, Atom source);
+static void task_defer_update_icon(Task * tk);
 
 static void task_reorder(Task * tk, gboolean and_others);
 static void task_update_grouping(Task * tk, int group_by);
@@ -539,7 +551,8 @@ _wnck_dimm_icon (GdkPixbuf *pixbuf)
   guchar *row, *pixels;
   int w, h;
 
-  g_assert (pixbuf != NULL);
+  if (!pixbuf)
+      return;
 
   w = gdk_pixbuf_get_width (pixbuf);
   h = gdk_pixbuf_get_height (pixbuf);
@@ -1315,6 +1328,18 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
     DBG("Deleting task %s (0x%x)\n", tk->name, (int)tk);
 
+    /* Free thumbnails. */
+    if (tk->backing_pixmap != 0)
+        XFreePixmap(GDK_DISPLAY(), tk->backing_pixmap);
+    if (tk->thumbnail)
+        g_object_unref(G_OBJECT(tk->thumbnail));
+    if (tk->thumbnail_icon)
+        g_object_unref(G_OBJECT(tk->thumbnail_icon));
+    if (tk->thumbnail_preview)
+        g_object_unref(G_OBJECT(tk->thumbnail_preview));
+    if (tk->update_composite_thumbnail_idle)
+        g_source_remove(tk->update_composite_thumbnail_idle);
+        
     /* If we think this task had focus, remove that. */
     if (tb->focused == tk)
         tb->focused = NULL;
@@ -1378,6 +1403,60 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     RET();
 }
 
+/******************************************************************************/
+
+static gboolean task_update_composite_thumbnail_real(Task * tk)
+{
+    tk->update_composite_thumbnail_idle = 0;
+
+    if (!tk->tb->thumbnails)
+        return FALSE;
+
+    if (tk->backing_pixmap != 0)
+    {
+        XFreePixmap(GDK_DISPLAY(), tk->backing_pixmap);
+        tk->backing_pixmap = 0;
+    }
+
+    if (!tk->iconified && !tk->shaded)
+        tk->backing_pixmap = XCompositeNameWindowPixmap(GDK_DISPLAY(), tk->win);
+
+    //g_print("> %d %d\n", (int)tk->win, (int)tk->backing_pixmap);
+
+    if (tk->backing_pixmap != 0)
+    {
+        //GdkPixbuf * pixbuf = cairo_dock_get_pixbuf_from_pixmap(tk->backing_pixmap, TRUE);
+        GdkPixbuf * pixbuf = _wnck_gdk_pixbuf_get_from_pixmap(tk->backing_pixmap, -1, -1);
+        if (pixbuf)
+        {
+            if (tk->thumbnail)
+                g_object_unref(G_OBJECT(tk->thumbnail));
+            if (tk->thumbnail_icon)
+                g_object_unref(G_OBJECT(tk->thumbnail_icon));
+            if (tk->thumbnail_preview)
+                g_object_unref(G_OBJECT(tk->thumbnail_preview));
+
+            tk->thumbnail = pixbuf;
+            tk->thumbnail_icon = NULL;
+            tk->thumbnail_preview = NULL;
+
+            if (tk->tb->use_thumbnails_as_icons)
+                task_defer_update_icon(tk);
+        }
+    }
+
+    return FALSE;
+}
+
+static task_update_composite_thumbnail(Task * tk)
+{
+    if (!tk->tb->thumbnails)
+        return FALSE;
+
+    if (tk->update_composite_thumbnail_idle == 0)
+        tk->update_composite_thumbnail_idle = g_idle_add((GSourceFunc) task_update_composite_thumbnail_real, tk);
+}
+
 /* Get a pixbuf from a pixmap.
  * Originally from libwnck, Copyright (C) 2001 Havoc Pennington. */
 static GdkPixbuf * _wnck_gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, int height)
@@ -1393,6 +1472,13 @@ static GdkPixbuf * _wnck_gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, i
     GdkPixbuf * retval = NULL;
     if (drawable != NULL)
     {
+        if (width < 0 || height < 0)
+        {
+            width = 1;
+            height = 1;
+            gdk_pixmap_get_size(GDK_PIXMAP(drawable), &width, &height);
+        }
+
         /* Get the colormap.
          * If the drawable has no colormap, use no colormap or the system colormap as recommended in the documentation of gdk_drawable_get_colormap. */
         colormap = gdk_drawable_get_colormap(drawable);
@@ -1403,7 +1489,12 @@ static GdkPixbuf * _wnck_gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, i
             colormap = NULL;
         else
         {
-            colormap = gdk_screen_get_system_colormap(gdk_drawable_get_screen(drawable));
+            if (depth == 32)
+                colormap = gdk_screen_get_rgba_colormap(gdk_drawable_get_screen(drawable));
+            else
+                colormap = gdk_screen_get_rgb_colormap(gdk_drawable_get_screen(drawable));
+            if (!colormap)
+                colormap = gdk_screen_get_system_colormap(gdk_drawable_get_screen(drawable));
             g_object_ref(G_OBJECT(colormap));
         }
 
@@ -1692,6 +1783,16 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
         }
     }
 
+    if (pixmap)
+    {
+        *current_source = possible_source;
+    }
+
+    return pixmap;
+}
+
+static GdkPixbuf * scale_pixbuf(GdkPixbuf * pixmap, int required_width, int required_height)
+{
     /* If we got a pixmap, scale it and return it. */
     if (pixmap == NULL)
         return NULL;
@@ -1699,18 +1800,39 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
     {
         gulong w = gdk_pixbuf_get_width (pixmap);
         gulong h = gdk_pixbuf_get_height (pixmap);
+
         if ((w > required_width) || (h > required_height))
         {
-            w = required_width;
-            h = required_height;
+//            w = required_width;
+//            h = required_height;
+
+            float rw = required_width;
+            float rh = required_height;
+            float sw = w;
+            float sh = h;
+
+            float scalew = rw / sw;
+            float scaleh = rh / sh;
+            float scale = scalew < scaleh ? scalew : scaleh;
+
+            sw *= scale;
+            sh *= scale;
+
+            w = sw;
+            h = sh;
+
+            if (w < 2)
+                w = 2;
+            if (h < 2)
+                h = 2;
         }
 
         GdkPixbuf * ret = gdk_pixbuf_scale_simple(pixmap, w, h, GDK_INTERP_TILES);
-        g_object_unref(pixmap);
-        *current_source = possible_source;
+
         return ret;
     }
 }
+
 
 /* Update the icon of a task. */
 static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
@@ -1718,7 +1840,53 @@ static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
     TaskbarPlugin * tb = tk->tb;
 
     /* Get the icon from the window's hints. */
-    GdkPixbuf * pixbuf = get_wm_icon(tk->win, icon_size, icon_size, source, &tk->image_source);
+    GdkPixbuf * pixbuf = NULL;
+
+    if (tb->thumbnails)
+    {
+        if (!tk->thumbnail_icon && tk->thumbnail)
+            tk->thumbnail_icon = scale_pixbuf(tk->thumbnail, icon_size, icon_size);
+        if (tk->thumbnail_icon)
+        {
+            pixbuf = tk->thumbnail_icon;
+            g_object_ref(pixbuf);
+
+            if (icon_size > 40)
+            {
+                GdkPixbuf * p1 = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, icon_size, icon_size);
+                gdk_pixbuf_fill(p1, 0x00000000);
+                gulong w = gdk_pixbuf_get_width(pixbuf);
+                gulong h = gdk_pixbuf_get_height(pixbuf);
+                gulong x = (icon_size - w) / 2;
+                gulong y = (icon_size - h) / 2;
+                gdk_pixbuf_copy_area(pixbuf, 0, 0, w, h, p1, x, y);
+                GdkPixbuf * p2 = get_wm_icon(tk->win, icon_size / 4, icon_size / 4, source, &tk->image_source);
+                if (p2)
+                {
+                    GdkPixbuf * p3 = scale_pixbuf(p2, icon_size / 4, icon_size / 4);
+                    gulong w = gdk_pixbuf_get_width(p3);
+                    gulong h = gdk_pixbuf_get_height(p3);
+                    gdk_pixbuf_copy_area(p3, 0, 0, w, h,
+                        p1, icon_size - w, icon_size - h);
+                    g_object_unref(p3);
+                    g_object_unref(p2);
+                }
+                g_object_unref(pixbuf);
+                pixbuf = p1;
+            }
+        }
+    }
+
+    if (!pixbuf)
+    {
+        pixbuf = get_wm_icon(tk->win, icon_size, icon_size, source, &tk->image_source);
+        if (pixbuf)
+        {
+            GdkPixbuf * scaled_pixbuf = scale_pixbuf(pixbuf, icon_size, icon_size);
+            g_object_unref(pixbuf);
+            pixbuf = scaled_pixbuf;
+        }
+    }
 
     /* If that fails, and we have no other icon yet, return the fallback icon. */
     if ((pixbuf == NULL)
@@ -1773,6 +1941,12 @@ static void task_update_icon2(Task * tk, Atom source, gboolean use_old)
         if (tk->allocated_icon_size > 0 && tk->allocated_icon_size < icon_size)
             icon_size = tk->allocated_icon_size;
 
+        if (icon_size != tk->icon_size && tk->thumbnail_icon)
+        {
+            g_object_unref(tk->thumbnail_icon);
+            tk->thumbnail_icon = NULL;
+        }
+
         tk->icon_pixbuf = task_create_icon(tk, source, icon_size);
 
         tk->icon_size = icon_size;
@@ -1806,6 +1980,13 @@ static gboolean task_update_icon_cb(Task * tk)
     task_update_icon(tk, None);
     return FALSE;
 }
+
+static void task_defer_update_icon(Task * tk)
+{
+    if (tk->update_icon_idle_cb == 0)
+        tk->update_icon_idle_cb = g_idle_add((GSourceFunc) task_update_icon_cb, tk);
+}
+
 
 /* Timer expiration for urgency notification.  Also used to draw the button in setting and clearing urgency. */
 static gboolean flash_window_timeout(Task * tk)
@@ -2669,8 +2850,8 @@ static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, 
 
     tk->tb->expected_icon_size = tk->allocated_icon_size;
 
-    if (tk->allocated_icon_size != tk->icon_size && tk->update_icon_idle_cb == 0)
-        tk->update_icon_idle_cb = g_idle_add((GSourceFunc) task_update_icon_cb, tk);
+    if (tk->allocated_icon_size != tk->icon_size)
+        task_defer_update_icon(tk);
 }
 
 /******************************************************************************/
@@ -3192,6 +3373,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                         tk_pred->task_flink = tk;
                     }
                     task_reorder(tk, FALSE);
+                    task_update_composite_thumbnail(tk);
                     icon_grid_set_visible(tb->icon_grid, tk->button, TRUE);
                     redraw = TRUE;
                 }
@@ -3492,6 +3674,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         }
                         task_update_grouping(tk, GROUP_BY_STATE);
                         task_update_sorting(tk, SORT_BY_STATE);
+                        task_update_composite_thumbnail(tk);
                     }
                 }
                 else if (at == XA_WM_HINTS)
@@ -3524,6 +3707,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                     tk->maximized = nws.maximized_vert || nws.maximized_horz;
                     tk->shaded    = nws.shaded;
                     tk->decorated = get_decorations(tk->win, &nws);
+                    task_update_composite_thumbnail(tk);
                 }
                 else if (at == a_MOTIF_WM_HINTS)
                 {
@@ -4177,6 +4361,8 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     recompute_visibility |= tb->_show_single_group != show_single_group;
     recompute_visibility |= tb->use_group_separators_prev != tb->use_group_separators;
 
+    tb->thumbnails = (tb->thumbnails_preview || tb->use_thumbnails_as_icons) && is_xcomposite_available();
+
     if (tb->dimm_iconified_prev != tb->dimm_iconified)
     {
         tb->dimm_iconified_prev = tb->dimm_iconified;
@@ -4260,6 +4446,11 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->show_all_desks_prev_value = FALSE;
     tb->_show_close_buttons = FALSE;
     tb->extra_size        = 0;
+
+    tb->thumbnails_preview = FALSE;
+    tb->use_thumbnails_as_icons = FALSE;
+//    tb->thumbnails_preview = TRUE;
+//    tb->use_thumbnails_as_icons = TRUE;
 
     tb->workspace_submenu = NULL;
     tb->restore_menuitem  = NULL;

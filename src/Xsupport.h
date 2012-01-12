@@ -77,6 +77,8 @@ gboolean get_decorations (Window win, NetWMState * nws);
 void update_net_supported();
 gboolean check_net_supported(Atom atom);
 
+gboolean is_xcomposite_available(void);
+
 extern Atom a_UTF8_STRING;
 extern Atom a_XROOTPMAP_ID;
 

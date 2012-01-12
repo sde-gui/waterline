@@ -826,3 +826,34 @@ gboolean check_net_supported(Atom atom)
 
     return FALSE;
 }
+
+#include <X11/extensions/Xcomposite.h>
+
+gboolean is_xcomposite_available(void)
+{
+    static int result = -1;
+
+    if (result < 0)
+    {
+	int event_base, error_base, major, minor;
+	if (!XCompositeQueryExtension(GDK_DISPLAY(), &event_base, &error_base))
+	{
+	    result = FALSE;
+	}
+	else
+	{
+	    major = 0, minor = 2;
+	    XCompositeQueryVersion(GDK_DISPLAY(), &major, &minor);
+	    if (! (major > 0 || minor >= 2))
+	    {
+		result = FALSE;
+	    }
+	    else
+	    {
+		result = TRUE;
+	    }
+	}
+    }
+
+    return result;
+}

@@ -261,6 +261,7 @@ typedef struct _task {
 
     int allocated_icon_size;           /* available room for the icon in the container */
     int icon_size;                     /* real size of currently used icon (icon_pixbuf, icon_pixbuf_iconified, thumbnail_icon) */
+    gboolean forse_icon_erase;
 
     GdkPixbuf * icon_pixbuf;           /* Resulting icon image for visible windows */
     GdkPixbuf * icon_pixbuf_iconified; /* Resulting icon image for iconified windows. */
@@ -484,7 +485,7 @@ static GdkPixbuf * apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask);
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 static void task_update_icon2(Task * tk, Atom source, gboolean use_old);
 static void task_update_icon(Task * tk, Atom source);
-static void task_defer_update_icon(Task * tk);
+static void task_defer_update_icon(Task * tk, gboolean forse_icon_erase);
 
 static void task_reorder(Task * tk, gboolean and_others);
 static void task_update_grouping(Task * tk, int group_by);
@@ -990,7 +991,7 @@ static void task_button_redraw(Task * tk)
         if (tk->deferred_iconified_update)
         {
             tk->deferred_iconified_update = FALSE;
-            task_update_icon2(tk, None, TRUE);
+            task_update_icon2(tk, None, FALSE);
         }
         task_draw_label(tk);
         icon_grid_set_visible(tb->icon_grid, tk->button, TRUE);
@@ -1444,7 +1445,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
             tk->thumbnail_preview = NULL;
 
             if (tk->tb->use_thumbnails_as_icons)
-                task_defer_update_icon(tk);
+                task_defer_update_icon(tk, TRUE);
         }
     }
 
@@ -1922,9 +1923,19 @@ static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
     return pixbuf;
 }
 
-static void task_update_icon2(Task * tk, Atom source, gboolean use_old)
+static void task_update_icon2(Task * tk, Atom source, gboolean forse_icon_erase)
 {
-    if (!use_old)
+    forse_icon_erase |= tk->forse_icon_erase;
+
+    tk->forse_icon_erase = FALSE;
+
+    int icon_size = tk->tb->expected_icon_size > 0 ? tk->tb->expected_icon_size : tk->tb->icon_size;
+    if (tk->allocated_icon_size > 0 && tk->allocated_icon_size < icon_size)
+        icon_size = tk->allocated_icon_size;
+
+    gboolean erase = (forse_icon_erase) || (icon_size != tk->icon_size);
+
+    if (erase)
     {
         if (tk->icon_pixbuf)
         {
@@ -1936,6 +1947,12 @@ static void task_update_icon2(Task * tk, Atom source, gboolean use_old)
             g_object_unref(tk->icon_pixbuf_iconified);
             tk->icon_pixbuf_iconified = NULL;
         }
+
+        if (tk->thumbnail_icon)
+        {
+            g_object_unref(tk->thumbnail_icon);
+            tk->thumbnail_icon = NULL;
+        }
     }
 
     if (!tk->icon_pixbuf)
@@ -1944,14 +1961,7 @@ static void task_update_icon2(Task * tk, Atom source, gboolean use_old)
         if (tk->allocated_icon_size > 0 && tk->allocated_icon_size < icon_size)
             icon_size = tk->allocated_icon_size;
 
-        if (icon_size != tk->icon_size && tk->thumbnail_icon)
-        {
-            g_object_unref(tk->thumbnail_icon);
-            tk->thumbnail_icon = NULL;
-        }
-
         tk->icon_pixbuf = task_create_icon(tk, source, icon_size);
-
         tk->icon_size = icon_size;
     }
 
@@ -1974,7 +1984,7 @@ static void task_update_icon2(Task * tk, Atom source, gboolean use_old)
 
 static void task_update_icon(Task * tk, Atom source)
 {
-	task_update_icon2(tk, source, FALSE);
+	task_update_icon2(tk, source, TRUE);
 }
 
 static gboolean task_update_icon_cb(Task * tk)
@@ -1984,8 +1994,9 @@ static gboolean task_update_icon_cb(Task * tk)
     return FALSE;
 }
 
-static void task_defer_update_icon(Task * tk)
+static void task_defer_update_icon(Task * tk, gboolean forse_icon_erase)
 {
+    tk->forse_icon_erase |= forse_icon_erase;
     if (tk->update_icon_idle_cb == 0)
         tk->update_icon_idle_cb = g_idle_add((GSourceFunc) task_update_icon_cb, tk);
 }
@@ -2854,7 +2865,7 @@ static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, 
     tk->tb->expected_icon_size = tk->allocated_icon_size;
 
     if (tk->allocated_icon_size != tk->icon_size)
-        task_defer_update_icon(tk);
+        task_defer_update_icon(tk, FALSE);
 }
 
 /******************************************************************************/
@@ -3668,7 +3679,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         {
                            tk->deferred_iconified_update = FALSE;
                            task_draw_label(tk);
-                           task_update_icon2(tk, None, TRUE);
+                           task_update_icon2(tk, None, FALSE);
                         }
                         else
                         {
@@ -4453,7 +4464,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->thumbnails_preview = FALSE;
     tb->use_thumbnails_as_icons = FALSE;
 //    tb->thumbnails_preview = TRUE;
-//    tb->use_thumbnails_as_icons = TRUE;
+    tb->use_thumbnails_as_icons = TRUE;
 
     tb->workspace_submenu = NULL;
     tb->restore_menuitem  = NULL;

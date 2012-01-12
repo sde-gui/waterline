@@ -284,7 +284,8 @@ typedef struct _taskbar {
 
     int task_timestamp;                         /* To sort tasks and task classes by creation time. */
 
-    GdkPixbuf * fallback_pixbuf;		/* Fallback task icon when none is available */
+    GdkPixbuf * custom_fallback_pixbuf;		/* Custom fallback task icon when none is available */
+    GdkPixbuf * fallback_pixbuf;		/* Default fallback task icon when none is available */
 
     /* Geometry */
 
@@ -1795,6 +1796,53 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
     return pixmap;
 }
 
+static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
+{
+    TaskbarPlugin * tb = tk->tb;
+
+    GdkPixbuf * pixbuf = NULL;
+
+    /* Try to get an icon from the window manager at first */
+    pixbuf = get_wm_icon(tk->win, icon_size, icon_size, source, &tk->image_source);
+
+    if (!pixbuf && tk->wm_class)
+    {
+        /* try to guess an icon from window class name */
+        gchar* classname = g_utf8_strdown(tk->wm_class, -1);
+        pixbuf = lxpanel_load_icon(classname,
+                                   icon_size, icon_size, FALSE);
+        g_free(classname);
+    }
+
+    if (!pixbuf)
+    {
+         /* custom fallback icon */
+         if (!tb->custom_fallback_pixbuf && !strempty(tb->custom_fallback_icon))
+         {
+             tb->custom_fallback_pixbuf = lxpanel_load_icon(tb->custom_fallback_icon, tb->icon_size, tb->icon_size, TRUE);
+         }
+         if (tb->custom_fallback_pixbuf)
+         {
+            pixbuf = tb->custom_fallback_pixbuf;
+            g_object_ref(pixbuf);
+         }
+    }
+
+    if (!pixbuf)
+    {
+         /* default fallback icon */
+         if (!tb->fallback_pixbuf)
+             tb->fallback_pixbuf = gdk_pixbuf_new_from_xpm_data((const char **) icon_xpm);
+         if (tb->fallback_pixbuf)
+         {
+            pixbuf = tb->fallback_pixbuf;
+            g_object_ref(pixbuf);
+         }
+    }
+
+    return pixbuf;
+}
+
 static GdkPixbuf * scale_pixbuf(GdkPixbuf * pixmap, int required_width, int required_height)
 {
     /* If we got a pixmap, scale it and return it. */
@@ -1839,9 +1887,12 @@ static GdkPixbuf * scale_pixbuf(GdkPixbuf * pixmap, int required_width, int requ
 
 
 /* Update the icon of a task. */
-static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
+static void task_create_icons(Task * tk, Atom source, int icon_size)
 {
     TaskbarPlugin * tb = tk->tb;
+
+    if (tk->icon_pixbuf)
+        return;
 
     /* Get the icon from the window's hints. */
     GdkPixbuf * pixbuf = NULL;
@@ -1864,7 +1915,7 @@ static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
                 gulong x = (icon_size - w) / 2;
                 gulong y = (icon_size - h) / 2;
                 gdk_pixbuf_copy_area(pixbuf, 0, 0, w, h, p1, x, y);
-                GdkPixbuf * p2 = get_wm_icon(tk->win, icon_size / 4, icon_size / 4, source, &tk->image_source);
+                GdkPixbuf * p2 = get_window_icon(tk, icon_size / 4, source);
                 if (p2)
                 {
                     GdkPixbuf * p3 = scale_pixbuf(p2, icon_size / 4, icon_size / 4);
@@ -1883,7 +1934,7 @@ static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
 
     if (!pixbuf)
     {
-        pixbuf = get_wm_icon(tk->win, icon_size, icon_size, source, &tk->image_source);
+        pixbuf = get_window_icon(tk, icon_size, source);
         if (pixbuf)
         {
             GdkPixbuf * scaled_pixbuf = scale_pixbuf(pixbuf, icon_size, icon_size);
@@ -1892,34 +1943,8 @@ static GdkPixbuf * task_create_icon(Task * tk, Atom source, int icon_size)
         }
     }
 
-    /* If that fails, and we have no other icon yet, return the fallback icon. */
-    if ((pixbuf == NULL)
-    && ((source == None) || (tk->image_source == None)))
-    {
-        /* Establish the fallback task icon.  This is used when no other icon is available. */
+    tk->icon_pixbuf = pixbuf;
 
-        /* try to get one from class name at first */
-        if (tk->wm_class) {
-            gchar* classname = g_utf8_strdown(tk->wm_class, -1);
-            pixbuf = lxpanel_load_icon(classname,
-                                       icon_size, icon_size, FALSE);
-            g_free(classname);
-        }
-
-        if (pixbuf == NULL) {
-
-            if (tb->custom_fallback_icon != NULL)
-                tb->fallback_pixbuf = lxpanel_load_icon(tb->custom_fallback_icon,
-                                                        icon_size, icon_size, TRUE);
-            else
-                tb->fallback_pixbuf = gdk_pixbuf_new_from_xpm_data((const char **) icon_xpm);
-            g_object_ref(tb->fallback_pixbuf);
-            pixbuf = tb->fallback_pixbuf;
-        }
-
-    }
-
-    /* Return what we have.  This may be NULL to indicate that no change should be made to the icon. */
     return pixbuf;
 }
 
@@ -1957,11 +1982,7 @@ static void task_update_icon2(Task * tk, Atom source, gboolean forse_icon_erase)
 
     if (!tk->icon_pixbuf)
     {
-        int icon_size = tk->tb->expected_icon_size > 0 ? tk->tb->expected_icon_size : tk->tb->icon_size;
-        if (tk->allocated_icon_size > 0 && tk->allocated_icon_size < icon_size)
-            icon_size = tk->allocated_icon_size;
-
-        tk->icon_pixbuf = task_create_icon(tk, source, icon_size);
+        task_create_icons(tk, source, icon_size);
         tk->icon_size = icon_size;
     }
 

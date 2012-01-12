@@ -214,9 +214,6 @@ typedef struct _task {
     struct _task * task_class_flink;		/* Forward link to task in same class */
     char * override_class_name;
 
-    GdkPixbuf * icon_pixbuf;
-    GdkPixbuf * icon_pixbuf_iconified;
-
     GtkWidget * button;				/* Button representing task in taskbar */
     GtkWidget * container;			/* Container for image, label and close button. */
     GtkWidget * image;				/* Icon for task, child of button */
@@ -256,18 +253,24 @@ typedef struct _task {
 
     gboolean separator;
     
-    int allocated_icon_size;
-    int icon_size;
-
     int x_window_position;
 
     guint open_group_menu_delay_timer;
 
-    Pixmap backing_pixmap;
-    GdkPixbuf * thumbnail;
-    GdkPixbuf * thumbnail_icon;
-    GdkPixbuf * thumbnail_preview;
-    guint update_composite_thumbnail_idle;
+    /* Icons, thumbnails. */
+
+    int allocated_icon_size;           /* available room for the icon in the container */
+    int icon_size;                     /* real size of currently used icon (icon_pixbuf, icon_pixbuf_iconified, thumbnail_icon) */
+
+    GdkPixbuf * icon_pixbuf;           /* Resulting icon image for visible windows */
+    GdkPixbuf * icon_pixbuf_iconified; /* Resulting icon image for iconified windows. */
+
+    Pixmap backing_pixmap;             /* Backing pixmap of the window. (0 if not visible) */
+    GdkPixbuf * thumbnail;             /* Latest copy of window content (full size). If backing_pixmap became 0, thumbnail stays valid.*/
+    GdkPixbuf * thumbnail_icon;        /* thumbnail, scaled to icon_size */
+    GdkPixbuf * thumbnail_preview;     /* thumbnail, scaled to preview size (not impemented) */
+    guint update_composite_thumbnail_idle; /* update_composite_thumbnail idle event source id */
+
 } Task;
 
 /* Private context for taskbar plugin. */

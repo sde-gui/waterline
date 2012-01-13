@@ -1735,6 +1735,92 @@ static GdkPixbuf * get_icon_from_pixmap_mask(Pixmap xpixmap, Pixmap xmask)
     return pixmap;
 }
 
+static GdkPixbuf * get_icon_from_wm_hints(Window task_win)
+{
+    GdkPixbuf * pixmap = NULL;
+    int result = -1;
+
+    XWMHints * hints = XGetWMHints(GDK_DISPLAY(), task_win);
+    result = (hints != NULL) ? Success : -1;
+    Pixmap xpixmap = None;
+    Pixmap xmask = None;
+
+    if (result == Success)
+    {
+        /* WM_HINTS is available.  Extract the X pixmap and mask. */
+        if ((hints->flags & IconPixmapHint))
+            xpixmap = hints->icon_pixmap;
+        if ((hints->flags & IconMaskHint))
+            xmask = hints->icon_mask;
+        XFree(hints);
+        if (xpixmap != None)
+        {
+            result = Success;
+        }
+        else
+            result = -1;
+    }
+
+    if (result == Success)
+    {
+        pixmap = get_icon_from_pixmap_mask(xpixmap, xmask);
+    }
+
+    return pixmap;
+}
+
+static GdkPixbuf * get_icon_from_kwm_win_icon(Window task_win)
+{
+    GdkPixbuf * pixmap = NULL;
+    int result = -1;
+
+    Pixmap xpixmap = None;
+    Pixmap xmask = None;
+
+    Atom type = None;
+    int format;
+    gulong nitems;
+    gulong bytes_after;
+    Pixmap *icons = NULL;
+    Atom kwin_win_icon_atom = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
+    result = XGetWindowProperty(
+        GDK_DISPLAY(),
+        task_win,
+        kwin_win_icon_atom,
+        0, G_MAXLONG,
+        False, kwin_win_icon_atom,
+        &type, &format, &nitems, &bytes_after, (void *) &icons);
+
+    /* Inspect the result to see if it is usable.  If not, and we got data, free it. */
+    if (type != kwin_win_icon_atom)
+    {
+        if (icons != NULL)
+            XFree(icons);
+        result = -1;
+    }
+
+    /* If the result is usable, extract the X pixmap and mask from it. */
+    if (result == Success)
+    {
+        xpixmap = icons[0];
+        xmask = icons[1];
+        if (xpixmap != None)
+        {
+            result = Success;
+        }
+        else
+            result = -1;
+    }
+
+    if (result == Success)
+    {
+        pixmap = get_icon_from_pixmap_mask(xpixmap, xmask);
+    }
+
+    return pixmap;
+
+}
+
 /* Get an icon from the window manager for a task, and scale it to a specified size. */
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source)
 {
@@ -1754,71 +1840,16 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
     if ((!pixmap) && (*current_source != a_NET_WM_ICON)
     && ((source == None) || (source != a_NET_WM_ICON)))
     {
-        XWMHints * hints = XGetWMHints(GDK_DISPLAY(), task_win);
-        result = (hints != NULL) ? Success : -1;
-        Pixmap xpixmap = None;
-        Pixmap xmask = None;
-
-        if (result == Success)
+        pixmap = get_icon_from_wm_hints(task_win);
+        if (pixmap)
         {
-            /* WM_HINTS is available.  Extract the X pixmap and mask. */
-            if ((hints->flags & IconPixmapHint))
-                xpixmap = hints->icon_pixmap;
-            if ((hints->flags & IconMaskHint))
-                xmask = hints->icon_mask;
-            XFree(hints);
-            if (xpixmap != None)
-            {
-                result = Success;
-                possible_source = XA_WM_HINTS;
-            }
-            else
-                result = -1;
+            possible_source = XA_WM_HINTS;
         }
 
-        if (result != Success)
+        if (!pixmap)
         {
-            /* No icon available from _NET_WM_ICON or WM_HINTS.  Next try KWM_WIN_ICON. */
-            Atom type = None;
-            int format;
-            gulong nitems;
-            gulong bytes_after;
-            Pixmap *icons = NULL;
-            Atom kwin_win_icon_atom = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
-            result = XGetWindowProperty(
-                GDK_DISPLAY(),
-                task_win,
-                kwin_win_icon_atom,
-                0, G_MAXLONG,
-                False, kwin_win_icon_atom,
-                &type, &format, &nitems, &bytes_after, (void *) &icons);
-
-            /* Inspect the result to see if it is usable.  If not, and we got data, free it. */
-            if (type != kwin_win_icon_atom)
-            {
-                if (icons != NULL)
-                    XFree(icons);
-                result = -1;
-            }
-
-            /* If the result is usable, extract the X pixmap and mask from it. */
-            if (result == Success)
-            {
-                xpixmap = icons[0];
-                xmask = icons[1];
-                if (xpixmap != None)
-                {
-                    result = Success;
-                    possible_source = kwin_win_icon_atom;
-                }
-                else
-                    result = -1;
-            }
-        }
-
-        if (result == Success)
-        {
-            pixmap = get_icon_from_pixmap_mask(xpixmap, xmask);
+            pixmap = get_icon_from_kwm_win_icon(task_win);
+            possible_source = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
         }
     }
 

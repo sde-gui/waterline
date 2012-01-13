@@ -4797,6 +4797,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->dimm_iconified = str2num(bool_pair, s.t[1], tb->dimm_iconified);
                 else if (g_ascii_strcasecmp(s.t[0], "ColorizeButtons") == 0)
                     tb->colorize_buttons = str2num(bool_pair, s.t[1], tb->colorize_buttons);
+                else if (g_ascii_strcasecmp(s.t[0], "IconThumbnails") == 0)
+                    tb->use_thumbnails_as_icons = str2num(bool_pair, s.t[1], tb->use_thumbnails_as_icons);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatButton") == 0)
                     tb->flat_button = str2num(bool_pair, s.t[1], tb->flat_button);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupedTasks") == 0)		/* For backward compatibility */
@@ -5022,6 +5024,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Dimm iconified"), (gpointer)&tb->dimm_iconified, (GType)CONF_TYPE_BOOL,
         _("Flat buttons"), (gpointer)&tb->flat_button, (GType)CONF_TYPE_BOOL,
         _("Colorize buttons"), (gpointer)&tb->colorize_buttons, (GType)CONF_TYPE_BOOL,
+        _("Display window thumbnails instead of icons (requires compositing wm enabled)"), (gpointer)&tb->use_thumbnails_as_icons, (GType)CONF_TYPE_BOOL,
         _("Highlight modified titles"), (gpointer)&tb->highlight_modified_titles, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Maximum width of task button"), (gpointer)&tb->task_width_max, (GType)CONF_TYPE_INT,
@@ -5128,6 +5131,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);
     lxpanel_put_bool(fp, "FlatButton", tb->flat_button);
     lxpanel_put_bool(fp, "ColorizeButtons", tb->colorize_buttons);
+    lxpanel_put_bool(fp, "IconThumbnails", tb->use_thumbnails_as_icons);
     lxpanel_put_bool(fp, "DimmIconified", tb->dimm_iconified);
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
     lxpanel_put_int(fp, "spacing", tb->spacing);

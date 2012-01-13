@@ -272,6 +272,9 @@ typedef struct _task {
     GdkPixbuf * thumbnail_preview;     /* thumbnail, scaled to preview size (not impemented) */
     guint update_composite_thumbnail_idle; /* update_composite_thumbnail idle event source id */
 
+    /* Background colors from icon */
+    GdkColor bgcolor1; /* normal */
+    GdkColor bgcolor2; /* prelight */
 } Task;
 
 /* Private context for taskbar plugin. */
@@ -366,6 +369,8 @@ typedef struct _taskbar {
 
     gboolean dimm_iconified;
 
+    gboolean colorize_buttons;
+
     gboolean thumbnails_preview;
     gboolean use_thumbnails_as_icons;
 
@@ -410,7 +415,7 @@ typedef struct _taskbar {
     gboolean show_iconified_prev;
 
     gboolean dimm_iconified_prev;
-
+    gboolean colorize_buttons_prev;
     gboolean use_group_separators_prev;
 
     int sort_settings_hash;
@@ -427,6 +432,7 @@ typedef struct _taskbar {
     Task * button_pressed_task;
     gboolean moving_task_now;
 
+    GdkColormap * color_map; /* cached value of gdk_drawable_get_colormap(plug->panel->topgwin->window) */
 } TaskbarPlugin;
 
 /******************************************************************************/
@@ -1333,6 +1339,11 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
     DBG("Deleting task %s (0x%x)\n", tk->name, (int)tk);
 
+    if (tk->bgcolor1.pixel)
+        gdk_colormap_free_colors(tb->color_map, &tk->bgcolor1, 1);
+    if (tk->bgcolor2.pixel)
+        gdk_colormap_free_colors(tb->color_map, &tk->bgcolor2, 1);
+
     /* Free thumbnails. */
     if (tk->backing_pixmap != 0)
         XFreePixmap(GDK_DISPLAY(), tk->backing_pixmap);
@@ -1796,6 +1807,156 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
     return pixmap;
 }
 
+static GdkPixbuf * scale_pixbuf(GdkPixbuf * pixmap, int required_width, int required_height)
+{
+    /* If we got a pixmap, scale it and return it. */
+    if (pixmap == NULL)
+        return NULL;
+    else
+    {
+        gulong w = gdk_pixbuf_get_width (pixmap);
+        gulong h = gdk_pixbuf_get_height (pixmap);
+
+        if ((w > required_width) || (h > required_height))
+        {
+            float rw = required_width;
+            float rh = required_height;
+            float sw = w;
+            float sh = h;
+
+            float scalew = rw / sw;
+            float scaleh = rh / sh;
+            float scale = scalew < scaleh ? scalew : scaleh;
+
+            sw *= scale;
+            sh *= scale;
+
+            w = sw;
+            h = sh;
+
+            if (w < 2)
+                w = 2;
+            if (h < 2)
+                h = 2;
+        }
+
+        GdkPixbuf * ret = gdk_pixbuf_scale_simple(pixmap, w, h, GDK_INTERP_TILES);
+
+        return ret;
+    }
+}
+
+static void get_pixel (GdkPixbuf *pixbuf, int x, int y, unsigned * red, unsigned * green, unsigned * blue, unsigned * alpha)
+{
+  int width, height, rowstride, n_channels;
+  guchar *pixels, *p;
+
+  n_channels = gdk_pixbuf_get_n_channels (pixbuf);
+
+  g_assert (gdk_pixbuf_get_colorspace (pixbuf) == GDK_COLORSPACE_RGB);
+  g_assert (gdk_pixbuf_get_bits_per_sample (pixbuf) == 8);
+  g_assert (gdk_pixbuf_get_has_alpha (pixbuf));
+  g_assert (n_channels == 4);
+
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+
+  g_assert (x >= 0 && x < width);
+  g_assert (y >= 0 && y < height);
+
+  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
+  pixels = gdk_pixbuf_get_pixels (pixbuf);
+
+  p = pixels + y * rowstride + x * n_channels;
+  *red   = p[0];
+  *green = p[1];
+  *blue  = p[2];
+  *alpha = p[3];
+}
+
+static void get_color_sample (GdkPixbuf *pixbuf, GdkColor * c1, GdkColor * c2)
+{
+    /* scale pixbuff down */
+
+    GdkPixbuf * p1 = scale_pixbuf(pixbuf, 3, 3);
+
+    gulong pw = gdk_pixbuf_get_width(p1);
+    gulong ph = gdk_pixbuf_get_height(p1);
+
+    gdouble r = 0, g = 0, b = 0;
+
+    unsigned r1, g1, b1, a; int samples_count = 0;
+
+    /* pick colors */
+
+    if (pw < 1 || ph < 1)
+    {
+        r1 += 128; g1 += 128; b1 += 128; samples_count++;
+    }
+    else if (pw == 1 && ph == 1)
+    {
+        get_pixel(p1, 0, 0, &r1, &g1, &b1, &a); r += r1; g += g1; b += b1; samples_count++;
+    }
+    else
+    {
+        if (pw > 1 && ph > 1)
+            get_pixel(p1, 1, 1, &r1, &g1, &b1, &a); r += r1; g += g1; b += b1; samples_count++;
+        if (ph > 1)
+            get_pixel(p1, 0, 1, &r1, &g1, &b1, &a); r += r1; g += g1; b += b1; samples_count++;
+        if (pw > 1)
+            get_pixel(p1, 1, 0, &r1, &g1, &b1, &a); r += r1; g += g1; b += b1; samples_count++;
+        if (ph > 2)
+            get_pixel(p1, 0, 2, &r1, &g1, &b1, &a); r += r1; g += g1; b += b1; samples_count++;
+        if (pw > 2)
+            get_pixel(p1, 2, 0, &r1, &g1, &b1, &a); r += r1; g += g1; b += b1; samples_count++;
+    }
+
+    g_object_unref(p1);
+
+    /* to range (0,1) */
+
+    r /= (samples_count * 255); g /= (samples_count * 255); b /= (samples_count * 255);
+
+    if (r > 1)
+        r = 1;
+    if (g > 1)
+        g = 1;
+    if (b > 1)
+        b = 1;
+
+    gdouble h = 0, s = 0, v = 0;
+
+    /* adjust saturation and value */
+
+    gtk_rgb_to_hsv(r, g, b, &h, &s, &v);
+
+    if (s < 0.2)
+        s = 0.2;
+    if (s > 0.6)
+        s = 0.6;
+
+    if (v < 0.4)
+        v = 0.4;
+    if (v > 0.6)
+        v = 0.6;
+
+    gtk_hsv_to_rgb(h, s, v, &r, &g, &b);
+
+    c1->red   = r * (256 * 256 - 1);
+    c1->green = g * (256 * 256 - 1);
+    c1->blue  = b * (256 * 256 - 1);
+
+    v += 0.2;
+
+    gtk_hsv_to_rgb(h, s, v, &r, &g, &b);
+
+    c2->red   = r * (256 * 256 - 1);
+    c2->green = g * (256 * 256 - 1);
+    c2->blue  = b * (256 * 256 - 1);
+
+}
+
+
 static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
 {
     TaskbarPlugin * tb = tk->tb;
@@ -1840,46 +2001,42 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
          }
     }
 
-    return pixbuf;
-}
+    GdkColor * c1 = NULL;
+    GdkColor * c2 = NULL;
 
-static GdkPixbuf * scale_pixbuf(GdkPixbuf * pixmap, int required_width, int required_height)
-{
-    /* If we got a pixmap, scale it and return it. */
-    if (pixmap == NULL)
-        return NULL;
-    else
+    if (pixbuf && tb->colorize_buttons)
     {
-        gulong w = gdk_pixbuf_get_width (pixmap);
-        gulong h = gdk_pixbuf_get_height (pixmap);
+        get_color_sample(pixbuf, &tk->bgcolor1, &tk->bgcolor2);
 
-        if ((w > required_width) || (h > required_height))
+        if (!tb->color_map)
+            tb->color_map = gdk_drawable_get_colormap(tb->plug->panel->topgwin->window);
+
+        if (tk->bgcolor1.pixel)
         {
-            float rw = required_width;
-            float rh = required_height;
-            float sw = w;
-            float sh = h;
-
-            float scalew = rw / sw;
-            float scaleh = rh / sh;
-            float scale = scalew < scaleh ? scalew : scaleh;
-
-            sw *= scale;
-            sh *= scale;
-
-            w = sw;
-            h = sh;
-
-            if (w < 2)
-                w = 2;
-            if (h < 2)
-                h = 2;
+            gdk_colormap_free_colors(tb->color_map, &tk->bgcolor1, 1);
+            tk->bgcolor1.pixel = 0;
+        }
+        if (tk->bgcolor2.pixel)
+        {
+            gdk_colormap_free_colors(tb->color_map, &tk->bgcolor2, 1);
+            tk->bgcolor2.pixel = 0;
         }
 
-        GdkPixbuf * ret = gdk_pixbuf_scale_simple(pixmap, w, h, GDK_INTERP_TILES);
+        gdk_colormap_alloc_color(tb->color_map, &tk->bgcolor1, FALSE, TRUE);
+        gdk_colormap_alloc_color(tb->color_map, &tk->bgcolor2, FALSE, TRUE);
 
-        return ret;
+        if (tk->bgcolor1.pixel && tk->bgcolor2.pixel)
+        {
+            c1 = &tk->bgcolor1;
+            c2 = &tk->bgcolor2;
+        }
     }
+
+    gtk_widget_modify_bg(GTK_WIDGET(tk->button), GTK_STATE_NORMAL, c1);
+    gtk_widget_modify_bg(GTK_WIDGET(tk->button), GTK_STATE_ACTIVE, c1);
+    gtk_widget_modify_bg(GTK_WIDGET(tk->button), GTK_STATE_PRELIGHT, c2);
+
+    return pixbuf;
 }
 
 
@@ -1947,7 +2104,6 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
 
     tk->icon_pixbuf = pixbuf;
 
-    return pixbuf;
 }
 
 static void task_update_icon2(Task * tk, Atom source, gboolean forse_icon_erase)
@@ -4377,6 +4533,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     tb->rebuild_gui |= tb->show_iconified_prev != tb->show_iconified;
     tb->rebuild_gui |= tb->show_mapped_prev != tb->show_mapped;
     tb->rebuild_gui |= tb->sort_settings_hash != sort_settings_hash;
+    tb->rebuild_gui |= tb->colorize_buttons_prev != tb->colorize_buttons;
 
     if (tb->rebuild_gui) {
         tb->_mode = tb->mode;
@@ -4387,6 +4544,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
         tb->show_iconified_prev = tb->show_iconified;
         tb->show_mapped_prev = tb->show_mapped;
         tb->sort_settings_hash = sort_settings_hash;
+        tb->colorize_buttons_prev = tb->colorize_buttons;
     }
 
     tb->_show_close_buttons = tb->show_close_buttons && !(tb->grouped_tasks && tb->_group_fold_threshold == 1);
@@ -4484,10 +4642,12 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->_show_close_buttons = FALSE;
     tb->extra_size        = 0;
 
+    tb->colorize_buttons = FALSE;
+
     tb->thumbnails_preview = FALSE;
     tb->use_thumbnails_as_icons = FALSE;
 //    tb->thumbnails_preview = TRUE;
-    tb->use_thumbnails_as_icons = TRUE;
+//    tb->use_thumbnails_as_icons = TRUE;
 
     tb->workspace_submenu = NULL;
     tb->restore_menuitem  = NULL;
@@ -4546,6 +4706,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->use_urgency_hint = str2num(bool_pair, s.t[1], tb->use_urgency_hint);
                 else if (g_ascii_strcasecmp(s.t[0], "DimmIconified") == 0)
                     tb->dimm_iconified = str2num(bool_pair, s.t[1], tb->dimm_iconified);
+                else if (g_ascii_strcasecmp(s.t[0], "ColorizeButtons") == 0)
+                    tb->colorize_buttons = str2num(bool_pair, s.t[1], tb->colorize_buttons);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatButton") == 0)
                     tb->flat_button = str2num(bool_pair, s.t[1], tb->flat_button);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupedTasks") == 0)		/* For backward compatibility */
@@ -4770,6 +4932,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
         _("Dimm iconified"), (gpointer)&tb->dimm_iconified, (GType)CONF_TYPE_BOOL,
         _("Flat buttons"), (gpointer)&tb->flat_button, (GType)CONF_TYPE_BOOL,
+        _("Colorize buttons"), (gpointer)&tb->colorize_buttons, (GType)CONF_TYPE_BOOL,
         _("Highlight modified titles"), (gpointer)&tb->highlight_modified_titles, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Maximum width of task button"), (gpointer)&tb->task_width_max, (GType)CONF_TYPE_INT,
@@ -4875,6 +5038,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowUrgencyAllDesks", tb->show_urgency_all_desks);
     lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);
     lxpanel_put_bool(fp, "FlatButton", tb->flat_button);
+    lxpanel_put_bool(fp, "ColorizeButtons", tb->colorize_buttons);
     lxpanel_put_bool(fp, "DimmIconified", tb->dimm_iconified);
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
     lxpanel_put_int(fp, "spacing", tb->spacing);

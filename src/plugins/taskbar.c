@@ -1855,12 +1855,12 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
     {
         pixmap = get_icon_from_kwm_win_icon(task_win);
         if (pixmap)
-            possible_source = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
+            possible_source = kwin_win_icon_atom;
     }
 
     /* Second, try to load icon from the source that has succeed previous time. */
 
-    if (!pixmap && preferable_source != *current_source)
+    if (!pixmap && *current_source && preferable_source != *current_source)
     {
         preferable_source = *current_source;
         goto again;
@@ -1886,7 +1886,7 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
     {
         pixmap = get_icon_from_kwm_win_icon(task_win);
         if (pixmap)
-            possible_source = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
+            possible_source = kwin_win_icon_atom;
     }
 
     if (pixmap)
@@ -1943,8 +1943,8 @@ static void get_pixel (GdkPixbuf *pixbuf, int x, int y, unsigned * red, unsigned
 
   g_assert (gdk_pixbuf_get_colorspace (pixbuf) == GDK_COLORSPACE_RGB);
   g_assert (gdk_pixbuf_get_bits_per_sample (pixbuf) == 8);
-  g_assert (gdk_pixbuf_get_has_alpha (pixbuf));
-  g_assert (n_channels == 4);
+  //g_assert (gdk_pixbuf_get_has_alpha (pixbuf));
+  //g_assert (n_channels == 4);
 
   width = gdk_pixbuf_get_width (pixbuf);
   height = gdk_pixbuf_get_height (pixbuf);
@@ -1959,7 +1959,7 @@ static void get_pixel (GdkPixbuf *pixbuf, int x, int y, unsigned * red, unsigned
   *red   = p[0];
   *green = p[1];
   *blue  = p[2];
-  *alpha = p[3];
+  *alpha = (n_channels > 3) ? p[3] : 0;
 }
 
 static void get_color_sample (GdkPixbuf *pixbuf, GdkColor * c1, GdkColor * c2)
@@ -3962,7 +3962,8 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 {
                     /* Window changed "window manager hints".
                      * Some windows set their WM_HINTS icon after mapping. */
-                    task_update_icon(tk, XA_WM_HINTS);
+                    //task_update_icon(tk, XA_WM_HINTS);
+                    task_update_icon(tk, None);
 
                     if (tb->use_urgency_hint)
                     {

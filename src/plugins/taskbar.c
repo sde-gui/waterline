@@ -1564,6 +1564,127 @@ static GdkPixbuf * apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask)
     return with_alpha;
 }
 
+static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int required_height)
+{
+    GdkPixbuf * pixmap = NULL;
+    int result = -1;
+
+    /* Important Notes:
+     * According to freedesktop.org document:
+     * http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html#id2552223
+     * _NET_WM_ICON contains an array of 32-bit packed CARDINAL ARGB.
+     * However, this is incorrect. Actually it's an array of long integers.
+     * Toolkits like gtk+ use unsigned long here to store icons.
+     * Besides, according to manpage of XGetWindowProperty, when returned format,
+     * is 32, the property data will be stored as an array of longs
+     * (which in a 64-bit application will be 64-bit values that are
+     * padded in the upper 4 bytes).
+     */
+
+    /* Get the window property _NET_WM_ICON, if possible. */
+    Atom type = None;
+    int format;
+    gulong nitems;
+    gulong bytes_after;
+    gulong * data = NULL;
+    result = XGetWindowProperty(
+        GDK_DISPLAY(),
+        task_win,
+        a_NET_WM_ICON,
+        0, G_MAXLONG,
+        False, XA_CARDINAL,
+        &type, &format, &nitems, &bytes_after, (void *) &data);
+
+    /* Inspect the result to see if it is usable.  If not, and we got data, free it. */
+    if ((type != XA_CARDINAL) || (nitems <= 0))
+    {
+        if (data != NULL)
+            XFree(data);
+        result = -1;
+    }
+
+    /* If the result is usable, extract the icon from it. */
+    if (result == Success)
+    {
+        /* Get the largest icon available, unless there is one that is the desired size. */
+        /* FIXME: should we try to find an icon whose size is closest to
+         * required_width and required_height to reduce unnecessary resizing? */
+        gulong * pdata = data;
+        gulong * pdata_end = data + nitems;
+        gulong * max_icon = NULL;
+        gulong max_w = 0;
+        gulong max_h = 0;
+        while ((pdata + 2) < pdata_end)
+        {
+            /* Extract the width and height. */
+            gulong w = pdata[0];
+            gulong h = pdata[1];
+            gulong size = w * h;
+            pdata += 2;
+
+            /* Bounds check the icon. */
+            if (pdata + size > pdata_end)
+                break;
+
+            /* Rare special case: the desired size is the same as icon size. */
+            if ((required_width == w) && (required_height == h))
+            {
+                max_icon = pdata;
+                max_w = w;
+                max_h = h;
+                break;
+            }
+
+            /* If the icon is the largest so far, capture it. */
+            if ((w > max_w) && (h > max_h))
+            {
+                max_icon = pdata;
+                max_w = w;
+                max_h = h;
+            }
+            pdata += size;
+        }
+
+        /* If an icon was extracted, convert it to a pixbuf.
+         * Its size is max_w and max_h. */
+        if (max_icon != NULL)
+        {
+            /* Allocate enough space for the pixel data. */
+            gulong len = max_w * max_h;
+            guchar * pixdata = g_new(guchar, len * 4);
+
+            /* Loop to convert the pixel data. */
+            guchar * p = pixdata;
+            int i;
+            for (i = 0; i < len; p += 4, i += 1)
+            {
+                guint argb = max_icon[i];
+                guint rgba = (argb << 8) | (argb >> 24);
+                p[0] = rgba >> 24;
+                p[1] = (rgba >> 16) & 0xff;
+                p[2] = (rgba >> 8) & 0xff;
+                p[3] = rgba & 0xff;
+            }
+            
+            /* Initialize a pixmap with the pixel data. */
+            pixmap = gdk_pixbuf_new_from_data(
+                pixdata,
+                GDK_COLORSPACE_RGB,
+                TRUE, 8,	/* has_alpha, bits_per_sample */
+                max_w, max_h, max_w * 4,
+                (GdkPixbufDestroyNotify) g_free,
+                NULL);
+         }
+         else
+	    result = -1;
+
+        /* Free the X property data. */
+        XFree(data);
+     }
+
+    return pixmap;
+}
+
 /* Get an icon from the window manager for a task, and scale it to a specified size. */
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source)
 {
@@ -1574,123 +1695,13 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
 
     if ((source == None) || (source == a_NET_WM_ICON))
     {
-        /* Important Notes:
-         * According to freedesktop.org document:
-         * http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html#id2552223
-         * _NET_WM_ICON contains an array of 32-bit packed CARDINAL ARGB.
-         * However, this is incorrect. Actually it's an array of long integers.
-         * Toolkits like gtk+ use unsigned long here to store icons.
-         * Besides, according to manpage of XGetWindowProperty, when returned format,
-         * is 32, the property data will be stored as an array of longs
-         * (which in a 64-bit application will be 64-bit values that are
-         * padded in the upper 4 bytes).
-         */
-
-        /* Get the window property _NET_WM_ICON, if possible. */
-        Atom type = None;
-        int format;
-        gulong nitems;
-        gulong bytes_after;
-        gulong * data = NULL;
-        result = XGetWindowProperty(
-            GDK_DISPLAY(),
-            task_win,
-            a_NET_WM_ICON,
-            0, G_MAXLONG,
-            False, XA_CARDINAL,
-            &type, &format, &nitems, &bytes_after, (void *) &data);
-
-        /* Inspect the result to see if it is usable.  If not, and we got data, free it. */
-        if ((type != XA_CARDINAL) || (nitems <= 0))
-        {
-            if (data != NULL)
-                XFree(data);
-            result = -1;
-        }
-
-        /* If the result is usable, extract the icon from it. */
-        if (result == Success)
-        {
-            /* Get the largest icon available, unless there is one that is the desired size. */
-            /* FIXME: should we try to find an icon whose size is closest to
-             * required_width and required_height to reduce unnecessary resizing? */
-            gulong * pdata = data;
-            gulong * pdata_end = data + nitems;
-            gulong * max_icon = NULL;
-            gulong max_w = 0;
-            gulong max_h = 0;
-            while ((pdata + 2) < pdata_end)
-            {
-                /* Extract the width and height. */
-                gulong w = pdata[0];
-                gulong h = pdata[1];
-                gulong size = w * h;
-                pdata += 2;
-
-                /* Bounds check the icon. */
-                if (pdata + size > pdata_end)
-                    break;
-
-                /* Rare special case: the desired size is the same as icon size. */
-                if ((required_width == w) && (required_height == h))
-                {
-                    max_icon = pdata;
-                    max_w = w;
-                    max_h = h;
-                    break;
-                }
-
-                /* If the icon is the largest so far, capture it. */
-                if ((w > max_w) && (h > max_h))
-                {
-                    max_icon = pdata;
-                    max_w = w;
-                    max_h = h;
-                }
-                pdata += size;
-            }
-
-            /* If an icon was extracted, convert it to a pixbuf.
-             * Its size is max_w and max_h. */
-            if (max_icon != NULL)
-            {
-                /* Allocate enough space for the pixel data. */
-                gulong len = max_w * max_h;
-                guchar * pixdata = g_new(guchar, len * 4);
-
-                /* Loop to convert the pixel data. */
-                guchar * p = pixdata;
-                int i;
-                for (i = 0; i < len; p += 4, i += 1)
-                {
-                    guint argb = max_icon[i];
-                    guint rgba = (argb << 8) | (argb >> 24);
-                    p[0] = rgba >> 24;
-                    p[1] = (rgba >> 16) & 0xff;
-                    p[2] = (rgba >> 8) & 0xff;
-                    p[3] = rgba & 0xff;
-                }
-            
-                /* Initialize a pixmap with the pixel data. */
-                pixmap = gdk_pixbuf_new_from_data(
-                    pixdata,
-                    GDK_COLORSPACE_RGB,
-                    TRUE, 8,	/* has_alpha, bits_per_sample */
-                    max_w, max_h, max_w * 4,
-                    (GdkPixbufDestroyNotify) g_free,
-                    NULL);
-                possible_source = a_NET_WM_ICON;
-            }
-	    else
-	        result = -1;
-
-            /* Free the X property data. */
-            XFree(data);
-        }
+        pixmap = get_net_wm_icon(task_win, required_width, required_height);
+        if (pixmap)
+            possible_source = a_NET_WM_ICON;
     }
 
     /* No icon available from _NET_WM_ICON.  Next try WM_HINTS, but do not overwrite _NET_WM_ICON. */
-    if ((result != Success) && (*current_source != a_NET_WM_ICON)
+    if ((!pixmap) && (*current_source != a_NET_WM_ICON)
     && ((source == None) || (source != a_NET_WM_ICON)))
     {
         XWMHints * hints = XGetWMHints(GDK_DISPLAY(), task_win);

@@ -1829,34 +1829,68 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
     Atom possible_source = None;
     int result = -1;
 
-    if ((source == None) || (source == a_NET_WM_ICON))
+    Atom kwin_win_icon_atom = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
+
+    /* First, try to load icon from the `source` source. */
+
+    Atom preferable_source = source;
+
+    again:
+
+    if (!pixmap && preferable_source == a_NET_WM_ICON)
     {
         pixmap = get_net_wm_icon(task_win, required_width, required_height);
         if (pixmap)
             possible_source = a_NET_WM_ICON;
     }
 
-    /* No icon available from _NET_WM_ICON.  Next try WM_HINTS, but do not overwrite _NET_WM_ICON. */
-    if ((!pixmap) && (*current_source != a_NET_WM_ICON)
-    && ((source == None) || (source != a_NET_WM_ICON)))
+    if (!pixmap && preferable_source == XA_WM_HINTS)
     {
         pixmap = get_icon_from_wm_hints(task_win);
         if (pixmap)
-        {
             possible_source = XA_WM_HINTS;
-        }
+    }
 
-        if (!pixmap)
-        {
-            pixmap = get_icon_from_kwm_win_icon(task_win);
+    if (!pixmap && preferable_source == kwin_win_icon_atom)
+    {
+        pixmap = get_icon_from_kwm_win_icon(task_win);
+        if (pixmap)
             possible_source = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
-        }
+    }
+
+    /* Second, try to load icon from the source that has succeed previous time. */
+
+    if (!pixmap && preferable_source != *current_source)
+    {
+        preferable_source = *current_source;
+        goto again;
+    }
+
+    /* Third, try each source. */
+
+    if (!pixmap)
+    {
+        pixmap = get_net_wm_icon(task_win, required_width, required_height);
+        if (pixmap)
+            possible_source = a_NET_WM_ICON;
+    }
+
+    if (!pixmap)
+    {
+        pixmap = get_icon_from_wm_hints(task_win);
+        if (pixmap)
+            possible_source = XA_WM_HINTS;
+    }
+
+    if (!pixmap)
+    {
+        pixmap = get_icon_from_kwm_win_icon(task_win);
+        if (pixmap)
+            possible_source = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
     }
 
     if (pixmap)
-    {
         *current_source = possible_source;
-    }
 
     return pixmap;
 }

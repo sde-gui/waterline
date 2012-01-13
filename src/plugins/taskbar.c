@@ -270,7 +270,7 @@ typedef struct _task {
     GdkPixbuf * thumbnail;             /* Latest copy of window content (full size). If backing_pixmap became 0, thumbnail stays valid.*/
     GdkPixbuf * thumbnail_icon;        /* thumbnail, scaled to icon_size */
     GdkPixbuf * thumbnail_preview;     /* thumbnail, scaled to preview size (not impemented) */
-    guint update_composite_thumbnail_idle; /* update_composite_thumbnail idle event source id */
+    guint update_composite_thumbnail_timeout; /* update_composite_thumbnail event source id */
 
     /* Background colors from icon */
     GdkColor bgcolor1; /* normal */
@@ -1358,8 +1358,8 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
         g_object_unref(G_OBJECT(tk->thumbnail_icon));
     if (tk->thumbnail_preview)
         g_object_unref(G_OBJECT(tk->thumbnail_preview));
-    if (tk->update_composite_thumbnail_idle)
-        g_source_remove(tk->update_composite_thumbnail_idle);
+    if (tk->update_composite_thumbnail_timeout)
+        g_source_remove(tk->update_composite_thumbnail_timeout);
         
     /* If we think this task had focus, remove that. */
     if (tb->focused == tk)
@@ -1428,7 +1428,7 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
 static gboolean task_update_composite_thumbnail_real(Task * tk)
 {
-    tk->update_composite_thumbnail_idle = 0;
+    tk->update_composite_thumbnail_timeout = 0;
 
     if (!tk->tb->thumbnails)
         return FALSE;
@@ -1474,8 +1474,9 @@ static task_update_composite_thumbnail(Task * tk)
     if (!tk->tb->thumbnails)
         return FALSE;
 
-    if (tk->update_composite_thumbnail_idle == 0)
-        tk->update_composite_thumbnail_idle = g_idle_add((GSourceFunc) task_update_composite_thumbnail_real, tk);
+    if (tk->update_composite_thumbnail_timeout == 0)
+        tk->update_composite_thumbnail_timeout = g_timeout_add(1000, (GSourceFunc) task_update_composite_thumbnail_real, tk);
+//        tk->update_composite_thumbnail_idle = g_idle_add((GSourceFunc) task_update_composite_thumbnail_real, tk);
 }
 
 /* Get a pixbuf from a pixmap.

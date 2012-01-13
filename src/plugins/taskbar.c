@@ -441,6 +441,11 @@ static Atom atom_LXPANEL_TASKBAR_WINDOW_POSITION;
 
 /******************************************************************************/
 
+//#define PIXBUF_INTERP GDK_INTERP_NEAREST
+//#define PIXBUF_INTERP GDK_INTERP_TILES
+//#define PIXBUF_INTERP GDK_INTERP_BILINEAR
+#define PIXBUF_INTERP GDK_INTERP_HYPER
+
 static gchar *taskbar_rc = "style 'taskbar-style'\n"
 "{\n"
 "GtkWidget::focus-padding=0\n" /* FIXME: seem to fix #2821771, not sure if this is ok. */
@@ -1928,7 +1933,7 @@ static GdkPixbuf * scale_pixbuf(GdkPixbuf * pixmap, int required_width, int requ
                 h = 2;
         }
 
-        GdkPixbuf * ret = gdk_pixbuf_scale_simple(pixmap, w, h, GDK_INTERP_TILES);
+        GdkPixbuf * ret = gdk_pixbuf_scale_simple(pixmap, w, h, PIXBUF_INTERP);
 
         return ret;
     }
@@ -2168,7 +2173,7 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
                     gdk_pixbuf_composite(p3, p1,
                         icon_size - w, icon_size - h, w, h,
                         icon_size - w, icon_size - h, 1, 1,
-                        GDK_INTERP_TILES,
+                        PIXBUF_INTERP,
                         255);
                     g_object_unref(p3);
                     g_object_unref(p2);

@@ -1685,6 +1685,56 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
     return pixmap;
 }
 
+static GdkPixbuf * get_icon_from_pixmap_mask(Pixmap xpixmap, Pixmap xmask)
+{
+    GdkPixbuf * pixmap = NULL;
+    int result = -1;
+
+    /* get pixmap geometry.*/
+    unsigned int w, h;
+    {
+        Window unused_win;
+        int unused;
+        unsigned int unused_2;
+        result = XGetGeometry(
+            GDK_DISPLAY(), xpixmap,
+            &unused_win, &unused, &unused, &w, &h, &unused_2, &unused_2) ? Success : -1;
+    }
+
+    /* convert it to a GDK pixbuf. */
+    if (result == Success) 
+    {
+        pixmap = _wnck_gdk_pixbuf_get_from_pixmap(xpixmap, w, h);
+        result = ((pixmap != NULL) ? Success : -1);
+    }
+
+    /* If we have success, see if the result needs to be masked.
+     * Failures here are implemented as nonfatal. */
+    if ((result == Success) && (xmask != None))
+    {
+        Window unused_win;
+        int unused;
+        unsigned int unused_2;
+        if (XGetGeometry(
+            GDK_DISPLAY(), xmask,
+            &unused_win, &unused, &unused, &w, &h, &unused_2, &unused_2))
+        {
+            /* Convert the X mask to a GDK pixmap. */
+            GdkPixbuf * mask = _wnck_gdk_pixbuf_get_from_pixmap(xmask, w, h);
+            if (mask != NULL)
+            {
+                /* Apply the mask. */
+                GdkPixbuf * masked_pixmap = apply_mask(pixmap, mask);
+                g_object_unref(G_OBJECT(pixmap));
+                g_object_unref(G_OBJECT(mask));
+                pixmap = masked_pixmap;
+            }
+        }
+    }
+
+    return pixmap;
+}
+
 /* Get an icon from the window manager for a task, and scale it to a specified size. */
 static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source)
 {
@@ -1766,47 +1816,9 @@ static GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
             }
         }
 
-        /* If we have an X pixmap, get its geometry.*/
-        unsigned int w, h;
         if (result == Success)
         {
-            Window unused_win;
-            int unused;
-            unsigned int unused_2;
-            result = XGetGeometry(
-                GDK_DISPLAY(), xpixmap,
-                &unused_win, &unused, &unused, &w, &h, &unused_2, &unused_2) ? Success : -1;
-        }
-
-        /* If we have an X pixmap and its geometry, convert it to a GDK pixmap. */
-        if (result == Success) 
-        {
-            pixmap = _wnck_gdk_pixbuf_get_from_pixmap(xpixmap, w, h);
-            result = ((pixmap != NULL) ? Success : -1);
-        }
-
-        /* If we have success, see if the result needs to be masked.
-         * Failures here are implemented as nonfatal. */
-        if ((result == Success) && (xmask != None))
-        {
-            Window unused_win;
-            int unused;
-            unsigned int unused_2;
-            if (XGetGeometry(
-                GDK_DISPLAY(), xmask,
-                &unused_win, &unused, &unused, &w, &h, &unused_2, &unused_2))
-            {
-                /* Convert the X mask to a GDK pixmap. */
-                GdkPixbuf * mask = _wnck_gdk_pixbuf_get_from_pixmap(xmask, w, h);
-                if (mask != NULL)
-                {
-                    /* Apply the mask. */
-                    GdkPixbuf * masked_pixmap = apply_mask(pixmap, mask);
-                    g_object_unref(G_OBJECT(pixmap));
-                    g_object_unref(G_OBJECT(mask));
-                    pixmap = masked_pixmap;
-                }
-            }
+            pixmap = get_icon_from_pixmap_mask(xpixmap, xmask);
         }
     }
 

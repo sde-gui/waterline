@@ -32,6 +32,7 @@ lxpanel_SOURCES = \
 	configparser.c configparser.h \
 	generic_config_dlg.c \
 	Xsupport.c Xsupport.h \
+	pixbuf-stuff.c pixbuf-stuff.h \
 	configurator.c \
 	dbg.c dbg.h \
 	ev.c ev.h \

@@ -857,3 +857,337 @@ gboolean is_xcomposite_available(void)
 
     return result;
 }
+
+/******************************************************************************/
+
+static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int required_height)
+{
+    GdkPixbuf * pixmap = NULL;
+    int result = -1;
+
+    /* Important Notes:
+     * According to freedesktop.org document:
+     * http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html#id2552223
+     * _NET_WM_ICON contains an array of 32-bit packed CARDINAL ARGB.
+     * However, this is incorrect. Actually it's an array of long integers.
+     * Toolkits like gtk+ use unsigned long here to store icons.
+     * Besides, according to manpage of XGetWindowProperty, when returned format,
+     * is 32, the property data will be stored as an array of longs
+     * (which in a 64-bit application will be 64-bit values that are
+     * padded in the upper 4 bytes).
+     */
+
+    /* Get the window property _NET_WM_ICON, if possible. */
+    Atom type = None;
+    int format;
+    gulong nitems;
+    gulong bytes_after;
+    gulong * data = NULL;
+    result = XGetWindowProperty(
+        GDK_DISPLAY(),
+        task_win,
+        a_NET_WM_ICON,
+        0, G_MAXLONG,
+        False, XA_CARDINAL,
+        &type, &format, &nitems, &bytes_after, (void *) &data);
+
+    /* Inspect the result to see if it is usable.  If not, and we got data, free it. */
+    if ((type != XA_CARDINAL) || (nitems <= 0))
+    {
+        if (data != NULL)
+            XFree(data);
+        result = -1;
+    }
+
+    /* If the result is usable, extract the icon from it. */
+    if (result == Success)
+    {
+        /* Get the largest icon available, unless there is one that is the desired size. */
+        /* FIXME: should we try to find an icon whose size is closest to
+         * required_width and required_height to reduce unnecessary resizing? */
+        gulong * pdata = data;
+        gulong * pdata_end = data + nitems;
+        gulong * max_icon = NULL;
+        gulong max_w = 0;
+        gulong max_h = 0;
+        while ((pdata + 2) < pdata_end)
+        {
+            /* Extract the width and height. */
+            gulong w = pdata[0];
+            gulong h = pdata[1];
+            gulong size = w * h;
+            pdata += 2;
+
+            /* Bounds check the icon. */
+            if (pdata + size > pdata_end)
+                break;
+
+            /* Rare special case: the desired size is the same as icon size. */
+            if ((required_width == w) && (required_height == h))
+            {
+                max_icon = pdata;
+                max_w = w;
+                max_h = h;
+                break;
+            }
+
+            /* If the icon is the largest so far, capture it. */
+            if ((w > max_w) && (h > max_h))
+            {
+                max_icon = pdata;
+                max_w = w;
+                max_h = h;
+            }
+            pdata += size;
+        }
+
+        /* If an icon was extracted, convert it to a pixbuf.
+         * Its size is max_w and max_h. */
+        if (max_icon != NULL)
+        {
+            /* Allocate enough space for the pixel data. */
+            gulong len = max_w * max_h;
+            guchar * pixdata = g_new(guchar, len * 4);
+
+            /* Loop to convert the pixel data. */
+            guchar * p = pixdata;
+            int i;
+            for (i = 0; i < len; p += 4, i += 1)
+            {
+                guint argb = max_icon[i];
+                guint rgba = (argb << 8) | (argb >> 24);
+                p[0] = rgba >> 24;
+                p[1] = (rgba >> 16) & 0xff;
+                p[2] = (rgba >> 8) & 0xff;
+                p[3] = rgba & 0xff;
+            }
+            
+            /* Initialize a pixmap with the pixel data. */
+            pixmap = gdk_pixbuf_new_from_data(
+                pixdata,
+                GDK_COLORSPACE_RGB,
+                TRUE, 8,	/* has_alpha, bits_per_sample */
+                max_w, max_h, max_w * 4,
+                (GdkPixbufDestroyNotify) g_free,
+                NULL);
+         }
+         else
+	    result = -1;
+
+        /* Free the X property data. */
+        XFree(data);
+     }
+
+    return pixmap;
+}
+
+static GdkPixbuf * get_icon_from_pixmap_mask(Pixmap xpixmap, Pixmap xmask)
+{
+    GdkPixbuf * pixmap = NULL;
+    int result = -1;
+
+    /* get pixmap geometry.*/
+    unsigned int w, h;
+    {
+        Window unused_win;
+        int unused;
+        unsigned int unused_2;
+        result = XGetGeometry(
+            GDK_DISPLAY(), xpixmap,
+            &unused_win, &unused, &unused, &w, &h, &unused_2, &unused_2) ? Success : -1;
+    }
+
+    /* convert it to a GDK pixbuf. */
+    if (result == Success) 
+    {
+        pixmap = _gdk_pixbuf_get_from_pixmap(xpixmap, w, h);
+        result = ((pixmap != NULL) ? Success : -1);
+    }
+
+    /* If we have success, see if the result needs to be masked.
+     * Failures here are implemented as nonfatal. */
+    if ((result == Success) && (xmask != None))
+    {
+        Window unused_win;
+        int unused;
+        unsigned int unused_2;
+        if (XGetGeometry(
+            GDK_DISPLAY(), xmask,
+            &unused_win, &unused, &unused, &w, &h, &unused_2, &unused_2))
+        {
+            /* Convert the X mask to a GDK pixmap. */
+            GdkPixbuf * mask = _gdk_pixbuf_get_from_pixmap(xmask, w, h);
+            if (mask != NULL)
+            {
+                /* Apply the mask. */
+                GdkPixbuf * masked_pixmap = _gdk_pixbuf_apply_mask(pixmap, mask);
+                g_object_unref(G_OBJECT(pixmap));
+                g_object_unref(G_OBJECT(mask));
+                pixmap = masked_pixmap;
+            }
+        }
+    }
+
+    return pixmap;
+}
+
+static GdkPixbuf * get_icon_from_wm_hints(Window task_win)
+{
+    GdkPixbuf * pixmap = NULL;
+    int result = -1;
+
+    XWMHints * hints = XGetWMHints(GDK_DISPLAY(), task_win);
+    result = (hints != NULL) ? Success : -1;
+    Pixmap xpixmap = None;
+    Pixmap xmask = None;
+
+    if (result == Success)
+    {
+        /* WM_HINTS is available.  Extract the X pixmap and mask. */
+        if ((hints->flags & IconPixmapHint))
+            xpixmap = hints->icon_pixmap;
+        if ((hints->flags & IconMaskHint))
+            xmask = hints->icon_mask;
+        XFree(hints);
+        if (xpixmap != None)
+        {
+            result = Success;
+        }
+        else
+            result = -1;
+    }
+
+    if (result == Success)
+    {
+        pixmap = get_icon_from_pixmap_mask(xpixmap, xmask);
+    }
+
+    return pixmap;
+}
+
+static GdkPixbuf * get_icon_from_kwm_win_icon(Window task_win)
+{
+    GdkPixbuf * pixmap = NULL;
+    int result = -1;
+
+    Pixmap xpixmap = None;
+    Pixmap xmask = None;
+
+    Atom type = None;
+    int format;
+    gulong nitems;
+    gulong bytes_after;
+    Pixmap *icons = NULL;
+    Atom kwin_win_icon_atom = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
+    result = XGetWindowProperty(
+        GDK_DISPLAY(),
+        task_win,
+        kwin_win_icon_atom,
+        0, G_MAXLONG,
+        False, kwin_win_icon_atom,
+        &type, &format, &nitems, &bytes_after, (void *) &icons);
+
+    /* Inspect the result to see if it is usable.  If not, and we got data, free it. */
+    if (type != kwin_win_icon_atom)
+    {
+        if (icons != NULL)
+            XFree(icons);
+        result = -1;
+    }
+
+    /* If the result is usable, extract the X pixmap and mask from it. */
+    if (result == Success)
+    {
+        xpixmap = icons[0];
+        xmask = icons[1];
+        if (xpixmap != None)
+        {
+            result = Success;
+        }
+        else
+            result = -1;
+    }
+
+    if (result == Success)
+    {
+        pixmap = get_icon_from_pixmap_mask(xpixmap, xmask);
+    }
+
+    return pixmap;
+
+}
+
+/* Get an icon from the window manager for a task, and scale it to a specified size. */
+GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source)
+{
+    /* The result. */
+    GdkPixbuf * pixmap = NULL;
+    Atom possible_source = None;
+    int result = -1;
+
+    Atom kwin_win_icon_atom = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
+
+    /* First, try to load icon from the `source` source. */
+
+    Atom preferable_source = source;
+
+    again:
+
+    if (!pixmap && preferable_source == a_NET_WM_ICON)
+    {
+        pixmap = get_net_wm_icon(task_win, required_width, required_height);
+        if (pixmap)
+            possible_source = a_NET_WM_ICON;
+    }
+
+    if (!pixmap && preferable_source == XA_WM_HINTS)
+    {
+        pixmap = get_icon_from_wm_hints(task_win);
+        if (pixmap)
+            possible_source = XA_WM_HINTS;
+    }
+
+    if (!pixmap && preferable_source == kwin_win_icon_atom)
+    {
+        pixmap = get_icon_from_kwm_win_icon(task_win);
+        if (pixmap)
+            possible_source = kwin_win_icon_atom;
+    }
+
+    /* Second, try to load icon from the source that has succeed previous time. */
+
+    if (!pixmap && *current_source && preferable_source != *current_source)
+    {
+        preferable_source = *current_source;
+        goto again;
+    }
+
+    /* Third, try each source. */
+
+    if (!pixmap)
+    {
+        pixmap = get_net_wm_icon(task_win, required_width, required_height);
+        if (pixmap)
+            possible_source = a_NET_WM_ICON;
+    }
+
+    if (!pixmap)
+    {
+        pixmap = get_icon_from_wm_hints(task_win);
+        if (pixmap)
+            possible_source = XA_WM_HINTS;
+    }
+
+    if (!pixmap)
+    {
+        pixmap = get_icon_from_kwm_win_icon(task_win);
+        if (pixmap)
+            possible_source = kwin_win_icon_atom;
+    }
+
+    if (pixmap)
+        *current_source = possible_source;
+
+    return pixmap;
+}
+

@@ -150,4 +150,6 @@ extern Atom a_LXPANEL_TEXT_CMD;
 /* if current window manager is EWMH conforming. */
 extern gboolean is_ewmh_supported;
 
+GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
+
 #endif

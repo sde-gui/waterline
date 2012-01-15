@@ -255,7 +255,7 @@ typedef struct _task {
     
     int x_window_position;
 
-    guint open_group_menu_delay_timer;
+    guint show_popup_delay_timer;
 
     /* Icons, thumbnails. */
 
@@ -271,6 +271,10 @@ typedef struct _task {
     GdkPixbuf * thumbnail_icon;        /* thumbnail, scaled to icon_size */
     GdkPixbuf * thumbnail_preview;     /* thumbnail, scaled to preview size (not impemented) */
     guint update_composite_thumbnail_timeout; /* update_composite_thumbnail event source id */
+    guint update_composite_thumbnail_idle;
+    gboolean require_update_composite_thumbnail;
+    int update_composite_thumbnail_repeat_count;
+    guint update_thumbnail_preview_idle; /* update_thumbnail_preview event source id */
 
     /* Background colors from icon */
     GdkColor bgcolor1; /* normal */
@@ -312,9 +316,19 @@ typedef struct _taskbar {
     GtkWidget * fold_group_menuitem;
     GtkWidget * title_menuitem;
 
-    GtkWidget * group_menu;			/* Popup menu for grouping selection */
+    /* Task popup: group menu or preview panel. */
+
+    GtkWidget * group_menu;			/* Group menu */
     GtkAllocation group_menu_alloc;
-    guint close_group_menu_delay_timer;
+    gboolean group_menu_opened_as_popup;
+
+    GtkWidget * preview_panel_window;
+    GtkAllocation preview_panel_window_alloc;
+    GtkWidget * preview_panel_box;
+
+    Task * popup_task;                          /* Task that owns popup. */
+    guint hide_popup_delay_timer;               /* Timer to close popup if mouse leaves it */
+
 
     /* NETWM stuff */
 
@@ -495,12 +509,15 @@ static void task_reorder(Task * tk, gboolean and_others);
 static void task_update_grouping(Task * tk, int group_by);
 static void task_update_sorting(Task * tk, int sort_by);
 
+static void taskbar_check_hide_popup(TaskbarPlugin * tb, gboolean from_group_menu);
+static void taskbar_hide_popup(TaskbarPlugin * tb);
+
 static gboolean flash_window_timeout(Task * tk);
 static void task_set_urgency(Task * tk);
 static void task_clear_urgency(Task * tk);
 static void task_raise_window(Task * tk, guint32 time);
 static void taskbar_popup_set_position(GtkWidget * menu, gint * px, gint * py, gboolean * push_in, gpointer data);
-static void task_group_menu_destroy(TaskbarPlugin * tb);
+static void taskbar_group_menu_destroy(TaskbarPlugin * tb);
 static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * event, Task * tk, gboolean popup_menu);
 static gboolean taskbar_button_press_event(GtkWidget * widget, GdkEventButton * event, Task * tk);
 static gboolean taskbar_popup_activate_event(GtkWidget * widget, GdkEventButton * event, Task * tk);
@@ -1298,6 +1315,12 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
     DBG("Deleting task %s (0x%x)\n", tk->name, (int)tk);
 
+    if (tk == tb->popup_task ||
+        (tb->popup_task && tb->popup_task->task_class && tb->popup_task->task_class == tk->task_class))
+    {
+        taskbar_hide_popup(tk->tb);
+    }
+
     if (tk->bgcolor1.pixel)
         gdk_colormap_free_colors(tb->color_map, &tk->bgcolor1, 1);
     if (tk->bgcolor2.pixel)
@@ -1314,6 +1337,8 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
         g_object_unref(G_OBJECT(tk->thumbnail_preview));
     if (tk->update_composite_thumbnail_timeout)
         g_source_remove(tk->update_composite_thumbnail_timeout);
+    if (tk->update_thumbnail_preview_idle)
+        g_source_remove(tk->update_thumbnail_preview_idle);
         
     /* If we think this task had focus, remove that. */
     if (tb->focused == tk)
@@ -1327,8 +1352,8 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
         g_source_remove(tk->adapt_to_allocated_size_idle_cb);
     if (tk->update_icon_idle_cb != 0)
         g_source_remove(tk->update_icon_idle_cb);
-    if (tk->open_group_menu_delay_timer != 0)
-        g_source_remove(tk->open_group_menu_delay_timer);
+    if (tk->show_popup_delay_timer != 0)
+        g_source_remove(tk->show_popup_delay_timer);
 
     if (tk->override_class_name != (char*) -1 && tk->override_class_name)
          g_free(tk->override_class_name);
@@ -1380,12 +1405,46 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
 /******************************************************************************/
 
-static gboolean task_update_composite_thumbnail_real(Task * tk)
+static gboolean task_update_thumbnail_preview_real(Task * tk)
 {
-    tk->update_composite_thumbnail_timeout = 0;
+    ENTER;
+    tk->update_thumbnail_preview_idle = 0;
 
+    if (tk->thumbnail_preview)
+    {
+        if (tk->thumbnail_preview)
+            g_object_unref(G_OBJECT(tk->thumbnail_preview));
+        tk->thumbnail_preview = NULL;
+    }
+
+    if (tk->thumbnail)
+    {
+        int preview_width = 150;
+        int preview_height = 100;
+        tk->thumbnail_preview = _gdk_pixbuf_scale_in_rect(tk->thumbnail, preview_width, preview_height);
+    }
+
+    RET(FALSE);
+}
+
+static task_update_thumbnail_preview(Task * tk)
+{
     if (!tk->tb->thumbnails)
         return FALSE;
+
+    if (tk->update_thumbnail_preview_idle == 0)
+        tk->update_thumbnail_preview_idle = g_idle_add((GSourceFunc) task_update_thumbnail_preview_real, tk);
+}
+
+static gboolean task_update_composite_thumbnail_real(Task * tk)
+{
+    if (!tk->tb->thumbnails)
+    {
+        tk->update_composite_thumbnail_timeout = 0;
+        return FALSE;
+    }
+
+    ENTER;
 
     if (tk->backing_pixmap != 0)
     {
@@ -1393,12 +1452,57 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         tk->backing_pixmap = 0;
     }
 
-    if (!tk->iconified && !tk->shaded)
-        tk->backing_pixmap = XCompositeNameWindowPixmap(GDK_DISPLAY(), tk->win);
+    Status status;
 
+    gboolean skip = tk->iconified && tk->shaded;
+    if (!skip)
+    {
+        XWindowAttributes window_attributes;
+        window_attributes.map_state = IsUnmapped;
+        status = XGetWindowAttributes(GDK_DISPLAY(), tk->win, &window_attributes);
+        if (window_attributes.map_state == IsUnmapped)
+        {
+            skip = TRUE;
+        }
+    }
+
+    if (!skip)
+    {
+        Window w = tk->win;
+        Window w1 = 0;
+
+        Window root_return = 0;
+        Window parent_return = 0;
+        Window *children_return = NULL;
+        unsigned int nchildren_return;
+
+        status = XQueryTree(GDK_DISPLAY(), w, &root_return, &parent_return, &children_return, &nchildren_return);
+        if (children_return)
+            XFree(children_return);
+
+        g_print("0x%x => 0x%x, (root 0x%x)\n", w, parent_return, root_return);
+
+        if (parent_return != root_return)
+            w1 = parent_return;
+
+        if (w1)
+           w = w1;
+
+        if (w)
+        {
+            XWindowAttributes window_attributes;
+            window_attributes.map_state = IsUnmapped;
+            status = XGetWindowAttributes(GDK_DISPLAY(), w, &window_attributes);
+            if (window_attributes.map_state != IsUnmapped)
+            {
+                tk->backing_pixmap = XCompositeNameWindowPixmap(GDK_DISPLAY(), w);
+            }
+        }
+
+    }
     //g_print("> %d %d\n", (int)tk->win, (int)tk->backing_pixmap);
 
-    if (tk->backing_pixmap != 0)
+    if (!skip && tk->backing_pixmap != 0)
     {
         GdkPixbuf * pixbuf = _gdk_pixbuf_get_from_pixmap(tk->backing_pixmap, -1, -1);
         if (pixbuf)
@@ -1416,10 +1520,42 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
 
             if (tk->tb->use_thumbnails_as_icons)
                 task_defer_update_icon(tk, TRUE);
+            if (tk->tb->thumbnails_preview)
+                task_update_thumbnail_preview(tk);
+
+            tk->require_update_composite_thumbnail = FALSE;
+
+            g_print("New thumb for [%s]\n", tk->name);
         }
     }
 
-    return FALSE;
+    tk->update_composite_thumbnail_idle = 0;
+
+    RET(FALSE);
+}
+
+static gboolean task_update_composite_thumbnail_timeout(Task * tk)
+{
+    ENTER;
+
+    if (!tk->tb->thumbnails || !tk->require_update_composite_thumbnail)
+    {
+        tk->update_composite_thumbnail_timeout = 0;
+        RET(FALSE);
+    }
+
+    tk->update_composite_thumbnail_repeat_count++;
+    if (tk->update_composite_thumbnail_repeat_count > 5)
+    {
+        tk->update_composite_thumbnail_repeat_count = 0;
+        tk->require_update_composite_thumbnail = FALSE;
+    }
+
+
+    if (tk->update_composite_thumbnail_idle == 0)
+        tk->update_composite_thumbnail_idle = g_idle_add((GSourceFunc) task_update_composite_thumbnail_real, tk);
+
+    RET(TRUE);
 }
 
 static task_update_composite_thumbnail(Task * tk)
@@ -1427,9 +1563,11 @@ static task_update_composite_thumbnail(Task * tk)
     if (!tk->tb->thumbnails)
         return FALSE;
 
+    tk->require_update_composite_thumbnail = TRUE;
+
     if (tk->update_composite_thumbnail_timeout == 0)
-        tk->update_composite_thumbnail_timeout = g_timeout_add(1000, (GSourceFunc) task_update_composite_thumbnail_real, tk);
-//        tk->update_composite_thumbnail_idle = g_idle_add((GSourceFunc) task_update_composite_thumbnail_real, tk);
+        tk->update_composite_thumbnail_timeout = g_timeout_add(1000 + rand() % 1000,
+            (GSourceFunc) task_update_composite_thumbnail_timeout, tk);
 }
 
 static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
@@ -1523,13 +1661,16 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
     if (tk->icon_pixbuf)
         return;
 
+    ENTER;
+
     /* Get the icon from the window's hints. */
     GdkPixbuf * pixbuf = NULL;
 
-    if (tb->thumbnails)
+    if (tb->thumbnails && tb->use_thumbnails_as_icons)
     {
         if (!tk->thumbnail_icon && tk->thumbnail)
             tk->thumbnail_icon =  _gdk_pixbuf_scale_in_rect(tk->thumbnail, icon_size, icon_size);
+
         if (tk->thumbnail_icon)
         {
             pixbuf = tk->thumbnail_icon;
@@ -1559,6 +1700,8 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
     }
 
     tk->icon_pixbuf = pixbuf;
+
+    RET();
 
 }
 
@@ -1694,6 +1837,134 @@ static void task_clear_urgency(Task * tk)
 
 /******************************************************************************/
 
+/* group menu */
+
+/* Remove the grouped-task popup menu from the screen. */
+static void taskbar_group_menu_destroy(TaskbarPlugin * tb)
+{
+    ENTER;
+
+    if (tb->hide_popup_delay_timer != 0)
+    {
+	g_source_remove(tb->hide_popup_delay_timer);
+	tb->hide_popup_delay_timer = 0;
+    }
+
+    tb->group_menu_opened_as_popup = FALSE;
+
+    if (tb->group_menu != NULL)
+    {
+        gtk_widget_destroy(tb->group_menu);
+        tb->group_menu = NULL;
+    }
+
+    RET();
+}
+
+static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, TaskbarPlugin * tb)
+{
+    if (task_is_visible_on_current_desktop(tk_cursor))
+    {
+        /* The menu item has the name, or the iconified name, and the icon of the application window. */
+
+        gchar * name = task_get_displayed_name(tk_cursor);
+        GtkWidget * mi = NULL;
+        if (tk_cursor->desktop != tb->current_desktop && tk_cursor->desktop != ALL_WORKSPACES && tb->_group_by != GROUP_BY_WORKSPACE) {
+            gchar* wname = task_get_desktop_name(tk_cursor, NULL);
+            name = g_strdup_printf("%s [%s]", name, wname);
+            mi = gtk_image_menu_item_new_with_label(name);
+            g_free(name);
+            g_free(wname);
+        } else if (tk_cursor->focused) {
+            name = g_strdup_printf("* %s *", name);
+            mi = gtk_image_menu_item_new_with_label(name);
+            g_free(name);
+        } else {
+            mi = gtk_image_menu_item_new_with_label(name);
+        }
+
+        GtkWidget * im = gtk_image_new_from_pixbuf(gtk_image_get_pixbuf(GTK_IMAGE(tk_cursor->image)));
+        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), im);
+
+        g_signal_connect(mi, "button_press_event", G_CALLBACK(taskbar_popup_activate_event), (gpointer) tk_cursor);
+
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    }
+}
+
+
+/* Handler for "leave" event from group menu. */
+static gboolean group_menu_motion(GtkWidget * widget, GdkEvent  *event, TaskbarPlugin * tb)
+{
+    taskbar_check_hide_popup(tb, TRUE);
+    return FALSE;
+}
+
+static void group_menu_size_allocate(GtkWidget * w, GtkAllocation * alloc, TaskbarPlugin * tb)
+{
+    tb->group_menu_alloc = *alloc;
+}
+
+static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean similar, gboolean menu_opened_as_popup)
+{
+    ENTER;
+
+    TaskbarPlugin * tb = tk->tb;
+    TaskClass * tc = tk->task_class;
+
+    GtkWidget * menu = gtk_menu_new();
+    Task * tk_cursor;
+
+    if (similar && task_is_folded(tk))
+    {
+        if (tc)
+        {
+            for (tk_cursor = tc->task_class_head; tk_cursor != NULL; tk_cursor = tk_cursor->task_class_flink)
+            {
+                task_show_window_list_helper(tk_cursor, menu, tb);
+            }
+        }
+        else
+        {
+            task_show_window_list_helper(tk, menu, tb);
+        }
+    }
+    else
+    {
+        for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
+        {
+            if (!similar || tk_cursor->task_class == tc)
+                task_show_window_list_helper(tk_cursor, menu, tb);
+        }
+    }
+
+    if (menu_opened_as_popup)
+    {
+        g_signal_connect_after(G_OBJECT (menu), "motion-notify-event", G_CALLBACK(group_menu_motion), (gpointer) tb);
+        g_signal_connect(G_OBJECT (menu), "size-allocate", G_CALLBACK(group_menu_size_allocate), (gpointer) tb);
+        tb->group_menu_opened_as_popup = TRUE;
+    }
+
+    /* Destroy already opened menu, if any. */
+    taskbar_group_menu_destroy(tb);
+    gtk_menu_popdown(GTK_MENU(tb->menu));
+
+    /* Show the menu.  Set context so we can find the menu later to dismiss it.
+     * Use a position-calculation callback to get the menu nicely positioned with respect to the button. */
+    gtk_widget_show_all(menu);
+    tb->group_menu = menu;
+
+    guint event_button = event ? event->button : 0;
+    guint32 event_time = event ? event->time: gtk_get_current_event_time();
+
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL,
+        (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) tk, event_button, event_time);
+
+    RET();
+}
+
+/******************************************************************************/
+
 /* Task actions. */
 
 /* Close task window. */
@@ -1773,136 +2044,6 @@ static void task_show_menu(Task * tk, GdkEventButton * event, Task* visible_task
         event->button, event->time);
 }
 
-static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, TaskbarPlugin * tb)
-{
-    if (task_is_visible_on_current_desktop(tk_cursor))
-    {
-        /* The menu item has the name, or the iconified name, and the icon of the application window. */
-
-        gchar * name = task_get_displayed_name(tk_cursor);
-        GtkWidget * mi = NULL;
-        if (tk_cursor->desktop != tb->current_desktop && tk_cursor->desktop != ALL_WORKSPACES && tb->_group_by != GROUP_BY_WORKSPACE) {
-            gchar* wname = task_get_desktop_name(tk_cursor, NULL);
-            name = g_strdup_printf("%s [%s]", name, wname);
-            mi = gtk_image_menu_item_new_with_label(name);
-            g_free(name);
-            g_free(wname);
-        } else if (tk_cursor->focused) {
-            name = g_strdup_printf("* %s *", name);
-            mi = gtk_image_menu_item_new_with_label(name);
-            g_free(name);
-        } else {
-            mi = gtk_image_menu_item_new_with_label(name);
-        }
-
-        GtkWidget * im = gtk_image_new_from_pixbuf(gtk_image_get_pixbuf(GTK_IMAGE(tk_cursor->image)));
-        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), im);
-
-        g_signal_connect(mi, "button_press_event", G_CALLBACK(taskbar_popup_activate_event), (gpointer) tk_cursor);
-
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    }
-}
-
-static gboolean taskbar_close_group_menu_timeout(TaskbarPlugin * tb)
-{
-    tb->close_group_menu_delay_timer = 0;
-    gtk_menu_popdown(tb->group_menu);
-    return FALSE;
-}
-
-/* Handler for "leave" event from group menu. */
-static gboolean group_menu_motion(GtkWidget * widget, GdkEvent  *event, Task * tk)
-{
-    TaskbarPlugin * tb = tk->tb;
-
-    int x = 0, y = 0;
-    gboolean out = FALSE;
-    
-    gtk_widget_get_pointer(tk->button, &x, &y);
-    out = x < 0 || y < 0 || x > tk->button_alloc.width || y > tk->button_alloc.height;
-
-    if (out)
-    {
-        gtk_widget_get_pointer(tb->group_menu, &x, &y);
-        out = x < 0 || y < 0 || x > tb->group_menu_alloc.width || y > tb->group_menu_alloc.height;
-    }
-
-    if (out)
-    {
-    	if (tb->close_group_menu_delay_timer == 0)
-	    tb->close_group_menu_delay_timer =
-		g_timeout_add(OPEN_GROUP_MENU_DELAY / 2, (GSourceFunc) taskbar_close_group_menu_timeout, tb);
-    }
-    else
-    {
-	if (tb->close_group_menu_delay_timer != 0)
-	{
-	    g_source_remove(tb->close_group_menu_delay_timer);
-	    tb->close_group_menu_delay_timer = 0;
-	}
-    }
-
-    return FALSE;
-}
-
-static void group_menu_size_allocate(GtkWidget * w, GtkAllocation * alloc, Task * tk)
-{
-    tk->tb->group_menu_alloc = *alloc;
-}
-
-static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean similar)
-{
-    TaskbarPlugin * tb = tk->tb;
-    TaskClass * tc = tk->task_class;
-
-    GtkWidget * menu = gtk_menu_new();
-    Task * tk_cursor;
-
-    if (similar && task_is_folded(tk))
-    {
-        if (tc)
-        {
-            for (tk_cursor = tc->task_class_head; tk_cursor != NULL; tk_cursor = tk_cursor->task_class_flink)
-            {
-                task_show_window_list_helper(tk_cursor, menu, tb);
-            }
-        }
-        else
-        {
-            task_show_window_list_helper(tk, menu, tb);
-        }
-    }
-    else
-    {
-        for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
-        {
-            if (!similar || tk_cursor->task_class == tc)
-                task_show_window_list_helper(tk_cursor, menu, tb);
-        }
-    }
-
-    if (!event)
-    {
-        g_signal_connect_after(G_OBJECT (menu), "motion-notify-event", G_CALLBACK(group_menu_motion), (gpointer) tk);
-        g_signal_connect(G_OBJECT (menu), "size-allocate", G_CALLBACK(group_menu_size_allocate), (gpointer) tk);
-    }
-
-    /* Destroy already opened menu, if any. */
-    task_group_menu_destroy(tb);
-    gtk_menu_popdown(tb->menu);
-
-    /* Show the menu.  Set context so we can find the menu later to dismiss it.
-     * Use a position-calculation callback to get the menu nicely positioned with respect to the button. */
-    gtk_widget_show_all(menu);
-    tb->group_menu = menu;
-
-    guint event_button = event ? event->button : 0;
-    guint32 event_time = event ? event->time: gtk_get_current_event_time();
-
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) tk, event_button, event_time);
-
-}
 
 static void task_activate_neighbour(Task * tk, GdkEventButton * event, gboolean next, gboolean in_group)
 {
@@ -2030,10 +2171,10 @@ static void task_action(Task * tk, int action, GdkEventButton * event, Task* vis
         task_stick(tk);
         break;
       case ACTION_SHOW_WINDOW_LIST:
-        task_show_window_list(tk, event, FALSE);
+        task_show_window_list(tk, event, FALSE, FALSE);
         break;
       case ACTION_SHOW_SIMILAR_WINDOW_LIST:
-        task_show_window_list(tk, event, TRUE);
+        task_show_window_list(tk, event, TRUE, FALSE);
         break;
       case ACTION_NEXT_WINDOW:
         task_activate_neighbour(tk->tb->focused, event, TRUE, FALSE);
@@ -2106,6 +2247,223 @@ static void task_raise_window(Task * tk, guint32 time)
 
 /******************************************************************************/
 
+/* preview panel */
+
+static void preview_panel_size_allocate(GtkWidget * w, GtkAllocation * alloc, TaskbarPlugin * tb)
+{
+    tb->preview_panel_window_alloc = *alloc;
+}
+
+static gboolean preview_panel_enter(GtkWidget * widget, GdkEvent * event, TaskbarPlugin * tb)
+{
+    taskbar_check_hide_popup(tb, FALSE);
+}
+
+static gboolean preview_panel_leave(GtkWidget * widget, GdkEvent * event, TaskbarPlugin * tb)
+{
+    taskbar_check_hide_popup(tb, FALSE);
+}
+
+static void taskbar_build_preview_panel(TaskbarPlugin * tb)
+{
+    GtkWidget * win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_decorated(GTK_WINDOW(win), FALSE);
+    gtk_window_set_resizable(GTK_WINDOW(win), FALSE);
+    gtk_container_set_border_width(GTK_CONTAINER(win), 5);
+    gtk_window_set_skip_taskbar_hint(GTK_WINDOW(win), TRUE);
+    gtk_window_set_skip_pager_hint(GTK_WINDOW(win), TRUE);
+    gtk_window_stick(GTK_WINDOW(win));
+
+    GTK_WIDGET_UNSET_FLAGS(win, GTK_CAN_FOCUS);
+
+    g_signal_connect(G_OBJECT (win), "size-allocate", G_CALLBACK(preview_panel_size_allocate), (gpointer) tb);
+    g_signal_connect_after(G_OBJECT (win), "enter-notify-event", G_CALLBACK(preview_panel_enter), (gpointer) tb);
+    g_signal_connect_after(G_OBJECT (win), "leave-notify-event", G_CALLBACK(preview_panel_leave), (gpointer) tb);
+
+    tb->preview_panel_window = win;
+}
+
+static void taskbar_hide_preview_panel(TaskbarPlugin * tb)
+{
+    if (tb->preview_panel_window)
+    {
+         gtk_widget_hide(tb->preview_panel_window);
+    }
+}
+
+static void task_show_preview_panel(Task * tk)
+{
+    TaskbarPlugin * tb = tk->tb;
+
+    if (!tb->preview_panel_window)
+    {
+         taskbar_build_preview_panel(tb);
+    }
+
+    if (tb->preview_panel_box)
+    {
+        gtk_widget_destroy(tb->preview_panel_box);
+        g_object_unref(G_OBJECT(tb->preview_panel_box));
+        tb->preview_panel_box = NULL;
+    }
+
+    tb->preview_panel_box = gtk_event_box_new();
+    g_object_ref(G_OBJECT(tb->preview_panel_box));
+    //gtk_container_set_border_width(GTK_CONTAINER(tb->preview_panel_window), 5);
+    gtk_container_add(GTK_CONTAINER(tb->preview_panel_window), tb->preview_panel_box);
+
+    if (tb->colorize_buttons)
+    {
+        if (tk->bgcolor1.pixel)
+        {
+            gtk_widget_modify_bg(tb->preview_panel_box, GTK_STATE_NORMAL, &tk->bgcolor1);
+        }
+    }
+
+    GtkWidget * box = gtk_hbox_new(FALSE, 5);
+    gtk_container_set_border_width(GTK_CONTAINER(box), 5);
+    gtk_container_add(GTK_CONTAINER(tb->preview_panel_box), box);
+
+    Task* tk_cursor = tk;
+    if (tk->task_class)
+        tk_cursor = tk->task_class->task_class_head;
+    for (; tk_cursor; tk_cursor = tk_cursor->task_class_flink)
+    {
+        if (!task_is_visible_on_current_desktop(tk_cursor))
+            continue;
+        GtkWidget * image = gtk_image_new_from_pixbuf(
+            tk_cursor->thumbnail_preview ? tk_cursor->thumbnail_preview : tk_cursor->icon_pixbuf);
+        if (tk->tb->tooltips)
+            gtk_widget_set_tooltip_text(image, task_get_displayed_name(tk_cursor));
+        gtk_box_pack_start(GTK_BOX(box), image, TRUE, TRUE, 0);
+    }
+
+    gint px, py;
+    plugin_popup_set_position_helper2(tb->plug, tk->button, tb->preview_panel_window, NULL, 5, &px, &py);
+    gtk_window_move(GTK_WINDOW(tb->preview_panel_window), px, py);
+
+    gtk_widget_show_all(tb->preview_panel_window);
+}
+
+/******************************************************************************/
+
+/*
+
+*** Handling of task mouse-hover popups ***
+
+Opening:
+
+button enter event -> start show_popup_delay_timer
+button leave event -> stop  show_popup_delay_timer
+
+show_popup_delay_timer event -> taskbar_show_popup_timeout() -> taskbar_show_popup()
+
+taskbar_show_popup() calls task_show_preview_panel() or task_show_window_list() to do actual work.
+
+Closing:
+
+taskbar_check_hide_popup() is called every time we need to check whether mouse is within "leave popup open" area.
+This are consists of popup window and task's button window.
+
+mouse leaves the area -> start hide_popup_delay_timer
+mouse is within the area -> stop hide_popup_delay_timer
+
+hide_popup_delay_timer -> taskbar_hide_popup_timeout() -> taskbar_hide_popup()
+
+taskbar_hide_popup() calls taskbar_group_menu_destroy or taskbar_hide_preview_panel to do actual work.
+
+taskbar_hide_popup() is also called every time we need to force to close of the popup: from task_delete(),
+on button press event and so on.
+
+*/
+
+static void taskbar_hide_popup_timeout(TaskbarPlugin * tb);
+
+static void taskbar_check_hide_popup(TaskbarPlugin * tb, gboolean from_group_menu)
+{
+    ENTER;
+
+    int x = 0, y = 0;
+    gboolean out = FALSE;
+
+    Task * tk = tb->popup_task;
+
+    if (!tk)
+    {
+        taskbar_hide_popup(tb);
+        RET();
+    }
+
+    gtk_widget_get_pointer(tk->button, &x, &y);
+    out = x < 0 || y < 0 || x > tk->button_alloc.width || y > tk->button_alloc.height;
+
+    if (out && from_group_menu && tb->group_menu)
+    {
+        gtk_widget_get_pointer(tb->group_menu, &x, &y);
+        out = x < 0 || y < 0 || x > tb->group_menu_alloc.width || y > tb->group_menu_alloc.height;
+    }
+
+    if (out && !from_group_menu && tb->preview_panel_window)
+    {
+        gtk_widget_get_pointer(tb->preview_panel_window, &x, &y);
+        out = x < 0 || y < 0 || x > tb->preview_panel_window_alloc.width || y > tb->preview_panel_window_alloc.height;
+    }
+
+    if (out)
+    {
+    	if (tb->hide_popup_delay_timer == 0)
+	    tb->hide_popup_delay_timer =
+		g_timeout_add(OPEN_GROUP_MENU_DELAY / 2, (GSourceFunc) taskbar_hide_popup_timeout, tb);
+    }
+    else
+    {
+	if (tb->hide_popup_delay_timer != 0)
+	{
+	    g_source_remove(tb->hide_popup_delay_timer);
+	    tb->hide_popup_delay_timer = 0;
+	}
+    }
+
+
+    RET();
+}
+
+static void taskbar_show_popup(Task * tk)
+{
+    TaskbarPlugin * tb = tk->tb;
+
+    tb->popup_task = tk;
+    tk->show_popup_delay_timer = 0;
+    if (tb->thumbnails_preview && tb->thumbnails)
+        task_show_preview_panel(tk);
+    else
+        task_show_window_list(tk, NULL, TRUE, TRUE);
+}
+
+static void taskbar_hide_popup(TaskbarPlugin * tb)
+{
+    if (tb->hide_popup_delay_timer)
+    {
+        g_source_remove(tb->hide_popup_delay_timer);
+        tb->hide_popup_delay_timer = 0;
+    }
+
+    if (tb->popup_task)
+    {
+         taskbar_hide_preview_panel(tb);
+         taskbar_group_menu_destroy(tb);
+         tb->popup_task = NULL;
+    }
+}
+
+static void taskbar_hide_popup_timeout(TaskbarPlugin * tb)
+{
+    tb->hide_popup_delay_timer = 0;
+    taskbar_hide_popup(tb);
+}
+
+/******************************************************************************/
+
 /* Task button input message handlers. */
 
 /* Position-calculation callback for grouped-task and window-management popup menu. */
@@ -2120,22 +2478,6 @@ static void taskbar_popup_set_position(GtkWidget * menu, gint * px, gint * py, g
     /* Determine the coordinates. */
     plugin_popup_set_position_helper(tk->tb->plug, tk->button, menu, &popup_req, px, py);
     *push_in = TRUE;
-}
-
-/* Remove the grouped-task popup menu from the screen. */
-static void task_group_menu_destroy(TaskbarPlugin * tb)
-{
-    if (tb->close_group_menu_delay_timer != 0)
-    {
-	g_source_remove(tb->close_group_menu_delay_timer);
-	tb->close_group_menu_delay_timer = 0;
-    }
-
-    if (tb->group_menu != NULL)
-    {
-        gtk_widget_destroy(tb->group_menu);
-        tb->group_menu = NULL;
-    }
 }
 
 #if 0
@@ -2310,7 +2652,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
     {
         /* If this is a grouped-task representative, meaning that there is a class with at least two windows,
          * bring up a popup menu listing all the class members. */
-        task_show_window_list(tk, event, TRUE);
+        task_show_window_list(tk, event, TRUE, FALSE);
     }
     else
     {
@@ -2321,7 +2663,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
             (!task_is_folded(tk)) ? tk :
             (tk->task_class) ? tk->task_class->visible_task :
             tk);
-        task_group_menu_destroy(tb);
+        taskbar_group_menu_destroy(tb);
 
         if (popup_menu && (action == ACTION_SHOW_SIMILAR_WINDOW_LIST || action == ACTION_SHOW_WINDOW_LIST))
             action = ACTION_RAISEICONIFY;
@@ -2337,6 +2679,8 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
 /* Handler for "button-press-event" event from taskbar button. */
 static gboolean taskbar_button_press_event(GtkWidget * widget, GdkEventButton * event, Task * tk)
 {
+    taskbar_hide_popup(tk->tb);
+
     if (event->state & GDK_CONTROL_MASK && event->button == 3) {
         Plugin* p = tk->tb->plug;
         lxpanel_show_panel_menu( p->panel, p, event );
@@ -2390,10 +2734,9 @@ static void taskbar_button_drag_leave(GtkWidget * widget, GdkDragContext * drag_
 }
 
 /* Handler for group menu timeout. */
-static gboolean taskbar_open_group_menu_timeout(Task * tk)
+static gboolean taskbar_show_popup_timeout(Task * tk)
 {
-    tk->open_group_menu_delay_timer = 0;
-    task_show_window_list(tk, NULL, TRUE);
+    taskbar_show_popup(tk);
     return FALSE;
 }
 
@@ -2407,21 +2750,30 @@ static void taskbar_button_enter(GtkWidget * widget, Task * tk)
         gtk_widget_set_state(widget, GTK_STATE_NORMAL);
     task_draw_label(tk);
 
-    if (tb->open_group_menu_on_mouse_over && task_class_is_folded(tb, tk->task_class))
+    gboolean popup = (tb->thumbnails_preview && tb->thumbnails);
+    popup |= (tb->open_group_menu_on_mouse_over && task_class_is_folded(tb, tk->task_class));
+    if (popup)
     {
-	if (tk->open_group_menu_delay_timer == 0)
-	    tk->open_group_menu_delay_timer =
-		g_timeout_add(OPEN_GROUP_MENU_DELAY, (GSourceFunc) taskbar_open_group_menu_timeout, tk);
+	if (tk->show_popup_delay_timer == 0)
+	    tk->show_popup_delay_timer =
+		g_timeout_add(OPEN_GROUP_MENU_DELAY, (GSourceFunc) taskbar_show_popup_timeout, tk);
     }
 }
 
 /* Handler for "leave" event from taskbar button.  This indicates that the cursor position has left the button. */
 static void taskbar_button_leave(GtkWidget * widget, Task * tk)
 {
-    if (tk->open_group_menu_delay_timer != 0)
+    TaskbarPlugin * tb = tk->tb;
+
+    if (tb->popup_task)
     {
-        g_source_remove(tk->open_group_menu_delay_timer);
-        tk->open_group_menu_delay_timer = 0;
+        taskbar_check_hide_popup(tb, FALSE);
+    }
+
+    if (tk->show_popup_delay_timer != 0)
+    {
+        g_source_remove(tk->show_popup_delay_timer);
+        tk->show_popup_delay_timer = 0;
     }
 
     tk->entered_state = FALSE;
@@ -3403,56 +3755,56 @@ static void menu_raise_window(GtkWidget * widget, TaskbarPlugin * tb)
     if ((tb->menutask->desktop != ALL_WORKSPACES) && (tb->menutask->desktop != tb->current_desktop))
         Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, tb->menutask->desktop, 0, 0, 0, 0);
     XMapRaised(GDK_DISPLAY(), tb->menutask->win);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_restore_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_maximize(tb->menutask);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_maximize_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_maximize(tb->menutask);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_iconify_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_iconify(tb->menutask);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_roll_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_shade(tb->menutask);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_undecorate_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_undecorate(tb->menutask);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb)
 {
     int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "num"));
     set_net_wm_desktop(tb->menutask->win, num);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_move_to_this_workspace(GtkWidget * widget, TaskbarPlugin * tb)
 {
     set_net_wm_desktop(tb->menutask->win, tb->current_desktop);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_ungroup_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_set_override_class(tb->menutask, NULL);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_move_to_group(GtkWidget * widget, TaskbarPlugin * tb)
@@ -3464,7 +3816,7 @@ static void menu_move_to_group(GtkWidget * widget, TaskbarPlugin * tb)
         task_set_override_class(tb->menutask, name);
         g_free(name);
     }
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void task_move_to_new_group_cb(char * value, gpointer p)
@@ -3488,7 +3840,7 @@ static void menu_move_to_new_group(GtkWidget * widget, TaskbarPlugin * tb)
 
     tk->new_group_dlg = create_entry_dialog(_("Move window to new group"), NULL, NULL, task_move_to_new_group_cb, tk);
 
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_unfold_group_window(GtkWidget * widget, TaskbarPlugin * tb)
@@ -3504,7 +3856,7 @@ static void menu_unfold_group_window(GtkWidget * widget, TaskbarPlugin * tb)
         taskbar_redraw(tb);
         icon_grid_resume_updates(tb->icon_grid);
     }
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_fold_group_window(GtkWidget * widget, TaskbarPlugin * tb)
@@ -3520,19 +3872,19 @@ static void menu_fold_group_window(GtkWidget * widget, TaskbarPlugin * tb)
         taskbar_redraw(tb);
         icon_grid_resume_updates(tb->icon_grid);
     }
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_copy_title(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_copy_title(tb->menutask);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_close(tb->menutask);
-    task_group_menu_destroy(tb);
+    taskbar_group_menu_destroy(tb);
 }
 
 /******************************************************************************/

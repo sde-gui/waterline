@@ -31,7 +31,7 @@
 GdkPixbuf * _gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, int height)
 {
     /* Get the drawable. */
-    GdkDrawable * drawable = gdk_xid_table_lookup(xpixmap);
+    GdkDrawable * drawable = (GdkDrawable *) gdk_xid_table_lookup(xpixmap);
     if (drawable != NULL)
         g_object_ref(G_OBJECT(drawable));
     else
@@ -197,6 +197,9 @@ GdkPixbuf * _gdk_pixbuf_scale_in_rect(GdkPixbuf * pixmap, int required_width, in
         gulong w = gdk_pixbuf_get_width (pixmap);
         gulong h = gdk_pixbuf_get_height (pixmap);
 
+        gulong w1 = w;
+        gulong h1 = h;
+
         if ((w > required_width) || (h > required_height))
         {
             float rw = required_width;
@@ -220,7 +223,14 @@ GdkPixbuf * _gdk_pixbuf_scale_in_rect(GdkPixbuf * pixmap, int required_width, in
                 h = 2;
         }
 
-        GdkPixbuf * ret = gdk_pixbuf_scale_simple(pixmap, w, h, PIXBUF_INTERP);
+        /* Attemp to avoid hang up in gdk_pixbuf_scale_simple(). */
+        GdkInterpType interp = 
+        ((w < 3 && h < 3) ||
+         (w < 5 && h < 5 && w1 > 200 && h1 > 2000) ) ? GDK_INTERP_NEAREST : PIXBUF_INTERP;
+
+        //g_print("w = %d, h = %d --> w = %d, h = %d\n", w1, h1, w, h);
+
+        GdkPixbuf * ret = gdk_pixbuf_scale_simple(pixmap, w, h, interp);
 
         return ret;
     }
@@ -284,8 +294,8 @@ void _gdk_pixbuf_get_color_sample (GdkPixbuf *pixbuf, GdkColor * c1, GdkColor * 
 
     if (s < 0.2)
         s = 0.2;
-    if (s > 0.6)
-        s = 0.6;
+    if (s > 0.5)
+        s = 0.5;
 
     if (v < 0.4)
         v = 0.4;

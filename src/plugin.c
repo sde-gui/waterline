@@ -407,6 +407,24 @@ gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plu
 /* Helper for position-calculation callback for popup menus. */
 void plugin_popup_set_position_helper(Plugin * p, GtkWidget * near, GtkWidget * popup, GtkRequisition * popup_req, gint * px, gint * py)
 {
+    plugin_popup_set_position_helper2(p, near, popup, popup_req, 0, px, py);
+}
+
+void plugin_popup_set_position_helper2(Plugin * p, GtkWidget * near, GtkWidget * popup, GtkRequisition * popup_req, int offset, gint * px, gint * py)
+{
+    int popop_width  = 0;
+    int popop_height = 0;
+    if (popup_req)
+    {
+        popop_width  = popup_req->width;
+        popop_height = popup_req->height;
+    }
+    else
+    {
+        popop_width  = popup->allocation.width;
+        popop_height = popup->allocation.height;
+    }
+
     /* Get the origin of the requested-near widget in screen coordinates. */
     gint x, y;
     gdk_window_get_origin(GDK_WINDOW(near->window), &x, &y);
@@ -417,10 +435,10 @@ void plugin_popup_set_position_helper(Plugin * p, GtkWidget * near, GtkWidget * 
      * Also set "push-in" to avoid any case where it might flow off screen. */
     switch (p->panel->edge)
     {
-        case EDGE_TOP:          y += near->allocation.height;         break;
-        case EDGE_BOTTOM:       y -= popup_req->height;                break;
-        case EDGE_LEFT:         x += near->allocation.width;          break;
-        case EDGE_RIGHT:        x -= popup_req->width;                 break;
+        case EDGE_TOP:          y += near->allocation.height + offset;         break;
+        case EDGE_BOTTOM:       y -= popop_height + offset;                    break;
+        case EDGE_LEFT:         x += near->allocation.width + offset;          break;
+        case EDGE_RIGHT:        x -= popop_width + offset;                     break;
     }
     *px = x;
     *py = y;
@@ -464,3 +482,4 @@ void plugin_adjust_popup_position(GtkWidget * popup, Plugin * plugin)
     /* Move the popup to position. */
     gtk_window_move(GTK_WINDOW(popup), x, y);
 }
+

@@ -523,7 +523,7 @@ static void task_reorder(Task * tk, gboolean and_others);
 static void task_update_grouping(Task * tk, int group_by);
 static void task_update_sorting(Task * tk, int sort_by);
 
-static void taskbar_check_hide_popup(TaskbarPlugin * tb, gboolean from_group_menu);
+static void taskbar_check_hide_popup(TaskbarPlugin * tb);
 static void taskbar_hide_popup(TaskbarPlugin * tb);
 
 static gboolean flash_window_timeout(Task * tk);
@@ -1910,7 +1910,7 @@ static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, Tas
 /* Handler for "leave" event from group menu. */
 static gboolean group_menu_motion(GtkWidget * widget, GdkEvent  *event, TaskbarPlugin * tb)
 {
-    taskbar_check_hide_popup(tb, TRUE);
+    taskbar_check_hide_popup(tb);
     return FALSE;
 }
 
@@ -2270,13 +2270,23 @@ static void preview_panel_size_allocate(GtkWidget * w, GtkAllocation * alloc, Ta
 
 static gboolean preview_panel_enter(GtkWidget * widget, GdkEvent * event, TaskbarPlugin * tb)
 {
-    taskbar_check_hide_popup(tb, FALSE);
+    taskbar_check_hide_popup(tb);
 }
 
 static gboolean preview_panel_leave(GtkWidget * widget, GdkEvent * event, TaskbarPlugin * tb)
 {
-    taskbar_check_hide_popup(tb, FALSE);
+    taskbar_check_hide_popup(tb);
 }
+
+static gboolean preview_panel_press_event(GtkWidget * widget, GdkEventButton * event, Task * tk)
+{
+    return taskbar_task_control_event(widget, event, tk, TRUE);
+}
+
+/*static gboolean preview_panel_release_event(GtkWidget * widget, GdkEventButton * event, Task * tk)
+{
+    return taskbar_task_control_event(widget, event, tk, TRUE);
+}*/
 
 static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 {
@@ -2286,6 +2296,7 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
     gtk_container_set_border_width(GTK_CONTAINER(win), 5);
     gtk_window_set_skip_taskbar_hint(GTK_WINDOW(win), TRUE);
     gtk_window_set_skip_pager_hint(GTK_WINDOW(win), TRUE);
+    gtk_window_set_keep_above(GTK_WINDOW(win), TRUE);
     gtk_window_stick(GTK_WINDOW(win));
 
     GTK_WIDGET_UNSET_FLAGS(win, GTK_CAN_FOCUS);
@@ -2304,6 +2315,7 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
     XChangeProperty(GDK_DISPLAY(), GDK_WINDOW_XWINDOW(win->window), a_NET_WM_STATE, XA_ATOM,
           32, PropModeReplace, (unsigned char *) state, 3);
 */
+
     tb->preview_panel_window = win;
 }
 
@@ -2335,7 +2347,7 @@ static void task_show_preview_panel(Task * tk)
     g_object_ref(G_OBJECT(tb->preview_panel_box));
     //gtk_container_set_border_width(GTK_CONTAINER(tb->preview_panel_window), 5);
     gtk_container_add(GTK_CONTAINER(tb->preview_panel_window), tb->preview_panel_box);
-
+/*
     if (tb->colorize_buttons)
     {
         if (tk->bgcolor1.pixel)
@@ -2343,7 +2355,7 @@ static void task_show_preview_panel(Task * tk)
             gtk_widget_modify_bg(tb->preview_panel_box, GTK_STATE_NORMAL, &tk->bgcolor1);
         }
     }
-
+*/
     GtkWidget * box = gtk_hbox_new(FALSE, 5);
     gtk_container_set_border_width(GTK_CONTAINER(box), 5);
     gtk_container_add(GTK_CONTAINER(tb->preview_panel_box), box);
@@ -2355,11 +2367,39 @@ static void task_show_preview_panel(Task * tk)
     {
         if (!task_is_visible_on_current_desktop(tk_cursor))
             continue;
+
+        GtkWidget * button = gtk_toggle_button_new();
+        gtk_container_set_border_width(GTK_CONTAINER(button), 0);
+
+        GtkWidget * container = gtk_hbox_new(FALSE, 0);
+        gtk_container_set_border_width(GTK_CONTAINER(container), 0);
+    
+        if (tk->tb->tooltips)
+            gtk_widget_set_tooltip_text(button, task_get_displayed_name(tk_cursor));
+
+        g_signal_connect(button, "button_press_event", G_CALLBACK(preview_panel_press_event), (gpointer) tk_cursor);
+//        g_signal_connect(button, "button_release_event", G_CALLBACK(preview_panel_release_event), (gpointer) tk_cursor);
+
         GtkWidget * image = gtk_image_new_from_pixbuf(
             tk_cursor->thumbnail_preview ? tk_cursor->thumbnail_preview : tk_cursor->icon_pixbuf);
-        if (tk->tb->tooltips)
-            gtk_widget_set_tooltip_text(image, task_get_displayed_name(tk_cursor));
-        gtk_box_pack_start(GTK_BOX(box), image, TRUE, TRUE, 0);
+
+        gtk_box_pack_start(GTK_BOX(container), image, TRUE, TRUE, 0);
+        gtk_container_add(GTK_CONTAINER(button), container);
+        gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
+
+        if (tb->colorize_buttons)
+        {
+            if (tk_cursor->bgcolor1.pixel)
+            {
+                gtk_widget_modify_bg(button, GTK_STATE_NORMAL, &tk_cursor->bgcolor1);
+                gtk_widget_modify_bg(button, GTK_STATE_ACTIVE, &tk_cursor->bgcolor1);
+            }
+            if (tk_cursor->bgcolor2.pixel)
+            {
+                gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &tk_cursor->bgcolor2.pixel);
+            }
+        }
+
     }
 
     gtk_widget_show_all(tb->preview_panel_box);
@@ -2408,9 +2448,11 @@ on button press event and so on.
 
 static void taskbar_hide_popup_timeout(TaskbarPlugin * tb);
 
-static void taskbar_check_hide_popup(TaskbarPlugin * tb, gboolean from_group_menu)
+static void taskbar_check_hide_popup(TaskbarPlugin * tb)
 {
     ENTER;
+
+    gboolean from_group_menu = tb->group_menu_opened_as_popup;
 
     int x = 0, y = 0;
     gboolean out = FALSE;
@@ -2618,6 +2660,10 @@ static gboolean taskbar_button_motion_notify_event(GtkWidget * widget, GdkEventM
  * or "activate" event from grouped-task popup menu item. */
 static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * event, Task * tk, gboolean popup_menu)
 {
+    TaskbarPlugin * tb = tk->tb;
+
+    /* Close button pressed? {{ */
+
     gboolean event_in_close_button = FALSE;
     if (!popup_menu && task_has_visible_close_button(tk) && tk->button_close && gtk_widget_get_visible(GTK_WIDGET(tk->button_close))) {
         // FIXME: какой нормальный способ узнать, находится ли мышь в пределах виджета?
@@ -2642,9 +2688,10 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
     if (event_in_close_button)
         return TRUE;
 
+    /* }} */
 
-    TaskbarPlugin * tb = tk->tb;
-    gboolean click = FALSE;
+
+    /* Get action for event. */
 
     int action = ACTION_NONE;
     switch (event->button) {
@@ -2652,6 +2699,8 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
         case 2: action = (event->state & GDK_SHIFT_MASK) ? tb->shift_button2_action : tb->button2_action; break;
         case 3: action = (event->state & GDK_SHIFT_MASK) ? tb->shift_button3_action : tb->button3_action; break;
     }
+
+    /* Action shows menu? */
 
     gboolean action_opens_menu = FALSE;
     switch (action) {
@@ -2661,17 +2710,25 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
             action_opens_menu = TRUE;
     }
 
+    /* Event really triggers action? */
+
+    gboolean click = FALSE;
+
     if (popup_menu) {
+        /* Event from popup => trigger action. */
         click = TRUE;
         tb->button_pressed_task = NULL;
         tb->moving_task_now = FALSE;
     } else if ( (action_opens_menu && tb->menu_actions_click_press) || (!action_opens_menu && tb->other_actions_click_press) ) {
+        /* Action triggered with button press */
         if (event->type == GDK_BUTTON_PRESS)
             click = TRUE;
     } else if (event->type == GDK_BUTTON_PRESS) {
+        /* Action triggered with button click => remember that we receive button press */
         tb->button_pressed_task = tk;
         tb->moving_task_now = FALSE;
     } else if (event->type == GDK_BUTTON_RELEASE) {
+        /* Action triggered with button click => trigger it */
         click = tk->entered_state && tb->button_pressed_task == tk && !tb->moving_task_now;
         tb->button_pressed_task = NULL;
         tb->moving_task_now = FALSE;
@@ -2682,8 +2739,11 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
     if (!click)
         return TRUE;
 
+
+    /* Do real work. */
+
     TaskClass * tc = tk->task_class;
-    if (task_is_folded(tk) && (GTK_IS_BUTTON(widget)))
+    if (task_is_folded(tk) && (!popup_menu))
     {
         /* If this is a grouped-task representative, meaning that there is a class with at least two windows,
          * bring up a popup menu listing all the class members. */
@@ -2802,7 +2862,7 @@ static void taskbar_button_leave(GtkWidget * widget, Task * tk)
 
     if (tb->popup_task)
     {
-        taskbar_check_hide_popup(tb, FALSE);
+        taskbar_check_hide_popup(tb);
     }
 
     if (tk->show_popup_delay_timer != 0)
@@ -3512,6 +3572,8 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
     }
 
     icon_grid_resume_updates(tb->icon_grid);
+
+    taskbar_check_hide_popup(tb);
 }
 
 /* Set given desktop as current. */

@@ -147,7 +147,8 @@ static void client_delete(TrayPlugin * tr, TrayClient * tc, gboolean unlink)
     balloon_message_remove(tr, tc->window, TRUE, 0);
 
     /* Remove the socket from the icon grid. */
-    icon_grid_remove(tr->icon_grid, tc->socket);
+    if (tr->icon_grid)
+        icon_grid_remove(tr->icon_grid, tc->socket);
 
     /* Deallocate the client structure. */
     g_free(tc);
@@ -674,14 +675,15 @@ static void tray_destructor(Plugin * p)
     while (tr->messages != NULL)
         balloon_message_advance(tr, TRUE, FALSE);
 
-    icon_grid_to_be_removed(tr->icon_grid);
+    if (tr->icon_grid)
+        icon_grid_to_be_removed(tr->icon_grid);
 
     /* Deallocate client list. */
     while (tr->client_list != NULL)
         client_delete(tr, tr->client_list, TRUE);
 
     /* Deallocate memory. */
-    if (tr->icon_grid != NULL)
+    if (tr->icon_grid)
         icon_grid_free(tr->icon_grid);
 
     g_free(tr);

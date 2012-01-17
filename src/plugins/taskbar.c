@@ -282,12 +282,14 @@ typedef struct _task {
     Pixmap backing_pixmap;             /* Backing pixmap of the window. (0 if not visible) */
     GdkPixbuf * thumbnail;             /* Latest copy of window content (full size). If backing_pixmap became 0, thumbnail stays valid.*/
     GdkPixbuf * thumbnail_icon;        /* thumbnail, scaled to icon_size */
-    GdkPixbuf * thumbnail_preview;     /* thumbnail, scaled to preview size (not impemented) */
+    GdkPixbuf * thumbnail_preview;     /* thumbnail, scaled to preview size */
     guint update_composite_thumbnail_timeout; /* update_composite_thumbnail event source id */
     guint update_composite_thumbnail_idle;
     gboolean require_update_composite_thumbnail;
     int update_composite_thumbnail_repeat_count;
     guint update_thumbnail_preview_idle; /* update_thumbnail_preview event source id */
+
+    GtkWidget * preview_image;          /* image on preview panel */
 
     /* Background colors from icon */
     GdkColor bgcolor1; /* normal */
@@ -1329,6 +1331,9 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
     DBG("Deleting task %s (0x%x)\n", tk->name, (int)tk);
 
+    if (tk->preview_image)
+        gtk_widget_unref(tk->preview_image);
+
     if (tk == tb->popup_task ||
         (tb->popup_task && tb->popup_task->task_class && tb->popup_task->task_class == tk->task_class))
     {
@@ -1436,6 +1441,10 @@ static gboolean task_update_thumbnail_preview_real(Task * tk)
         int preview_width = 150;
         int preview_height = 100;
         tk->thumbnail_preview = _gdk_pixbuf_scale_in_rect(tk->thumbnail, preview_width, preview_height);
+        if (tk->thumbnail_preview && tk->preview_image)
+        {
+            gtk_image_set_from_pixbuf(GTK_IMAGE(tk->preview_image), tk->thumbnail_preview);
+        }
     }
 
     RET(FALSE);
@@ -2380,8 +2389,12 @@ static void task_show_preview_panel(Task * tk)
         g_signal_connect(button, "button_press_event", G_CALLBACK(preview_panel_press_event), (gpointer) tk_cursor);
 //        g_signal_connect(button, "button_release_event", G_CALLBACK(preview_panel_release_event), (gpointer) tk_cursor);
 
-        GtkWidget * image = gtk_image_new_from_pixbuf(
+        gtk_widget_unref(tk_cursor->preview_image);
+        tk_cursor->preview_image = gtk_image_new_from_pixbuf(
             tk_cursor->thumbnail_preview ? tk_cursor->thumbnail_preview : tk_cursor->icon_pixbuf);
+        gtk_widget_ref(tk_cursor->preview_image);
+
+        GtkWidget * image = tk_cursor->preview_image;
 
         gtk_box_pack_start(GTK_BOX(container), image, TRUE, TRUE, 0);
         gtk_container_add(GTK_CONTAINER(button), container);
@@ -3558,6 +3571,7 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
         recompute_group_visibility_for_class(tb, ntk->task_class);
         task_button_redraw(ntk);
         task_update_sorting(ntk, SORT_BY_FOCUS);
+        task_update_composite_thumbnail(ntk);
     }
 
     if (ctk != NULL)

@@ -92,7 +92,7 @@ extern void plugin_widget_set_background(GtkWidget * w, Panel * p);
 extern gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plugin *plugin);
                                                         /* Handler for "button_press_event" signal with Plugin as parameter */
 
-extern void plugin_popup_set_position_helper2(Plugin * p, GtkWidget * near, GtkWidget * popup, GtkRequisition * popup_req, int offset, gint * px, gint * py);
+extern void plugin_popup_set_position_helper2(Plugin * p, GtkWidget * near, GtkWidget * popup, GtkRequisition * popup_req, int offset, float alignment, gint * px, gint * py);
 
 extern void plugin_popup_set_position_helper(Plugin * p, GtkWidget * near, GtkWidget * popup, GtkRequisition * popup_req, gint * px, gint * py);
 							/* Helper for position-calculation callback for popup menus */

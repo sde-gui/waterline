@@ -88,6 +88,13 @@ enum TASKBAR_ACTION {
     ACTION_COPY_TITLE
 };
 
+enum MOUSE_OVER_ACTION {
+    MOUSE_OVER_ACTION_NONE,
+    MOUSE_OVER_ACTION_GROUP_MENU,
+    MOUSE_OVER_ACTION_PREVIEW
+};
+
+
 enum {
     TRIGGERED_BY_CLICK,
     TRIGGERED_BY_PRESS
@@ -145,6 +152,12 @@ static pair action_pair[] = {
     { ACTION_PREV_WINDOW_IN_GROUP, "PrevWindowInGroup"},
     { ACTION_COPY_TITLE, "CopyTitle"},
     { 0, NULL},
+};
+
+static pair mouse_over_action_pair[] = {
+    { MOUSE_OVER_ACTION_NONE, "None"},
+    { MOUSE_OVER_ACTION_GROUP_MENU, "ShowGroupedWindowList"},
+    { MOUSE_OVER_ACTION_PREVIEW, "ShowPreview"},
 };
 
 static pair action_trigged_by_pair[] = {
@@ -323,7 +336,6 @@ typedef struct _taskbar {
     gboolean group_menu_opened_as_popup;
 
     GtkWidget * preview_panel_window;
-    GtkAllocation preview_panel_window_alloc;
     GtkWidget * preview_panel_box;
 
     Task * popup_task;                          /* Task that owns popup. */
@@ -362,7 +374,7 @@ typedef struct _taskbar {
     int menu_actions_click_press;
     int other_actions_click_press;
 
-    gboolean open_group_menu_on_mouse_over;
+    int mouse_over_action;
 
     gboolean show_all_desks;			/* User preference: show windows from all desktops */
     gboolean show_mapped;			/* User preference: show mapped windows */
@@ -385,7 +397,6 @@ typedef struct _taskbar {
 
     gboolean colorize_buttons;
 
-    gboolean thumbnails_preview;
     gboolean use_thumbnails_as_icons;
 
     int mode;                                   /* User preference: view mode */
@@ -441,6 +452,8 @@ typedef struct _taskbar {
     int deferred_active_window_valid;
     Window deferred_active_window;
 
+    gboolean open_group_menu_on_mouse_over;
+    gboolean thumbnails_preview;
     gboolean thumbnails;
 
     Task * button_pressed_task;
@@ -1480,7 +1493,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         if (children_return)
             XFree(children_return);
 
-        g_print("0x%x => 0x%x, (root 0x%x)\n", w, parent_return, root_return);
+        //g_print("0x%x => 0x%x, (root 0x%x)\n", w, parent_return, root_return);
 
         if (parent_return != root_return)
             w1 = parent_return;
@@ -1525,7 +1538,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
 
             tk->require_update_composite_thumbnail = FALSE;
 
-            g_print("New thumb for [%s]\n", tk->name);
+            //g_print("New thumb for [%s]\n", tk->name);
         }
     }
 
@@ -2249,11 +2262,6 @@ static void task_raise_window(Task * tk, guint32 time)
 
 /* preview panel */
 
-static void preview_panel_size_allocate(GtkWidget * w, GtkAllocation * alloc, TaskbarPlugin * tb)
-{
-    tb->preview_panel_window_alloc = *alloc;
-}
-
 static gboolean preview_panel_enter(GtkWidget * widget, GdkEvent * event, TaskbarPlugin * tb)
 {
     taskbar_check_hide_popup(tb, FALSE);
@@ -2276,10 +2284,19 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 
     GTK_WIDGET_UNSET_FLAGS(win, GTK_CAN_FOCUS);
 
-    g_signal_connect(G_OBJECT (win), "size-allocate", G_CALLBACK(preview_panel_size_allocate), (gpointer) tb);
     g_signal_connect_after(G_OBJECT (win), "enter-notify-event", G_CALLBACK(preview_panel_enter), (gpointer) tb);
     g_signal_connect_after(G_OBJECT (win), "leave-notify-event", G_CALLBACK(preview_panel_leave), (gpointer) tb);
 
+    gtk_widget_realize(win);
+    wm_noinput(GDK_WINDOW_XWINDOW(win->window));
+/*
+    Atom state[3];
+    state[0] = a_NET_WM_STATE_SKIP_PAGER;
+    state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
+    state[2] = a_NET_WM_STATE_STICKY;
+    XChangeProperty(GDK_DISPLAY(), GDK_WINDOW_XWINDOW(win->window), a_NET_WM_STATE, XA_ATOM,
+          32, PropModeReplace, (unsigned char *) state, 3);
+*/
     tb->preview_panel_window = win;
 }
 
@@ -2338,8 +2355,13 @@ static void task_show_preview_panel(Task * tk)
         gtk_box_pack_start(GTK_BOX(box), image, TRUE, TRUE, 0);
     }
 
+    gtk_widget_show_all(tb->preview_panel_box);
+
+    GtkRequisition requisition;
+    gtk_widget_size_request(tb->preview_panel_window, &requisition);
+
     gint px, py;
-    plugin_popup_set_position_helper2(tb->plug, tk->button, tb->preview_panel_window, NULL, 5, &px, &py);
+    plugin_popup_set_position_helper2(tb->plug, tk->button, tb->preview_panel_window, &requisition, 5, 0.5, &px, &py);
     gtk_window_move(GTK_WINDOW(tb->preview_panel_window), px, py);
 
     gtk_widget_show_all(tb->preview_panel_window);
@@ -4309,6 +4331,9 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     if (!tb->show_iconified)
         tb->show_mapped = TRUE;
 
+    tb->open_group_menu_on_mouse_over = tb->mouse_over_action == MOUSE_OVER_ACTION_GROUP_MENU;
+    tb->thumbnails_preview            = tb->mouse_over_action == MOUSE_OVER_ACTION_PREVIEW;
+
     int sort_settings_hash = 0;
     int i;
     for (i = 0; i < 3; i++)
@@ -4453,11 +4478,6 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 
     tb->colorize_buttons = FALSE;
 
-    tb->thumbnails_preview = FALSE;
-    tb->use_thumbnails_as_icons = FALSE;
-//    tb->thumbnails_preview = TRUE;
-//    tb->use_thumbnails_as_icons = TRUE;
-
     tb->workspace_submenu = NULL;
     tb->restore_menuitem  = NULL;
     tb->maximize_menuitem = NULL;
@@ -4593,8 +4613,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->use_x_net_wm_icon_geometry = str2num(bool_pair, s.t[1], tb->use_x_net_wm_icon_geometry);
                 else if (g_ascii_strcasecmp(s.t[0], "UseXWindowPosition") == 0)
                     tb->use_x_window_position = str2num(bool_pair, s.t[1], tb->use_x_window_position);
-                else if (g_ascii_strcasecmp(s.t[0], "OpenGroupMenuOnMouseOver") == 0)
-                    tb->open_group_menu_on_mouse_over = str2num(bool_pair, s.t[1], tb->open_group_menu_on_mouse_over);
+                else if (g_ascii_strcasecmp(s.t[0], "MouseOverAction") == 0)
+                    tb->mouse_over_action = str2num(mouse_over_action_pair, s.t[1], tb->mouse_over_action);
                 else
                     ERR( "taskbar: unknown var %s\n", s.t[0]);
             }
@@ -4807,7 +4827,8 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         other_actions_click_press, (gpointer)&tb->other_actions_click_press, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
-        _("Open group menu on mouse over"), (gpointer)&tb->open_group_menu_on_mouse_over, (GType)CONF_TYPE_BOOL,
+//        _("Open group menu on mouse over"), (gpointer)&tb->open_group_menu_on_mouse_over, (GType)CONF_TYPE_BOOL,
+        "|Mouse over|None|Show group menu|Show preview (compositing required)", (gpointer)&tb->mouse_over_action, (GType)CONF_TYPE_ENUM,
 
         _("Integration"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
 
@@ -4882,7 +4903,8 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "ShiftScrollDownAction", tb->shift_scroll_down_action, action_pair);
     lxpanel_put_enum(fp, "MenuActionsTriggeredBy", tb->menu_actions_click_press, action_trigged_by_pair);
     lxpanel_put_enum(fp, "OtherActionsTriggeredBy", tb->other_actions_click_press, action_trigged_by_pair);
-    lxpanel_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
+    //lxpanel_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
+    lxpanel_put_enum(fp, "MouseOverAction", tb->mouse_over_action, mouse_over_action_pair);
     lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
     lxpanel_put_bool(fp, "UseGroupSeparators", tb->use_group_separators);
     lxpanel_put_int(fp, "GroupSeparatorSize", tb->group_separator_size);

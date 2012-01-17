@@ -407,10 +407,10 @@ gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plu
 /* Helper for position-calculation callback for popup menus. */
 void plugin_popup_set_position_helper(Plugin * p, GtkWidget * near, GtkWidget * popup, GtkRequisition * popup_req, gint * px, gint * py)
 {
-    plugin_popup_set_position_helper2(p, near, popup, popup_req, 0, px, py);
+    plugin_popup_set_position_helper2(p, near, popup, popup_req, 0, 0, px, py);
 }
 
-void plugin_popup_set_position_helper2(Plugin * p, GtkWidget * near, GtkWidget * popup, GtkRequisition * popup_req, int offset, gint * px, gint * py)
+void plugin_popup_set_position_helper2(Plugin * p, GtkWidget * near, GtkWidget * popup, GtkRequisition * popup_req, int offset, float alignment, gint * px, gint * py)
 {
     int popop_width  = 0;
     int popop_height = 0;
@@ -435,10 +435,22 @@ void plugin_popup_set_position_helper2(Plugin * p, GtkWidget * near, GtkWidget *
      * Also set "push-in" to avoid any case where it might flow off screen. */
     switch (p->panel->edge)
     {
-        case EDGE_TOP:          y += near->allocation.height + offset;         break;
-        case EDGE_BOTTOM:       y -= popop_height + offset;                    break;
-        case EDGE_LEFT:         x += near->allocation.width + offset;          break;
-        case EDGE_RIGHT:        x -= popop_width + offset;                     break;
+        case EDGE_TOP:
+             y += near->allocation.height + offset;
+             x += near->allocation.width * alignment - (popop_width * alignment);
+             break;
+        case EDGE_BOTTOM:
+             y -= popop_height + offset;
+             x += near->allocation.width * alignment - (popop_width * alignment);
+             break;
+        case EDGE_LEFT:
+             x += near->allocation.width + offset;
+             y += near->allocation.height * alignment - (popop_height * alignment);
+             break;
+        case EDGE_RIGHT:
+             x -= popop_width + offset;
+             y += near->allocation.height * alignment - (popop_height * alignment);
+             break;
     }
     *px = x;
     *py = y;

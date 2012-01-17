@@ -1227,8 +1227,6 @@ static void
 panel_start_gui(Panel *p)
 {
     Atom state[3];
-    XWMHints wmhints;
-    guint32 val;
 
     ENTER;
 
@@ -1286,15 +1284,7 @@ panel_start_gui(Panel *p)
     DBG("topxwin = %x\n", p->topxwin);
 
     /* the settings that should be done before window is mapped */
-    wmhints.flags = InputHint;
-    wmhints.input = 0;
-    XSetWMHints (GDK_DISPLAY(), p->topxwin, &wmhints);
-#define WIN_HINTS_SKIP_FOCUS      (1<<0)    /* "alt-tab" skips this win */
-    val = WIN_HINTS_SKIP_FOCUS;
-    XChangeProperty(GDK_DISPLAY(), p->topxwin,
-          XInternAtom(GDK_DISPLAY(), "_WIN_HINTS", False), XA_CARDINAL, 32,
-          PropModeReplace, (unsigned char *) &val, 1);
-
+    wm_noinput(p->topxwin);
     panel_set_dock_type(p);
 
     /* window mapping point */
@@ -1306,7 +1296,7 @@ panel_start_gui(Panel *p)
     /* send it to running wm */
     Xclimsg(p->topxwin, a_NET_WM_DESKTOP, 0xFFFFFFFF, 0, 0, 0, 0);
     /* and assign it ourself just for case when wm is not running */
-    val = 0xFFFFFFFF;
+    guint32 val = 0xFFFFFFFF;
     XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
           PropModeReplace, (unsigned char *) &val, 1);
 

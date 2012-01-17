@@ -79,6 +79,10 @@ gboolean check_net_supported(Atom atom);
 
 gboolean is_xcomposite_available(void);
 
+void wm_noinput(Window w);
+
+GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
+
 extern Atom a_UTF8_STRING;
 extern Atom a_XROOTPMAP_ID;
 
@@ -149,7 +153,5 @@ extern Atom a_LXPANEL_TEXT_CMD;
 
 /* if current window manager is EWMH conforming. */
 extern gboolean is_ewmh_supported;
-
-GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 
 #endif

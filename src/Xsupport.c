@@ -1191,3 +1191,16 @@ GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height
     return pixmap;
 }
 
+void wm_noinput(Window w)
+{
+    XWMHints wmhints;
+    wmhints.flags = InputHint;
+    wmhints.input = 0;
+    XSetWMHints (GDK_DISPLAY(), w, &wmhints);
+
+    #define WIN_HINTS_SKIP_FOCUS      (1<<0)    /* "alt-tab" skips this win */
+    guint32 val = WIN_HINTS_SKIP_FOCUS;
+    XChangeProperty(GDK_DISPLAY(), w,
+          XInternAtom(GDK_DISPLAY(), "_WIN_HINTS", False), XA_CARDINAL, 32,
+          PropModeReplace, (unsigned char *) &val, 1);
+}

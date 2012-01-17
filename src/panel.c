@@ -1118,66 +1118,100 @@ void panel_set_dock_type(Panel *p)
 
 static void panel_set_visibility(Panel *p, gboolean visible)
 {
-    if ( ! visible) gtk_widget_hide(p->box);
+    if (p->visible == visible)
+        return;
+
     p->visible = visible;
+
+    if (!visible)
+        gtk_widget_hide(p->box);
+
     panel_calculate_position(p);
     gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
     gdk_window_move(p->topgwin->window, p->ax, p->ay);
-    if (visible) gtk_widget_show(p->box);
+
+    if (visible)
+        gtk_widget_show(p->box);
+
     panel_set_wm_strut(p);
 }
 
 static gboolean panel_leave_real(Panel *p)
 {
-    /* If the pointer is grabbed by this application, leave the panel displayed.
-     * There is no way to determine if it is grabbed by another application, such as an application that has a systray icon. */
-    if (gdk_display_pointer_is_grabbed(p->display))
-        return TRUE;
-
-    /* If the pointer is inside the panel, leave the panel displayed. */
-    gint x, y;
-    gdk_display_get_pointer(p->display, NULL, &x, &y, NULL);
-    if ((p->cx <= x) && (x <= (p->cx + p->cw)) && (p->cy <= y) && (y <= (p->cy + p->ch)))
-        return TRUE;
-
-    /* If the panel is configured to autohide and if it is visible, hide the panel. */
-    if ((p->autohide) && (p->visible))
-        panel_set_visibility(p, FALSE);
-
-    /* Clear the timer. */
-    p->hide_timeout = 0;
-    return FALSE;
+    panel_visibility_conditions_changed(p);
+    return TRUE;
 }
 
-static gboolean panel_enter(GtkImage *widget, GdkEventCrossing *event, Panel *p)
+void panel_visibility_conditions_changed( Panel* p )
 {
-    /* We may receive multiple enter-notify events when the pointer crosses into the panel.
-     * Do extra tests to make sure this does not cause misoperation such as blinking.
-     * If the pointer is inside the panel, unhide it. */
-    gint x, y;
-    gdk_display_get_pointer(p->display, NULL, &x, &y, NULL);
-    if ((p->cx <= x) && (x <= (p->cx + p->cw)) && (p->cy <= y) && (y <= (p->cy + p->ch)))
+    gboolean visible = FALSE;
+
+
+    if (!p->autohide)
+        visible = TRUE;
+
+    if (!visible)
     {
-        /* If the pointer is inside the panel and we have not already unhidden it, do so and
-         * set a timer to recheck it in a half second. */
-        if (p->hide_timeout == 0)
+        /* If the pointer is grabbed by this application, leave the panel displayed.
+         * There is no way to determine if it is grabbed by another application,
+         * such as an application that has a systray icon. */
+        if (gdk_display_pointer_is_grabbed(p->display))
+            visible = TRUE;
+    }
+
+    if (!visible)
+    {
+        GList * l;
+        for (l = p->plugins; l != NULL; l = l->next)
         {
-            p->hide_timeout = g_timeout_add(500, (GSourceFunc) panel_leave_real, p);
-            panel_set_visibility(p, TRUE);
+            Plugin * pl = (Plugin *) l->data;
+            if (pl->lock_visible)
+            {
+                visible = TRUE;
+                break;
+            }
+        }
+    }
+
+    if (!visible)
+    {
+        gint x, y;
+        gdk_display_get_pointer(p->display, NULL, &x, &y, NULL);
+        if ((p->cx <= x) && (x <= (p->cx + p->cw)) && (p->cy <= y) && (y <= (p->cy + p->ch)))
+        {
+            visible = TRUE;
+        }
+    }
+
+    if (visible)
+    {
+        panel_set_visibility(p, TRUE);
+        if (p->autohide)
+        {
+            if (p->hide_timeout == 0)
+                p->hide_timeout = g_timeout_add(500, (GSourceFunc) panel_leave_real, p);
         }
     }
     else
     {
-        /* If the pointer is not inside the panel, simulate a timer expiration. */
-        panel_leave_real(p);
+        panel_set_visibility(p, FALSE);
+        if (p->hide_timeout)
+        {
+            g_source_remove(p->hide_timeout);
+            p->hide_timeout = 0;
+        }
     }
-    return TRUE;
+}
+
+static gboolean panel_enter(GtkImage *widget, GdkEventCrossing *event, Panel *p)
+{
+    panel_visibility_conditions_changed(p);
 }
 
 static gboolean panel_drag_motion(GtkWidget *widget, GdkDragContext *drag_context, gint x,
       gint y, guint time, Panel *p)
 {
-    panel_enter(NULL, NULL, p);
+    panel_visibility_conditions_changed(p);
     return TRUE;
 }
 
@@ -1190,13 +1224,13 @@ void panel_establish_autohide(Panel *p)
         g_signal_connect(G_OBJECT(p->topgwin), "drag-motion", (GCallback) panel_drag_motion, p);
         gtk_drag_dest_set(p->topgwin, GTK_DEST_DEFAULT_MOTION, NULL, 0, 0);
         gtk_drag_dest_set_track_motion(p->topgwin, TRUE);
-        panel_enter(NULL, NULL, p);
     }
     else if ( ! p->visible)
     {
 	gtk_widget_show(p->box);
         p->visible = TRUE;
     }
+    panel_visibility_conditions_changed(p);
 }
 
 /* Set an image from a file with scaling to the panel icon size. */
@@ -1672,6 +1706,9 @@ delete_plugin(gpointer data, gpointer udata)
 void panel_destroy(Panel *p)
 {
     ENTER;
+
+    if (p->hide_timeout)
+        g_source_remove(p->hide_timeout);
 
     if (p->update_background_idle_cb)
         g_source_remove(p->update_background_idle_cb);

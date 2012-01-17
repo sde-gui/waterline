@@ -147,6 +147,8 @@ extern void panel_set_dock_type(Panel *p);
 extern void panel_set_panel_configuration_changed(Panel *p);
 extern void panel_update_background( Panel* p );
 
+extern void panel_visibility_conditions_changed( Panel* p );
+
 extern void panel_require_update_background( Panel* p );
 
 extern int panel_handle_x_error(Display * d, XErrorEvent * ev);

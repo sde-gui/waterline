@@ -337,6 +337,7 @@ typedef struct _taskbar {
 
     GtkWidget * preview_panel_window;
     GtkWidget * preview_panel_box;
+    GtkAllocation preview_panel_window_alloc;
 
     Task * popup_task;                          /* Task that owns popup. */
     guint hide_popup_delay_timer;               /* Timer to close popup if mouse leaves it */
@@ -2262,6 +2263,11 @@ static void task_raise_window(Task * tk, guint32 time)
 
 /* preview panel */
 
+static void preview_panel_size_allocate(GtkWidget * w, GtkAllocation * alloc, TaskbarPlugin * tb)
+{
+    tb->preview_panel_window_alloc = *alloc;
+}
+
 static gboolean preview_panel_enter(GtkWidget * widget, GdkEvent * event, TaskbarPlugin * tb)
 {
     taskbar_check_hide_popup(tb, FALSE);
@@ -2284,6 +2290,7 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 
     GTK_WIDGET_UNSET_FLAGS(win, GTK_CAN_FOCUS);
 
+    g_signal_connect(G_OBJECT (win), "size-allocate", G_CALLBACK(preview_panel_size_allocate), (gpointer) tb);
     g_signal_connect_after(G_OBJECT (win), "enter-notify-event", G_CALLBACK(preview_panel_enter), (gpointer) tb);
     g_signal_connect_after(G_OBJECT (win), "leave-notify-event", G_CALLBACK(preview_panel_leave), (gpointer) tb);
 
@@ -2454,6 +2461,11 @@ static void taskbar_show_popup(Task * tk)
 {
     TaskbarPlugin * tb = tk->tb;
 
+    if (!tb->popup_task)
+    {
+        plugin_lock_visible(tb->plug);
+    }
+
     tb->popup_task = tk;
     tk->show_popup_delay_timer = 0;
     if (tb->thumbnails_preview && tb->thumbnails)
@@ -2475,6 +2487,7 @@ static void taskbar_hide_popup(TaskbarPlugin * tb)
          taskbar_hide_preview_panel(tb);
          taskbar_group_menu_destroy(tb);
          tb->popup_task = NULL;
+         plugin_unlock_visible(tb->plug);
     }
 }
 

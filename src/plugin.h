@@ -79,6 +79,7 @@ typedef struct _Plugin {
 
     GtkAllocation pwid_allocation;
     gboolean background_update_scheduled;
+    int lock_visible;
 } Plugin;
 
 extern Plugin * plugin_load(char * type);		/* Create an instance of a plugin, loading it if necessary */
@@ -98,6 +99,9 @@ extern void plugin_popup_set_position_helper(Plugin * p, GtkWidget * near, GtkWi
 							/* Helper for position-calculation callback for popup menus */
 extern void plugin_adjust_popup_position(GtkWidget * popup, Plugin * plugin);
 							/* Helper to move popup windows away from the panel */
+
+extern void plugin_lock_visible(Plugin * plugin);
+extern void plugin_unlock_visible(Plugin * plugin);
 
 /* FIXME: optional definitions */
 #define STATIC_SEPARATOR

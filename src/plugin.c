@@ -495,3 +495,16 @@ void plugin_adjust_popup_position(GtkWidget * popup, Plugin * plugin)
     gtk_window_move(GTK_WINDOW(popup), x, y);
 }
 
+void plugin_lock_visible(Plugin * plugin)
+{
+	plugin->lock_visible++;
+	panel_visibility_conditions_changed(plugin->panel);
+}
+
+void plugin_unlock_visible(Plugin * plugin)
+{
+	plugin->lock_visible--;
+	if (plugin->lock_visible < 0)
+		plugin->lock_visible = 0;
+	panel_visibility_conditions_changed(plugin->panel);
+}

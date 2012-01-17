@@ -2389,7 +2389,8 @@ static void task_show_preview_panel(Task * tk)
         g_signal_connect(button, "button_press_event", G_CALLBACK(preview_panel_press_event), (gpointer) tk_cursor);
 //        g_signal_connect(button, "button_release_event", G_CALLBACK(preview_panel_release_event), (gpointer) tk_cursor);
 
-        gtk_widget_unref(tk_cursor->preview_image);
+        if (tk_cursor->preview_image)
+            gtk_widget_unref(tk_cursor->preview_image);
         tk_cursor->preview_image = gtk_image_new_from_pixbuf(
             tk_cursor->thumbnail_preview ? tk_cursor->thumbnail_preview : tk_cursor->icon_pixbuf);
         gtk_widget_ref(tk_cursor->preview_image);
@@ -2409,7 +2410,7 @@ static void task_show_preview_panel(Task * tk)
             }
             if (tk_cursor->bgcolor2.pixel)
             {
-                gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &tk_cursor->bgcolor2.pixel);
+                gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &tk_cursor->bgcolor2);
             }
         }
 

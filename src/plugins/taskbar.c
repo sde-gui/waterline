@@ -610,11 +610,6 @@ static gboolean taskbar_task_button_is_expandable(TaskbarPlugin * tb) {
         return tb->single_window || tb->task_width_max < 1;
 }
 
-static int taskbar_task_button_is_really_flat(TaskbarPlugin * tb)
-{
-    return ( tb->single_window || tb->flat_button );
-}
-
 static gchar* taskbar_get_desktop_name(TaskbarPlugin * tb, int desktop, const char* defval)
 {
     gchar * name = NULL;
@@ -734,6 +729,12 @@ static gboolean task_is_visible(Task * tk)
 
     /* Desktop placement. */
     return task_is_visible_on_current_desktop(tk);
+}
+
+static int task_button_is_really_flat(Task * tk)
+{
+    TaskbarPlugin * tb = tk->tb;
+    return ( tb->single_window || tb->flat_button ) && !tk->focused;
 }
 
 /******************************************************************************/
@@ -934,7 +935,7 @@ static void task_draw_label(Task * tk)
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
         gtk_widget_set_tooltip_text(tk->button, label);
         if (tk->label)
-            panel_draw_label_text(tk->tb->plug->panel, tk->label, label, bold_style, taskbar_task_button_is_really_flat(tk->tb));
+            panel_draw_label_text(tk->tb->plug->panel, tk->label, label, bold_style, task_button_is_really_flat(tk));
         g_free(label);
     }
     else
@@ -943,13 +944,13 @@ static void task_draw_label(Task * tk)
         if (tk->tb->tooltips)
             gtk_widget_set_tooltip_text(tk->button, name);
         if (tk->label)
-            panel_draw_label_text(tk->tb->plug->panel, tk->label, name, bold_style, taskbar_task_button_is_really_flat(tk->tb));
+            panel_draw_label_text(tk->tb->plug->panel, tk->label, name, bold_style, task_button_is_really_flat(tk));
     }
 }
 
 static void task_button_redraw_button_state(Task * tk, TaskbarPlugin * tb)
 {
-    if( taskbar_task_button_is_really_flat(tb) )
+    if (task_button_is_really_flat(tk))
     {
         gtk_toggle_button_set_active((GtkToggleButton*)tk->button, FALSE);
         gtk_button_set_relief(GTK_BUTTON(tk->button), GTK_RELIEF_NONE);
@@ -1807,7 +1808,7 @@ static void task_defer_update_icon(Task * tk, gboolean forse_icon_erase)
 static gboolean flash_window_timeout(Task * tk)
 {
     /* Set state on the button and redraw. */
-    if ( ! taskbar_task_button_is_really_flat(tk->tb))
+    if ( !task_button_is_really_flat(tk) )
         gtk_widget_set_state(tk->button, tk->flash_state ? GTK_STATE_SELECTED : GTK_STATE_NORMAL);
     task_draw_label(tk);
 
@@ -2780,7 +2781,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
     }
 
     /* As a matter of policy, avoid showing selected or prelight states on flat buttons. */
-    if (taskbar_task_button_is_really_flat(tb))
+    if (task_button_is_really_flat(tk))
         gtk_widget_set_state(widget, GTK_STATE_NORMAL);
     return TRUE;
 }
@@ -2855,7 +2856,7 @@ static void taskbar_button_enter(GtkWidget * widget, Task * tk)
     TaskbarPlugin * tb = tk->tb;
 
     tk->entered_state = TRUE;
-    if (taskbar_task_button_is_really_flat(tb))
+    if (task_button_is_really_flat(tk))
         gtk_widget_set_state(widget, GTK_STATE_NORMAL);
     task_draw_label(tk);
 

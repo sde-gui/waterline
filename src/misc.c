@@ -401,6 +401,19 @@ static void on_theme_changed(GtkIconTheme * theme, GtkWidget * img)
     _gtk_image_set_from_file_scaled(img, data->fname, data->dw, data->dh, data->keep_ratio, data->use_dummy_image);
 }
 
+void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation)
+{
+    GtkWidget * child = gtk_bin_get_child(GTK_BIN(btn));
+    if (GTK_IS_BOX(child))
+    {
+        GtkBox *  newbox = GTK_BOX(recreate_box(child, orientation));
+        if (GTK_WIDGET(newbox) != child)
+        {
+            gtk_container_add(GTK_CONTAINER(btn), GTK_WIDGET(newbox));
+        }
+    }
+}
+
 void fb_button_set_label(GtkWidget * btn, Panel * panel, gchar * label)
 {
     /* Locate the label within the button. */

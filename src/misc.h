@@ -60,6 +60,8 @@ GtkWidget * fb_button_new_from_file(
     gchar * image_file, int width, int height, gulong highlight_color, gboolean keep_ratio);
 GtkWidget * fb_button_new_from_file_with_label(
     gchar * image_file, int width, int height, gulong highlight_color, gboolean keep_ratio, Panel * panel, gchar * label);
+void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation);
+void fb_button_set_from_file(GtkWidget* btn, const char* img_file, gint width, gint height, gboolean keep_ratio);
 
 char* translate_exec_to_cmd( const char* exec, const char* icon,
                              const char* title, const char* fpath );
@@ -88,8 +90,6 @@ extern GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean u
 extern void     lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * event );
 
 extern GdkPixbuf* lxpanel_load_icon( const char* name, int width, int height, gboolean use_fallback );
-
-void fb_button_set_from_file(GtkWidget* btn, const char* img_file, gint width, gint height, gboolean keep_ratio);
 
 gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal);
 gboolean lxpanel_launch(const char* exec, GList* files);

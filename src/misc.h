@@ -104,4 +104,6 @@ gchar * panel_translate_directory_name(const gchar * name);
 
 int strempty(const char* s);
 
+void bring_to_current_desktop(GtkWidget * win);
+
 #endif

@@ -832,7 +832,7 @@ void panel_configure( Panel* p, int sel_page )
     if( p->pref_dialog )
     {
         panel_adjust_geometry_terminology(p);
-        gtk_window_present(GTK_WINDOW(p->pref_dialog));
+        bring_to_current_desktop(p->pref_dialog);
         return;
     }
 

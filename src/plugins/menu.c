@@ -630,7 +630,7 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
     fb_button_set_orientation(m->img, p->panel->orientation);
 
     gtk_widget_show(m->img);
-    gtk_box_pack_start(GTK_BOX(m->box), m->img, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(m->box), m->img, TRUE, TRUE, 0);
 
     m->handler_id = g_signal_connect (G_OBJECT (m->img), "button-press-event",
           G_CALLBACK (my_button_pressed), p);

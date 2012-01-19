@@ -294,6 +294,11 @@ typedef struct _task {
     /* Background colors from icon */
     GdkColor bgcolor1; /* normal */
     GdkColor bgcolor2; /* prelight */
+
+    /*  */
+
+    gchar * run_path;
+
 } Task;
 
 /* Private context for taskbar plugin. */
@@ -330,6 +335,7 @@ typedef struct _taskbar {
     GtkWidget * unfold_group_menuitem;
     GtkWidget * fold_group_menuitem;
     GtkWidget * title_menuitem;
+    GtkWidget * run_new_menuitem;
 
     /* Task popup: group menu or preview panel. */
 
@@ -1218,6 +1224,10 @@ static gchar* task_read_wm_class(Task * tk) {
 static void task_update_wm_class(Task * tk) {
     g_free(tk->wm_class);
     tk->wm_class = task_read_wm_class(tk);
+
+    if (tk->run_path && tk->run_path != (gchar *)-1)
+        g_free(tk->run_path);
+    tk->run_path = (gchar *)-1;
 }
 
 /* Set the class associated with a task. */
@@ -1331,6 +1341,9 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     ENTER;
 
     DBG("Deleting task %s (0x%x)\n", tk->name, (int)tk);
+
+    if (tk->run_path && tk->run_path != (gchar *)-1)
+        g_free(tk->run_path);
 
     if (tk->preview_image)
         gtk_widget_unref(tk->preview_image);
@@ -2888,6 +2901,7 @@ static void taskbar_button_leave(GtkWidget * widget, Task * tk)
 
     tk->entered_state = FALSE;
     task_draw_label(tk);
+    task_button_redraw_button_state(tk, tb);
 }
 
 /* Handler for "scroll-event" event from taskbar button. */
@@ -3994,6 +4008,14 @@ static void menu_copy_title(GtkWidget * widget, TaskbarPlugin * tb)
     taskbar_group_menu_destroy(tb);
 }
 
+static void menu_run_new(GtkWidget * widget, TaskbarPlugin * tb)
+{
+    gchar * p = tb->menutask->run_path;
+    if (p && p != (gchar *)-1)
+        lxpanel_launch_app(p, NULL, FALSE);
+    taskbar_group_menu_destroy(tb);
+}
+
 static void menu_close_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     task_close(tb->menutask);
@@ -4158,6 +4180,31 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
         menu_set_sensitive(GTK_WIDGET(tb->roll_menuitem), tk->shaded || tk->decorated);
     }
 
+    if (tb->run_new_menuitem)
+    {
+        if (tk->wm_class && tk->run_path == (gchar *)-1)
+        {
+            tk->run_path = g_find_program_in_path(tk->wm_class);
+            if (!tk->run_path)
+            {
+                 gchar* classname = g_utf8_strdown(tk->wm_class, -1);
+                 tk->run_path = g_find_program_in_path(classname);
+                 g_free(classname);
+            }
+        }
+#if GTK_CHECK_VERSION(2,16,0)
+        if (tk->wm_class && tk->run_path && tk->run_path != (gchar *)-1)
+        {
+            gchar * name = g_strdup_printf(_("Run new %s"), tk->wm_class);
+            gtk_menu_item_set_use_underline(GTK_MENU_ITEM(tb->run_new_menuitem), FALSE);
+            gtk_menu_item_set_label(GTK_MENU_ITEM(tb->run_new_menuitem), name);
+            g_free(name);
+        }
+#endif
+        gtk_widget_set_visible(GTK_WIDGET(tb->run_new_menuitem), tk->run_path && tk->run_path != (gchar *)-1);
+    }
+
+
     if (from_popup_menu) {
 #if GTK_CHECK_VERSION(2,16,0)
         gtk_menu_item_set_use_underline(GTK_MENU_ITEM(tb->title_menuitem), FALSE);
@@ -4214,7 +4261,7 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
 
     gchar * menu_description =
          "close2 raise @restore @maximize @iconify @roll @undecorate - @move_to_this_workspace move_to_workspace - "
-         "@ungroup move_to_group - @unfold_group @fold_group - copy_title";
+         "@ungroup move_to_group - @unfold_group @fold_group - run_new - copy_title";
 
     tb->workspace_submenu = NULL;
     tb->move_to_this_workspace_menuitem = NULL;
@@ -4321,6 +4368,8 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
             create_menu_item(tb, _("Fold _Group"), (GCallback) menu_fold_group_window, &tb->fold_group_menuitem, hide_inactive);
         } else IF("copy_title") {
             create_menu_item(tb, _("Cop_y title"), (GCallback) menu_copy_title, NULL, hide_inactive);
+        } else IF("run_new") {
+            create_menu_item(tb, _("_Run new"), (GCallback) menu_run_new, &tb->run_new_menuitem, hide_inactive);
         } else IF("close") {
             create_menu_item(tb, _("_Close Window"), (GCallback) menu_close_window, NULL, hide_inactive);
         } else IF("close2") {

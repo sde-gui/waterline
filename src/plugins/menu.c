@@ -129,8 +129,9 @@ run_command(GtkWidget *widget, void (*cmd)(void))
 }
 
 static void
-menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget)
+menu_pos(GtkWidget *menu, gint *px, gint *py, gboolean *push_in, Plugin * p)
 {
+/*
     int ox, oy, w, h;
     Plugin *p;
 
@@ -159,6 +160,14 @@ menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget)
     DBG("w-h %d %d\n", w, h);
     *push_in = TRUE;
     RET();
+*/
+    /* Get the allocation of the popup menu. */
+    GtkRequisition popup_req;
+    gtk_widget_size_request(menu, &popup_req);
+
+    /* Determine the coordinates. */
+    plugin_popup_set_position_helper(p, p->pwid, menu, &popup_req, px, py);
+    *push_in = TRUE;
 }
 
 static void on_menu_item( GtkMenuItem* mi, MenuCacheItem* item )
@@ -577,7 +586,7 @@ static void show_menu( GtkWidget* widget, Plugin* p, int btn, guint32 time )
     menup* m = (menup*)p->priv;
     gtk_menu_popup(GTK_MENU(m->menu),
                    NULL, NULL,
-                   (GtkMenuPositionFunc)menu_pos, widget,
+                   (GtkMenuPositionFunc)menu_pos, p,
                    btn, time);
 }
 

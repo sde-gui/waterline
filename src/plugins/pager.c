@@ -142,6 +142,8 @@ static PagerTask * task_lookup(PagerPlugin * pg, Window win)
 /* Delete a task and optionally unlink it from the task list. */
 static void task_delete(PagerPlugin * pg, PagerTask * tk, gboolean unlink)
 {
+    desk_set_dirty_by_win(pg, tk);
+
     /* If we think this task had focus, remove that. */
     if (pg->focused_task == tk)
         pg->focused_task = NULL;

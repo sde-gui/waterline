@@ -740,7 +740,7 @@ static gboolean task_is_visible(Task * tk)
 static int task_button_is_really_flat(Task * tk)
 {
     TaskbarPlugin * tb = tk->tb;
-    return ( tb->single_window || tb->flat_button ) && !tk->focused;
+    return ( tb->single_window ) || (tb->flat_button && !tk->focused );
 }
 
 /******************************************************************************/

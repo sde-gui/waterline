@@ -563,14 +563,17 @@ calculate_width(int scrw, int wtype, int allign, int margin,
             *panw = 1;
         *panw = ((gfloat) scrw * (gfloat) *panw) / 100.0;
     }
-    if (allign != ALLIGN_CENTER) {
-        if (margin > scrw) {
-            ERR( "margin is bigger then edge size %d > %d. Ignoring margin\n",
-                  margin, scrw);
-            margin = 0;
-        }
-	*panw = MIN(scrw - margin, *panw);
+
+    if (margin > scrw) {
+        ERR("margin is bigger then edge size %d > %d. Ignoring margin\n", margin, scrw);
+        margin = 0;
     }
+
+    if (allign == ALLIGN_CENTER)
+        margin = 0;
+    
+    *panw = MIN(scrw - margin, *panw);
+
     DBG("OUT panw=%d\n", *panw);
     if (allign == ALLIGN_LEFT)
         *x += margin;
@@ -710,18 +713,18 @@ panel_size_position_changed(Panel *p, gboolean position_changed)
 
     if (position_changed)
     {
-    if (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)
-    {
-        GSList* l;
-        for( l = all_panels; l; l = l->next )
+        if (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)
         {
-            Panel* lp = (Panel*)l->data;
-            if (lp->edge == EDGE_LEFT || lp->edge == EDGE_RIGHT)
+            GSList* l;
+            for( l = all_panels; l; l = l->next )
             {
-                update_panel_geometry(lp);
+                Panel* lp = (Panel*)l->data;
+                if (lp->edge == EDGE_LEFT || lp->edge == EDGE_RIGHT)
+                {
+                    update_panel_geometry(lp);
+                }
             }
         }
-    }
     }
 }
 

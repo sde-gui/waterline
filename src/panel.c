@@ -696,45 +696,14 @@ panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
     RET( TRUE );
 }
 
-/* size-allocate signal handler */
-
-static gint
-panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
+static void
+panel_size_position_changed(Panel *p, gboolean position_changed)
 {
-    ENTER;
-    if (p->widthtype == WIDTH_REQUEST)
-        p->width = (p->orientation == ORIENT_HORIZ) ? a->width : a->height;
-    if (p->heighttype == HEIGHT_REQUEST)
-        p->height = (p->orientation == ORIENT_HORIZ) ? a->height : a->width;
-    panel_calculate_position(p);
-
-    if (a->width == p->aw && a->height == p->ah && a->x == p->ax && a->y == p ->ay) {
-        RET(TRUE);
+    if (position_changed)
+    {
+        if (p->transparent)
+            fb_bg_notify_changed_bg(p->bg);
     }
-
-    gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
-    panel_set_wm_strut(p);
-
-    make_round_corners(p);
-
-    RET(TRUE);
-}
-
-/* configure-event signal handler */
-
-static  gboolean
-panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
-{
-    ENTER;
-    if (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y == p->cy)
-        RET(TRUE);
-    p->cw = e->width;
-    p->ch = e->height;
-    p->cx = e->x;
-    p->cy = e->y;
-
-    if (p->transparent)
-        fb_bg_notify_changed_bg(p->bg);
 
     panel_set_wm_strut(p);
     make_round_corners(p);
@@ -751,6 +720,62 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
             }
         }
     }
+
+}
+
+/* size-allocate signal handler */
+
+static gint
+panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
+{
+    ENTER;
+
+    if (p->widthtype == WIDTH_REQUEST)
+        p->width = (p->orientation == ORIENT_HORIZ) ? a->width : a->height;
+    if (p->heighttype == HEIGHT_REQUEST)
+        p->height = (p->orientation == ORIENT_HORIZ) ? a->height : a->width;
+
+
+    g_print("size-alloc: %d, %d, %d, %d\n", a->x, a->y, a->width, a->height);
+
+    /* a->x and a->y always contain 0. */
+    if (a->width == p->cw && a->height == p->ch) {
+        RET(TRUE);
+    }
+
+    p->cw = a->width;
+    p->ch = a->height;
+
+    g_print("req: %d, %d, %d, %d\n", p->ax, p->ay, p->aw, p->ah);
+
+    gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
+
+    panel_size_position_changed(p , FALSE);
+
+    RET(TRUE);
+}
+
+/* configure-event signal handler */
+
+static  gboolean
+panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
+{
+    ENTER;
+
+    gboolean position_changed = e->x != p->cx || e->y != p->cy;
+    gboolean size_changed = e->width != p->cw && e->height != p->ch;
+
+    if (!position_changed && !size_changed)
+        RET(TRUE);
+
+    p->cw = e->width;
+    p->ch = e->height;
+    p->cx = e->x;
+    p->cy = e->y;
+
+    g_print("configure: %d, %d, %d, %d\n", p->cx, p->cy, p->cw, p->ch);
+
+    panel_size_position_changed(p, position_changed);
 
     RET(FALSE);
 }

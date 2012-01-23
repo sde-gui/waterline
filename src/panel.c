@@ -708,6 +708,8 @@ panel_size_position_changed(Panel *p, gboolean position_changed)
     panel_set_wm_strut(p);
     make_round_corners(p);
 
+    if (position_changed)
+    {
     if (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)
     {
         GSList* l;
@@ -720,7 +722,7 @@ panel_size_position_changed(Panel *p, gboolean position_changed)
             }
         }
     }
-
+    }
 }
 
 /* size-allocate signal handler */
@@ -735,8 +737,10 @@ panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
     if (p->heighttype == HEIGHT_REQUEST)
         p->height = (p->orientation == ORIENT_HORIZ) ? a->height : a->width;
 
+    //g_print("size-alloc: %d, %d, %d, %d\n", a->x, a->y, a->width, a->height);
 
-    g_print("size-alloc: %d, %d, %d, %d\n", a->x, a->y, a->width, a->height);
+    panel_calculate_position(p);
+    gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
 
     /* a->x and a->y always contain 0. */
     if (a->width == p->cw && a->height == p->ch) {
@@ -746,9 +750,7 @@ panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
     p->cw = a->width;
     p->ch = a->height;
 
-    g_print("req: %d, %d, %d, %d\n", p->ax, p->ay, p->aw, p->ah);
-
-    gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
+    //g_print("req: %d, %d, %d, %d\n", p->ax, p->ay, p->aw, p->ah);
 
     panel_size_position_changed(p , FALSE);
 
@@ -763,7 +765,7 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
     ENTER;
 
     gboolean position_changed = e->x != p->cx || e->y != p->cy;
-    gboolean size_changed = e->width != p->cw && e->height != p->ch;
+    gboolean size_changed = e->width != p->cw || e->height != p->ch;
 
     if (!position_changed && !size_changed)
         RET(TRUE);
@@ -773,7 +775,7 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
     p->cx = e->x;
     p->cy = e->y;
 
-    g_print("configure: %d, %d, %d, %d\n", p->cx, p->cy, p->cw, p->ch);
+    //g_print("configure: %d, %d, %d, %d\n", p->cx, p->cy, p->cw, p->ch);
 
     panel_size_position_changed(p, position_changed);
 

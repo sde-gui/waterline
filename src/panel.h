@@ -122,6 +122,8 @@ typedef struct _Panel {
     int preferred_icon_size;
 
     int update_background_idle_cb;
+
+    int set_wm_strut_idle;
 } Panel;
 
 

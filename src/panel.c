@@ -170,8 +170,10 @@ static void panel_normalize_configuration(Panel* p)
  *         panel's handlers for WM events           *
  ****************************************************/
 
-void panel_set_wm_strut(Panel *p)
+gboolean panel_set_wm_strut_real(Panel *p)
 {
+    p->set_wm_strut_idle = 0;
+
     int index;
     gulong strut_size;
     gulong strut_lower;
@@ -205,7 +207,7 @@ void panel_set_wm_strut(Panel *p)
             strut_upper = p->cx + p->cw;
             break;
         default:
-            return;
+            return FALSE;
     }
 
     /* Handle autohide case.  EWMH recommends having the strut be the minimized size. */
@@ -253,8 +255,16 @@ void panel_set_wm_strut(Panel *p)
             XDeleteProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL);
         }
     }
+
+    return FALSE;
 }
 
+void panel_set_wm_strut(Panel *p)
+{
+    if (p->set_wm_strut_idle == 0)
+        p->set_wm_strut_idle = g_idle_add_full( G_PRIORITY_LOW, 
+            (GSourceFunc)panel_set_wm_strut_real, p, NULL );
+}
 
 static void process_command(char ** argv, int argc)
 {
@@ -1734,6 +1744,9 @@ delete_plugin(gpointer data, gpointer udata)
 void panel_destroy(Panel *p)
 {
     ENTER;
+
+    if (p->set_wm_strut_idle)
+        g_source_remove(p->set_wm_strut_idle);
 
     if (p->hide_timeout)
         g_source_remove(p->hide_timeout);

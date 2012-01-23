@@ -1479,8 +1479,6 @@ void panel_set_panel_configuration_changed(Panel *p)
     if (previous_orientation != p->orientation)
     {
         panel_adjust_geometry_terminology(p);
-        if (previous_orientation != ORIENT_NONE)
-            p->height = ((p->orientation == ORIENT_HORIZ) ? PANEL_HEIGHT_DEFAULT : PANEL_WIDTH_DEFAULT);
         if (p->height_control != NULL)
             gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->height_control), p->height);
         if ((p->widthtype == WIDTH_PIXEL) && (p->width_control != NULL))

@@ -90,6 +90,10 @@ typedef struct _lb_t {
     gboolean use_pipes;
 
     guint input_timeout;
+
+    gchar *  bg_color_s;
+    GdkColor bg_color_c;
+    GdkColormap * color_map;
 } lb_t;
 
 /*****************************************************************************/
@@ -309,7 +313,65 @@ static input_start(input_t * input)
 
 /*****************************************************************************/
 
-/* Handler for "button-press-event" event from launch button. */
+static void _modify_bg_recursive(GtkWidget * w, GdkColor * c)
+{
+    gtk_widget_modify_bg(GTK_WIDGET(w), GTK_STATE_NORMAL, c);
+    gtk_widget_modify_bg(GTK_WIDGET(w), GTK_STATE_ACTIVE, c);
+    gtk_widget_modify_bg(GTK_WIDGET(w), GTK_STATE_PRELIGHT, c);
+    gtk_widget_modify_bg(GTK_WIDGET(w), GTK_STATE_SELECTED, c);
+    gtk_widget_modify_bg(GTK_WIDGET(w), GTK_STATE_INSENSITIVE, c);
+
+    if (GTK_IS_CONTAINER(w))
+        gtk_container_foreach(GTK_CONTAINER(w), (GtkCallback) _modify_bg_recursive, c);
+}
+
+/*****************************************************************************/
+
+static void lb_set_bgcolor(lb_t * lb, gchar * color_s)
+{
+    if (strempty(color_s))
+    {
+        _modify_bg_recursive(lb->plug->pwid, NULL);
+
+        if (lb->bg_color_s)
+        {
+            g_free(lb->bg_color_s);
+            lb->bg_color_s = NULL;
+        }
+        if (lb->bg_color_c.pixel)
+        {
+            gdk_colormap_free_colors(lb->color_map, &lb->bg_color_c, 1);
+            lb->bg_color_c.pixel = 0;
+        }
+        return;
+    }
+
+    if (!lb->color_map)
+        lb->color_map = gdk_drawable_get_colormap(lb->plug->panel->topgwin->window);
+
+    if (!strempty(lb->bg_color_s) && strcmp(lb->bg_color_s, color_s) == 0)
+        return;
+
+    if (lb->bg_color_s)
+    {
+        g_free(lb->bg_color_s);
+        lb->bg_color_s = NULL;
+    }
+    if (lb->bg_color_c.pixel)
+    {
+        gdk_colormap_free_colors(lb->color_map, &lb->bg_color_c, 1);
+        lb->bg_color_c.pixel = 0;
+    }
+
+    lb->bg_color_s = g_strdup(color_s);
+
+    gdk_color_parse(color_s, &lb->bg_color_c);
+    gdk_colormap_alloc_color(lb->color_map, &lb->bg_color_c, FALSE, TRUE);
+    _modify_bg_recursive(lb->plug->pwid, &lb->bg_color_c);
+}
+
+/*****************************************************************************/
+
 static void lb_input(lb_t * lb, input_t * input, gchar * line)
 {
     if (input == &lb->input_title)
@@ -341,18 +403,22 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
 	    }
             else if (g_ascii_strcasecmp(parts[0], "Command1") == 0)
             {
-                 g_free(lb->command1_override);
-                 lb->command1_override = g_strdup(parts[1]);
+                g_free(lb->command1_override);
+                lb->command1_override = g_strdup(parts[1]);
             }
             else if (g_ascii_strcasecmp(parts[0], "Command2") == 0)
             {
-                 g_free(lb->command2_override);
-                 lb->command2_override = g_strdup(parts[1]);
+                g_free(lb->command2_override);
+                lb->command2_override = g_strdup(parts[1]);
             }
             else if (g_ascii_strcasecmp(parts[0], "Command3") == 0)
             {
-                 g_free(lb->command3_override);
-                 lb->command3_override = g_strdup(parts[1]);
+                g_free(lb->command3_override);
+                lb->command3_override = g_strdup(parts[1]);
+            }
+            else if (g_ascii_strcasecmp(parts[0], "BgColor") == 0)
+            {
+                lb_set_bgcolor(lb, parts[1]);
             }
         }
         g_strfreev(parts);
@@ -416,8 +482,12 @@ static void lb_apply_configuration(Plugin * p)
     lb_t * lb = (lb_t *) p->priv;
 
     if (!p->pwid)
-        p->pwid = gtk_event_box_new(),
+    {
+        p->pwid = gtk_event_box_new();
+        //p->pwid = gtk_toggle_button_new();
+        //GTK_WIDGET_UNSET_FLAGS (p->pwid, GTK_NO_WINDOW);
         gtk_widget_show(p->pwid);
+    }
 
     if (!lb->button)
     {
@@ -622,6 +692,17 @@ static void lb_destructor(Plugin * p)
     input_stop(&lb->input_tooltip);
     input_stop(&lb->input_icon);
     input_stop(&lb->input_general);
+
+    if (lb->bg_color_s)
+    {
+        g_free(lb->bg_color_s);
+        lb->bg_color_s = NULL;
+    }
+    if (lb->bg_color_c.pixel)
+    {
+        gdk_colormap_free_colors(lb->color_map, &lb->bg_color_c, 1);
+        lb->bg_color_c.pixel = 0;
+    }
 
     /* Deallocate all memory. */
     g_free(lb->icon_path);

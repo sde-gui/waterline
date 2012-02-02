@@ -781,7 +781,7 @@ static void lb_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_str(fp, "InteractiveUpdateTitle", lb->input_title.command);
     lxpanel_put_str(fp, "InteractiveUpdateTooltip", lb->input_tooltip.command);
     lxpanel_put_str(fp, "InteractiveUpdateIconPath", lb->input_icon.command);
-    lxpanel_put_str(fp, "InteractiveUpdateRestartInterval", lb->input_general.command);
+    lxpanel_put_str(fp, "InteractiveUpdateGeneral", lb->input_general.command);
 }
 
 

@@ -40,5 +40,17 @@ gboolean gtk_widget_get_visible (GtkWidget *widget)
 
 #endif
 
+#if !GTK_CHECK_VERSION(2,20,0)
+
+void gtk_widget_set_realized(GtkWidget *widget, gboolean realized)
+{
+    if (realized) {
+       GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
+    } else {
+       GTK_WIDGET_UNSET_FLAGS (widget, GTK_REALIZED);
+    }
+}
+
+#endif
 
 #endif

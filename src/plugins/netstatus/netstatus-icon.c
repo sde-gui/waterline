@@ -61,8 +61,6 @@ struct _NetstatusIconPrivate
   GtkOrientation  orientation;
   int             size;
 
-  GtkTooltips    *tooltips;
-
   gulong          state_changed_id;
   gulong          name_changed_id;
   gulong          wireless_changed_id;
@@ -370,21 +368,24 @@ netstatus_icon_name_changed (NetstatusIface *iface __attribute__((unused)),
 			     NetstatusIcon  *icon)
 {
   const char *iface_name;
-  const char *tip;
+  const char *tip = "";
   char       *freeme = NULL;
 
-  iface_name = netstatus_iface_get_name (icon->priv->iface);
-  if (iface_name)
-    {
-      freeme = g_strdup_printf (_("Network Connection: %s"), iface_name);
-      tip = freeme;
-    }
-  else
-    {
-      tip = _("Network Connection");
-    }
+  if (icon->priv->tooltips_enabled)
+  {
+     iface_name = netstatus_iface_get_name (icon->priv->iface);
+     if (iface_name)
+     {
+        freeme = g_strdup_printf (_("Network Connection: %s"), iface_name);
+        tip = freeme;
+     }
+     else
+     {
+        tip = _("Network Connection");
+     }
+  }
 
-  gtk_tooltips_set_tip (icon->priv->tooltips, GTK_WIDGET (icon), tip, NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET (icon), tip);
 
   g_free (freeme);
 }
@@ -472,10 +473,6 @@ netstatus_icon_destroy (GtkObject *widget)
   icon->priv->name_changed_id     = 0;
   icon->priv->wireless_changed_id = 0;
   icon->priv->signal_changed_id   = 0;
-
-  if (icon->priv->tooltips)
-    g_object_unref (icon->priv->tooltips);
-  icon->priv->tooltips = NULL;
 
   icon->priv->image = NULL;
 
@@ -873,9 +870,7 @@ netstatus_icon_instance_init (NetstatusIcon      *icon,
   gtk_container_add (GTK_CONTAINER (icon), icon->priv->signal_image);
   gtk_widget_hide (icon->priv->signal_image);
 
-  icon->priv->tooltips = gtk_tooltips_new ();
-  g_object_ref (icon->priv->tooltips);
-  gtk_object_sink (GTK_OBJECT (icon->priv->tooltips));
+  icon->priv->tooltips_enabled = TRUE;
 
   gtk_widget_add_events (GTK_WIDGET (icon),
 			 GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -1063,13 +1058,7 @@ netstatus_icon_set_tooltips_enabled (NetstatusIcon *icon,
   if (icon->priv->tooltips_enabled != enabled)
     {
       icon->priv->tooltips_enabled = enabled;
-
-      if (enabled)
-	gtk_tooltips_enable (icon->priv->tooltips);
-      else
-	gtk_tooltips_disable (icon->priv->tooltips);
-
-      g_object_notify (G_OBJECT (icon), "tooltips-enabled");
+      netstatus_icon_name_changed(NULL, NULL, icon);
     }
 }
 

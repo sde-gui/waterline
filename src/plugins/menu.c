@@ -375,8 +375,11 @@ static void restore_grabs(GtkWidget *w, gpointer data)
 
 static gboolean on_menu_button_press(GtkWidget* mi, GdkEventButton* evt, MenuCacheItem* data)
 {
-    if( evt->button == 3 )  /* right */
+    if( evt->button == 3)  /* right */
     {
+        if (lxpanel_is_in_kiosk_mode())
+            return TRUE;
+
         char* tmp;
         GtkWidget* item;
         GtkMenu* p = GTK_MENU(gtk_menu_new());
@@ -406,6 +409,16 @@ static gboolean on_menu_button_press(GtkWidget* mi, GdkEventButton* evt, MenuCac
     return FALSE;
 }
 
+static gboolean on_menu_button_release(GtkWidget* mi, GdkEventButton* evt, MenuCacheItem* data)
+{
+    if( evt->button == 3)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 static GtkWidget* create_item( MenuCacheItem* item )
 {
     GtkWidget* mi;
@@ -425,6 +438,7 @@ static GtkWidget* create_item( MenuCacheItem* item )
         g_signal_connect(mi, "map", G_CALLBACK(on_menu_item_map), item);
         g_signal_connect(mi, "style-set", G_CALLBACK(on_menu_item_style_set), item);
         g_signal_connect(mi, "button-press-event", G_CALLBACK(on_menu_button_press), item);
+        g_signal_connect(mi, "button-release-event", G_CALLBACK(on_menu_button_release), item);
     }
     gtk_widget_show( mi );
     g_object_set_qdata_full( G_OBJECT(mi), SYS_MENU_ITEM_ID, menu_cache_item_ref(item), (GDestroyNotify) menu_cache_item_unref );

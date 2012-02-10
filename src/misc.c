@@ -35,6 +35,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
+#include <gio/gio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>

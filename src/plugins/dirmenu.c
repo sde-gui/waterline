@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
+#include <gio/gio.h>
 
 #include "panel.h"
 #include "misc.h"

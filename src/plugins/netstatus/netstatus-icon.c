@@ -579,7 +579,7 @@ netstatus_icon_scale_icons (NetstatusIcon  *icon,
 static inline GObjectClass *
 get_box_class (GtkOrientation orientation)
 {
-  return gtk_type_class (orientation == GTK_ORIENTATION_HORIZONTAL ? GTK_TYPE_HBOX : GTK_TYPE_VBOX);
+  return g_type_class_ref (orientation == GTK_ORIENTATION_HORIZONTAL ? GTK_TYPE_HBOX : GTK_TYPE_VBOX);
 }
 
 static void
@@ -593,6 +593,8 @@ netstatus_icon_size_request (GtkWidget      *widget,
 
   if (GTK_WIDGET_CLASS (klass)->size_request)
     GTK_WIDGET_CLASS (klass)->size_request (widget, requisition);
+
+  g_type_class_unref (klass);
 }
 
 static void
@@ -634,6 +636,8 @@ netstatus_icon_size_allocate (GtkWidget     *widget,
 
   if (GTK_WIDGET_CLASS (klass)->size_allocate)
     GTK_WIDGET_CLASS (klass)->size_allocate (widget, &child_allocation);
+
+  g_type_class_unref (klass);
 
   widget->allocation = *allocation;
 }

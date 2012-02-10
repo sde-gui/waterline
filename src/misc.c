@@ -808,7 +808,7 @@ static GdkPixbuf * load_icon_from_theme(GtkIconTheme * theme, const char * icon_
 
     /* Look up the icon in the current theme. */
     GtkIconInfo * icon_info = NULL;
-
+#if GLIB_CHECK_VERSION(2,20,0)
     if (icon_name && strlen(icon_name) > 7 && memcmp("GIcon ", icon_name, 6) == 0)
     {
         GIcon * gicon = g_icon_new_for_string(icon_name + 6, NULL);
@@ -816,6 +816,7 @@ static GdkPixbuf * load_icon_from_theme(GtkIconTheme * theme, const char * icon_
         g_object_unref(G_OBJECT(gicon));
     }
     else
+#endif
     {
         icon_info = gtk_icon_theme_lookup_icon(theme, icon_name, height, GTK_ICON_LOOKUP_USE_BUILTIN);
     }
@@ -981,6 +982,7 @@ void show_error( GtkWindow* parent_win, const char* msg )
 
 void bring_to_current_desktop(GtkWidget * win)
 {
+#if GTK_CHECK_VERSION(2,14,0)
     GdkWindow * gdk_window = gtk_widget_get_window(win);
     Window w = GDK_WINDOW_XID(gdk_window);
     int window_desktop = get_net_wm_desktop(w);
@@ -989,6 +991,7 @@ void bring_to_current_desktop(GtkWidget * win)
     {
         set_net_wm_desktop(w, current_desktop);
     }
+#endif
     gtk_window_present(GTK_WINDOW(win));
 }
 

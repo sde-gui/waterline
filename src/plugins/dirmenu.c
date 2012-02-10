@@ -288,6 +288,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         /* Create and initialize menu item. */
         GtkWidget * item = gtk_image_menu_item_new_with_label(dir_cursor->file_name);
 
+/* FIXME: should we implement gtk_image_new_from_gicon to make show_icons option available on glib<2.20? */
+#if GLIB_CHECK_VERSION(2,20,0)
         if (dm->show_icons)
         {
             GFile * file = g_file_new_for_path(dir_cursor->path);
@@ -306,6 +308,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             g_object_unref(G_OBJECT(file));
         }
         else
+#endif
         {
             gtk_image_menu_item_set_image(
                 GTK_IMAGE_MENU_ITEM(item),
@@ -368,6 +371,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         }
         gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), item);
 
+#if GLIB_CHECK_VERSION(2,20,0)
         if (dm->show_icons)
         {
             GFile * file = g_file_new_for_path(file_cursor->path);
@@ -385,7 +389,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             g_object_unref(G_OBJECT(file_info));
             g_object_unref(G_OBJECT(file));
         }
-
+#endif
         /* Unlink and free file name element, but reuse the file path. */
         g_object_set_data_full(G_OBJECT(item), "path", file_cursor->path, g_free);
         file_list = file_cursor->flink;
@@ -565,7 +569,8 @@ static void dirmenu_apply_configuration(Plugin * p)
     DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
 
     gchar * icon_name = NULL;
-
+    
+#if GLIB_CHECK_VERSION(2,20,0)
     if (!dm->image)
     {
 	GFile * file = g_file_new_for_path( ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()) );
@@ -584,6 +589,8 @@ static void dirmenu_apply_configuration(Plugin * p)
 	g_object_unref(G_OBJECT(file_info));
 	g_object_unref(G_OBJECT(file));
     }
+#endif
+
 
     fb_button_set_from_file(p->pwid,
         ((dm->image != NULL) ? dm->image : (icon_name != NULL) ? icon_name : "file-manager"),

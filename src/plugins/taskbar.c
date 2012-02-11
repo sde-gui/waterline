@@ -1489,14 +1489,14 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         tk->backing_pixmap = 0;
     }
 
-    Status status;
+    //Status status;
 
     gboolean skip = tk->iconified && tk->shaded;
     if (!skip)
     {
         XWindowAttributes window_attributes;
         window_attributes.map_state = IsUnmapped;
-        status = XGetWindowAttributes(GDK_DISPLAY(), tk->win, &window_attributes);
+        /*status =*/ XGetWindowAttributes(GDK_DISPLAY(), tk->win, &window_attributes);
         if (window_attributes.map_state == IsUnmapped)
         {
             skip = TRUE;
@@ -1513,7 +1513,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         Window *children_return = NULL;
         unsigned int nchildren_return;
 
-        status = XQueryTree(GDK_DISPLAY(), w, &root_return, &parent_return, &children_return, &nchildren_return);
+        /*status =*/ XQueryTree(GDK_DISPLAY(), w, &root_return, &parent_return, &children_return, &nchildren_return);
         if (children_return)
             XFree(children_return);
 
@@ -1529,7 +1529,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         {
             XWindowAttributes window_attributes;
             window_attributes.map_state = IsUnmapped;
-            status = XGetWindowAttributes(GDK_DISPLAY(), w, &window_attributes);
+            /*status =*/ XGetWindowAttributes(GDK_DISPLAY(), w, &window_attributes);
             if (window_attributes.map_state != IsUnmapped)
             {
                 tk->backing_pixmap = XCompositeNameWindowPixmap(GDK_DISPLAY(), w);
@@ -1595,10 +1595,10 @@ static gboolean task_update_composite_thumbnail_timeout(Task * tk)
     RET(TRUE);
 }
 
-static task_update_composite_thumbnail(Task * tk)
+static void task_update_composite_thumbnail(Task * tk)
 {
     if (!tk->tb->thumbnails)
-        return FALSE;
+        return;
 
     tk->require_update_composite_thumbnail = TRUE;
 
@@ -1836,7 +1836,7 @@ static void task_set_urgency(Task * tk)
     TaskbarPlugin * tb = tk->tb;
     TaskClass * tc = tk->task_class;
     if (task_is_folded(tk))
-        recompute_group_visibility_for_class(tk->tb, tc);
+        recompute_group_visibility_for_class(tb, tc);
     else
     {
         /* Set the flashing context and flash the window immediately. */
@@ -1855,7 +1855,7 @@ static void task_clear_urgency(Task * tk)
     TaskbarPlugin * tb = tk->tb;
     TaskClass * tc = tk->task_class;
     if (task_is_folded(tk))
-        recompute_group_visibility_for_class(tk->tb, tc);
+        recompute_group_visibility_for_class(tb, tc);
     else
     {
         /* Remove the timer if one is set. */
@@ -2294,11 +2294,13 @@ static void preview_panel_size_allocate(GtkWidget * w, GtkAllocation * alloc, Ta
 static gboolean preview_panel_enter(GtkWidget * widget, GdkEvent * event, TaskbarPlugin * tb)
 {
     taskbar_check_hide_popup(tb);
+    return FALSE;
 }
 
 static gboolean preview_panel_leave(GtkWidget * widget, GdkEvent * event, TaskbarPlugin * tb)
 {
     taskbar_check_hide_popup(tb);
+    return FALSE;
 }
 
 static gboolean preview_panel_press_event(GtkWidget * widget, GdkEventButton * event, Task * tk)
@@ -2770,7 +2772,6 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
 
     /* Do real work. */
 
-    TaskClass * tc = tk->task_class;
     if (task_is_folded(tk) && (!popup_menu))
     {
         /* If this is a grouped-task representative, meaning that there is a class with at least two windows,
@@ -3436,7 +3437,6 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
         {
             /* Search for the window in the task list.  Set up context to do an insert right away if needed. */
             Task * tk_pred = NULL;
-            Task * tk_cursor;
             Task * tk = task_lookup(tb, client_list[i]);
 
             /* Task is already in task list. */
@@ -3727,7 +3727,7 @@ static void taskbar_net_desktop_names(FbEv * fbev, TaskbarPlugin * tb)
 {
     if (tb->desktop_names != NULL)
         g_strfreev(tb->desktop_names),
-        tb->desktop_names;
+        tb->desktop_names = NULL;
 
     /* Get the NET_DESKTOP_NAMES property. */
     tb->desktop_names = get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &tb->number_of_desktop_names);
@@ -4536,7 +4536,6 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     {
         tb->dimm_iconified_prev = tb->dimm_iconified;
         Task * tk;
-        int position = 0;
         for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         {
             tk->deferred_iconified_update = TRUE;

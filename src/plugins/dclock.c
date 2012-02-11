@@ -451,9 +451,9 @@ static void dclock_apply_configuration(Plugin * p)
     }
 
     if (dc->center_text)
-        gtk_label_set_justify(dc->clock_label, GTK_JUSTIFY_CENTER);
+        gtk_label_set_justify(GTK_LABEL(dc->clock_label), GTK_JUSTIFY_CENTER);
     else
-        gtk_label_set_justify(dc->clock_label, GTK_JUSTIFY_LEFT);
+        gtk_label_set_justify(GTK_LABEL(dc->clock_label), GTK_JUSTIFY_LEFT);
 
     /* Rerun the experiment to determine update interval and update the display. */
     g_free(dc->prev_clock_value);

@@ -1464,10 +1464,10 @@ static gboolean task_update_thumbnail_preview_real(Task * tk)
     RET(FALSE);
 }
 
-static task_update_thumbnail_preview(Task * tk)
+static void task_update_thumbnail_preview(Task * tk)
 {
     if (!tk->tb->thumbnails)
-        return FALSE;
+        return;
 
     if (tk->update_thumbnail_preview_idle == 0)
         tk->update_thumbnail_preview_idle = g_idle_add((GSourceFunc) task_update_thumbnail_preview_real, tk);

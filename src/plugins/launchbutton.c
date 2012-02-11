@@ -23,6 +23,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
+#include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -110,8 +111,10 @@ static int _set_nonblocking(int fd)
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }     
 
-static gboolean input_on_child_input(GIOChannel *source, GIOCondition condition, input_t * input)
+static gboolean input_on_child_input(GIOChannel *source, GIOCondition condition, gpointer _input)
 {
+    input_t * input = _input;
+
     int i;
 
     if (!source)
@@ -196,13 +199,14 @@ static gboolean input_on_child_input(GIOChannel *source, GIOCondition condition,
     return input->eof ? FALSE : TRUE;
 }
 
-static void input_on_child_exit(GPid pid, gint status, input_t * input)
+static void input_on_child_exit(GPid pid, gint status, gpointer _input)
 {
+    input_t * input = _input;
     input->child_pid = 0;
     input_on_child_input(input->input_channel, 0, input);
 }
 
-static input_stop(input_t * input)
+static void input_stop(input_t * input)
 {
     if (input->input_source_id)
     {
@@ -251,7 +255,7 @@ static input_stop(input_t * input)
 
 }
 
-static input_start(input_t * input)
+static void input_start(input_t * input)
 {
     input_stop(input);
 

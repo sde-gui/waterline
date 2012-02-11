@@ -62,6 +62,7 @@ GtkWidget * fb_button_new_from_file_with_label(
     gchar * image_file, int width, int height, gulong highlight_color, gboolean keep_ratio, Panel * panel, gchar * label);
 void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation);
 void fb_button_set_from_file(GtkWidget* btn, const char* img_file, gint width, gint height, gboolean keep_ratio);
+void fb_button_set_label(GtkWidget * btn, Panel * panel, gchar * label);
 
 char* translate_exec_to_cmd( const char* exec, const char* icon,
                              const char* title, const char* fpath );

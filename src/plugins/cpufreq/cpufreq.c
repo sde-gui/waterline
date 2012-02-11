@@ -67,7 +67,7 @@ get_cur_governor(cpufreq *cf){
     FILE *fp;
     char buf[ 100 ], sstmp [ 256 ];
 
-    sprintf(sstmp,"%s/%s",cf->cpus->data, SCALING_GOV);
+    sprintf(sstmp,"%s/%s", (char *)cf->cpus->data, SCALING_GOV);
     if ((fp = fopen( sstmp, "r")) != NULL) {
         fgets(buf, 100, fp);
         buf[strlen(buf)-1] = '\0';
@@ -86,7 +86,7 @@ get_cur_freq(cpufreq *cf){
     FILE *fp;
     char buf[ 100 ], sstmp [ 256 ];
 
-    sprintf(sstmp,"%s/%s",cf->cpus->data, SCALING_CUR_FREQ);
+    sprintf(sstmp,"%s/%s", (char *)cf->cpus->data, SCALING_CUR_FREQ);
     if ((fp = fopen( sstmp, "r")) != NULL) {
         fgets(buf, 100, fp);
         buf[strlen(buf)-1] = '\0';
@@ -98,8 +98,8 @@ get_cur_freq(cpufreq *cf){
 static void
 get_governors(cpufreq *cf){
     FILE *fp;
-    GList *l;
-    char buf[ 100 ], sstmp [ 256 ], c, bufl = 0;
+    char buf[ 100 ], sstmp [ 256 ], c;
+    int bufl = 0;
 
     g_list_free(cf->governors);
     cf->governors = NULL;
@@ -110,7 +110,7 @@ get_governors(cpufreq *cf){
         cf->governors = NULL;
         return;
     }
-    sprintf(sstmp,"%s/%s",cf->cpus->data, SCALING_AGOV);
+    sprintf(sstmp,"%s/%s", (char *)cf->cpus->data, SCALING_AGOV);
 
     if (!(fp = fopen( sstmp, "r"))) {
         printf("cpufreq: cannot open %s\n",sstmp);
@@ -136,11 +136,11 @@ get_governors(cpufreq *cf){
 static void
 cpufreq_set_freq(GtkWidget *widget, Param* p){
     FILE *fp;
-    char buf[ 100 ], sstmp [ 256 ];
+    char sstmp [ 256 ];
 
     if(strcmp(p->cf->cur_governor, "userspace")) return;
 
-    sprintf(sstmp,"%s/%s",p->cf->cpus->data, SCALING_SETFREQ);
+    sprintf(sstmp,"%s/%s", (char *)p->cf->cpus->data, SCALING_SETFREQ);
     if ((fp = fopen( sstmp, "w")) != NULL) {
         fprintf(fp,"%s",p->data);
         fclose(fp);
@@ -151,9 +151,10 @@ static GtkWidget *
 frequency_menu(cpufreq *cf){
     FILE *fp;
     Param* param;
-    char buf[ 100 ], sstmp [ 256 ], c, bufl = 0;
+    char buf[ 100 ], sstmp [ 256 ], c;
+    int bufl = 0;
 
-    sprintf(sstmp,"%s/%s",cf->cpus->data, SCALING_AFREQ);
+    sprintf(sstmp,"%s/%s", (char *)cf->cpus->data, SCALING_AFREQ);
 
     if (!(fp = fopen( sstmp, "r"))) {
         printf("cpufreq: cannot open %s\n",sstmp);
@@ -167,14 +168,14 @@ frequency_menu(cpufreq *cf){
         if(c == ' '){
             if(bufl > 1){
                 buf[bufl] = '\0';
-                menuitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label(strdup(buf)));
+                menuitem = GTK_WIDGET(gtk_menu_item_new_with_label(strdup(buf)));
                 gtk_menu_append (GTK_MENU_SHELL (menu), menuitem);
                 gtk_widget_show (menuitem);
                 param = g_new0(Param, 1);
                 param->data = strdup(buf);
                 param->cf = cf;
                 g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(cpufreq_set_freq), param);
-                g_object_weak_ref(menuitem, g_free, param);
+                g_object_weak_ref(G_OBJECT(menuitem), g_free, param);
             }
             bufl = 0;
             buf[0] = '\0';
@@ -229,7 +230,7 @@ cpufreq_set_governor(GtkWidget *widget, Param* p){
     FILE *fp;
     char buf[ 100 ], sstmp [ 256 ];
 
-    sprintf(sstmp, "%s/%s", p->cf->cpus->data, SCALING_GOV);
+    sprintf(sstmp, "%s/%s", (char *)p->cf->cpus->data, SCALING_GOV);
     if ((fp = fopen( sstmp, "w")) != NULL) {
         fprintf(fp,"%s",p->data);
         fclose(fp);

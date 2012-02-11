@@ -94,7 +94,7 @@ get_cur_freq(cpufreq *cf){
         fclose(fp);
     }
 }
-
+/*
 static void
 get_governors(cpufreq *cf){
     FILE *fp;
@@ -191,7 +191,7 @@ frequency_menu(cpufreq *cf){
     fclose(fp);
     return GTK_WIDGET(menu);
 }
-
+*/
 static void
 get_cpus(cpufreq *cf)
 {
@@ -229,6 +229,7 @@ get_cpus(cpufreq *cf)
     g_dir_close(cpuDirectory);
 }
 
+/*
 static void
 cpufreq_set_governor(GtkWidget *widget, Param* p){
     FILE *fp;
@@ -246,6 +247,7 @@ void on_cpufreq_menu_selection_done(GtkMenuShell *menushell, gpointer user_data)
 {
     gtk_widget_destroy(GTK_WIDGET(menushell));
 }
+
 
 static GtkWidget *
 cpufreq_menu(cpufreq *cf){
@@ -297,8 +299,7 @@ cpufreq_menu(cpufreq *cf){
 
     return GTK_WIDGET (menu);
 }
-
-
+*/
 
 static  gboolean
 clicked( GtkWidget *widget, GdkEventButton* evt, Plugin* plugin)
@@ -435,7 +436,7 @@ cpufreq_destructor(Plugin *p)
     g_source_remove(cf->timer);
     g_free(cf);
 }
-
+/*
 static void save_config( Plugin* p, FILE* fp )
 {
     cpufreq *cf = (cpufreq *)p->priv;
@@ -444,7 +445,7 @@ static void save_config( Plugin* p, FILE* fp )
     lxpanel_put_str( fp, "Governor", cf->cur_governor );
     lxpanel_put_int( fp, "Frequency", cf->cur_freq );
 }
-
+*/
 PluginClass cpufreq_plugin_class = {
     PLUGINCLASS_VERSIONING,
 

@@ -124,8 +124,6 @@ get_temperature(thermal *th){
 static gint
 update_display(thermal *th)
 {
-    char buffer [60];
-    int n;
     int temp = get_temperature(th);
     GdkColor color;
 
@@ -141,12 +139,15 @@ update_display(thermal *th)
         panel_draw_label_text(th->plugin->panel, th->namew, "NA", TRUE, TRUE);
     else
     {
-        n = sprintf(buffer, "<span color=\"#%06x\"><b>%02d</b></span>", gcolor2rgb24(&color), temp);
-        gtk_label_set_markup (GTK_LABEL(th->namew), buffer) ;
+        gchar * buffer = g_strdup_printf("<span color=\"#%06x\"><b>%02d</b></span>", gcolor2rgb24(&color), temp);
+        gtk_label_set_markup (GTK_LABEL(th->namew), buffer);
+        g_free(buffer);
     }
 
     RET(TRUE);
 }
+
+/* FIXME: поменять здесь везде работу с char[] и sprintf на gchar* и g_strdup_printf. */
 
 static void
 check_sensors( thermal* th )

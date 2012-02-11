@@ -159,4 +159,6 @@ extern const char* lxpanel_get_logout_command();
 extern const char* lxpanel_get_file_manager();
 extern const char* lxpanel_get_terminal();
 
+int lxpanel_is_in_kiosk_mode(void);
+
 #endif

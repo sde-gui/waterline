@@ -18,6 +18,7 @@
 
 #include "pixbuf-stuff.h"
 #include "gtkcompat.h"
+#include <gdk/gdkx.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 
 //#define PIXBUF_INTERP GDK_INTERP_NEAREST

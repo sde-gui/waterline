@@ -24,7 +24,7 @@
 #include <string.h>
 
 #include "Xsupport.h"
-
+#include "pixbuf-stuff.h"
 #include "dbg.h"
 
 
@@ -1123,7 +1123,6 @@ GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height
     /* The result. */
     GdkPixbuf * pixmap = NULL;
     Atom possible_source = None;
-    int result = -1;
 
     Atom kwin_win_icon_atom = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
 

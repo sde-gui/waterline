@@ -129,7 +129,7 @@ static PluginClass * plugin_load_dynamic(const char * type, const gchar * path)
     PluginClass * pc = NULL;
 
     /* Load the external module. */
-    GModule * m = g_module_open(path, G_MODULE_BIND_LAZY);
+    GModule * m = g_module_open(path, 0);
     if (m != NULL)
     {
         /* Formulate the name of the expected external variable of type PluginClass. */
@@ -152,6 +152,10 @@ static PluginClass * plugin_load_dynamic(const char * type, const gchar * path)
         /* Register the newly loaded and valid plugin. */
         pc->gmodule = m;
         register_plugin_class(pc, TRUE);
+    }
+    else
+    {
+        ERR("%s: %s\n", path, g_module_error());
     }
     return pc;
 }

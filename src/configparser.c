@@ -21,6 +21,8 @@
 #include "panel.h"
 #include "dbg.h"
 #include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 pair allign_pair[] = {
     { ALLIGN_NONE, "none" },
@@ -179,7 +181,7 @@ lxpanel_put_int( FILE* fp, const char* name, int val )
 extern int
 lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair)
 {
-    lxpanel_put_str(fp, name, num2str(pair, val, NULL));
+    return lxpanel_put_str(fp, name, num2str(pair, val, NULL));
 }
 
 extern  int

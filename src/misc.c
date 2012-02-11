@@ -44,7 +44,7 @@
 
 #include "misc.h"
 #include "panel.h"
-
+#include "Xsupport.h"
 #include "dbg.h"
 
 /********************************************************************/
@@ -407,7 +407,7 @@ void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation)
     GtkWidget * child = gtk_bin_get_child(GTK_BIN(btn));
     if (GTK_IS_BOX(child))
     {
-        GtkBox *  newbox = GTK_BOX(recreate_box(child, orientation));
+        GtkBox *  newbox = GTK_BOX(recreate_box(GTK_BOX(child), orientation));
         if (GTK_WIDGET(newbox) != child)
         {
             gtk_container_add(GTK_CONTAINER(btn), GTK_WIDGET(newbox));
@@ -610,11 +610,11 @@ guint32 gcolor2rgb24(GdkColor *color)
     b = color->blue * 0xFF / 0xFFFF;
     DBG("%x %x %x ==> %x %x %x\n", color->red, color->green, color->blue, r, g, b);
 
-    i = (color->red * 0xFF / 0xFFFF) & 0xFF;
+    i = r & 0xFF;
     i <<= 8;
-    i |= (color->green * 0xFF / 0xFFFF) & 0xFF;
+    i |= g & 0xFF;
     i <<= 8;
-    i |= (color->blue * 0xFF / 0xFFFF) & 0xFF;
+    i |= b & 0xFF;
     DBG("i=%x\n", i);
     RET(i);
 }

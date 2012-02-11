@@ -34,6 +34,7 @@
 
 #include "dbg.h"
 
+void panel_config_save(Panel* panel);
 
 static void notify_apply_config( GtkWidget* widget )
 {

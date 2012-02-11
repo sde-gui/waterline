@@ -84,7 +84,7 @@ static void dirmenu_show_menu(GtkWidget * widget, Plugin * p, int btn, guint32 t
 static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * event, Plugin * p);
 static int dirmenu_constructor(Plugin * p, char ** fp);
 static void dirmenu_destructor(Plugin * p);
-static void dirmenu_apply_configuration_to_children(GtkWidget * w, DirMenuPlugin * dm);
+//static void dirmenu_apply_configuration_to_children(GtkWidget * w, DirMenuPlugin * dm);
 static void dirmenu_apply_configuration(Plugin * p);
 static void dirmenu_configure(Plugin * p, GtkWindow * parent);
 static void dirmenu_save_configuration(Plugin * p, FILE * fp);
@@ -301,7 +301,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             GIcon * icon = g_file_info_get_icon(file_info);
             if (icon)
             {
-                GtkImage * img = gtk_image_new_from_gicon(icon, GTK_ICON_SIZE_MENU);
+                GtkWidget * img = gtk_image_new_from_gicon(icon, GTK_ICON_SIZE_MENU);
                 gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(item), img);
             }
             g_object_unref(G_OBJECT(file_info));
@@ -347,7 +347,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
     if (file_list_count > dm->max_file_count && not_empty_file_list)
     {
         GtkWidget * item = gtk_menu_item_new_with_mnemonic( _("Files") );
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_MENU_ITEM(item));
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(item));
         GtkWidget * submenu = gtk_menu_new();
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
         filemenu = submenu;
@@ -383,7 +383,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             GIcon * icon = g_file_info_get_icon(file_info);
             if (icon)
             {
-                GtkImage * img = gtk_image_new_from_gicon(icon, GTK_ICON_SIZE_MENU);
+                GtkWidget * img = gtk_image_new_from_gicon(icon, GTK_ICON_SIZE_MENU);
                 gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(item), img);
             }
             g_object_unref(G_OBJECT(file_info));

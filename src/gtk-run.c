@@ -191,7 +191,7 @@ static gboolean on_thread_finished(ThreadData* data)
 
 static gpointer thread_func(ThreadData* data)
 {
-    GSList *list = NULL, *l;
+    GSList *list = NULL;
     gchar **dirname;
     gchar **dirnames = g_strsplit( g_getenv("PATH"), ":", 0 );
 
@@ -355,7 +355,7 @@ void gtk_run()
     if( menu_cache )
     {
         app_list = (GSList*)menu_cache_list_all_apps(menu_cache);
-        reload_notify_id = menu_cache_add_reload_notify(menu_cache, reload_apps, NULL);
+        reload_notify_id = menu_cache_add_reload_notify(menu_cache, (GFunc)reload_apps, NULL);
     }
 
     gtk_window_present(GTK_WINDOW(win));

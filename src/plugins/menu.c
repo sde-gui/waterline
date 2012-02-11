@@ -553,7 +553,7 @@ static void sys_menu_insert_items( menup* m, GtkMenu* menu, int position )
         /* add a place holder */
         GtkWidget* mi = gtk_menu_item_new();
         g_object_set_qdata( G_OBJECT(mi), SYS_MENU_ITEM_ID, GINT_TO_POINTER(1) );
-        gtk_menu_shell_insert(menu, mi, position);
+        gtk_menu_shell_insert(GTK_MENU_SHELL(menu), mi, position);
     }
 
     change_handler = g_signal_connect_swapped( gtk_icon_theme_get_default(), "changed", G_CALLBACK(unload_old_icons), menu );
@@ -568,7 +568,7 @@ reload_system_menu( menup* m, GtkMenu* menu )
     GtkMenuItem* item;
     GtkWidget* sub_menu;
     gint idx;
-    gboolean found = FALSE;
+    //gboolean found = FALSE;
 
     children = gtk_container_get_children( GTK_CONTAINER(menu) );
     for( child = children, idx = 0; child; child = child->next, ++idx )
@@ -585,7 +585,7 @@ reload_system_menu( menup* m, GtkMenu* menu )
             sys_menu_insert_items( m, menu, idx );
             if( ! child )
                 break;
-            found = TRUE;
+            //found = TRUE;
         }
         else if( ( sub_menu = gtk_menu_item_get_submenu( item ) ) )
         {
@@ -870,7 +870,6 @@ read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
 
     GtkWidget      *recent_menu;
     GtkWidget      *menu_item;
-    int             size;
 
     menu_item = gtk_image_menu_item_new_with_label(_("Recent Documents"));
     recent_menu = gtk_recent_chooser_menu_new_for_manager(rm);

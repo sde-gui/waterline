@@ -41,7 +41,6 @@ typedef struct {
     Plugin * plugin;
     GtkWidget *main;
     GtkWidget *namew;
-    GtkTooltips *tip;
     int critical;
     int warning1;
     int warning2;
@@ -196,7 +195,6 @@ thermal_constructor(Plugin *p, char** fp)
     gtk_container_add(GTK_CONTAINER(p->pwid), th->namew);
 
     th->main = p->pwid;
-    th->tip  = gtk_tooltips_new();
 
     g_signal_connect (G_OBJECT (p->pwid), "button_press_event",
           G_CALLBACK (plugin_button_press_event), (gpointer) p);

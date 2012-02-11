@@ -47,7 +47,6 @@
 typedef struct {
     GtkWidget *main;
     GtkWidget *namew;
-    GtkTooltips *tip;
     GList *governors;
     GList *cpus;
     int has_cpufreq;
@@ -333,7 +332,7 @@ update_tooltip(cpufreq *cf)
 
     tooltip = g_strdup_printf("Frequency: %d MHz\nGovernor: %s", 
                               cf->cur_freq / 1000, cf->cur_governor);
-    gtk_tooltips_set_tip(cf->tip, cf->main, tooltip, NULL);
+    gtk_widget_set_tooltip_text(cf->main, tooltip);
     g_free(tooltip);
     RET(TRUE);
 }
@@ -359,14 +358,6 @@ cpufreq_constructor(Plugin *p, char** fp)
     gtk_container_add(GTK_CONTAINER(p->pwid), cf->namew);
 
     cf->main = p->pwid;
-    cf->tip = gtk_tooltips_new();
-
-#if GLIB_CHECK_VERSION( 2, 10, 0 )
-    g_object_ref_sink( cf->tip );
-#else
-    g_object_ref( cf->tip );
-    gtk_object_sink( cf->tip );
-#endif
 
     g_signal_connect (G_OBJECT (p->pwid), "button_press_event", G_CALLBACK (clicked), (gpointer) p);
 

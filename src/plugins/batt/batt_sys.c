@@ -35,16 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-battery* battery_new() {
-    static int battery_num = 1;
-    battery * b = g_new0 ( battery, 1 );
-    battery_reset(b);
-    b->battery_num = battery_num;
-    battery_num++;
-    return b;
-}
-
-void battery_reset( battery * b) {
+static void battery_reset( battery * b) {
     b->type_battery = TRUE;
     b->capacity_unit = "mAh";
     b->last_capacity_unit = -1;
@@ -58,6 +49,14 @@ void battery_reset( battery * b) {
     b->state = NULL;
 }
 
+battery* battery_new() {
+    static int battery_num = 1;
+    battery * b = g_new0 ( battery, 1 );
+    battery_reset(b);
+    b->battery_num = battery_num;
+    battery_num++;
+    return b;
+}
 
 static gchar* parse_info_file(char *filename)
 {

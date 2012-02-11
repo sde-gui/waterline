@@ -403,13 +403,13 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gpointer not_used)
             remoute_command_argv = get_utf8_property_list(GDK_ROOT_WINDOW(), a_LXPANEL_TEXT_CMD, &remoute_command_argc);
             if (remoute_command_argc > 0 && remoute_command_argv)
             {
-                char b[1];
+                unsigned char b[1];
                 XChangeProperty (GDK_DISPLAY(), GDK_ROOT_WINDOW(), a_LXPANEL_TEXT_CMD, XA_STRING, 8, PropModeReplace, b, 0);
                 process_command(remoute_command_argv, remoute_command_argc);
             }
             g_strfreev(remoute_command_argv);
         }
-        else if (at = a_NET_SUPPORTED)
+        else if (at == a_NET_SUPPORTED)
         {
             update_net_supported();
         }
@@ -1246,6 +1246,7 @@ void panel_visibility_conditions_changed( Panel* p )
 static gboolean panel_enter(GtkImage *widget, GdkEventCrossing *event, Panel *p)
 {
     panel_visibility_conditions_changed(p);
+    return FALSE;
 }
 
 static gboolean panel_drag_motion(GtkWidget *widget, GdkDragContext *drag_context, gint x,

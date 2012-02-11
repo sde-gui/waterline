@@ -200,9 +200,10 @@ fb_ev_new()
 static void
 fb_ev_finalize (GObject *object)
 {
+/*
     FbEv *ev;
 
-    ev = FB_EV (object);
+    ev = FB_EV (object);*/
     //XFreeGC(ev->dpy, ev->gc);
 }
 

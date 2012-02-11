@@ -24,25 +24,27 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
+
 #if !GTK_CHECK_VERSION(2,18,0)
 
-static
+static inline
 void gtk_widget_set_visible(GtkWidget *widget, gboolean visible)
 {
     (visible ? gtk_widget_show : gtk_widget_hide)(widget);
 }
 
-static
+static inline
 gboolean gtk_widget_get_visible (GtkWidget *widget)
 {
     return GTK_WIDGET_VISIBLE(widget) ? TRUE : FALSE;
 }
 
 #endif
-/*
+
+
 #if !GTK_CHECK_VERSION(2,20,0)
 
-static
+static inline
 void gtk_widget_set_realized(GtkWidget *widget, gboolean realized)
 {
     if (realized) {
@@ -53,10 +55,11 @@ void gtk_widget_set_realized(GtkWidget *widget, gboolean realized)
 }
 
 #endif
-*/
+
+
 #if !GTK_CHECK_VERSION(2,24,0)
 
-static
+static inline
 void gdk_pixmap_get_size(GdkPixmap *pixmap, gint *width, gint *height)
 {
     gdk_drawable_get_size(pixmap, width, height);

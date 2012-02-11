@@ -22,6 +22,7 @@
 
 #include <config.h>
 
+#include "gtkcompat.h"
 #include "netstatus-icon.h"
 
 #include <gtk/gtk.h>

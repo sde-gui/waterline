@@ -1,0 +1,16 @@
+#!/bin/sh
+
+IFACE="$1"
+
+IFACE_PATH="/sys/class/net/${IFACE}/device/"
+
+[ -e "$IFACE_PATH" ] || exit 0
+#[ -h "$IFACE_PATH" ] || exit 0
+
+IFACE_PATH="`readlink -f "$IFACE_PATH"`"
+
+[ -d "$IFACE_PATH" ] || exit 0
+
+DEVICEID="`basename "$IFACE_PATH"`"
+
+lspci -vnn -s "$DEVICEID" | grep -v 'access denied'

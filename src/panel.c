@@ -514,7 +514,6 @@ void panel_update_background(Panel * p)
         if (pl->pwid != NULL)
             plugin_widget_set_background(pl->pwid, p);
     }
-
 }
 
 static gboolean delay_update_background( Panel* p )

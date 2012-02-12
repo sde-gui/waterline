@@ -88,6 +88,9 @@ typedef struct
   GtkWidget      *dev_type;
   GtkWidget      *dev_addr;
 
+  GtkWidget      *dev_info_frame;
+  GtkWidget      *dev_info;
+
   guint           iface_list_monitor;
   int             n_ifaces;
 } NetstatusDialogData;
@@ -334,7 +337,23 @@ netstatus_dialog_update_device_support (NetstatusDialogData *data)
       gtk_widget_hide (data->dev_frame);
     }
 }
+/*
+static void
+netstatus_dialog_update_device_info (NetstatusDialogData *data)
+{
+  gchar *info = netstatus_iface_get_device_info (data->iface);
 
+  if (info && strlen(info))
+  {
+    gtk_widget_show (data->dev_info_frame);
+    gtk_label_set_text (GTK_LABEL (data->dev_info), info);
+  }
+  else
+  {
+    gtk_widget_hide (data->dev_info_frame);
+  }
+}
+*/
 static void
 netstatus_dialog_iface_state_changed (NetstatusIface      *iface,
 				      GParamSpec          *pspec,
@@ -343,6 +362,7 @@ netstatus_dialog_iface_state_changed (NetstatusIface      *iface,
   netstatus_dialog_update_state (data);
   netstatus_dialog_update_inet4_support (data);
   netstatus_dialog_update_device_support (data);
+  //netstatus_dialog_update_device_info (data);
 }
 
 static void
@@ -701,7 +721,15 @@ netstatus_dialog_setup_device_support (NetstatusDialogData *data)
   
   netstatus_dialog_update_device_support (data);
 }
-
+/*
+static void
+netstatus_dialog_setup_device_info (NetstatusDialogData *data)
+{
+  data->dev_info_frame = (GtkWidget*)gtk_builder_get_object(data->builder, "dev_info_frame");
+  data->dev_info       = (GtkWidget*)gtk_builder_get_object(data->builder, "dev_info_label");
+  netstatus_dialog_update_device_info (data);
+}
+*/
 static void
 netstatus_dialog_set_icon (GtkWidget *dialog)
 {

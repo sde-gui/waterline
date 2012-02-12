@@ -80,6 +80,8 @@ struct _NetstatusIfacePrivate
 
   guint           error_polling : 1;
   guint           is_wireless : 1;
+
+  char           *device_info;
 };
 
 static void     netstatus_iface_instance_init   (NetstatusIface      *iface,
@@ -198,6 +200,9 @@ static void
 netstatus_iface_finalize (GObject *object)
 {
   NetstatusIface *iface = (NetstatusIface *) object;
+
+  if (iface->priv->device_info)
+    g_free (iface->priv->device_info);
 
   if (iface->priv->error)
     g_error_free (iface->priv->error);
@@ -671,7 +676,23 @@ netstatus_iface_init_monitor (NetstatusIface *iface)
       netstatus_iface_monitor_timeout (iface);
     }
 }
+/*
+gchar *
+netstatus_iface_get_device_info(NetstatusIface  *iface)
+{
+  if (!iface->priv->name)
+    return NULL;
 
+  if (iface->priv->device_info)
+    return iface->priv->device_info;
+
+  iface->priv->device_info = netstatus_sysdeps_read_iface_device_info(iface->priv->name);
+  if (!iface->priv->device_info)
+      iface->priv->device_info = g_strdup("");
+
+  return iface->priv->device_info;
+}
+*/
 gboolean
 netstatus_iface_get_inet4_details (NetstatusIface  *iface,
 				   char           **addr,

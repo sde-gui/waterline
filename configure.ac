@@ -324,6 +324,7 @@ AC_CONFIG_FILES([
     lxpanel.pc
     Makefile
     src/Makefile
+    src/libexec/Makefile
     src/plugins/Makefile
     src/plugins/netstatus/Makefile
     src/plugins/volume/Makefile

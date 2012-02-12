@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = plugins
+SUBDIRS = plugins libexec
 
 bin_PROGRAMS = lxpanel lxpanelctl
 
@@ -9,6 +9,7 @@ INCLUDES = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/plugins \
 	-DPACKAGE_LIB_DIR=\""$(libdir)"\" \
+	-DPACKAGE_LIBEXEC_DIR=\""$(libexecdir)"\" \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" \
 	-DPACKAGE_UI_DIR=\""$(datadir)/lxpanel/ui"\" \
 	-DPACKAGE_BIN_DIR=\""$(bindir)"\" \

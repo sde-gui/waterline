@@ -14542,7 +14542,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files lxpanel.pc Makefile src/Makefile src/plugins/Makefile src/plugins/netstatus/Makefile src/plugins/volume/Makefile src/plugins/volumealsa/Makefile src/plugins/cpu/Makefile src/plugins/deskno/Makefile src/plugins/batt/Makefile src/plugins/kbled/Makefile src/plugins/xkb/Makefile src/plugins/thermal/Makefile src/plugins/cpufreq/Makefile po/Makefile.in data/Makefile data/default/panels/panel man/Makefile"
+ac_config_files="$ac_config_files lxpanel.pc Makefile src/Makefile src/libexec/Makefile src/plugins/Makefile src/plugins/netstatus/Makefile src/plugins/volume/Makefile src/plugins/volumealsa/Makefile src/plugins/cpu/Makefile src/plugins/deskno/Makefile src/plugins/batt/Makefile src/plugins/kbled/Makefile src/plugins/xkb/Makefile src/plugins/thermal/Makefile src/plugins/cpufreq/Makefile po/Makefile.in data/Makefile data/default/panels/panel man/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -15582,6 +15582,7 @@ do
     "lxpanel.pc") CONFIG_FILES="$CONFIG_FILES lxpanel.pc" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
+    "src/libexec/Makefile") CONFIG_FILES="$CONFIG_FILES src/libexec/Makefile" ;;
     "src/plugins/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/Makefile" ;;
     "src/plugins/netstatus/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/netstatus/Makefile" ;;
     "src/plugins/volume/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/volume/Makefile" ;;

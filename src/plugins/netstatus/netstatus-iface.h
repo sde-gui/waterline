@@ -84,7 +84,11 @@ gboolean               netstatus_iface_get_inet4_details     (NetstatusIface  *i
 gboolean               netstatus_iface_get_device_details    (NetstatusIface  *iface,
 							      const char     **hw_name,
 							      char           **hw_addr);
+
+//gchar *                netstatus_iface_get_device_info       (NetstatusIface  *iface);
+
 gboolean               netstatus_iface_get_is_loopback       (NetstatusIface  *iface);
+
 
 G_END_DECLS
 

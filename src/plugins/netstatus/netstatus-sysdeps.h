@@ -39,6 +39,8 @@ char *netstatus_sysdeps_read_iface_wireless_details (const char *iface,
 						     gboolean   *is_wireless,
 						     int        *signal_strength);
 
+//char *netstatus_sysdeps_read_iface_device_info      (const char *iface);
+
 G_END_DECLS
 
 #endif /* __NETSTATUS_SYSDEPS_H__ */

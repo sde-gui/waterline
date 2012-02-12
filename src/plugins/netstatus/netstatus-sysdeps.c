@@ -669,5 +669,31 @@ netstatus_sysdeps_read_iface_statistics (const char *iface,
 
   return error_message;
 }
+/*
+char *netstatus_sysdeps_read_iface_device_info(const char *iface)
+{
+  gchar * command_line;
+  gchar * standard_output = NULL;
+  gchar * standard_error = NULL;
+  gint exit_status = 1;
 
+  command_line = g_strdup_printf (PACKAGE_LIBEXEC_DIR "/iface-info %s ", iface);
+
+  g_spawn_command_line_sync(command_line, &standard_output, &standard_error, &exit_status, NULL);
+
+  if (standard_error)
+      g_free(standard_error);
+
+  if (exit_status != 0)
+  {
+      if (standard_output)
+      {
+          g_free(standard_output);
+          standard_output = NULL;
+      }
+  }
+
+  return standard_output;
+}
+*/
 #endif /* !defined(__FreeBSD__) */

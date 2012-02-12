@@ -766,9 +766,19 @@ netstatus_dialog_new (NetstatusIface *iface)
   NetstatusDialogData *data;
   data = g_new0 (NetstatusDialogData, 1);
 
+  if (!data)
+      return NULL;
+
   data->builder = gtk_builder_new();
   gtk_builder_add_from_file(data->builder, PACKAGE_UI_DIR "/netstatus.ui", NULL);
   data->dialog = GTK_WIDGET(gtk_builder_get_object(data->builder, "network_status_dialog"));
+
+  if (!data->dialog)
+  {
+      g_object_unref(data->builder);
+      g_free(data);
+      return NULL;
+  }
 
   g_object_set_data (G_OBJECT (data->dialog), "netstatus-dialog-data", data);
 

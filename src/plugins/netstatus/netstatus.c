@@ -89,14 +89,16 @@ static gboolean on_button_press( GtkWidget* widget, GdkEventButton* evt, Plugin*
         {
             iface = netstatus_icon_get_iface( NETSTATUS_ICON(widget) );
             ns->dlg = netstatus_dialog_new(iface);
-
-            /* fix background */
-            gtk_widget_set_style(ns->dlg, p->panel->defstyle);
-
-            netstatus_dialog_set_configuration_tool( ns->dlg, ns->config_tool );
-            g_signal_connect( ns->dlg, "response", G_CALLBACK(on_response), ns );
+            if ( ns->dlg )
+            {
+                /* fix background */
+                gtk_widget_set_style(ns->dlg, p->panel->defstyle);
+                netstatus_dialog_set_configuration_tool( ns->dlg, ns->config_tool );
+                g_signal_connect( ns->dlg, "response", G_CALLBACK(on_response), ns );
+            }
         }
-        gtk_window_present( GTK_WINDOW(ns->dlg) );
+        if ( ns->dlg )
+            gtk_window_present( GTK_WINDOW(ns->dlg) );
     }
     return TRUE;
 }

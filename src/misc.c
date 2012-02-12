@@ -691,6 +691,7 @@ GtkWidget * fb_button_new_from_file_with_label(
 {
     GtkWidget * event_box = gtk_event_box_new();
     gtk_container_set_border_width(GTK_CONTAINER(event_box), 0);
+    gtk_widget_set_has_window(event_box, FALSE);
     GTK_WIDGET_UNSET_FLAGS(event_box, GTK_CAN_FOCUS);
 
     GtkWidget * image = _gtk_image_new_from_file_scaled(image_file, width, height, keep_ratio, !label || strlen(label) == 0);

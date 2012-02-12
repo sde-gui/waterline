@@ -378,6 +378,7 @@ static int dclock_constructor(Plugin * p, char ** fp)
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     p->pwid = gtk_event_box_new();
+    gtk_widget_set_has_window(p->pwid, FALSE);
 
     /* Allocate a horizontal box as the child of the top level. */
     GtkWidget * hbox = gtk_hbox_new(FALSE, 0);

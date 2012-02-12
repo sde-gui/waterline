@@ -158,6 +158,7 @@ static int deskno_constructor(Plugin * p, char ** fp)
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     p->pwid = gtk_event_box_new();
+    gtk_widget_set_has_window(p->pwid, FALSE);
     gtk_container_set_border_width(GTK_CONTAINER (p->pwid), 1);
 
     /* Allocate label widget and add to top level. */

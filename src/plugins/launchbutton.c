@@ -488,6 +488,7 @@ static void lb_apply_configuration(Plugin * p)
     if (!p->pwid)
     {
         p->pwid = gtk_event_box_new();
+        gtk_widget_set_has_window(p->pwid, FALSE);
         //p->pwid = gtk_toggle_button_new();
         //GTK_WIDGET_UNSET_FLAGS (p->pwid, GTK_NO_WINDOW);
         gtk_widget_show(p->pwid);

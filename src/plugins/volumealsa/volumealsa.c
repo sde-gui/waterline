@@ -524,6 +524,7 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     p->pwid = gtk_event_box_new();
+    gtk_widget_set_has_window(p->pwid, FALSE);
     gtk_widget_add_events(p->pwid, GDK_BUTTON_PRESS_MASK);
     gtk_widget_set_tooltip_text(p->pwid, _("Volume control"));
 

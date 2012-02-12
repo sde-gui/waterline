@@ -156,6 +156,7 @@ static int kbled_constructor(Plugin * p, char ** fp)
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     p->pwid = gtk_event_box_new();
+    gtk_widget_set_has_window(p->pwid, FALSE);
     gtk_widget_add_events(p->pwid, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(p->pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
 

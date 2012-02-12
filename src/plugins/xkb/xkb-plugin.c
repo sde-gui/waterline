@@ -184,6 +184,7 @@ static int xkb_constructor(Plugin * plugin, char ** fp)
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     plugin->pwid = gtk_event_box_new();
+    gtk_widget_set_has_window(plugin->pwid, FALSE);
     gtk_widget_add_events(plugin->pwid, GDK_BUTTON_PRESS_MASK);
 
     /* Create a button as the child of the event box. */

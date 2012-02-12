@@ -189,8 +189,8 @@ static int xkb_constructor(Plugin * plugin, char ** fp)
     xkb->btn = gtk_button_new();
     gtk_container_add(GTK_CONTAINER(plugin->pwid), xkb->btn);
     gtk_button_set_relief(GTK_BUTTON(xkb->btn), GTK_RELIEF_NONE);
-    GTK_WIDGET_UNSET_FLAGS(xkb->btn, GTK_CAN_FOCUS);
-    GTK_WIDGET_UNSET_FLAGS(xkb->btn, GTK_CAN_DEFAULT);
+    gtk_widget_set_can_focus(xkb->btn, FALSE);
+    gtk_widget_set_can_default(xkb->btn, FALSE);
     gtk_widget_show(xkb->btn);
 
     /* Create a horizontal box as the child of the button. */

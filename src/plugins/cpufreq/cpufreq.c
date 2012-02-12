@@ -351,7 +351,7 @@ cpufreq_constructor(Plugin *p, char** fp)
     p->priv = cf;
 
     p->pwid = gtk_event_box_new();
-    GTK_WIDGET_SET_FLAGS( p->pwid, GTK_NO_WINDOW );
+    gtk_widget_set_has_window(p->pwid, FALSE);
     gtk_container_set_border_width( GTK_CONTAINER(p->pwid), 2 );
 
     cf->namew = gtk_image_new_from_file(PROC_ICON);

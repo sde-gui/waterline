@@ -857,7 +857,7 @@ netstatus_icon_instance_init (NetstatusIcon      *icon,
 {
   icon->priv = g_new0 (NetstatusIconPrivate, 1);
 
-  GTK_WIDGET_UNSET_FLAGS (icon, GTK_NO_WINDOW);
+  gtk_widget_set_has_window(GTK_WIDGET(icon), TRUE);
 
   icon->priv->iface            = NULL;
   icon->priv->state            = NETSTATUS_STATE_DISCONNECTED;

@@ -336,7 +336,7 @@ constructor(Plugin *p, char **fp)
 
 
     p->pwid = gtk_event_box_new();
-    GTK_WIDGET_SET_FLAGS( p->pwid, GTK_NO_WINDOW );
+    gtk_widget_set_has_window(p->pwid, FALSE);
     gtk_container_set_border_width( GTK_CONTAINER(p->pwid), 1 );
 
     lx_b->drawingArea = gtk_drawing_area_new();

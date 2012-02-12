@@ -2037,7 +2037,7 @@ static void task_maximize(Task* tk)
     } else {
         gdk_window_maximize(win);
     }
-    gdk_window_unref(win);
+    g_object_unref(G_OBJECT(win));
 }
 
 static void task_shade(Task * tk)

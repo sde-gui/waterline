@@ -235,7 +235,7 @@ static void cpu_apply_configuration(Plugin * p)
     {
         p->pwid = gtk_event_box_new();
         gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 1);
-        GTK_WIDGET_SET_FLAGS(p->pwid, GTK_NO_WINDOW);
+        gtk_widget_set_has_window(p->pwid, FALSE);
     }
 
     /* Allocate drawing area as a child of top level widget.  Enable button press events. */

@@ -29,7 +29,7 @@
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
-
+#include "gtkcompat.h"
 #include "dbg.h"
 
 #define THERMAL_DIRECTORY "/proc/acpi/thermal_zone/" /* must be slash-terminated */

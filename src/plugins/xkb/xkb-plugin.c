@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include "gtkcompat.h"
 #include "xkb.h"
 
 void panel_config_save(Panel * panel);   /* defined in configurator.c */

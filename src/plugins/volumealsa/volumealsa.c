@@ -26,6 +26,7 @@
 #include <alsa/asoundlib.h>
 #include <poll.h>
 #include "panel.h"
+#include "gtkcompat.h"
 #include "misc.h"
 #include "plugin.h"
 #include "dbg.h"

@@ -30,7 +30,7 @@
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
-
+#include "gtkcompat.h"
 #include "dbg.h"
 
 #define PROC_ICON            PACKAGE_DATA_DIR "/lxpanel/images/cpufreq-icon.png"

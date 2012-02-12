@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <glib/gi18n.h>
 
+#include "gtkcompat.h"
 #include "plugin.h"
 #include "panel.h"
 #include "misc.h"

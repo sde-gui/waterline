@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "gtkcompat.h"
 #include "dbg.h"
 #include "batt_sys.h"
 #include "misc.h" /* used for the line struct */

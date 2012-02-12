@@ -655,6 +655,37 @@ static void on_add_plugin( GtkButton* btn, GtkTreeView* _view )
     gtk_widget_show_all( dlg );
 }
 
+void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);
+
+void configurator_remove_plugin_from_list(Panel * p, Plugin * pl)
+{
+     GtkTreeView * view = NULL;
+     if (p && p->pref_dialog)
+         view = (GtkTreeView *) g_object_get_data( G_OBJECT(p->pref_dialog), "plugin_list");
+
+     if (!view)
+         return;
+
+     GtkTreeModel* model = gtk_tree_view_get_model(view);
+     if (!model)
+         return;
+
+     GtkTreeIter it;
+     if (gtk_tree_model_get_iter_first(model, &it))
+     {
+         do
+         {
+             Plugin* pl1;
+             gtk_tree_model_get( model, &it, COL_DATA, &pl1, -1 );
+             if (pl1 == pl)
+             {
+                 gtk_list_store_remove( GTK_LIST_STORE(model), &it );
+                 break;
+             }
+         } while (gtk_tree_model_iter_next(model, &it));
+     }
+}
+
 static void on_remove_plugin( GtkButton* btn, GtkTreeView* view )
 {
     GtkTreeIter it;
@@ -1037,6 +1068,8 @@ void panel_configure( Panel* p, int sel_page )
     /* plugin list */
     {
         GtkWidget* plugin_list = (GtkWidget*)gtk_builder_get_object( builder, "plugin_list" );
+
+        g_object_set_data( G_OBJECT(p->pref_dialog), "plugin_list", plugin_list );
 
         /* buttons used to edit plugin list */
         w = (GtkWidget*)gtk_builder_get_object( builder, "add_btn" );

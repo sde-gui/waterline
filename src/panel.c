@@ -60,6 +60,7 @@ extern void load_global_config(void);
 extern void free_global_config(void);
 extern void enable_kiosk_mode(void);
 extern void panel_config_save(Panel* panel);
+extern void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);
 
 /******************************************************************************/
 
@@ -829,17 +830,15 @@ static void panel_popupmenu_add_item( GtkMenuItem* item, Panel* panel )
     panel_configure( panel, 2 );
 }
 
+void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);
+
 static void panel_popupmenu_remove_item( GtkMenuItem* item, Plugin* plugin )
 {
     Panel* panel = plugin->panel;
 
-    /* If the configuration dialog is open, there will certainly be a crash if the
-     * user manipulates the Configured Plugins list, after we remove this entry.
-     * Close the configuration dialog if it is open. */
     if (panel->pref_dialog != NULL)
     {
-        gtk_widget_destroy(panel->pref_dialog);
-        panel->pref_dialog = NULL;
+        configurator_remove_plugin_from_list(panel, plugin);
     }
 
     panel->plugins = g_list_remove( panel->plugins, plugin );

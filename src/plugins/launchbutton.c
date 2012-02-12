@@ -325,6 +325,11 @@ static void _modify_bg_recursive(GtkWidget * w, GdkColor * c)
     gtk_widget_modify_bg(GTK_WIDGET(w), GTK_STATE_SELECTED, c);
     gtk_widget_modify_bg(GTK_WIDGET(w), GTK_STATE_INSENSITIVE, c);
 
+    if (GTK_IS_EVENT_BOX(w))
+    {
+        gtk_event_box_set_visible_window(GTK_EVENT_BOX(w), c ? TRUE : FALSE);
+    }
+
     if (GTK_IS_CONTAINER(w))
         gtk_container_foreach(GTK_CONTAINER(w), (GtkCallback) _modify_bg_recursive, c);
 }
@@ -566,6 +571,8 @@ static void lb_apply_configuration(Plugin * p)
         g_source_remove(lb->input_timeout);
         lb->input_timeout = 0;
     }
+
+    lb_set_bgcolor(lb, "");
 
     if (lb->use_pipes)
     {

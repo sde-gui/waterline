@@ -637,7 +637,7 @@ netstatus_dialog_setup_configure_button (NetstatusDialogData *data)
 		    G_CALLBACK (netstatus_iface_configure), data);
 
   netstatus_dialog_detect_configuration_tool (data);
-  
+
   if (!data->config_tool)
     gtk_widget_hide (data->configure_button);
 

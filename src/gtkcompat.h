@@ -284,6 +284,12 @@ void gtk_widget_set_realized(GtkWidget *widget, gboolean realized)
     }
 }
 
+static inline
+gboolean gtk_widget_get_realized(GtkWidget *widget)
+{
+    return GTK_WIDGET_REALIZED(widget)
+}
+
 #endif // !GTK_CHECK_VERSION(2,20,0)
 
 

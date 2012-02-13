@@ -576,7 +576,6 @@ netstatus_iface_configure (GtkWidget           *configure_button,
 			   NetstatusDialogData *dialog_data)
 {
   GError     *error;
-  GdkScreen  *screen;
   GString    *command;
   char      **argv = NULL;
   int         i;
@@ -602,10 +601,8 @@ netstatus_iface_configure (GtkWidget           *configure_button,
 	command = g_string_append (command, argv [i]);
     }
 
-  screen = gtk_window_get_screen (GTK_WINDOW (dialog_data->dialog));
-
   error = NULL;
-  if (!gdk_spawn_command_line_on_screen (screen, command->str, &error))
+  if (!g_spawn_command_line_async (command->str, &error))
     {
       GtkWidget *error_dialog;
 
@@ -618,6 +615,7 @@ netstatus_iface_configure (GtkWidget           *configure_button,
       g_signal_connect (error_dialog, "response",
 			G_CALLBACK (gtk_widget_destroy), NULL);
 
+      GdkScreen  *screen = gtk_window_get_screen (GTK_WINDOW (dialog_data->dialog));
       gtk_window_set_resizable (GTK_WINDOW (error_dialog), FALSE);
       gtk_window_set_screen (GTK_WINDOW (error_dialog), screen);
       
@@ -668,7 +666,11 @@ netstatus_dialog_setup_connection (NetstatusDialogData *data)
   data->name_entry = gtk_bin_get_child((GtkBin*)data->name);
   model = gtk_list_store_new(1, G_TYPE_STRING);
   gtk_combo_box_set_model(GTK_COMBO_BOX(data->name), GTK_TREE_MODEL(model));
+//#if !GTK_CHECK_VERSION(2,24,0)
   gtk_combo_box_entry_set_text_column(GTK_COMBO_BOX_ENTRY(data->name), 0);
+//#else
+//  gtk_combo_box_set_entry_text_column(GTK_COMBO_BOX(data->name), 0);
+//#endif
   g_object_unref(model);
 
   data->status = (GtkWidget*)gtk_builder_get_object(data->builder, "status_label");

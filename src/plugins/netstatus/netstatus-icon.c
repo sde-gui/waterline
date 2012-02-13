@@ -619,7 +619,7 @@ netstatus_icon_size_allocate (GtkWidget     *widget,
       netstatus_icon_scale_icons (icon, size);
     }
 
-  if (GTK_WIDGET_REALIZED (widget))
+  if (gtk_widget_get_realized (widget))
     {
       gdk_window_move_resize (widget->window,
                               allocation->x + GTK_CONTAINER (widget)->border_width,

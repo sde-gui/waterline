@@ -765,14 +765,14 @@ static void pager_destructor(Plugin * p)
     g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), pager_net_number_of_desktops, pg);
     g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), pager_net_client_list_stacking, pg);
 
+    /* Deallocate task list. */
+    while (pg->task_list != NULL)
+        task_delete(pg, pg->task_list, TRUE);
+
     /* Deallocate desktop structures. */
     int i;
     for (i = 0; i < pg->number_of_desktops; i += 1)
         desk_free(pg, i);
-
-    /* Deallocate task list. */
-    while (pg->task_list != NULL)
-        task_delete(pg, pg->task_list, TRUE);
 
     /* Deallocate all memory. */
     icon_grid_free(pg->icon_grid);

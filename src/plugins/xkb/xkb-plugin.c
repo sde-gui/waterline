@@ -77,6 +77,7 @@ void xkb_redraw(XkbPlugin * xkb)
                     gtk_widget_hide(xkb->label);
                     gtk_widget_show(xkb->image);
                     gtk_widget_set_tooltip_text(xkb->btn, xkb_get_current_group_name(xkb));
+                    gtk_widget_queue_draw(xkb->plugin->pwid);
                     valid_image = TRUE;
                 }
                 g_object_unref(unscaled_pixbuf);

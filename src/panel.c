@@ -985,6 +985,8 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
     char* tmp;
     ret = menu = GTK_MENU(gtk_menu_new());
 
+    gboolean display_icons = FALSE;
+
     if (!lxpanel_is_in_kiosk_mode())
     {
 
@@ -993,11 +995,13 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
             menu_item = gtk_separator_menu_item_new();
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), menu_item);
 
-            img = gtk_image_new_from_stock( GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU );
+            if (display_icons)
+                img = gtk_image_new_from_stock( GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU );
             tmp = g_strdup_printf( _("\"%s\" Settings"), _(plugin->class->name) );
             menu_item = gtk_image_menu_item_new_with_label( tmp );
             g_free( tmp );
-            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+            if (display_icons)
+                gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), menu_item);
             if( plugin->class->config )
                 g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_config_plugin), plugin );
@@ -1005,19 +1009,23 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
                 gtk_widget_set_sensitive( menu_item, FALSE );
         }
 
-        img = gtk_image_new_from_stock( GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU );
+        if (display_icons)
+            img = gtk_image_new_from_stock( GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU );
         menu_item = gtk_image_menu_item_new_with_label(_("Add / Remove Panel Items"));
-        gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+        if (display_icons)
+            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
         g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_add_item), panel );
 
         if( plugin )
         {
-            img = gtk_image_new_from_stock( GTK_STOCK_REMOVE, GTK_ICON_SIZE_MENU );
+            if (display_icons)
+                img = gtk_image_new_from_stock( GTK_STOCK_REMOVE, GTK_ICON_SIZE_MENU );
             tmp = g_strdup_printf( _("Remove \"%s\" From Panel"), _(plugin->class->name) );
             menu_item = gtk_image_menu_item_new_with_label( tmp );
             g_free( tmp );
-            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+            if (display_icons)
+                gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
             gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
             g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_remove_item), plugin );
         }
@@ -1025,15 +1033,19 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
         menu_item = gtk_separator_menu_item_new();
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 
-        img = gtk_image_new_from_stock( GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU );
+        if (display_icons)
+            img = gtk_image_new_from_stock( GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU );
         menu_item = gtk_image_menu_item_new_with_label(_("Panel Settings"));
-        gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+        if (display_icons)
+            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
         g_signal_connect(G_OBJECT(menu_item), "activate", G_CALLBACK(panel_popupmenu_configure), panel );
 
-        img = gtk_image_new_from_stock( GTK_STOCK_NEW, GTK_ICON_SIZE_MENU );
+        if (display_icons)
+            img = gtk_image_new_from_stock( GTK_STOCK_NEW, GTK_ICON_SIZE_MENU );
         menu_item = gtk_image_menu_item_new_with_label(_("Create New Panel"));
-        gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+        if (display_icons)
+            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
         g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_create_panel), panel );
         /* FIXME: Potentially we can support multiple panels at the same edge,
@@ -1042,9 +1054,11 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
         if( g_slist_length( all_panels ) >= 4 )
             gtk_widget_set_sensitive( menu_item, FALSE );
 
-        img = gtk_image_new_from_stock( GTK_STOCK_DELETE, GTK_ICON_SIZE_MENU );
+        if (display_icons)
+            img = gtk_image_new_from_stock( GTK_STOCK_DELETE, GTK_ICON_SIZE_MENU );
         menu_item = gtk_image_menu_item_new_with_label(_("Delete This Panel"));
-        gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+        if (display_icons)
+            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
         g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_delete_panel), panel );
         if( ! all_panels->next )    /* if this is the only panel */
@@ -1055,9 +1069,11 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
 
     }
 
-    img = gtk_image_new_from_stock( GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU );
+    if (display_icons)
+        img = gtk_image_new_from_stock( GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU );
     menu_item = gtk_image_menu_item_new_with_label(_("About"));
-    gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+    if (display_icons)
+        gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
     g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_about), panel );
 
@@ -1066,9 +1082,11 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
 	menu_item = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 
-	img = gtk_image_new_from_stock( GTK_STOCK_QUIT, GTK_ICON_SIZE_MENU );
+        if (display_icons)
+	    img = gtk_image_new_from_stock( GTK_STOCK_QUIT, GTK_ICON_SIZE_MENU );
 	menu_item = gtk_image_menu_item_new_with_label(_("Quit"));
-	gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+	if (display_icons)
+	    gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 	g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_quit), panel );
     }

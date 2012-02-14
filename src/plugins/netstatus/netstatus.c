@@ -145,6 +145,9 @@ netstatus_constructor(Plugin *p, char** fp)
 
     iface = netstatus_iface_new(ns->iface);
     ns->mainw = netstatus_icon_new( iface );
+
+    gtk_widget_set_has_window(GTK_WIDGET(ns->mainw), FALSE);
+
     netstatus_icon_set_show_signal((NetstatusIcon *)ns->mainw, TRUE);
     gtk_widget_add_events( ns->mainw, GDK_BUTTON_PRESS_MASK );
     g_object_unref( iface );

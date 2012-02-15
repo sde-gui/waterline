@@ -452,11 +452,99 @@ static void trayclient_request_dock(TrayPlugin * tr, XClientMessageEvent * xeven
         tc_pred->client_flink = tc;
     }
 
+
+
+    XWindowAttributes window_attributes;
+    Display *xdisplay;
+    GdkVisual *visual;
+    gboolean visual_has_alpha;
+    GdkColormap *colormap;
+    gboolean new_colormap;
+    int red_prec, green_prec, blue_prec, depth;
+    int result;
+    gboolean composited;
+
+    GdkScreen * screen = gtk_widget_get_screen(tr->plugin->pwid);
+
+    xdisplay = GDK_SCREEN_XDISPLAY (screen);
+
+    /* We need to determine the visual of the window we are embedding and create the socket in the same visual. */
+
+    gdk_error_trap_push ();
+    result = XGetWindowAttributes (xdisplay, tc->window, &window_attributes);
+    gdk_error_trap_pop ();
+
+    if (!result) /* Window already gone */
+      return;
+
+    visual = gdk_x11_screen_lookup_visual (screen, window_attributes.visual->visualid);
+    if (!visual) /* Icon window is on another screen? */
+      return;
+
+    new_colormap = FALSE;
+
+    if (visual == gdk_screen_get_rgb_visual (screen))
+    {
+        colormap = gdk_screen_get_rgb_colormap (screen);
+        //g_print("gdk_screen_get_rgb_colormap\n");
+    }
+    else if (visual == gdk_screen_get_rgba_visual (screen))
+    {
+        colormap = gdk_screen_get_rgba_colormap (screen);
+        //g_print("gdk_screen_get_rgba_colormap\n");
+    }
+    else if (visual == gdk_screen_get_system_visual (screen))
+    {
+        colormap = gdk_screen_get_system_colormap (screen);
+        //g_print("gdk_screen_get_system_colormap\n");
+    }
+    else
+    {
+        colormap = gdk_colormap_new (visual, FALSE);
+        new_colormap = TRUE;
+    }
+
+    gtk_widget_set_colormap (GTK_WIDGET (tc->socket), colormap);
+
+    /* We have alpha if the visual has something other than red, green, and blue */
+    gdk_visual_get_red_pixel_details (visual, NULL, NULL, &red_prec);
+    gdk_visual_get_green_pixel_details (visual, NULL, NULL, &green_prec);
+    gdk_visual_get_blue_pixel_details (visual, NULL, NULL, &blue_prec);
+    depth = gdk_visual_get_depth (visual);
+
+    visual_has_alpha = red_prec + blue_prec + green_prec < depth;
+    composited = (visual_has_alpha && gdk_display_supports_composite (gdk_screen_get_display (screen)));
+
+    //g_print("has_alpha = %d\n", (int)has_alpha);
+
+    if (new_colormap)
+      g_object_unref (colormap);
+
+
     /* Add the socket to the icon grid. */
     icon_grid_add(tr->icon_grid, tc->socket, TRUE);
 
+
+    GdkWindow * socket_window = gtk_widget_get_window (tc->socket);
+#if 0
+    if (composited)
+    {
+        GdkColor transparent = { 0, 0, 0, 0 }; /* only pixel=0 matters */
+        gdk_window_set_background (socket_window, &transparent);
+
+        gdk_window_set_composited (socket_window, TRUE);
+    }
+    else
+#endif
+    {
+        gdk_window_set_back_pixmap (socket_window, NULL, TRUE);
+    }
+
+    gtk_widget_set_double_buffered (GTK_WIDGET (tc->socket), TRUE);
+
     /* Connect the socket to the plug.  This can only be done after the socket is realized. */
     gtk_socket_add_id(GTK_SOCKET(tc->socket), tc->window);
+
 }
 
 /* GDK event filter. */
@@ -549,6 +637,82 @@ static void tray_unmanage_selection(TrayPlugin * tr)
     }
 }
 
+
+static void
+tray_expose_icon (GtkWidget * widget, gpointer data)
+{
+    cairo_t * cr = data;
+
+    if (!gtk_widget_get_mapped(widget))
+        return;
+
+    GdkWindow * window = gtk_widget_get_window (widget);
+
+    if (gdk_window_get_composited (window))
+    {
+      GtkAllocation allocation;
+
+      gtk_widget_get_allocation (widget, &allocation);
+
+      gdk_cairo_set_source_pixmap (cr,
+                                   window,
+				   allocation.x,
+				   allocation.y);
+      cairo_paint (cr);
+    }
+}
+
+static void
+tray_expose_box (GtkWidget * box, GdkEventExpose * event, gpointer data)
+{
+  TrayPlugin * tr = (TrayPlugin *) data;
+
+  cairo_t * cr = gdk_cairo_create (gtk_widget_get_window (box));
+
+  gdk_cairo_region (cr, event->region);
+  cairo_clip (cr);
+
+  gtk_container_foreach (GTK_CONTAINER (box), tray_expose_icon, cr);
+
+  cairo_destroy (cr);
+}
+
+
+static void tray_choose_visual(TrayPlugin * tr)
+{
+    GdkScreen  * screen  = gtk_widget_get_screen (tr->invisible);
+    GdkDisplay * display = gtk_widget_get_display(tr->invisible);
+
+    GdkVisual * visual = NULL;
+/*
+    if (gdk_display_supports_composite (display))
+        visual = gdk_screen_get_rgba_visual(screen);
+*/
+    if (!visual)
+    {
+        GdkColormap * colormap = gdk_screen_get_default_colormap (screen);
+        visual = gdk_colormap_get_visual (colormap);
+    }
+
+    if (!visual)
+        return;
+
+    Visual * xvisual = GDK_VISUAL_XVISUAL (visual);
+    Atom visual_atom = gdk_x11_get_xatom_by_name_for_display (display, "_NET_SYSTEM_TRAY_VISUAL");
+
+    gulong      data[1];
+
+    data[0] = XVisualIDFromVisual (xvisual);
+
+    XChangeProperty (GDK_DISPLAY_XDISPLAY (display),
+                    tr->invisible_window,
+                    visual_atom,
+                    XA_VISUALID, 32,
+                    PropModeReplace,
+                    (guchar *) &data, 1);
+}
+
+
 /* Plugin constructor. */
 static int tray_constructor(Plugin * p, char ** fp)
 {
@@ -592,6 +756,13 @@ static int tray_constructor(Plugin * p, char ** fp)
     gtk_widget_realize(invisible);
     gtk_widget_add_events(invisible, GDK_PROPERTY_CHANGE_MASK | GDK_STRUCTURE_MASK);
 
+    /* Reference the window since it is never added to a container. */
+    tr->invisible = invisible;
+    tr->invisible_window = GDK_WINDOW_XWINDOW(invisible->window);
+    g_object_ref(G_OBJECT(invisible));
+
+    tray_choose_visual(tr);
+
     /* Try to claim the _NET_SYSTEM_TRAY_Sn selection. */
     guint32 timestamp = gdk_x11_get_server_time(invisible->window);
     if (gdk_selection_owner_set_for_display(
@@ -627,15 +798,11 @@ static int tray_constructor(Plugin * p, char ** fp)
 
         /* Add GDK event filter. */
         gdk_window_add_filter(NULL, (GdkFilterFunc) tray_event_filter, tr);
-
-        /* Reference the window since it is never added to a container. */
-        tr->invisible = invisible;
-        tr->invisible_window = GDK_WINDOW_XWINDOW(invisible->window);
-        g_object_ref(G_OBJECT(invisible));
     }
     else
     {
         gtk_widget_destroy(invisible);
+        g_object_unref(G_OBJECT(invisible));
         g_printerr("tray: System tray didn't get the system tray manager selection\n");
         return 0;
     }
@@ -649,6 +816,9 @@ static int tray_constructor(Plugin * p, char ** fp)
     /* Create an icon grid to manage the container. */
     GtkOrientation bo = (p->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     tr->icon_grid = icon_grid_new(p->panel, p->pwid, bo, p->panel->icon_size, p->panel->icon_size, 3, 0, p->panel->height);
+
+    g_signal_connect (tr->icon_grid->widget, "expose-event", G_CALLBACK (tray_expose_box), tr);
+
     return 1;
 }
 

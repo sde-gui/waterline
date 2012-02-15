@@ -349,6 +349,7 @@ void plugin_class_list_free(GList * list)
 /* Recursively set the background of all widgets on a panel background configuration change. */
 void plugin_widget_set_background(GtkWidget * w, Panel * p)
 {
+#if 0
     if (w != NULL)
     {
         if ( ! GTK_WIDGET_NO_WINDOW(w))
@@ -394,6 +395,7 @@ void plugin_widget_set_background(GtkWidget * w, Panel * p)
         if (GTK_IS_CONTAINER(w))
             gtk_container_foreach(GTK_CONTAINER(w), (GtkCallback) plugin_widget_set_background, p);
     }
+#endif
 }
 
 /* Handler for "button_press_event" signal with Plugin as parameter.

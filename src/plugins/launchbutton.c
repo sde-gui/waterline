@@ -67,13 +67,21 @@ typedef struct _lb_t {
     char * icon_path;
     char * title;
     char * tooltip;
+
     char * command1;
     char * command2;
     char * command3;
 
+    char * scroll_up_command;
+    char * scroll_down_command;
+
     char * command1_override;
     char * command2_override;
     char * command3_override;
+
+    char * scroll_up_command_override;
+    char * scroll_down_command_override;
+
 
     GtkWidget * button;
     GtkWidget * img;
@@ -425,6 +433,16 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
                 g_free(lb->command3_override);
                 lb->command3_override = g_strdup(parts[1]);
             }
+            else if (g_ascii_strcasecmp(parts[0], "ScrollUpCommand") == 0)
+            {
+                g_free(lb->scroll_up_command_override);
+                lb->scroll_up_command_override = g_strdup(parts[1]);
+            }
+            else if (g_ascii_strcasecmp(parts[0], "ScrollDownCommand") == 0)
+            {
+                g_free(lb->scroll_down_command_override);
+                lb->scroll_down_command_override = g_strdup(parts[1]);
+            }
             else if (g_ascii_strcasecmp(parts[0], "BgColor") == 0)
             {
                 lb_set_bgcolor(lb, parts[1]);
@@ -469,6 +487,22 @@ static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t 
     return TRUE;
 }
 
+static gboolean lb_scroll_event(GtkWidget * widget, GdkEventScroll * event, lb_t * lb)
+{
+    char * command = NULL;
+
+    if ((event->direction == GDK_SCROLL_UP) || (event->direction == GDK_SCROLL_LEFT))
+        command = strempty(lb->scroll_up_command_override) ? lb->scroll_up_command : lb->scroll_up_command_override;
+    else
+        command = strempty(lb->scroll_down_command_override) ? lb->scroll_down_command : lb->scroll_down_command_override;
+
+    if (!strempty(command))
+    {
+        lxpanel_launch(command, NULL);
+    }
+
+    return TRUE;
+}
 
 static gboolean lb_input_timeout(lb_t * lb)
 {
@@ -504,7 +538,8 @@ static void lb_apply_configuration(Plugin * p)
         lb->button = fb_button_new_from_file_with_label(lb->icon_path,
                      p->panel->icon_size, p->panel->icon_size, PANEL_ICON_HIGHLIGHT, TRUE, p->panel, lb->title);
         gtk_container_add(GTK_CONTAINER(p->pwid), lb->button);
-        g_signal_connect(lb->button, "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
+        g_signal_connect(G_OBJECT(lb->button), "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
+        g_signal_connect(G_OBJECT(lb->button), "scroll-event", G_CALLBACK(lb_scroll_event), (gpointer) lb);
         gtk_widget_show(lb->button);
     }
     else
@@ -519,7 +554,10 @@ static void lb_apply_configuration(Plugin * p)
         gtk_widget_set_tooltip_text(lb->button, lb->tooltip);
     } else {
         gchar * tooltip = NULL;
-        if (strempty(lb->command2) && strempty(lb->command3)) {
+        if (strempty(lb->command2)
+        &&  strempty(lb->command3)
+        &&  strempty(lb->scroll_up_command)
+        &&  strempty(lb->scroll_down_command)) {
             if (strempty(lb->command1))
                 tooltip = g_strdup("");
             else
@@ -552,6 +590,30 @@ static void lb_apply_configuration(Plugin * p)
             if (!strempty(lb->command3))
             {
                 gchar * t1 = g_strdup_printf(_("Right click: %s"), lb->command3);
+                if (tooltip) {
+                    gchar * t2 = g_strdup_printf("%s\n%s", tooltip, t1);
+                    g_free(t1);
+                    g_free(tooltip);
+                    tooltip = t2;
+                } else {
+                    tooltip = t1;
+                }
+            }
+            if (!strempty(lb->scroll_up_command))
+            {
+                gchar * t1 = g_strdup_printf(_("Scroll up: %s"), lb->scroll_up_command);
+                if (tooltip) {
+                    gchar * t2 = g_strdup_printf("%s\n%s", tooltip, t1);
+                    g_free(t1);
+                    g_free(tooltip);
+                    tooltip = t2;
+                } else {
+                    tooltip = t1;
+                }
+            }
+            if (!strempty(lb->scroll_down_command))
+            {
+                gchar * t1 = g_strdup_printf(_("Scroll down: %s"), lb->scroll_down_command);
                 if (tooltip) {
                     gchar * t2 = g_strdup_printf("%s\n%s", tooltip, t1);
                     g_free(t1);
@@ -638,12 +700,18 @@ static int lb_constructor(Plugin *p, char **fp)
                     lb->title = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "Tooltip") == 0)
                     lb->tooltip = g_strdup(s.t[1]);
+
                 else if (g_ascii_strcasecmp(s.t[0], "Command1") == 0)
                     lb->command1 = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "Command2") == 0)
                     lb->command2 = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "Command3") == 0)
                     lb->command3 = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "ScrollUpCommand") == 0)
+                    lb->scroll_up_command = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "ScrollDownCommand") == 0)
+                    lb->scroll_down_command = g_strdup(s.t[1]);
+
                 else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdates") == 0)
                     lb->use_pipes = str2num(bool_pair, s.t[1], lb->use_pipes);
                 else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateTitle") == 0)
@@ -683,6 +751,8 @@ static int lb_constructor(Plugin *p, char **fp)
     DEFAULT_STRING(command1 , "");
     DEFAULT_STRING(command2 , "");
     DEFAULT_STRING(command3 , "");
+    DEFAULT_STRING(scroll_up_command, "");
+    DEFAULT_STRING(scroll_down_command, "");
 
     #undef DEFAULT_STRING
 
@@ -723,9 +793,13 @@ static void lb_destructor(Plugin * p)
     g_free(lb->command1);
     g_free(lb->command2);
     g_free(lb->command3);
+    g_free(lb->scroll_up_command);
+    g_free(lb->scroll_down_command);
     g_free(lb->command1_override);
     g_free(lb->command2_override);
     g_free(lb->command3_override);
+    g_free(lb->scroll_up_command_override);
+    g_free(lb->scroll_down_command_override);
     g_free(lb->input_title.command);
     g_free(lb->input_tooltip.command);
     g_free(lb->input_icon.command);
@@ -757,6 +831,8 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
         _("Left button command")  , &lb->command1, (GType)CONF_TYPE_STR,
         _("Middle button command"), &lb->command2, (GType)CONF_TYPE_STR,
         _("Right button command") , &lb->command3, (GType)CONF_TYPE_STR,
+        _("Scroll up command"), &lb->scroll_up_command, (GType)CONF_TYPE_STR,
+        _("Scroll down command") , &lb->scroll_down_command, (GType)CONF_TYPE_STR,
 
         _("Interactive updates"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
         _("Enable interactive updates"), (gpointer)&lb->use_pipes, (GType)CONF_TYPE_BOOL,
@@ -787,6 +863,8 @@ static void lb_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_str(fp, "Command1", lb->command1);
     lxpanel_put_str(fp, "Command2", lb->command2);
     lxpanel_put_str(fp, "Command3", lb->command3);
+    lxpanel_put_str(fp, "ScrollUpCommand", lb->scroll_up_command);
+    lxpanel_put_str(fp, "ScrollDownCommand", lb->scroll_down_command);
 
     lxpanel_put_bool(fp, "InteractiveUpdates", lb->use_pipes);
     lxpanel_put_int(fp, "InteractiveUpdateRestartInterval", lb->input_restart_interval);

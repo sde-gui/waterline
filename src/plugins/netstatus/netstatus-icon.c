@@ -623,13 +623,16 @@ netstatus_icon_size_allocate (GtkWidget     *widget,
     }
 
   if (gtk_widget_get_realized (widget))
-    {
-      gdk_window_move_resize (widget->window,
-                              allocation->x + GTK_CONTAINER (widget)->border_width,
-                              allocation->y + GTK_CONTAINER (widget)->border_width,
-                              MAX (allocation->width - GTK_CONTAINER (widget)->border_width * 2, 0),
-			      MAX (allocation->height - GTK_CONTAINER (widget)->border_width * 2, 0));
-    }
+  {
+      if (gtk_widget_get_has_window(GTK_WIDGET(icon)))
+      {
+          gdk_window_move_resize (widget->window,
+                                  allocation->x + GTK_CONTAINER (widget)->border_width,
+                                  allocation->y + GTK_CONTAINER (widget)->border_width,
+                                  MAX (allocation->width - GTK_CONTAINER (widget)->border_width * 2, 0),
+                                  MAX (allocation->height - GTK_CONTAINER (widget)->border_width * 2, 0));
+      }
+  }
 
   klass = get_box_class (icon->priv->orientation);
 

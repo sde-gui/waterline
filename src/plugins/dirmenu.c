@@ -23,6 +23,8 @@
 #include <glib/gi18n.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
 #include <unistd.h>
 #include <string.h>
 #include <gio/gio.h>
@@ -165,6 +167,26 @@ static void dirmenu_popup_set_position(GtkWidget * menu, gint * px, gint * py, g
     /* Determine the coordinates. */
     plugin_popup_set_position_helper(p, p->pwid, menu, &popup_req, px, py);
     *push_in = TRUE;
+}
+
+static gchar * tooltip_for_file(FileName * file_cursor)
+{
+    setpwent ();
+    struct passwd * pw_ent = getpwuid (file_cursor->stat_data.st_uid);
+    gchar * s_user = g_strdup (pw_ent ? pw_ent->pw_name : "UNKNOWN");
+
+    setgrent ();
+    struct group * gw_ent = getgrgid (file_cursor->stat_data.st_gid);
+    gchar * s_group = g_strdup (gw_ent ? gw_ent->gr_name : "UNKNOWN");
+
+    gchar * tooltip = g_strdup_printf(_("%llu bytes, %s:%s %04o"),
+        (unsigned long long)file_cursor->stat_data.st_size,
+        s_user, s_group, (unsigned int)file_cursor->stat_data.st_mode);
+
+    g_free(s_user);
+    g_free(s_group);
+
+    return tooltip;
 }
 
 /* Create a menu populated with all files and subdirectories. */
@@ -369,6 +391,11 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         {
             item = gtk_image_menu_item_new_with_label(file_cursor->file_name);
         }
+
+        gchar * tooltip = tooltip_for_file(file_cursor);
+        gtk_widget_set_tooltip_text(item, tooltip);
+        g_free(tooltip);
+
         gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), item);
 
 #if GLIB_CHECK_VERSION(2,20,0)

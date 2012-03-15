@@ -72,6 +72,7 @@ typedef struct {
     int sort_files;
     gboolean plain_view;
     gboolean show_icons;
+    gboolean show_tooltips;
 } DirMenuPlugin;
 
 static void dirmenu_menuitem_open_file(GtkWidget * item, Plugin * p);
@@ -193,6 +194,8 @@ static gchar * tooltip_for_file(FileName * file_cursor)
 static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top)
 {
     DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+
+    //g_print("%s\n", path);
 
     /* Create a menu. */
     GtkWidget * menu = gtk_menu_new();
@@ -397,9 +400,12 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             item = gtk_image_menu_item_new_with_label(file_cursor->file_name);
         }
 
-        gchar * tooltip = tooltip_for_file(file_cursor);
-        gtk_widget_set_tooltip_text(item, tooltip);
-        g_free(tooltip);
+        if (dm->show_tooltips)
+        {
+            gchar * tooltip = tooltip_for_file(file_cursor);
+            gtk_widget_set_tooltip_text(item, tooltip);
+            g_free(tooltip);
+        }
 
         GtkWidget * add_to_menu = NULL;
         if (dm->sort_files == SORT_BY_NAME && file_list_count > 100 && file_list_count > dm->max_file_count)
@@ -560,6 +566,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     dm->max_file_count = 10;
     dm->show_file_size = FALSE;
     dm->show_icons = TRUE;
+    dm->show_tooltips = TRUE;
     dm->sort_directories = SORT_BY_NAME;
     dm->sort_files = SORT_BY_NAME;
     dm->plain_view = FALSE;
@@ -594,6 +601,8 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
                     dm->show_file_size = str2num(bool_pair, s.t[1], dm->show_file_size);
                 else if (g_ascii_strcasecmp(s.t[0], "ShowIcons") == 0)
                     dm->show_icons = str2num(bool_pair, s.t[1], dm->show_icons);
+                else if (g_ascii_strcasecmp(s.t[0], "ShowTooltips") == 0)
+                    dm->show_tooltips = str2num(bool_pair, s.t[1], dm->show_tooltips);
                 else if (g_ascii_strcasecmp(s.t[0], "SortDirectoriesBy") == 0)
                     dm->sort_directories = str2num(sort_by_pair, s.t[1], dm->sort_directories);
                 else if (g_ascii_strcasecmp(s.t[0], "SortFilesBy") == 0)
@@ -706,6 +715,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _("Use submenu if number of files is more than"), &dm->max_file_count, (GType)CONF_TYPE_INT,
         _("Show file size"), &dm->show_file_size, (GType)CONF_TYPE_BOOL,
         _("Show MIME type icons"), &dm->show_icons, (GType)CONF_TYPE_BOOL,
+        _("Show tooltips"), &dm->show_tooltips, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         sort_directories, (gpointer)&dm->sort_directories, (GType)CONF_TYPE_ENUM,
         sort_files, (gpointer)&dm->sort_files, (GType)CONF_TYPE_ENUM,
@@ -731,6 +741,7 @@ static void dirmenu_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_int(fp, "MaxFileCount", dm->max_file_count);
     lxpanel_put_bool(fp, "ShowFileSize", dm->show_file_size);
     lxpanel_put_bool(fp, "ShowIcons", dm->show_icons);
+    lxpanel_put_bool(fp, "ShowTooltips", dm->show_tooltips);
     lxpanel_put_enum(fp, "SortDirectoriesBy", dm->sort_directories, sort_by_pair);
     lxpanel_put_enum(fp, "SortFilesBy", dm->sort_files, sort_by_pair);
     lxpanel_put_bool(fp, "PlainView", dm->plain_view);

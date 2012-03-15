@@ -171,24 +171,48 @@ static void dirmenu_popup_set_position(GtkWidget * menu, gint * px, gint * py, g
     *push_in = TRUE;
 }
 
-static gchar * tooltip_for_file(FileName * file_cursor)
+static gchar * tooltip_for_file(struct stat * stat_data)
 {
     setpwent ();
-    struct passwd * pw_ent = getpwuid (file_cursor->stat_data.st_uid);
+    struct passwd * pw_ent = getpwuid (stat_data->st_uid);
     gchar * s_user = g_strdup (pw_ent ? pw_ent->pw_name : "UNKNOWN");
 
     setgrent ();
-    struct group * gw_ent = getgrgid (file_cursor->stat_data.st_gid);
+    struct group * gw_ent = getgrgid (stat_data->st_gid);
     gchar * s_group = g_strdup (gw_ent ? gw_ent->gr_name : "UNKNOWN");
 
     gchar * tooltip = g_strdup_printf(_("%llu bytes, %s:%s %04o"),
-        (unsigned long long)file_cursor->stat_data.st_size,
-        s_user, s_group, (unsigned int)file_cursor->stat_data.st_mode);
+        (unsigned long long)stat_data->st_size,
+        s_user, s_group, (unsigned int)stat_data->st_mode);
 
     g_free(s_user);
     g_free(s_group);
 
     return tooltip;
+}
+
+static gboolean dirmenu_query_tooltip(GtkWidget * item, gint x, gint y, gboolean keyboard_mode,
+                                      GtkTooltip * tooltip, Plugin * p)
+{
+    g_signal_handlers_disconnect_by_func(G_OBJECT(item), dirmenu_query_tooltip, p);
+
+    gchar * path = (gchar * ) g_object_get_data(G_OBJECT(item), "path");
+//g_print("%s\n", path);
+    if (!path)
+        return FALSE;
+
+    struct stat stat_data;
+    if (stat(path, &stat_data) !=0)
+        return FALSE;
+
+    gchar * tooltip_text = tooltip_for_file(&stat_data);
+    gtk_tooltip_set_text(tooltip, tooltip_text);
+    gtk_widget_set_tooltip_text(item, tooltip_text);
+    g_free(tooltip_text);
+
+    //gtk_widget_set_has_tooltip(item, TRUE);
+
+    return TRUE;
 }
 
 /* Create a menu populated with all files and subdirectories. */
@@ -408,9 +432,9 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
         if (dm->show_tooltips)
         {
-            gchar * tooltip = tooltip_for_file(file_cursor);
-            gtk_widget_set_tooltip_text(item, tooltip);
-            g_free(tooltip);
+            /*gulong query_tooltip_handler_id =*/ g_signal_connect(G_OBJECT(item), "query-tooltip", G_CALLBACK(dirmenu_query_tooltip), p);
+            //g_object_set_data(G_OBJECT(item), "query_tooltip_handler_id", (gpointer)query_tooltip_handler_id);
+            gtk_widget_set_has_tooltip(item, TRUE);
         }
 
         GtkWidget * add_to_menu = NULL;

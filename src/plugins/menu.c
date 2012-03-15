@@ -854,7 +854,14 @@ recent_documents_filter (const GtkRecentFilterInfo *filter_info, gpointer user_d
 
     if (!filter_info->uri)
          return FALSE;
-
+/*
+g_print("%s\n", filter_info->uri);
+int i;
+for (i = 0; filter_info->applications[i]; i++)
+{
+    g_print("    %s\n", filter_info->applications[i]);
+}
+*/
     if (!has_case_prefix(filter_info->uri, "file:/"))
         return TRUE;
 
@@ -952,7 +959,7 @@ read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
         if GTK_RECENT_FILTER_DISPLAY_NAME flag not supplied.
     */
     GtkRecentFilter * filter = gtk_recent_filter_new();
-    gtk_recent_filter_add_custom(filter, GTK_RECENT_FILTER_URI | GTK_RECENT_FILTER_DISPLAY_NAME,
+    gtk_recent_filter_add_custom(filter, GTK_RECENT_FILTER_URI | GTK_RECENT_FILTER_DISPLAY_NAME/* | GTK_RECENT_FILTER_APPLICATION*/,
         recent_documents_filter, NULL, NULL);
     gtk_recent_chooser_set_filter(GTK_RECENT_CHOOSER(recent_menu), filter);
 

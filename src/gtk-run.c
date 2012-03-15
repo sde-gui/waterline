@@ -286,8 +286,15 @@ static void on_response( GtkDialog* dlg, gint response, gpointer user_data )
     menu_cache = NULL;
 }
 
-static void on_entry_changed( GtkEntry* entry, GtkImage* img )
+static void on_entry_changed( GtkEntry* entry, GtkImage* widget )
 {
+    GtkImage * img = NULL;
+    GtkLabel * comment_label = NULL;
+    if (GTK_IS_IMAGE(widget))
+        img = GTK_IMAGE(widget);
+    if (GTK_IS_LABEL(widget))
+        comment_label = GTK_LABEL(widget);
+
     const char* str = gtk_entry_get_text(entry);
     MenuCacheApp* app = NULL;
     if( str && *str )
@@ -295,22 +302,36 @@ static void on_entry_changed( GtkEntry* entry, GtkImage* img )
 
     if( app )
     {
-        int w, h;
-        GdkPixbuf* pix;
-        gtk_icon_size_lookup(GTK_ICON_SIZE_DIALOG, &w, &h);
-        pix = lxpanel_load_icon(menu_cache_item_get_icon(MENU_CACHE_ITEM(app)), w, h, TRUE);
-        gtk_image_set_from_pixbuf(img, pix);
-        g_object_unref(pix);
+        if (img)
+        {
+            int w, h;
+            GdkPixbuf* pix;
+            gtk_icon_size_lookup(GTK_ICON_SIZE_DIALOG, &w, &h);
+            pix = lxpanel_load_icon(menu_cache_item_get_icon(MENU_CACHE_ITEM(app)), w, h, TRUE);
+            gtk_image_set_from_pixbuf(img, pix);
+            g_object_unref(pix);
+        }
+        if (comment_label)
+        {
+            gtk_label_set_text(comment_label, menu_cache_item_get_comment(MENU_CACHE_ITEM(app)) );
+        }
     }
     else
     {
-        gtk_image_set_from_stock(img, GTK_STOCK_EXECUTE, GTK_ICON_SIZE_DIALOG);
+        if (img)
+        {
+            gtk_image_set_from_stock(img, GTK_STOCK_EXECUTE, GTK_ICON_SIZE_DIALOG);
+        }
+        if (comment_label)
+        {
+            gtk_label_set_text(comment_label, "");
+        }
     }
 }
 
 void gtk_run()
 {
-    GtkWidget *entry, *hbox, *img;
+    GtkWidget *entry, *hbox, *img, *comment_label;
 
     if( win )
     {
@@ -333,6 +354,11 @@ void gtk_run()
     gtk_box_pack_start( (GtkBox*)((GtkDialog*)win)->vbox,
                          gtk_label_new(_("Enter the command you want to execute:")),
                          FALSE, FALSE, 8 );
+
+    comment_label = gtk_label_new(NULL);
+    gtk_box_pack_start( (GtkBox*)((GtkDialog*)win)->vbox,
+                         comment_label, FALSE, FALSE, 8 );
+
     hbox = gtk_hbox_new( FALSE, 2 );
     img = gtk_image_new_from_stock( GTK_STOCK_EXECUTE, GTK_ICON_SIZE_DIALOG );
     gtk_box_pack_start( (GtkBox*)hbox, img,
@@ -341,6 +367,8 @@ void gtk_run()
     gtk_box_pack_start( (GtkBox*)((GtkDialog*)win)->vbox,
                          hbox, FALSE, FALSE, 8 );
     g_signal_connect( win, "response", G_CALLBACK(on_response), entry );
+
+
     gtk_window_set_position( (GtkWindow*)win, GTK_WIN_POS_CENTER );
     gtk_window_set_default_size( (GtkWindow*)win, 360, -1 );
     gtk_widget_show_all( win );
@@ -349,6 +377,7 @@ void gtk_run()
     gtk_widget_show( win );
 
     g_signal_connect(entry ,"changed", G_CALLBACK(on_entry_changed), img);
+    g_signal_connect(entry ,"changed", G_CALLBACK(on_entry_changed), comment_label);
 
     /* get all apps */
     menu_cache = menu_cache_lookup(g_getenv("XDG_MENU_PREFIX") ? "applications.menu" : "lxde-applications.menu" );

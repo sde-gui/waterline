@@ -110,4 +110,18 @@ void bring_to_current_desktop(GtkWidget * win);
 
 gchar * lxpanel_tooltip_for_file_stat(struct stat * stat_data);
 
+
+extern void filemodestring (struct stat const *statp, char *str);
+
+/* Get the declaration of strmode.  */
+# if HAVE_DECL_STRMODE
+#  include <string.h> /* MacOS X, FreeBSD, OpenBSD */
+#  include <unistd.h> /* NetBSD */
+# endif
+
+# if !HAVE_DECL_STRMODE
+extern void strmode (mode_t mode, char *str);
+# endif
+
+
 #endif

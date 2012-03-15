@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
+#include <time.h>
 #include <unistd.h>
 #include <string.h>
 #include <gio/gio.h>
@@ -195,7 +196,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 {
     DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
 
-    //g_print("%s\n", path);
+//g_print("[%d] %s\n", (int)time(NULL), path);
 
     /* Create a menu. */
     GtkWidget * menu = gtk_menu_new();
@@ -307,6 +308,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
     /* The sorted directory name list is complete.  Loop to create the menu. */
 
+//g_print("[%d] subdirectories...\n", (int)time(NULL));
+
     /* Subdirectories. */
     FileName * dir_cursor;
     while ((dir_cursor = dir_list) != NULL)
@@ -368,6 +371,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
     if (not_empty_dir_list && not_empty_file_list)
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
+//g_print("[%d] files...\n", (int)time(NULL));
+
     /* File submenu. */
     GtkWidget * filemenu = menu;
     if (file_list_count > dm->max_file_count && not_empty_file_list)
@@ -381,6 +386,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
     char submenu_index_len = 0;
     char submenu_index[20] = {0};
+    int  submenu_item_count = 0;
     GtkWidget * filesubmenu = NULL;
 
     /* Files. */
@@ -410,7 +416,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         GtkWidget * add_to_menu = NULL;
         if (dm->sort_files == SORT_BY_NAME && file_list_count > 100 && file_list_count > dm->max_file_count)
         {
-            if (!filesubmenu || memcmp(submenu_index, file_cursor->file_name_collate_key, submenu_index_len) != 0)
+            if (!filesubmenu || submenu_item_count < 1)
             {
                 gchar * nc = g_utf8_next_char(file_cursor->file_name_collate_key);
                 submenu_index_len = nc - file_cursor->file_name_collate_key;
@@ -418,14 +424,14 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
                 submenu_index[submenu_index_len] = 0;
 
                 FileName * file_cursor2 = file_cursor->flink;
-                int count = 0;
+                submenu_item_count = 1;
                 while (file_cursor2 && memcmp(submenu_index, file_cursor2->file_name_collate_key, submenu_index_len) == 0)
                 {
-                    count++;
+                    submenu_item_count++;
                     file_cursor2 = file_cursor2->flink;
                 }
 
-                if (count > 2)
+                if (submenu_item_count > 2)
                 {
                     gchar * nc = g_utf8_next_char(file_cursor->file_name);
                     gchar * submenu_index_name = g_utf8_strup(file_cursor->file_name, nc - file_cursor->file_name);
@@ -449,6 +455,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             {
                 add_to_menu = filesubmenu;
             }
+            submenu_item_count--;
         }
         else
         {
@@ -487,6 +494,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         /* Connect signals. */
         g_signal_connect(item, "activate", G_CALLBACK(dirmenu_menuitem_open_file), p);
     }
+
+//g_print("[%d] done\n", (int)time(NULL));
 
     if (!dm->plain_view)
     {

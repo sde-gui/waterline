@@ -1024,14 +1024,14 @@ gchar * lxpanel_tooltip_for_file_stat(struct stat * stat_data)
 
     if (stat_data->st_uid == stat_data->st_gid && strcmp(s_user, s_group) == 0)
     {
-        tooltip = g_strdup_printf(_("%llu bytes, %s %s (%04o)"),
+        tooltip = g_strdup_printf(_("%'llu bytes, %s %s (%04o)"),
             (unsigned long long)stat_data->st_size,
             s_user,
             human_access(stat_data), (unsigned int)stat_data->st_mode);
     }
     else
     {
-        tooltip = g_strdup_printf(_("%llu bytes, %s:%s %s (%04o)"),
+        tooltip = g_strdup_printf(_("%'llu bytes, %s:%s %s (%04o)"),
             (unsigned long long)stat_data->st_size,
             s_user, s_group,
             human_access(stat_data), (unsigned int)stat_data->st_mode);

@@ -42,6 +42,32 @@
 //#define DEFAULT_MENU_ICON PACKAGE_DATA_DIR "/lxpanel/images/my-computer.png"
 #define DEFAULT_MENU_ICON "start-here"
 
+
+
+/* Test of haystack has the needle prefix, comparing case
+ * insensitive. haystack may be UTF-8, but needle must
+ * contain only lowercase ascii. */
+static gboolean
+has_case_prefix (const gchar *haystack,
+                 const gchar *needle)
+{
+  const gchar *h, *n;
+
+  /* Eat one character at a time. */
+  h = haystack;
+  n = needle;
+
+  while (*n && *h && *n == g_ascii_tolower (*h))
+    {
+      n++;
+      h++;
+    }
+
+  return *n == '\0';
+}
+
+
+
 /*
  * SuxPanel version 0.1
  * Copyright (c) 2003 Leandro Pereira <leandro@linuxmag.com.br>
@@ -820,6 +846,34 @@ read_recently_used_menu(GtkMenu* menu, Plugin *p, char** fp)
 }
 #endif
 
+static gboolean
+recent_documents_filter (const GtkRecentFilterInfo *filter_info, gpointer user_data)
+{
+    if (!filter_info)
+         return FALSE;
+
+    if (!filter_info->uri)
+         return FALSE;
+
+    if (!has_case_prefix(filter_info->uri, "file:/"))
+        return TRUE;
+
+    gchar * filename = g_filename_from_uri(filter_info->uri, NULL, NULL);
+
+    if (!filename)
+        return FALSE;
+
+    gboolean result = FALSE;
+
+    struct stat stat_buf;
+    if (stat(filename, &stat_buf) == 0)
+        result = TRUE;
+
+    g_free(filename);
+
+    return result;
+}
+
 static void
 recent_documents_activate_cb (GtkRecentChooser *chooser, Plugin * p)
 {
@@ -885,6 +939,22 @@ read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
     gtk_widget_show_all(menu_item);
+
+    /*
+        Ok, Gtk+ has a couple of bugs here.
+
+        First, gtk_recent_chooser_set_show_tips() has no effect
+        with GtkRecentChooserMenu. So we use a custom filter to
+        do the things.
+
+        Second, get_is_recent_filtered() in gtkrecentchooserutils.c
+        nulls filter_info.uri field,
+        if GTK_RECENT_FILTER_DISPLAY_NAME flag not supplied.
+    */
+    GtkRecentFilter * filter = gtk_recent_filter_new();
+    gtk_recent_filter_add_custom(filter, GTK_RECENT_FILTER_URI | GTK_RECENT_FILTER_DISPLAY_NAME,
+        recent_documents_filter, NULL, NULL);
+    gtk_recent_chooser_set_filter(GTK_RECENT_CHOOSER(recent_menu), filter);
 
     gtk_recent_chooser_set_show_private(GTK_RECENT_CHOOSER(recent_menu), show_private);
     gtk_recent_chooser_set_local_only(GTK_RECENT_CHOOSER(recent_menu), local_only);

@@ -246,6 +246,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
                 /* Convert name to UTF-8 and to the collation key. */
                 char * file_name = g_filename_display_name(name);
+                //char * file_name_collate_key = g_utf8_collate_key_for_filename(file_name, -1);
                 char * file_name_collate_key = g_utf8_collate_key(file_name, -1);
 
                 /* Allocate and initialize file name entry. */
@@ -375,6 +376,10 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         filemenu = submenu;
     }
 
+    char submenu_index_len = 0;
+    char submenu_index[20] = {0};
+    GtkWidget * filesubmenu = NULL;
+
     /* Files. */
     FileName * file_cursor;
     while ((file_cursor = file_list) != NULL)
@@ -396,7 +401,56 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         gtk_widget_set_tooltip_text(item, tooltip);
         g_free(tooltip);
 
-        gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), item);
+        GtkWidget * add_to_menu = NULL;
+        if (dm->sort_files == SORT_BY_NAME && file_list_count > 100 && file_list_count > dm->max_file_count)
+        {
+            if (!filesubmenu || memcmp(submenu_index, file_cursor->file_name_collate_key, submenu_index_len) != 0)
+            {
+                gchar * nc = g_utf8_next_char(file_cursor->file_name_collate_key);
+                submenu_index_len = nc - file_cursor->file_name_collate_key;
+                memcpy(submenu_index, file_cursor->file_name_collate_key, submenu_index_len);
+                submenu_index[submenu_index_len] = 0;
+
+                FileName * file_cursor2 = file_cursor->flink;
+                int count = 0;
+                while (file_cursor2 && memcmp(submenu_index, file_cursor2->file_name_collate_key, submenu_index_len) == 0)
+                {
+                    count++;
+                    file_cursor2 = file_cursor2->flink;
+                }
+
+                if (count > 2)
+                {
+                    gchar * nc = g_utf8_next_char(file_cursor->file_name);
+                    gchar * submenu_index_name = g_utf8_strup(file_cursor->file_name, nc - file_cursor->file_name);
+
+                    GtkWidget * submenu_item = gtk_menu_item_new_with_label( submenu_index_name );
+                    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), GTK_WIDGET(submenu_item));
+                    filesubmenu = gtk_menu_new();
+                    gtk_menu_item_set_submenu(GTK_MENU_ITEM(submenu_item), filesubmenu);
+
+                    g_free(submenu_index_name);
+
+                    add_to_menu = filesubmenu;
+                }
+                else
+                {
+                    filesubmenu = NULL;
+                    add_to_menu = filemenu;
+                }
+            }
+            else
+            {
+                add_to_menu = filesubmenu;
+            }
+        }
+        else
+        {
+            add_to_menu = filemenu;
+        }
+
+        gtk_menu_shell_append(GTK_MENU_SHELL(add_to_menu), item);
+
 
 #if GLIB_CHECK_VERSION(2,20,0)
         if (dm->show_icons)

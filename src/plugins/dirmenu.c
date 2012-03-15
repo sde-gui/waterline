@@ -220,13 +220,32 @@ static gboolean dirmenu_query_tooltip(GtkWidget * item, gint x, gint y, gboolean
     if (!path)
         return FALSE;
 
+    int link_content_size = 0;
+    gchar link_content[1024];
+    gboolean is_symlink = g_file_test(path, G_FILE_TEST_IS_SYMLINK);
+    if (is_symlink)
+    {
+        link_content_size = readlink(path, link_content, 1023);
+        if (link_content_size >= 0)
+            link_content[link_content_size] = 0;
+    }
+
     struct stat stat_data;
     if (stat(path, &stat_data) !=0)
         return FALSE;
 
     gchar * tooltip_text = lxpanel_tooltip_for_file_stat(&stat_data);
+
+    if (link_content_size > 0)
+    {
+        gchar * s = g_strdup_printf(_("Link to %s,\n%s"), link_content, tooltip_text);
+        g_free(tooltip_text);
+        tooltip_text = s;
+    }
+
     gtk_tooltip_set_text(tooltip, tooltip_text);
     gtk_widget_set_tooltip_text(item, tooltip_text);
+
     g_free(tooltip_text);
 
     //gtk_widget_set_has_tooltip(item, TRUE);
@@ -595,6 +614,23 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         struct stat stat_data;
         stat(path, &stat_data);
         s1 = lxpanel_tooltip_for_file_stat(&stat_data);
+
+        int link_content_size = 0;
+        gchar link_content[1024];
+        gboolean is_symlink = g_file_test(path, G_FILE_TEST_IS_SYMLINK);
+        if (is_symlink)
+        {
+            link_content_size = readlink(path, link_content, 1023);
+            if (link_content_size >= 0)
+                link_content[link_content_size] = 0;
+        }
+
+        if (link_content_size > 0)
+        {
+            s2 = g_strdup_printf(_("Link to %s,\n%s"), link_content, s1);
+            g_free(s1);
+            s1 = s2;
+        }
 
         if (dir_list_count)
         {

@@ -1011,9 +1011,20 @@ gchar * lxpanel_tooltip_for_file_stat(struct stat * stat_data)
     struct group * gw_ent = getgrgid (stat_data->st_gid);
     gchar * s_group = g_strdup (gw_ent ? gw_ent->gr_name : "UNKNOWN");
 
-    gchar * tooltip = g_strdup_printf(_("%llu bytes, %s:%s %04o"),
-        (unsigned long long)stat_data->st_size,
-        s_user, s_group, (unsigned int)stat_data->st_mode);
+    gchar * tooltip = NULL;
+
+    if (stat_data->st_uid == stat_data->st_gid && strcmp(s_user, s_group) == 0)
+    {
+        tooltip = g_strdup_printf(_("%llu bytes, %s %04o"),
+            (unsigned long long)stat_data->st_size,
+            s_user, (unsigned int)stat_data->st_mode);
+    }
+    else
+    {
+        tooltip = g_strdup_printf(_("%llu bytes, %s:%s %04o"),
+            (unsigned long long)stat_data->st_size,
+            s_user, s_group, (unsigned int)stat_data->st_mode);
+    }
 
     g_free(s_user);
     g_free(s_group);

@@ -81,7 +81,7 @@ static void dirmenu_menuitem_select(GtkMenuItem * item, Plugin * p);
 static void dirmenu_menuitem_deselect(GtkMenuItem * item, Plugin * p);
 void dirmenu_menu_selection_done(GtkWidget * menu, Plugin * p);
 static void dirmenu_popup_set_position(GtkWidget * menu, gint * px, gint * py, gboolean * push_in, Plugin * p);
-static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top);
+static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top, GtkWidget * parent_item);
 static void dirmenu_show_menu(GtkWidget * widget, Plugin * p, int btn, guint32 time);
 static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * event, Plugin * p);
 static int dirmenu_constructor(Plugin * p, char ** fp);
@@ -137,7 +137,7 @@ static void dirmenu_menuitem_select(GtkMenuItem * item, Plugin * p)
                 (char *) g_object_get_data(G_OBJECT(parent), "path"),
                 (char *) g_object_get_data(G_OBJECT(item), "name"),
                 NULL);
-            sub = dirmenu_create_menu(p, path, TRUE);
+            sub = dirmenu_create_menu(p, path, TRUE, GTK_WIDGET(item));
             g_free(path);
             gtk_menu_item_set_submenu(item, sub);
         }
@@ -235,7 +235,7 @@ static gboolean dirmenu_query_tooltip(GtkWidget * item, gint x, gint y, gboolean
 }
 
 /* Create a menu populated with all files and subdirectories. */
-static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top)
+static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top, GtkWidget * parent_item)
 {
     DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
 
@@ -263,6 +263,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
     FileName * file_list = NULL;
     int dir_list_count = 0;
     int file_list_count = 0;
+    int hidden_count = 0;
+    unsigned long long total_file_size = 0;
     GDir * dir = g_dir_open(path, 0, NULL);
     if (dir != NULL)
     {
@@ -274,8 +276,14 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             /* Omit hidden files. */
             if (name[0] == '.')
             {
-                if (!dm->show_hidden || !strcmp(name, ".") || !strcmp(name, ".."))
+                if (!strcmp(name, ".") || !strcmp(name, ".."))
                     continue;
+
+                if (!dm->show_hidden)
+                {
+                    hidden_count++;
+                    continue;
+                }
             }
 
             char * full = g_build_filename(path, name, NULL);
@@ -303,6 +311,9 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
                 fn->path = g_build_filename(path, file_name, NULL);
                 fn->directory = directory;
                 stat(fn->path, &fn->stat_data);
+
+                if (!directory)
+                    total_file_size += fn->stat_data.st_size;
 
                 int sort_by = directory ? dm->sort_directories : dm->sort_files;
 
@@ -344,6 +355,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         }
         g_dir_close(dir);
     }
+
 
     gboolean not_empty_dir_list = dir_list != NULL;
     gboolean not_empty_file_list = file_list != NULL;
@@ -571,8 +583,51 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 	}
     }
 
-    /* Show the menu and return. */
+    /* Show the menu. */
     gtk_widget_show_all(menu);
+
+
+    if (parent_item && dm->show_tooltips)
+    {
+        gchar * s1 = NULL;
+        gchar * s2 = NULL;
+
+        struct stat stat_data;
+        stat(path, &stat_data);
+        s1 = lxpanel_tooltip_for_file_stat(&stat_data);
+
+        if (dir_list_count)
+        {
+            gchar * s3 = s1 ? s1 : "";
+            gchar * s4 = s1 ? _(",\n") : "";
+            s2 = g_strdup_printf(_("%s%s%d subdirectories"), s3, s4, dir_list_count);
+            g_free(s1);
+            s1 = s2;
+        }
+
+        if (file_list_count)
+        {
+            gchar * s3 = s1 ? s1 : "";
+            gchar * s4 = s1 ? _(",\n") : "";
+            s2 = g_strdup_printf(_("%s%s%d files containing %'llu bytes"), s3, s4, file_list_count, total_file_size);
+            g_free(s1);
+            s1 = s2;
+        }
+
+        if (hidden_count)
+        {
+            gchar * s3 = s1 ? s1 : "";
+            gchar * s4 = s1 ? _(",\n") : "";
+            s2 = g_strdup_printf(_("%s%s%d hidden items"), s3, s4, hidden_count);
+            g_free(s1);
+            s1 = s2;
+        }
+
+        gtk_widget_set_tooltip_text(parent_item, s1);
+        g_free(s1);
+    }
+
+
     return menu;
 }
 
@@ -585,7 +640,7 @@ static void dirmenu_show_menu(GtkWidget * widget, Plugin * p, int btn, guint32 t
     GtkWidget * menu = dirmenu_create_menu(
         p,
         ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()),
-        FALSE);
+        FALSE, NULL);
     g_signal_connect(menu, "selection-done", G_CALLBACK(dirmenu_menu_selection_done), NULL);
 
     /* Show the menu.  Use a positioning function to get it placed next to the top level widget. */

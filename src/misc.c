@@ -32,6 +32,7 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
+#include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
@@ -41,6 +42,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include "misc.h"
 #include "panel.h"
@@ -996,3 +999,24 @@ void bring_to_current_desktop(GtkWidget * win)
     gtk_window_present(GTK_WINDOW(win));
 }
 
+/********************************************************************/
+
+gchar * lxpanel_tooltip_for_file_stat(struct stat * stat_data)
+{
+    setpwent ();
+    struct passwd * pw_ent = getpwuid (stat_data->st_uid);
+    gchar * s_user = g_strdup (pw_ent ? pw_ent->pw_name : "UNKNOWN");
+
+    setgrent ();
+    struct group * gw_ent = getgrgid (stat_data->st_gid);
+    gchar * s_group = g_strdup (gw_ent ? gw_ent->gr_name : "UNKNOWN");
+
+    gchar * tooltip = g_strdup_printf(_("%llu bytes, %s:%s %04o"),
+        (unsigned long long)stat_data->st_size,
+        s_user, s_group, (unsigned int)stat_data->st_mode);
+
+    g_free(s_user);
+    g_free(s_group);
+
+    return tooltip;
+}

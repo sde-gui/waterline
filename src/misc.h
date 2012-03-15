@@ -24,6 +24,7 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 #include "panel.h"
 #include "plugin.h"
@@ -106,5 +107,7 @@ gchar * panel_translate_directory_name(const gchar * name);
 int strempty(const char* s);
 
 void bring_to_current_desktop(GtkWidget * win);
+
+gchar * lxpanel_tooltip_for_file_stat(struct stat * stat_data);
 
 #endif

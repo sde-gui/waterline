@@ -23,8 +23,6 @@
 #include <glib/gi18n.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <pwd.h>
-#include <grp.h>
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
@@ -171,26 +169,6 @@ static void dirmenu_popup_set_position(GtkWidget * menu, gint * px, gint * py, g
     *push_in = TRUE;
 }
 
-static gchar * tooltip_for_file(struct stat * stat_data)
-{
-    setpwent ();
-    struct passwd * pw_ent = getpwuid (stat_data->st_uid);
-    gchar * s_user = g_strdup (pw_ent ? pw_ent->pw_name : "UNKNOWN");
-
-    setgrent ();
-    struct group * gw_ent = getgrgid (stat_data->st_gid);
-    gchar * s_group = g_strdup (gw_ent ? gw_ent->gr_name : "UNKNOWN");
-
-    gchar * tooltip = g_strdup_printf(_("%llu bytes, %s:%s %04o"),
-        (unsigned long long)stat_data->st_size,
-        s_user, s_group, (unsigned int)stat_data->st_mode);
-
-    g_free(s_user);
-    g_free(s_group);
-
-    return tooltip;
-}
-
 static gboolean dirmenu_query_tooltip(GtkWidget * item, gint x, gint y, gboolean keyboard_mode,
                                       GtkTooltip * tooltip, Plugin * p)
 {
@@ -205,7 +183,7 @@ static gboolean dirmenu_query_tooltip(GtkWidget * item, gint x, gint y, gboolean
     if (stat(path, &stat_data) !=0)
         return FALSE;
 
-    gchar * tooltip_text = tooltip_for_file(&stat_data);
+    gchar * tooltip_text = lxpanel_tooltip_for_file_stat(&stat_data);
     gtk_tooltip_set_text(tooltip, tooltip_text);
     gtk_widget_set_tooltip_text(item, tooltip_text);
     g_free(tooltip_text);

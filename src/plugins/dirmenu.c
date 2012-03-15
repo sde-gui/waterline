@@ -420,10 +420,15 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
     GtkWidget * filemenu = menu;
     if (file_list_count > dm->max_file_count && not_empty_file_list)
     {
-        GtkWidget * item = gtk_menu_item_new_with_mnemonic( _("Files") );
+        gchar * filemenu_title = g_strdup_printf(_("Files (%d)"), file_list_count);
+        GtkWidget * item = gtk_menu_item_new_with_mnemonic( filemenu_title );
+        g_free(filemenu_title);
+
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(item));
+
         GtkWidget * submenu = gtk_menu_new();
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+
         filemenu = submenu;
     }
 
@@ -478,12 +483,14 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
                 {
                     gchar * nc = g_utf8_next_char(file_cursor->file_name);
                     gchar * submenu_index_name = g_utf8_strup(file_cursor->file_name, nc - file_cursor->file_name);
+                    gchar * submenu_index_title = g_strdup_printf(_("%s (%d)"), submenu_index_name, submenu_item_count);
 
-                    GtkWidget * submenu_item = gtk_menu_item_new_with_label( submenu_index_name );
+                    GtkWidget * submenu_item = gtk_menu_item_new_with_label( submenu_index_title );
                     gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), GTK_WIDGET(submenu_item));
                     filesubmenu = gtk_menu_new();
                     gtk_menu_item_set_submenu(GTK_MENU_ITEM(submenu_item), filesubmenu);
 
+                    g_free(submenu_index_title);
                     g_free(submenu_index_name);
 
                     add_to_menu = filesubmenu;

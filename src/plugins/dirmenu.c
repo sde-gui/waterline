@@ -144,11 +144,52 @@ static void dirmenu_menuitem_select(GtkMenuItem * item, Plugin * p)
     }
 }
 
+static gboolean dirmenu_menuitem_timeout(gpointer user_data)
+{
+    GtkWidget * sub = GTK_WIDGET(user_data);
+    if (!sub)
+        return FALSE;
+
+    if (!gtk_widget_get_visible(sub))
+    {
+        GtkMenuItem * item = (GtkMenuItem *) g_object_get_data(G_OBJECT(sub), "parent_item");
+        if (item)
+        {
+            gtk_menu_item_set_submenu(item, gtk_menu_new());
+        }
+    }
+
+    return TRUE;
+}
+
+static void dirmenu_menuitem_weak_ref(gpointer data, GObject *where_the_object_was)
+{
+    g_source_remove((guint)data);
+}
+
 /* Handler for deselect event on popup menu item. */
 static void dirmenu_menuitem_deselect(GtkMenuItem * item, Plugin * p)
 {
     /* Delete old menu on deselect to save resource. */
-    gtk_menu_item_set_submenu(item, gtk_menu_new());
+//    gtk_menu_item_set_submenu(item, gtk_menu_new());
+
+    GtkWidget * sub = gtk_menu_item_get_submenu(item);
+    if (sub == NULL)
+         return;
+
+    char * path = (char *) g_object_get_data(G_OBJECT(sub), "path");
+    if (path == NULL)
+         return;
+
+    guint timer_id = (guint) g_object_get_data(G_OBJECT(sub), "timer_id");
+    if (!timer_id)
+    {
+        timer_id = g_timeout_add(60000, dirmenu_menuitem_timeout, sub);
+        g_object_set_data(G_OBJECT(sub), "timer_id", (gpointer)timer_id);
+        g_object_weak_ref(G_OBJECT(sub), dirmenu_menuitem_weak_ref, (gpointer)timer_id);
+
+        g_object_set_data(G_OBJECT(sub), "parent_item", (gpointer)item);
+    }
 }
 
 /* Handler for selection-done event on popup menu. */

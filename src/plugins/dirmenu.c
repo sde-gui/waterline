@@ -305,36 +305,42 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
                 }
             }
 
-            char * full = g_build_filename(path, name, NULL);
-            gboolean directory = g_file_test(full, G_FILE_TEST_IS_DIR);
+            /* Full path. */
+            char * item_path = g_build_filename(path, name, NULL);
+
+            /* Stat */
+            struct stat stat_data;
+            gboolean directory;
+            if (stat(item_path, &stat_data) == 0)
+                directory = S_ISDIR(stat_data.st_mode);
+            else
+                directory = FALSE;
+
+            int sort_by;
+
+            /* Choose list */
             if (directory)
                 plist = &dir_list,
+                sort_by = dm->sort_directories,
                 dir_list_count++;
             else if (dm->show_files)
                 plist = &file_list,
-                file_list_count++;
+                sort_by = dm->sort_files,
+                file_list_count++,
+                total_file_size += stat_data.st_size;
 
             if (plist)
             {
                 FileName * list = *plist;
 
-                /* Convert name to UTF-8 and to the collation key. */
-                char * file_name = g_filename_display_name(name);
-                //char * file_name_collate_key = g_utf8_collate_key_for_filename(file_name, -1);
-                char * file_name_collate_key = g_utf8_collate_key(file_name, -1);
-
                 /* Allocate and initialize file name entry. */
                 FileName * fn = g_new0(FileName, 1);
-                fn->file_name = file_name;
-                fn->file_name_collate_key = file_name_collate_key;
-                fn->path = g_build_filename(path, file_name, NULL);
+                fn->file_name = g_filename_display_name(name);
+                char * file_name_collate_key = fn->file_name_collate_key =
+                    (sort_by == SORT_BY_NAME) ? g_utf8_collate_key(fn->file_name, -1) : NULL;
+                fn->path = item_path;
                 fn->directory = directory;
-                stat(fn->path, &fn->stat_data);
-
-                if (!directory)
-                    total_file_size += fn->stat_data.st_size;
-
-                int sort_by = directory ? dm->sort_directories : dm->sort_files;
+                memcpy(&fn->stat_data, &stat_data, sizeof(struct stat));
 
                 /* Locate insertion point. */
                 FileName * fn_pred = NULL;
@@ -351,10 +357,14 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
                         if (fn->stat_data.st_size < fn_cursor->stat_data.st_size)
                             break;
                     }
-                    else
+                    else if (sort_by == SORT_BY_NAME)
                     {
                         if (strcmp(file_name_collate_key, fn_cursor->file_name_collate_key) <= 0)
                             break;
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
 
@@ -370,7 +380,6 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
                     fn_pred->flink = fn;
                 }
             }
-            g_free(full);
         }
         g_dir_close(dir);
     }

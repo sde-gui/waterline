@@ -485,7 +485,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         GtkWidget * item = NULL;
         if (dm->show_file_size)
         {
-            gchar * name = g_strdup_printf("%s [%llu]", file_cursor->file_name, (unsigned long long)file_cursor->stat_data.st_size);
+            gchar * name = g_strdup_printf("[%'llu] %s", (unsigned long long)file_cursor->stat_data.st_size, file_cursor->file_name);
             item = gtk_image_menu_item_new_with_label(name);
             g_free(name);
         }

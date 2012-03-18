@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2011-2012 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -66,16 +67,6 @@ has_case_prefix (const gchar *haystack,
   return *n == '\0';
 }
 
-
-
-/*
- * SuxPanel version 0.1
- * Copyright (c) 2003 Leandro Pereira <leandro@linuxmag.com.br>
- */
-
-/*
- * menu style code was taken from suxpanel
- */
 
 typedef struct {
     GtkWidget *menu, *box, *img, *label;
@@ -157,36 +148,6 @@ run_command(GtkWidget *widget, void (*cmd)(void))
 static void
 menu_pos(GtkWidget *menu, gint *px, gint *py, gboolean *push_in, Plugin * p)
 {
-/*
-    int ox, oy, w, h;
-    Plugin *p;
-
-    ENTER;
-    p = g_object_get_data(G_OBJECT(widget), "plugin");
-    gdk_window_get_origin(widget->window, &ox, &oy);
-    w = GTK_WIDGET(menu)->requisition.width;
-    h = GTK_WIDGET(menu)->requisition.height;
-    if (p->panel->orientation == ORIENT_HORIZ) {
-        *x = ox;
-        if (*x + w > gdk_screen_width())
-            *x = ox + widget->allocation.width - w;
-        *y = oy - h;
-        if (*y < 0)
-            *y = oy + widget->allocation.height;
-    } else {
-        *x = ox + widget->allocation.width;
-        if (*x > gdk_screen_width())
-            *x = ox - w;
-        *y = oy;
-        if (*y + h >  gdk_screen_height())
-            *y = oy + widget->allocation.height - h;
-    }
-    DBG("widget: x,y=%d,%d  w,h=%d,%d\n", ox, oy,
-          widget->allocation.width, widget->allocation.height );
-    DBG("w-h %d %d\n", w, h);
-    *push_in = TRUE;
-    RET();
-*/
     /* Get the allocation of the popup menu. */
     GtkRequisition popup_req;
     gtk_widget_size_request(menu, &popup_req);

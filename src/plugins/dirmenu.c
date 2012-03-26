@@ -16,6 +16,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -32,6 +36,11 @@
 #include "misc.h"
 #include "plugin.h"
 #include "dbg.h"
+
+#ifndef DISABLE_LIBFM
+#include <libfm/fm-file-info.h>
+#include <libfm/fm-file-menu.h>
+#endif
 
 enum {
     SORT_BY_NAME,
@@ -121,6 +130,101 @@ static void dirmenu_menuitem_open_directory_plain(GtkWidget * item, Plugin * p)
     lxpanel_open_in_file_manager(path);
     g_free(path);
 }
+
+
+
+static gboolean dirmenu_menuitem_button_press(GtkWidget * item, GdkEventButton* evt, Plugin * p)
+{
+    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+
+    if (evt->button == 3)  /* right */
+    {
+        /*if (lxpanel_is_in_kiosk_mode())
+            return TRUE;*/
+#ifndef DISABLE_LIBFM
+        GFile * gfile = NULL;
+        GFileInfo * gfile_info = NULL;
+        FmPath * fm_path = NULL;
+        FmFileInfo * fm_file_info = NULL;
+
+        gchar * path = g_object_get_data(G_OBJECT(item), "path");
+        if (path)
+        {
+            path = g_strdup(path);
+        }
+        else
+        {
+            GtkMenu * parent = GTK_MENU(gtk_widget_get_parent(GTK_WIDGET(item)));
+            if (!parent)
+                goto out;
+            gchar * parent_path = (gchar *) g_object_get_data(G_OBJECT(parent), "path");
+            if (!parent_path)
+                goto out;
+            gchar * name = (gchar *) g_object_get_data(G_OBJECT(item), "name");
+            if (!name)
+                goto out;
+            path = g_build_filename(parent_path, name, NULL);
+            if (!path)
+                goto out;
+        }
+
+        gfile = g_file_new_for_path(path);
+        if (!gfile)
+            goto out;
+
+        gfile_info = g_file_query_info(gfile, "standard::*,unix::*,time::*", G_FILE_QUERY_INFO_NONE, NULL, NULL);
+        if (!gfile_info)
+            goto out;
+            
+        fm_path = fm_path_new_for_path(path);
+        if (!fm_path)
+            goto out;
+
+        fm_file_info = fm_file_info_new_from_gfileinfo(fm_path, gfile_info);
+        if (!fm_file_info)
+            goto out;
+
+//        FmFileMenu * fm_file_menu = fm_file_menu_new_for_file(GTK_WINDOW(p->panel->topgwin),
+        FmFileMenu * fm_file_menu = fm_file_menu_new_for_file(NULL,
+                                                         fm_file_info,
+                                                         /*cwd*/ NULL,
+                                                         TRUE);
+        if (!fm_file_menu)
+            goto out;
+
+        GtkMenu * popup = fm_file_menu_get_menu(fm_file_menu);
+        g_signal_connect(popup, "deactivate", G_CALLBACK(restore_grabs), item);
+        gtk_menu_popup(popup, NULL, NULL, NULL, NULL, 3, evt->time);
+
+        out:
+
+        if (fm_file_info)
+            fm_file_info_unref(fm_file_info);
+        if (fm_path)
+            fm_path_unref(fm_path);
+        if (gfile_info)
+            g_object_unref(G_OBJECT(gfile_info));
+        if (gfile)
+            g_object_unref(G_OBJECT(gfile));
+        if (path)
+            g_free(path);
+#endif
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static gboolean dirmenu_menuitem_button_release(GtkWidget * item, GdkEventButton* evt, Plugin * p)
+{
+    if( evt->button == 3)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
 
 /* Handler for select event on popup menu item. */
 static void dirmenu_menuitem_select(GtkMenuItem * item, Plugin * p)
@@ -405,7 +509,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         if (dm->show_icons)
         {
             GFile * file = g_file_new_for_path(dir_cursor->path);
-            GFileInfo * file_info =g_file_query_info(file,
+            GFileInfo * file_info = g_file_query_info(file,
                 G_FILE_ATTRIBUTE_STANDARD_ICON,
                 G_FILE_QUERY_INFO_NONE,
                 NULL,
@@ -449,6 +553,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             g_signal_connect(G_OBJECT(item), "select", G_CALLBACK(dirmenu_menuitem_select), p);
             g_signal_connect(G_OBJECT(item), "deselect", G_CALLBACK(dirmenu_menuitem_deselect), p);
         }
+        g_signal_connect(item, "button-press-event", G_CALLBACK(dirmenu_menuitem_button_press), p);
+        g_signal_connect(item, "button-release-event", G_CALLBACK(dirmenu_menuitem_button_release), p);
     }
 
     if (not_empty_dir_list && not_empty_file_list)
@@ -583,6 +689,8 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
         /* Connect signals. */
         g_signal_connect(item, "activate", G_CALLBACK(dirmenu_menuitem_open_file), p);
+        g_signal_connect(item, "button-press-event", G_CALLBACK(dirmenu_menuitem_button_press), p);
+        g_signal_connect(item, "button-release-event", G_CALLBACK(dirmenu_menuitem_button_release), p);
     }
 
 //g_print("[%d] done\n", (int)time(NULL));

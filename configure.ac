@@ -29,6 +29,8 @@ PKG_CHECK_MODULES(X11, [$pkg_modules])
 AC_SUBST(X11_CFLAGS)
 AC_SUBST(X11_LIBS)
 
+# menu cache
+
 AC_ARG_WITH(menucache, [  --without-menucache     Compile without menucache support])
 if test "x$with_menucache" != "xno"; then
 	pkg_modules="libmenu-cache"
@@ -50,12 +52,39 @@ AM_CONDITIONAL(ENABLE_MENU_CACHE, test x"$enable_menu_cache" = x"yes")
 PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"
 PACKAGE_LIBS="$PACKAGE_LIBS $MENU_CACHE_LIBS -lutil"
 
+# libfm
+
+AC_ARG_WITH(libfm, [  --without-libfm             Compile without libfm support])
+if test "x$with_libfm" != "xno"; then
+	pkg_modules="libfm-gtk libfm"
+	PKG_CHECK_MODULES(LIBFM, [$pkg_modules],
+			  enable_libfm=yes, enable_libfm=no)
+	if test x"$enable_libfm" = "xno"; then
+		AC_WARN([No libfm found.  All menu related routines are not built.])
+		AC_DEFINE(DISABLE_LIBFM, [1], [Disable libfm related routines])
+	fi
+	AC_SUBST(LIBFM_CFLAGS)
+	AC_SUBST(LIBFM_CACHE_LIBS)
+else
+	enable_libfm=no
+	AC_WARN([libfm disabled.  All libfm related routines are not built.])
+	AC_DEFINE(DISABLE_LIBFM, [1], [Disable libfm related routines])
+fi
+AM_CONDITIONAL(ENABLE_LIBFM, test x"$enable_libfm" = x"yes")
+
+PACKAGE_CFLAGS="$PACKAGE_CFLAGS $LIBFM_CFLAGS"
+PACKAGE_LIBS="$PACKAGE_LIBS $LIBFM_LIBS"
+
+# man
+
 AC_ARG_ENABLE(man,
 	[AC_HELP_STRING([--enable-man],
 		[regenerate roff man pages from Docbook @<:@default=no@:>@])],
 	[enable_man="${enableval}"],
 	[enable_man=no]
 )
+
+# cast checks
 
 AC_ARG_ENABLE([cast-checks],
     AS_HELP_STRING([--enable-cast-checks],

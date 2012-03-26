@@ -304,62 +304,6 @@ static void on_menu_item_properties(GtkMenuItem* item, MenuCacheApp* app)
     g_free( ofile );
 }
 
-/* This following function restore_grabs is taken from menu.c of
- * gnome-panel.
- */
-/*most of this function stolen from the real gtk_menu_popup*/
-static void restore_grabs(GtkWidget *w, gpointer data)
-{
-    GtkWidget *menu_item = data;
-    GtkMenu *menu = GTK_MENU(menu_item->parent);
-    GtkWidget *xgrab_shell;
-    GtkWidget *parent;
-
-    /* Find the last viewable ancestor, and make an X grab on it
-    */
-    parent = GTK_WIDGET (menu);
-    xgrab_shell = NULL;
-    while (parent)
-    {
-        gboolean viewable = TRUE;
-        GtkWidget *tmp = parent;
-
-        while (tmp)
-        {
-            if (!GTK_WIDGET_MAPPED (tmp))
-            {
-                viewable = FALSE;
-                break;
-            }
-            tmp = tmp->parent;
-        }
-
-        if (viewable)
-            xgrab_shell = parent;
-
-        parent = GTK_MENU_SHELL (parent)->parent_menu_shell;
-    }
-
-    /*only grab if this HAD a grab before*/
-    if (xgrab_shell && (GTK_MENU_SHELL (xgrab_shell)->have_xgrab))
-    {
-        if (gdk_pointer_grab (xgrab_shell->window, TRUE,
-                    GDK_BUTTON_PRESS_MASK |
-                    GDK_BUTTON_RELEASE_MASK |
-                    GDK_ENTER_NOTIFY_MASK |
-                    GDK_LEAVE_NOTIFY_MASK,
-                    NULL, NULL, 0) == 0)
-        {
-            if (gdk_keyboard_grab (xgrab_shell->window, TRUE,
-                    GDK_CURRENT_TIME) == 0)
-                GTK_MENU_SHELL (xgrab_shell)->have_xgrab = TRUE;
-            else
-                gdk_pointer_ungrab (GDK_CURRENT_TIME);
-        }
-    }
-    gtk_grab_add (GTK_WIDGET (menu));
-}
-
 static gboolean on_menu_button_press(GtkWidget* mi, GdkEventButton* evt, MenuCacheItem* data)
 {
     if( evt->button == 3)  /* right */

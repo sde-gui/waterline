@@ -41,6 +41,11 @@
 #include "lxpanelctl.h"
 #include "dbg.h"
 
+#ifndef DISABLE_LIBFM
+#include <libfm/fm-file-info.h>
+#include <libfm/fm-file-menu.h>
+#endif
+
 /******************************************************************************/
 
 /* defined in gtk-run.c */
@@ -2005,7 +2010,9 @@ int main(int argc, char *argv[], char *env[])
 
     XSetLocaleModifiers("");
     XSetErrorHandler((XErrorHandler) panel_handle_x_error);
-
+#ifndef DISABLE_LIBFM
+    fm_gtk_init(NULL);
+#endif
     resolve_atoms();
     update_net_supported();
 

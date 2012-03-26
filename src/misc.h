@@ -123,5 +123,6 @@ extern void filemodestring (struct stat const *statp, char *str);
 extern void strmode (mode_t mode, char *str);
 # endif
 
+void restore_grabs(GtkWidget *w, gpointer data);
 
 #endif

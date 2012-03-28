@@ -131,8 +131,6 @@ static void dirmenu_menuitem_open_directory_plain(GtkWidget * item, Plugin * p)
     g_free(path);
 }
 
-
-
 static gboolean dirmenu_menuitem_button_press(GtkWidget * item, GdkEventButton* evt, Plugin * p)
 {
     DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;

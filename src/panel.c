@@ -2010,8 +2010,6 @@ int main(int argc, char *argv[], char *env[])
     XSetLocaleModifiers("");
     XSetErrorHandler((XErrorHandler) panel_handle_x_error);
 
-    lxpanel_fm_init();
-
     resolve_atoms();
     update_net_supported();
 

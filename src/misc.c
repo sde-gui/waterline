@@ -29,6 +29,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
@@ -49,6 +53,11 @@
 #include "panel.h"
 #include "Xsupport.h"
 #include "dbg.h"
+
+#ifndef DISABLE_LIBFM
+#include <libfm/fm-file-info.h>
+#include <libfm/fm-file-menu.h>
+#endif
 
 /********************************************************************/
 
@@ -1267,3 +1276,76 @@ void restore_grabs(GtkWidget *w, gpointer data)
     }
     gtk_grab_add (GTK_WIDGET (menu));
 }
+
+/********************************************************************/
+
+#ifndef DISABLE_LIBFM
+
+void lxpanel_fm_init(void)
+{
+    fm_gtk_init(NULL);
+}
+
+GtkMenu * lxpanel_fm_file_menu_for_path(const char * path)
+{
+    if (!path)
+        return NULL;
+
+    GFile * gfile = NULL;
+    GFileInfo * gfile_info = NULL;
+    FmPath * fm_path = NULL;
+    FmFileInfo * fm_file_info = NULL;
+    GtkMenu * popup = NULL;
+
+    gfile = g_file_new_for_path(path);
+    if (!gfile)
+        goto out;
+
+    gfile_info = g_file_query_info(gfile, "standard::*,unix::*,time::*", G_FILE_QUERY_INFO_NONE, NULL, NULL);
+    if (!gfile_info)
+        goto out;
+            
+    fm_path = fm_path_new_for_path(path);
+    if (!fm_path)
+        goto out;
+
+    fm_file_info = fm_file_info_new_from_gfileinfo(fm_path, gfile_info);
+    if (!fm_file_info)
+        goto out;
+
+//    FmFileMenu * fm_file_menu = fm_file_menu_new_for_file(GTK_WINDOW(p->panel->topgwin),
+    FmFileMenu * fm_file_menu = fm_file_menu_new_for_file(NULL,
+                                                          fm_file_info,
+                                                          /*cwd*/ NULL,
+                                                          TRUE);
+    if (!fm_file_menu)
+        goto out;
+
+    popup = fm_file_menu_get_menu(fm_file_menu);
+ 
+out:
+
+    if (fm_file_info)
+        fm_file_info_unref(fm_file_info);
+    if (fm_path)
+        fm_path_unref(fm_path);
+    if (gfile_info)
+        g_object_unref(G_OBJECT(gfile_info));
+    if (gfile)
+        g_object_unref(G_OBJECT(gfile));
+
+    return popup;
+}
+
+#else
+
+void lxpanel_fm_init(void) {}
+
+GtkMenu * lxpanel_fm_file_menu_for_path(const char * path)
+{
+    return NULL;
+}
+
+#endif
+
+

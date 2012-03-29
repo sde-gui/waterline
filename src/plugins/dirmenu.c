@@ -37,11 +37,6 @@
 #include "plugin.h"
 #include "dbg.h"
 
-#ifndef DISABLE_LIBFM
-#include <libfm/fm-file-info.h>
-#include <libfm/fm-file-menu.h>
-#endif
-
 enum {
     SORT_BY_NAME,
     SORT_BY_MTIME,
@@ -139,11 +134,6 @@ static gboolean dirmenu_menuitem_button_press(GtkWidget * item, GdkEventButton* 
     {
         /*if (lxpanel_is_in_kiosk_mode())
             return TRUE;*/
-#ifndef DISABLE_LIBFM
-        GFile * gfile = NULL;
-        GFileInfo * gfile_info = NULL;
-        FmPath * fm_path = NULL;
-        FmFileInfo * fm_file_info = NULL;
 
         gchar * path = g_object_get_data(G_OBJECT(item), "path");
         if (path)
@@ -166,47 +156,19 @@ static gboolean dirmenu_menuitem_button_press(GtkWidget * item, GdkEventButton* 
                 goto out;
         }
 
-        gfile = g_file_new_for_path(path);
-        if (!gfile)
-            goto out;
-
-        gfile_info = g_file_query_info(gfile, "standard::*,unix::*,time::*", G_FILE_QUERY_INFO_NONE, NULL, NULL);
-        if (!gfile_info)
-            goto out;
-            
-        fm_path = fm_path_new_for_path(path);
-        if (!fm_path)
-            goto out;
-
-        fm_file_info = fm_file_info_new_from_gfileinfo(fm_path, gfile_info);
-        if (!fm_file_info)
-            goto out;
-
-//        FmFileMenu * fm_file_menu = fm_file_menu_new_for_file(GTK_WINDOW(p->panel->topgwin),
-        FmFileMenu * fm_file_menu = fm_file_menu_new_for_file(NULL,
-                                                         fm_file_info,
-                                                         /*cwd*/ NULL,
-                                                         TRUE);
-        if (!fm_file_menu)
-            goto out;
-
-        GtkMenu * popup = fm_file_menu_get_menu(fm_file_menu);
-        g_signal_connect(popup, "deactivate", G_CALLBACK(restore_grabs), item);
-        gtk_menu_popup(popup, NULL, NULL, NULL, NULL, 3, evt->time);
+        GtkMenu * popup = lxpanel_fm_file_menu_for_path(path);
+        
+        if (popup)
+        {
+            g_signal_connect(popup, "deactivate", G_CALLBACK(restore_grabs), item);
+            gtk_menu_popup(popup, NULL, NULL, NULL, NULL, 3, evt->time);
+        }
 
         out:
 
-        if (fm_file_info)
-            fm_file_info_unref(fm_file_info);
-        if (fm_path)
-            fm_path_unref(fm_path);
-        if (gfile_info)
-            g_object_unref(G_OBJECT(gfile_info));
-        if (gfile)
-            g_object_unref(G_OBJECT(gfile));
         if (path)
             g_free(path);
-#endif
+
         return TRUE;
     }
     return FALSE;

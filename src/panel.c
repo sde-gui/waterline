@@ -271,9 +271,9 @@ void panel_set_wm_strut(Panel *p)
             (GSourceFunc)panel_set_wm_strut_real, p, NULL );
 }
 
-/****************************************************
- *                command handling                  *
- ****************************************************/
+/******************************************************************************/
+
+/*= command handling =*/
 
 static Panel * panel_get_by_name(gchar * name)
 {   
@@ -413,9 +413,9 @@ static void process_client_msg ( XClientMessageEvent* ev )
     }
 }
 
-/****************************************************
- *         panel's handlers for WM events           *
- ****************************************************/
+/******************************************************************************/
+
+/*= panel's handlers for WM events =*/
 
 static GdkFilterReturn
 panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gpointer not_used)
@@ -521,10 +521,9 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gpointer not_used)
     return GDK_FILTER_CONTINUE;
 }
 
-/****************************************************
- *         panel's handlers for GTK events          *
- ****************************************************/
+/******************************************************************************/
 
+/*= panel's handlers for GTK events =*/
 
 static gint
 panel_delete_event(GtkWidget * widget, GdkEvent * event, gpointer data)
@@ -653,7 +652,7 @@ panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
 
 /******************************************************************************/
 
-/* Panel size and position */
+/*= Panel size and position =*/
 
 /* Calculate real width of a horizontal panel (or height of a vertical panel) */
 static void
@@ -1210,9 +1209,9 @@ void lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * eve
     gtk_menu_popup( popup, NULL, NULL, NULL, NULL, event->button, event->time );
 }
 
-/****************************************************
- *         panel creation                           *
- ****************************************************/
+/******************************************************************************/
+
+/*= panel creation =*/
 
 static void make_round_corners(Panel *p)
 {
@@ -1993,15 +1992,14 @@ int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent 
 
 /******************************************************************************/
 
-/* Lightweight lock related functions - X clipboard hacks */
+/*= Lightweight lock related functions - X clipboard hacks =*/
 
 #define CLIPBOARD_NAME "LXPANEL_SELECTION"
 
 /*
  * clipboard_get_func - dummy get_func for gtk_clipboard_set_with_data ()
  */
-static void
-clipboard_get_func(
+static void clipboard_get_func(
     GtkClipboard *clipboard G_GNUC_UNUSED,
     GtkSelectionData *selection_data G_GNUC_UNUSED,
     guint info G_GNUC_UNUSED,
@@ -2056,8 +2054,7 @@ out:
 
 /******************************************************************************/
 
-static void
-usage()
+static void usage(void)
 {
     g_print(_("LXPanelX %s - lightweight GTK2+ panel for UNIX desktops"), version);
     g_print("\n\n");

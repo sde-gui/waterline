@@ -93,8 +93,9 @@ typedef struct _Panel {
     guint background : 1;
     guint spacing;
 
-    guint autohide : 1;
-    guint visible : 1;
+    guint autohide : 1;                 /* Autohide mode */
+    guint autohide_visible : 1;         /* whether panel is in full-size state. Always true if autohide is false */
+    guint visible : 1;                  /* whether panel is actually visible */
     int height_when_hidden;
     guint hide_timeout;
     int icon_size;			/* Icon size */

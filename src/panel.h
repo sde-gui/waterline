@@ -134,8 +134,6 @@ extern int verbose;
 
 extern FbEv *fbev;
 
-#define FBPANEL_WIN(win)  gdk_window_lookup(win)
-
 extern void panel_apply_icon(GtkWindow *w);
 extern void panel_destroy(Panel *p);
 extern void panel_adjust_geometry_terminology(Panel *p);

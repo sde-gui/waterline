@@ -1407,4 +1407,11 @@ GtkMenu * lxpanel_fm_file_menu_for_path(const char * path)
 
 #endif
 
+/********************************************************************/
 
+gboolean is_my_own_window(Window window)
+{
+    return !!gdk_window_lookup(window);
+}
+
+/********************************************************************/

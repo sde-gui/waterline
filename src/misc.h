@@ -127,4 +127,6 @@ void restore_grabs(GtkWidget *w, gpointer data);
 
 GtkMenu * lxpanel_fm_file_menu_for_path(const char * path);
 
+gboolean is_my_own_window(Window window);
+
 #endif

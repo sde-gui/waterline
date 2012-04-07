@@ -52,20 +52,20 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(lxpanel_includedir)"
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
-am__lxpanel_SOURCES_DIST = misc.c misc.h bg.c bg.h commands.c \
-	commands.h configparser.c configparser.h generic_config_dlg.c \
-	Xsupport.c Xsupport.h pixbuf-stuff.c pixbuf-stuff.h \
-	configurator.c dbg.c dbg.h ev.c ev.h gtkbar.h gtkbar.c \
-	icon-grid.h icon-grid.c panel.c panel.h plugin.c plugin.h \
-	gtk-run.c menu-policy.h menu-policy.c
+am__lxpanel_SOURCES_DIST = misc.c misc.h libfm.c libfm.h bg.c bg.h \
+	commands.c commands.h configparser.c configparser.h \
+	generic_config_dlg.c Xsupport.c Xsupport.h pixbuf-stuff.c \
+	pixbuf-stuff.h configurator.c dbg.c dbg.h ev.c ev.h gtkbar.h \
+	gtkbar.c icon-grid.h icon-grid.c panel.c panel.h plugin.c \
+	plugin.h gtk-run.c menu-policy.h menu-policy.c
 @ENABLE_MENU_CACHE_TRUE@am__objects_1 = gtk-run.$(OBJEXT) \
 @ENABLE_MENU_CACHE_TRUE@	menu-policy.$(OBJEXT)
-am_lxpanel_OBJECTS = misc.$(OBJEXT) bg.$(OBJEXT) commands.$(OBJEXT) \
-	configparser.$(OBJEXT) generic_config_dlg.$(OBJEXT) \
-	Xsupport.$(OBJEXT) pixbuf-stuff.$(OBJEXT) \
-	configurator.$(OBJEXT) dbg.$(OBJEXT) ev.$(OBJEXT) \
-	gtkbar.$(OBJEXT) icon-grid.$(OBJEXT) panel.$(OBJEXT) \
-	plugin.$(OBJEXT) $(am__objects_1)
+am_lxpanel_OBJECTS = misc.$(OBJEXT) libfm.$(OBJEXT) bg.$(OBJEXT) \
+	commands.$(OBJEXT) configparser.$(OBJEXT) \
+	generic_config_dlg.$(OBJEXT) Xsupport.$(OBJEXT) \
+	pixbuf-stuff.$(OBJEXT) configurator.$(OBJEXT) dbg.$(OBJEXT) \
+	ev.$(OBJEXT) gtkbar.$(OBJEXT) icon-grid.$(OBJEXT) \
+	panel.$(OBJEXT) plugin.$(OBJEXT) $(am__objects_1)
 lxpanel_OBJECTS = $(am_lxpanel_OBJECTS)
 am__DEPENDENCIES_1 =
 lxpanel_DEPENDENCIES = $(BUILTIN_PLUGINS) $(am__DEPENDENCIES_1) \
@@ -371,6 +371,7 @@ BUILTIN_PLUGINS = $(top_builddir)/src/plugins/libbuiltin_plugins.a
 
 lxpanel_SOURCES = \
 	misc.c misc.h \
+	libfm.c libfm.h \
 	bg.c bg.h  \
 	commands.c commands.h \
 	configparser.c configparser.h \
@@ -517,6 +518,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-run.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/icon-grid.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lxpanelctl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menu-policy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc.Po@am__quote@

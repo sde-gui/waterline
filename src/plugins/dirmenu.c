@@ -35,6 +35,7 @@
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
+#include "libfm.h"
 #include "dbg.h"
 
 enum {

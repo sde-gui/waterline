@@ -1,6 +1,7 @@
 AC_PREREQ(2.53)
 AC_INIT(lxpanel, 0.6.0-alpha, http://code.google.com/p/lxpanelx/)
 AM_INIT_AUTOMAKE
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_CONFIG_SRCDIR([src/bg.c])
 AC_CONFIG_HEADER([config.h])
 

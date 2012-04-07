@@ -1211,7 +1211,7 @@ void lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * eve
 
 /******************************************************************************/
 
-/*= panel creation =*/
+/*= panel visibily and position =*/
 
 static void make_round_corners(Panel *p)
 {
@@ -1290,16 +1290,15 @@ static void panel_set_visibility(Panel *p, gboolean autohide_visible)
     panel_set_wm_strut(p);
 }
 
-static gboolean panel_leave_real(Panel *p)
-{
-    panel_visibility_conditions_changed(p);
-    return TRUE;
-}
+/******************************************************************************/
+
+/*= autohide tracking =*/
+
+static gboolean panel_leave_real(Panel *p);
 
 void panel_visibility_conditions_changed( Panel* p )
 {
     gboolean visible = FALSE;
-
 
     if (!p->autohide)
         visible = TRUE;
@@ -1357,6 +1356,12 @@ void panel_visibility_conditions_changed( Panel* p )
     }
 }
 
+static gboolean panel_leave_real(Panel *p)
+{
+    panel_visibility_conditions_changed(p);
+    return TRUE;
+}
+
 static gboolean panel_enter(GtkImage *widget, GdkEventCrossing *event, Panel *p)
 {
     panel_visibility_conditions_changed(p);
@@ -1388,6 +1393,8 @@ void panel_establish_autohide(Panel *p)
     panel_visibility_conditions_changed(p);
 }
 
+/******************************************************************************/
+
 /* Set an image from a file with scaling to the panel icon size. */
 void panel_image_set_from_file(Panel * p, GtkWidget * image, char * file)
 {
@@ -1411,6 +1418,10 @@ gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const gchar * 
     }
     return FALSE;
 }
+
+/******************************************************************************/
+
+/*= panel creation =*/
 
 static void
 panel_start_gui(Panel *p)

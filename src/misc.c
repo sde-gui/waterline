@@ -891,9 +891,9 @@ GdkPixbuf * lxpanel_load_icon(const char * name, int width, int height, gboolean
             GtkIconTheme * theme = gtk_icon_theme_get_default();
             char * suffix = strrchr(name, '.');
             if ((suffix != NULL)
-            && ((g_strcasecmp(&suffix[1], "png") == 0)
-              || (g_strcasecmp(&suffix[1], "svg") == 0)
-              || (g_strcasecmp(&suffix[1], "xpm") == 0)))
+            && ( (g_ascii_strcasecmp(&suffix[1], "png") == 0)
+              || (g_ascii_strcasecmp(&suffix[1], "svg") == 0)
+              || (g_ascii_strcasecmp(&suffix[1], "xpm") == 0)))
             {
                 /* The file extension indicates it could be in the system pixmap directories. */
                 icon = load_icon_file(name, width, height);

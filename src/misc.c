@@ -1315,7 +1315,7 @@ gboolean lxpanel_fm_init(void)
     }
 
 //#define bind_name(name) __##name = dlsym(libfm, #name); if (!__##name) goto fail;
-#define bind_name(name) if (! g_module_symbol(libfm, #name, &__##name) ) \
+#define bind_name(name) if (! g_module_symbol(libfm, #name, (gpointer * ) &__##name) ) \
 {\
     ERR("Failed resolve %s\n", #name); \
     goto fail;\

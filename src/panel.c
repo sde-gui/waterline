@@ -1270,7 +1270,7 @@ void panel_set_dock_type(Panel *p)
     }
 }
 
-static void panel_set_visibility(Panel *p, gboolean autohide_visible)
+static void panel_set_autohide_visibility(Panel *p, gboolean autohide_visible)
 {
     if (p->autohide_visible == autohide_visible)
         return;
@@ -1296,23 +1296,24 @@ static void panel_set_visibility(Panel *p, gboolean autohide_visible)
 
 static gboolean panel_leave_real(Panel *p);
 
-void panel_visibility_conditions_changed( Panel* p )
+void panel_autohide_conditions_changed( Panel* p )
 {
-    gboolean visible = FALSE;
+    gboolean autohide_visible = FALSE;
 
     if (!p->autohide)
-        visible = TRUE;
+        autohide_visible = TRUE;
 
-    if (!visible)
+    if (!autohide_visible)
     {
         /* If the pointer is grabbed by this application, leave the panel displayed.
          * There is no way to determine if it is grabbed by another application,
          * such as an application that has a systray icon. */
         if (gdk_display_pointer_is_grabbed(p->display))
-            visible = TRUE;
+            autohide_visible = TRUE;
     }
 
-    if (!visible)
+    /* Visibility can be locked by plugin. */
+    if (!autohide_visible)
     {
         GList * l;
         for (l = p->plugins; l != NULL; l = l->next)
@@ -1320,25 +1321,25 @@ void panel_visibility_conditions_changed( Panel* p )
             Plugin * pl = (Plugin *) l->data;
             if (pl->lock_visible)
             {
-                visible = TRUE;
+                autohide_visible = TRUE;
                 break;
             }
         }
     }
 
-    if (!visible)
+    if (!autohide_visible)
     {
         gint x, y;
         gdk_display_get_pointer(p->display, NULL, &x, &y, NULL);
         if ((p->cx <= x) && (x <= (p->cx + p->cw)) && (p->cy <= y) && (y <= (p->cy + p->ch)))
         {
-            visible = TRUE;
+            autohide_visible = TRUE;
         }
     }
 
-    if (visible)
+    if (autohide_visible)
     {
-        panel_set_visibility(p, TRUE);
+        panel_set_autohide_visibility(p, TRUE);
         if (p->autohide)
         {
             if (p->hide_timeout == 0)
@@ -1347,7 +1348,7 @@ void panel_visibility_conditions_changed( Panel* p )
     }
     else
     {
-        panel_set_visibility(p, FALSE);
+        panel_set_autohide_visibility(p, FALSE);
         if (p->hide_timeout)
         {
             g_source_remove(p->hide_timeout);
@@ -1358,20 +1359,20 @@ void panel_visibility_conditions_changed( Panel* p )
 
 static gboolean panel_leave_real(Panel *p)
 {
-    panel_visibility_conditions_changed(p);
+    panel_autohide_conditions_changed(p);
     return TRUE;
 }
 
 static gboolean panel_enter(GtkImage *widget, GdkEventCrossing *event, Panel *p)
 {
-    panel_visibility_conditions_changed(p);
+    panel_autohide_conditions_changed(p);
     return FALSE;
 }
 
 static gboolean panel_drag_motion(GtkWidget *widget, GdkDragContext *drag_context, gint x,
       gint y, guint time, Panel *p)
 {
-    panel_visibility_conditions_changed(p);
+    panel_autohide_conditions_changed(p);
     return TRUE;
 }
 
@@ -1385,12 +1386,12 @@ void panel_establish_autohide(Panel *p)
         gtk_drag_dest_set(p->topgwin, GTK_DEST_DEFAULT_MOTION, NULL, 0, 0);
         gtk_drag_dest_set_track_motion(p->topgwin, TRUE);
     }
-    else if ( ! p->autohide_visible)
+    else if (!p->autohide_visible)
     {
 	gtk_widget_show(p->box);
         p->autohide_visible = TRUE;
     }
-    panel_visibility_conditions_changed(p);
+    panel_autohide_conditions_changed(p);
 }
 
 /******************************************************************************/

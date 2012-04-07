@@ -125,8 +125,6 @@ typedef struct _Panel {
 } Panel;
 
 
-extern gchar *cprofile;
-
 extern int verbose;
 
 extern FbEv *fbev;
@@ -159,6 +157,8 @@ extern void panel_require_update_background(Panel* p);
 
 /* to check if we are in LXDE */
 extern gboolean is_in_lxde;
+
+extern gchar *cprofile;
 
 #endif
 

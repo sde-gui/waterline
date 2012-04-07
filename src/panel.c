@@ -75,6 +75,7 @@ static int panel_start( Panel *p, char **fp );
 static void panel_start_gui(Panel *p);
 static void panel_size_position_changed(Panel *p, gboolean position_changed);
 
+extern void panel_calculate_position(Panel *p);
 extern void update_panel_geometry(Panel* p);
 
 /******************************************************************************/
@@ -175,6 +176,58 @@ static void panel_normalize_configuration(Panel* p)
         p->transparent = 0;
 }
 
+/******************************************************************************/
+
+/*= shape =*/
+
+static void make_round_corners(Panel *p)
+{
+    if (!p->round_corners || p->round_corners_radius < 1)
+    {
+        gtk_widget_shape_combine_mask(p->topgwin, NULL, 0, 0);
+        return;
+    }
+
+    GdkBitmap *b;
+    GdkGC* gc;
+    GdkColor black = { 0, 0, 0, 0};
+    GdkColor white = { 1, 0xffff, 0xffff, 0xffff};
+    int w, h, r, br;
+
+    ENTER;
+    w = p->aw;
+    h = p->ah;
+    r = p->round_corners_radius;
+    if (2*r > MIN(w, h)) {
+        r = MIN(w, h) / 2;
+        DBG("chaning radius to %d\n", r);
+    }
+    b = gdk_pixmap_new(NULL, w, h, 1);
+    gc = gdk_gc_new(GDK_DRAWABLE(b));
+    gdk_gc_set_foreground(gc, &black);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, 0, w, h);
+    gdk_gc_set_foreground(gc, &white);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, r, 0, w-2*r, h);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, r, r, h-2*r);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, w-r, r, r, h-2*r);
+
+    br = 2 * r;
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, 0, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, h-br-1, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, 0, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, h-br-1, br, br, 0*64, 360*64);
+
+    gtk_widget_shape_combine_mask(p->topgwin, b, 0, 0);
+    g_object_unref(gc);
+    g_object_unref(b);
+
+    RET();
+}
+
+/******************************************************************************/
+
+/*= wm properties =*/
+
 gboolean panel_set_wm_strut_real(Panel *p)
 {
     p->set_wm_strut_idle = 0;
@@ -269,6 +322,143 @@ void panel_set_wm_strut(Panel *p)
     if (p->set_wm_strut_idle == 0)
         p->set_wm_strut_idle = g_idle_add_full( G_PRIORITY_LOW, 
             (GSourceFunc)panel_set_wm_strut_real, p, NULL );
+}
+
+void panel_set_dock_type(Panel *p)
+{
+    if (p->setdocktype) {
+        Atom state = a_NET_WM_WINDOW_TYPE_DOCK;
+        XChangeProperty(GDK_DISPLAY(), p->topxwin,
+                        a_NET_WM_WINDOW_TYPE, XA_ATOM, 32,
+                        PropModeReplace, (unsigned char *) &state, 1);
+    }
+    else {
+        XDeleteProperty( GDK_DISPLAY(), p->topxwin, a_NET_WM_WINDOW_TYPE );
+    }
+}
+
+/******************************************************************************/
+
+/*= autohide tracking =*/
+
+static void panel_set_autohide_visibility(Panel *p, gboolean autohide_visible)
+{
+    if (p->autohide_visible == autohide_visible)
+        return;
+
+    p->autohide_visible = autohide_visible;
+
+    if (!autohide_visible)
+        gtk_widget_hide(p->box);
+
+    panel_calculate_position(p);
+    gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
+    gdk_window_move(p->topgwin->window, p->ax, p->ay);
+
+    if (autohide_visible)
+        gtk_widget_show(p->box);
+
+    panel_set_wm_strut(p);
+}
+
+static gboolean panel_leave_real(Panel *p);
+
+void panel_autohide_conditions_changed( Panel* p )
+{
+    gboolean autohide_visible = FALSE;
+
+    if (!p->autohide)
+        autohide_visible = TRUE;
+
+    if (!autohide_visible)
+    {
+        /* If the pointer is grabbed by this application, leave the panel displayed.
+         * There is no way to determine if it is grabbed by another application,
+         * such as an application that has a systray icon. */
+        if (gdk_display_pointer_is_grabbed(p->display))
+            autohide_visible = TRUE;
+    }
+
+    /* Visibility can be locked by plugin. */
+    if (!autohide_visible)
+    {
+        GList * l;
+        for (l = p->plugins; l != NULL; l = l->next)
+        {
+            Plugin * pl = (Plugin *) l->data;
+            if (pl->lock_visible)
+            {
+                autohide_visible = TRUE;
+                break;
+            }
+        }
+    }
+
+    if (!autohide_visible)
+    {
+        gint x, y;
+        gdk_display_get_pointer(p->display, NULL, &x, &y, NULL);
+        if ((p->cx <= x) && (x <= (p->cx + p->cw)) && (p->cy <= y) && (y <= (p->cy + p->ch)))
+        {
+            autohide_visible = TRUE;
+        }
+    }
+
+    if (autohide_visible)
+    {
+        panel_set_autohide_visibility(p, TRUE);
+        if (p->autohide)
+        {
+            if (p->hide_timeout == 0)
+                p->hide_timeout = g_timeout_add(500, (GSourceFunc) panel_leave_real, p);
+        }
+    }
+    else
+    {
+        panel_set_autohide_visibility(p, FALSE);
+        if (p->hide_timeout)
+        {
+            g_source_remove(p->hide_timeout);
+            p->hide_timeout = 0;
+        }
+    }
+}
+
+static gboolean panel_leave_real(Panel *p)
+{
+    panel_autohide_conditions_changed(p);
+    return TRUE;
+}
+
+static gboolean panel_enter(GtkImage *widget, GdkEventCrossing *event, Panel *p)
+{
+    panel_autohide_conditions_changed(p);
+    return FALSE;
+}
+
+static gboolean panel_drag_motion(GtkWidget *widget, GdkDragContext *drag_context, gint x,
+      gint y, guint time, Panel *p)
+{
+    panel_autohide_conditions_changed(p);
+    return TRUE;
+}
+
+void panel_establish_autohide(Panel *p)
+{
+    if (p->autohide)
+    {
+        gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+        g_signal_connect(G_OBJECT(p->topgwin), "enter-notify-event", G_CALLBACK(panel_enter), p);
+        g_signal_connect(G_OBJECT(p->topgwin), "drag-motion", (GCallback) panel_drag_motion, p);
+        gtk_drag_dest_set(p->topgwin, GTK_DEST_DEFAULT_MOTION, NULL, 0, 0);
+        gtk_drag_dest_set_track_motion(p->topgwin, TRUE);
+    }
+    else if (!p->autohide_visible)
+    {
+	gtk_widget_show(p->box);
+        p->autohide_visible = TRUE;
+    }
+    panel_autohide_conditions_changed(p);
 }
 
 /******************************************************************************/
@@ -417,8 +607,7 @@ static void process_client_msg ( XClientMessageEvent* ev )
 
 /*= panel's handlers for WM events =*/
 
-static GdkFilterReturn
-panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gpointer not_used)
+static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gpointer not_used)
 {
     Atom at;
     Window win;
@@ -525,15 +714,13 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gpointer not_used)
 
 /*= panel's handlers for GTK events =*/
 
-static gint
-panel_delete_event(GtkWidget * widget, GdkEvent * event, gpointer data)
+static gint panel_delete_event(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
     ENTER;
     RET(FALSE);
 }
 
-static gint
-panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
+static gint panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
     //Panel *p = (Panel *) data;
     //if (!p->self_destroy)
@@ -541,8 +728,7 @@ panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
     RET(FALSE);
 }
 
-static void
-on_root_bg_changed(FbBg *bg, Panel* p)
+static void on_root_bg_changed(FbBg *bg, Panel* p)
 {
     panel_update_background( p );
 }
@@ -636,14 +822,12 @@ void panel_require_update_background( Panel* p )
     }
 }
 
-static void
-panel_realize(GtkWidget *widget, Panel *p)
+static void panel_realize(GtkWidget *widget, Panel *p)
 {
     panel_require_update_background(p);
 }
 
-static void
-panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
+static void panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
 {
     /* FIXME: This dirty hack is used to fix the background of systray... */
     if( GTK_WIDGET_REALIZED( widget ) )
@@ -655,9 +839,7 @@ panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
 /*= Panel size and position =*/
 
 /* Calculate real width of a horizontal panel (or height of a vertical panel) */
-static void
-calculate_width(int scrw, int wtype, int allign, int margin,
-      int *panw, int *x)
+static void calculate_width(int scrw, int wtype, int allign, int margin, int *panw, int *x)
 {
     ENTER;
     DBG("scrw=%d\n", scrw);
@@ -696,8 +878,7 @@ calculate_width(int scrw, int wtype, int allign, int margin,
 
 /* Calculate panel size and position with given margins. */
 
-void
-calculate_position(Panel *np, int margin_top, int margin_bottom)
+void calculate_position(Panel *np, int margin_top, int margin_bottom)
 {
     int sswidth, ssheight, minx, miny;
 
@@ -740,8 +921,7 @@ calculate_position(Panel *np, int margin_top, int margin_bottom)
 
 /* Calculate panel size and position. */
 
-void
-panel_calculate_position(Panel *p)
+void panel_calculate_position(Panel *p)
 {
     int margin_top = 0;
     int margin_bottom = 0;
@@ -766,8 +946,7 @@ panel_calculate_position(Panel *p)
 
 /* Force panel geometry update. */
 
-void
-update_panel_geometry(Panel* p)
+void update_panel_geometry(Panel* p)
 {
     /* Guard against being called early in panel creation. */
     if (p->topgwin != NULL)
@@ -791,8 +970,7 @@ update_panel_geometry(Panel* p)
 
 /* size-request signal handler */
 
-static gint
-panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
+static gint panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
 {
     ENTER;
 
@@ -807,8 +985,7 @@ panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
     RET( TRUE );
 }
 
-static void
-panel_size_position_changed(Panel *p, gboolean position_changed)
+static void panel_size_position_changed(Panel *p, gboolean position_changed)
 {
     if (position_changed)
     {
@@ -838,8 +1015,7 @@ panel_size_position_changed(Panel *p, gboolean position_changed)
 
 /* size-allocate signal handler */
 
-static gint
-panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
+static gint panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 {
     ENTER;
 
@@ -870,8 +1046,7 @@ panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 
 /* configure-event signal handler */
 
-static  gboolean
-panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
+static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
 {
     ENTER;
 
@@ -1207,191 +1382,6 @@ void lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * eve
 {
     GtkMenu* popup = lxpanel_get_panel_menu( panel, plugin, FALSE );
     gtk_menu_popup( popup, NULL, NULL, NULL, NULL, event->button, event->time );
-}
-
-/******************************************************************************/
-
-/*= panel visibily and position =*/
-
-static void make_round_corners(Panel *p)
-{
-    if (!p->round_corners || p->round_corners_radius < 1)
-    {
-        gtk_widget_shape_combine_mask(p->topgwin, NULL, 0, 0);
-        return;
-    }
-
-    GdkBitmap *b;
-    GdkGC* gc;
-    GdkColor black = { 0, 0, 0, 0};
-    GdkColor white = { 1, 0xffff, 0xffff, 0xffff};
-    int w, h, r, br;
-
-    ENTER;
-    w = p->aw;
-    h = p->ah;
-    r = p->round_corners_radius;
-    if (2*r > MIN(w, h)) {
-        r = MIN(w, h) / 2;
-        DBG("chaning radius to %d\n", r);
-    }
-    b = gdk_pixmap_new(NULL, w, h, 1);
-    gc = gdk_gc_new(GDK_DRAWABLE(b));
-    gdk_gc_set_foreground(gc, &black);
-    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, 0, w, h);
-    gdk_gc_set_foreground(gc, &white);
-    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, r, 0, w-2*r, h);
-    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, r, r, h-2*r);
-    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, w-r, r, r, h-2*r);
-
-    br = 2 * r;
-    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, 0, br, br, 0*64, 360*64);
-    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, h-br-1, br, br, 0*64, 360*64);
-    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, 0, br, br, 0*64, 360*64);
-    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, h-br-1, br, br, 0*64, 360*64);
-
-    gtk_widget_shape_combine_mask(p->topgwin, b, 0, 0);
-    g_object_unref(gc);
-    g_object_unref(b);
-
-    RET();
-}
-
-void panel_set_dock_type(Panel *p)
-{
-    if (p->setdocktype) {
-        Atom state = a_NET_WM_WINDOW_TYPE_DOCK;
-        XChangeProperty(GDK_DISPLAY(), p->topxwin,
-                        a_NET_WM_WINDOW_TYPE, XA_ATOM, 32,
-                        PropModeReplace, (unsigned char *) &state, 1);
-    }
-    else {
-        XDeleteProperty( GDK_DISPLAY(), p->topxwin, a_NET_WM_WINDOW_TYPE );
-    }
-}
-
-static void panel_set_autohide_visibility(Panel *p, gboolean autohide_visible)
-{
-    if (p->autohide_visible == autohide_visible)
-        return;
-
-    p->autohide_visible = autohide_visible;
-
-    if (!autohide_visible)
-        gtk_widget_hide(p->box);
-
-    panel_calculate_position(p);
-    gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
-    gdk_window_move(p->topgwin->window, p->ax, p->ay);
-
-    if (autohide_visible)
-        gtk_widget_show(p->box);
-
-    panel_set_wm_strut(p);
-}
-
-/******************************************************************************/
-
-/*= autohide tracking =*/
-
-static gboolean panel_leave_real(Panel *p);
-
-void panel_autohide_conditions_changed( Panel* p )
-{
-    gboolean autohide_visible = FALSE;
-
-    if (!p->autohide)
-        autohide_visible = TRUE;
-
-    if (!autohide_visible)
-    {
-        /* If the pointer is grabbed by this application, leave the panel displayed.
-         * There is no way to determine if it is grabbed by another application,
-         * such as an application that has a systray icon. */
-        if (gdk_display_pointer_is_grabbed(p->display))
-            autohide_visible = TRUE;
-    }
-
-    /* Visibility can be locked by plugin. */
-    if (!autohide_visible)
-    {
-        GList * l;
-        for (l = p->plugins; l != NULL; l = l->next)
-        {
-            Plugin * pl = (Plugin *) l->data;
-            if (pl->lock_visible)
-            {
-                autohide_visible = TRUE;
-                break;
-            }
-        }
-    }
-
-    if (!autohide_visible)
-    {
-        gint x, y;
-        gdk_display_get_pointer(p->display, NULL, &x, &y, NULL);
-        if ((p->cx <= x) && (x <= (p->cx + p->cw)) && (p->cy <= y) && (y <= (p->cy + p->ch)))
-        {
-            autohide_visible = TRUE;
-        }
-    }
-
-    if (autohide_visible)
-    {
-        panel_set_autohide_visibility(p, TRUE);
-        if (p->autohide)
-        {
-            if (p->hide_timeout == 0)
-                p->hide_timeout = g_timeout_add(500, (GSourceFunc) panel_leave_real, p);
-        }
-    }
-    else
-    {
-        panel_set_autohide_visibility(p, FALSE);
-        if (p->hide_timeout)
-        {
-            g_source_remove(p->hide_timeout);
-            p->hide_timeout = 0;
-        }
-    }
-}
-
-static gboolean panel_leave_real(Panel *p)
-{
-    panel_autohide_conditions_changed(p);
-    return TRUE;
-}
-
-static gboolean panel_enter(GtkImage *widget, GdkEventCrossing *event, Panel *p)
-{
-    panel_autohide_conditions_changed(p);
-    return FALSE;
-}
-
-static gboolean panel_drag_motion(GtkWidget *widget, GdkDragContext *drag_context, gint x,
-      gint y, guint time, Panel *p)
-{
-    panel_autohide_conditions_changed(p);
-    return TRUE;
-}
-
-void panel_establish_autohide(Panel *p)
-{
-    if (p->autohide)
-    {
-        gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-        g_signal_connect(G_OBJECT(p->topgwin), "enter-notify-event", G_CALLBACK(panel_enter), p);
-        g_signal_connect(G_OBJECT(p->topgwin), "drag-motion", (GCallback) panel_drag_motion, p);
-        gtk_drag_dest_set(p->topgwin, GTK_DEST_DEFAULT_MOTION, NULL, 0, 0);
-        gtk_drag_dest_set_track_motion(p->topgwin, TRUE);
-    }
-    else if (!p->autohide_visible)
-    {
-	gtk_widget_show(p->box);
-        p->autohide_visible = TRUE;
-    }
-    panel_autohide_conditions_changed(p);
 }
 
 /******************************************************************************/

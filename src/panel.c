@@ -1916,45 +1916,54 @@ void panel_destroy(Panel *p)
 Panel* panel_new( const char* config_file, const char* config_name )
 {
     char *fp, *pfp; /* point to current position of profile data in memory */
-    Panel* panel = NULL;
 
-    if( G_LIKELY(config_file) )
+    if (!config_file)
+        return NULL;
+
+    g_file_get_contents(config_file, &fp, NULL, NULL);
+    if (!fp)
+        return NULL;
+
+    Panel* panel = panel_allocate();
+    panel->orientation = ORIENT_NONE;
+    panel->name = g_strdup(config_name);
+    pfp = fp;
+
+    if (!panel_start(panel, &pfp))
     {
-        g_file_get_contents( config_file, &fp, NULL, NULL );
-        if( fp )
-        {
-            panel = panel_allocate();
-            panel->orientation = ORIENT_NONE;
-            panel->name = g_strdup( config_name );
-            pfp = fp;
-
-            if (! panel_start( panel, &pfp )) {
-                ERR( "lxpanel: can't start panel\n");
-                panel_destroy( panel );
-                panel = NULL;
-            }
-
-            g_free( fp );
-        }
+        ERR( "lxpanel: can't start panel\n");
+        panel_destroy(panel);
+        panel = NULL;
     }
+
+    g_free(fp);
+
     return panel;
 }
 
-static gboolean start_all_panels( )
+static gboolean start_all_panels(void)
 {
-    gboolean is_global;
-    for( is_global = 0; ! all_panels && is_global < 3; ++is_global )
+    /*
+        is_global == 0 -- user profile configuration
+        is_global == 1 -- global profile configuration
+        is_global == 2 -- global configuration of default profile
+    */
+    int is_global;
+    for (is_global = 0; ! all_panels && is_global < 3; ++is_global)
     {
-        char* panel_dir = is_global == 2 ? get_config_file( "default", "panels", TRUE ) : get_config_file( cprofile, "panels", is_global );
-        GDir* dir = g_dir_open( panel_dir, 0, NULL );
-        const gchar* name;
+        char* panel_dir = (is_global == 2) ?
+             get_config_file("default", "panels", TRUE) :
+             get_config_file(cprofile , "panels", is_global);
 
-        if( ! dir )
+        GDir* dir = g_dir_open(panel_dir, 0, NULL);
+
+        if (!dir)
         {
-            g_free( panel_dir );
+            g_free(panel_dir);
             continue;
         }
 
+        const gchar* name;
         while((name = g_dir_read_name(dir)) != NULL)
         {
             char* panel_config = g_build_filename( panel_dir, name, NULL );

@@ -21,6 +21,8 @@
 #include "config.h"
 #endif
 
+#define _LXPANEL_INTERNALS
+
 #include "plugin.h"
 #include "panel.h"
 #include "misc.h"
@@ -64,11 +66,6 @@ static void update_toggle_button(GtkWidget *w, gboolean n);
 static void modify_plugin( GtkTreeView* view );
 
 /******************************************************************************/
-
-/* defined in  panel.c */
-
-extern void panel_calculate_position(Panel *p);
-extern void update_panel_geometry(Panel* p);
 
 /* defined in  generic_config_dlg.c */
 

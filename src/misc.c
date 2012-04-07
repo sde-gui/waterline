@@ -33,6 +33,8 @@
 #include <config.h>
 #endif
 
+#define _LXPANEL_INTERNALS
+
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 

@@ -21,6 +21,8 @@
 #include <config.h>
 #endif
 
+#define _LXPANEL_INTERNALS
+
 #include <glib/gi18n.h>
 #include <stdlib.h>
 #include <glib/gstdio.h>
@@ -70,7 +72,7 @@ extern void lxpanel_fm_init(void);
 
 /* forward declarations */
 
-static void make_round_corners(Panel *p);
+static void panel_destroy(Panel *p);
 static int panel_start( Panel *p, char **fp );
 static void panel_start_gui(Panel *p);
 static void panel_size_position_changed(Panel *p, gboolean position_changed);
@@ -228,7 +230,7 @@ static void make_round_corners(Panel *p)
 
 /*= wm properties =*/
 
-gboolean panel_set_wm_strut_real(Panel *p)
+static gboolean panel_set_wm_strut_real(Panel *p)
 {
     p->set_wm_strut_idle = 0;
 
@@ -1858,7 +1860,7 @@ delete_plugin(gpointer data, gpointer udata)
     plugin_delete((Plugin *)data);
 }
 
-void panel_destroy(Panel *p)
+static void panel_destroy(Panel *p)
 {
     ENTER;
 

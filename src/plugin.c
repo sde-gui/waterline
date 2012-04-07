@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+#define _LXPANEL_INTERNALS
+
 #include "plugin.h"
 
 #include <gdk-pixbuf/gdk-pixbuf.h>

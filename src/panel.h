@@ -45,9 +45,6 @@ enum { POS_NONE, POS_START, POS_END };
 #define PANEL_HEIGHT_MIN              16	/* Minimum height of panel */
 #define PANEL_ICON_HIGHLIGHT          0x202020	/* Constant to pass to icon loader */
 
-/* to check if we are in LXDE */
-extern gboolean is_in_lxde;
-
 /* Context of a panel on a given edge. */
 typedef struct _Panel {
     char* name;
@@ -135,21 +132,9 @@ extern int verbose;
 extern FbEv *fbev;
 
 extern void panel_apply_icon(GtkWindow *w);
-extern void panel_destroy(Panel *p);
-extern void panel_adjust_geometry_terminology(Panel *p);
-extern void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow * window);
 extern void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean bold, gboolean custom_color);
-extern void panel_establish_autohide(Panel *p);
 extern void panel_image_set_from_file(Panel * p, GtkWidget * image, char * file);
 extern gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const gchar * icon);
-extern void panel_set_wm_strut(Panel *p);
-extern void panel_set_dock_type(Panel *p);
-extern void panel_set_panel_configuration_changed(Panel *p);
-extern void panel_update_background( Panel* p );
-
-extern void panel_autohide_conditions_changed( Panel* p );
-
-extern void panel_require_update_background( Panel* p );
 
 extern int panel_handle_x_error(Display * d, XErrorEvent * ev);
 extern int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent * ev);
@@ -159,5 +144,22 @@ extern const char* lxpanel_get_file_manager();
 extern const char* lxpanel_get_terminal();
 
 int lxpanel_is_in_kiosk_mode(void);
+
+#ifdef _LXPANEL_INTERNALS
+extern void panel_calculate_position(Panel *p);
+extern void update_panel_geometry(Panel* p);
+extern void panel_adjust_geometry_terminology(Panel *p);
+extern void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow * window);
+extern void panel_establish_autohide(Panel *p);
+extern void panel_set_dock_type(Panel *p);
+extern void panel_set_panel_configuration_changed(Panel *p);
+extern void panel_update_background(Panel* p);
+extern void panel_autohide_conditions_changed(Panel* p);
+extern void panel_require_update_background(Panel* p);
+
+/* to check if we are in LXDE */
+extern gboolean is_in_lxde;
+
+#endif
 
 #endif

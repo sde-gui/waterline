@@ -1227,11 +1227,13 @@ static void panel_popupmenu_about( GtkMenuItem* item, Panel* panel )
     /* TRANSLATORS: Replace this string with your names, one name per line. */
     gchar *translators = _( "translator-credits" );
 
+    gchar * logo_path = get_private_resource_path(RESOURCE_DATA, "images", "my-computer.png", 0);
+
     about = gtk_about_dialog_new();
     panel_apply_icon(GTK_WINDOW(about));
     gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(about), VERSION);
     gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(about), _("LXPanelX"));
-    gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(about), gdk_pixbuf_new_from_file(PACKAGE_DATA_DIR "/lxpanel/images/my-computer.png", NULL));
+    gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(about), gdk_pixbuf_new_from_file(logo_path, NULL));
     gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(about), _("Copyright (C) 2008-2011"));
     gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(about), _( "General purpose desktop panel. (Originally forked from LXDE LXPanel 0.5.6.)"));
     gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(about), "This program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with this program; if not, write to the Free Software\nFoundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.");
@@ -1240,6 +1242,8 @@ static void panel_popupmenu_about( GtkMenuItem* item, Panel* panel )
     gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(about), translators);
     gtk_dialog_run(GTK_DIALOG(about));
     gtk_widget_destroy(about); 
+
+    g_free(logo_path);
 }
 
 static void panel_popupmenu_quit( GtkMenuItem* item, Panel* panel )
@@ -1249,7 +1253,9 @@ static void panel_popupmenu_quit( GtkMenuItem* item, Panel* panel )
 
 void panel_apply_icon( GtkWindow *w )
 {
-    gtk_window_set_icon_from_file(w, PACKAGE_DATA_DIR "/lxpanel/images/my-computer.png", NULL);
+    gchar * icon_path = get_private_resource_path(RESOURCE_DATA, "images", "my-computer.png", 0);
+    gtk_window_set_icon_from_file(w, icon_path, NULL);
+    g_free(icon_path);
 }
 
 GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_menu )
@@ -2107,9 +2113,11 @@ int main(int argc, char *argv[], char *env[])
     gtk_init(&argc, &argv);
 
 #ifdef ENABLE_NLS
-    bindtextdomain ( GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR );
-    bind_textdomain_codeset ( GETTEXT_PACKAGE, "UTF-8" );
-    textdomain ( GETTEXT_PACKAGE );
+    gchar * locale_dir = get_resource_path(RESOURCE_LOCALE, 0);
+    bindtextdomain(GETTEXT_PACKAGE, locale_dir);
+    bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+    textdomain(GETTEXT_PACKAGE);
+    g_free(locale_dir);
 #endif
 
     XSetLocaleModifiers("");
@@ -2165,8 +2173,9 @@ int main(int argc, char *argv[], char *env[])
     }
 
     /* Add our own icons to the search path of icon theme */
-    gtk_icon_theme_append_search_path( gtk_icon_theme_get_default(),
-                                       PACKAGE_DATA_DIR "/lxpanel/images" );
+    gchar * images_path = get_private_resource_path(RESOURCE_DATA, "images", 0);
+    gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), images_path);
+    g_free(images_path);
 
     fbev = fb_ev_new();
     window_group = gtk_window_group_new();

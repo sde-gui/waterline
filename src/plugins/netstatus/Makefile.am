@@ -1,8 +1,6 @@
 INCLUDES = \
 	-I. \
 	-I$(top_srcdir)/src \
-	-DPACKAGE_DATA_DIR=\""$(datadir)"\" \
-	-DPACKAGE_UI_DIR=\""$(datadir)/lxpanel/ui"\" \
 	$(PACKAGE_CFLAGS) \
 	$(G_CAST_CHECKS)
 

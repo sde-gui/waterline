@@ -31,9 +31,6 @@
 #include "plugin.h"
 #include "dbg.h"
 
-#define ICONS_VOLUME PACKAGE_DATA_DIR "/lxpanel/images/volume.png"
-#define ICONS_MUTE PACKAGE_DATA_DIR "/lxpanel/images/mute.png"
-
 typedef struct {
 
     /* Graphics. */
@@ -241,7 +238,11 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
     {
          icon_updated = panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, "audio-volume-muted");
          if (!icon_updated)
-             panel_image_set_from_file(vol->plugin->panel, vol->tray_icon, ICONS_MUTE);
+         {
+             gchar * mute_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "mute.png", 0);
+             panel_image_set_from_file(vol->plugin->panel, vol->tray_icon, mute_icon_path);
+             g_free(mute_icon_path);
+         }
          icon_updated = TRUE;
     }
     
@@ -262,7 +263,9 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
 
     if (!icon_updated)
     {
-        panel_image_set_from_file(vol->plugin->panel, vol->tray_icon, ICONS_VOLUME);
+        gchar * volume_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "volume.png", 0);
+        panel_image_set_from_file(vol->plugin->panel, vol->tray_icon, volume_icon_path);
+        g_free(volume_icon_path);
     }
 
     g_signal_handler_block(vol->mute_check, vol->mute_check_handler);

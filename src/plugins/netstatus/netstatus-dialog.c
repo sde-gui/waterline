@@ -25,6 +25,8 @@
 #  include <config.h>
 #endif
 
+#include "misc.h"
+
 #include <gtk/gtk.h>
 
 #include <glib/gi18n.h>
@@ -799,9 +801,13 @@ netstatus_dialog_new (NetstatusIface *iface)
   if (!data)
       return NULL;
 
+  gchar * netstatus_ui_path = get_private_resource_path(RESOURCE_DATA, "ui", "netstatus.ui", 0);
+
   data->builder = gtk_builder_new();
-  gtk_builder_add_from_file(data->builder, PACKAGE_UI_DIR "/netstatus.ui", NULL);
+  gtk_builder_add_from_file(data->builder, netstatus_ui_path, NULL);
   data->dialog = GTK_WIDGET(gtk_builder_get_object(data->builder, "network_status_dialog"));
+
+  g_free(netstatus_ui_path);
 
   if (!data->dialog)
   {

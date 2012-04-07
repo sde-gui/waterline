@@ -801,7 +801,12 @@ static void launchbar_configure(Plugin * p, GtkWindow * parent)
         GtkWidget *dlg, *btn, *defined_view, *menu_view;
         GtkBuilder *builder = gtk_builder_new();
 
-        gtk_builder_add_from_file(builder, PACKAGE_UI_DIR "/launchbar.ui", NULL);
+        gchar * launchbar_ui_path = get_private_resource_path(RESOURCE_DATA, "ui", "launchbar.ui", 0);
+
+        gtk_builder_add_from_file(builder, launchbar_ui_path, NULL);
+
+        g_free(launchbar_ui_path);
+
         dlg = (GtkWidget*)gtk_builder_get_object(builder, "dlg");
         panel_apply_icon(GTK_WINDOW(dlg));
 

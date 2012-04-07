@@ -864,12 +864,16 @@ void panel_configure( Panel* p, int sel_page )
         return;
     }
 
+    gchar * panel_perf_ui_path = get_private_resource_path(RESOURCE_DATA, "ui", "panel-pref.ui", 0);
     builder = gtk_builder_new();
-    if( !gtk_builder_add_from_file(builder, PACKAGE_UI_DIR "/panel-pref.ui", NULL) )
+    if( !gtk_builder_add_from_file(builder, panel_perf_ui_path, NULL) )
     {
+        g_free(panel_perf_ui_path);
         g_object_unref(builder);
         return;
     }
+
+    g_free(panel_perf_ui_path);
 
     p->pref_dialog = (GtkWidget*)gtk_builder_get_object( builder, "panel_pref" );
     g_signal_connect(p->pref_dialog, "response", (GCallback) response_event, p);
@@ -1014,8 +1018,10 @@ void panel_configure( Panel* p, int sel_page )
 
         w = (GtkWidget*)gtk_builder_get_object( builder, "img_file" );
         g_object_set_data(G_OBJECT(img), "img_file", w);
+        gchar * default_backgroud_path = get_private_resource_path(RESOURCE_DATA, "images", "background.png", 0);
         gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(w),
-            ((p->background_file != NULL) ? p->background_file : PACKAGE_DATA_DIR "/lxpanel/images/background.png"));
+            ((p->background_file != NULL) ? p->background_file : default_backgroud_path));
+        g_free(default_backgroud_path);
 
         if (!p->background)
             gtk_widget_set_sensitive( w, FALSE);
@@ -1224,14 +1230,14 @@ char* get_config_file( const char* profile, const char* file_name, gboolean is_g
     char* path;
     if( is_global )
     {
-        path = g_build_filename( PACKAGE_DATA_DIR, "lxpanel/profile", profile, file_name, NULL );
+        path = get_private_resource_path(RESOURCE_DATA, "profile", profile, file_name, 0);
     }
     else
     {
         char* dir = g_build_filename( g_get_user_config_dir(), "lxpanel" , profile, NULL);
         /* make sure the private profile dir exists */
         /* FIXME: Should we do this everytime this func gets called?
-    *        Maybe simply doing this before saving config files is enough. */
+         *        Maybe simply doing this before saving config files is enough. */
         g_mkdir_with_parents( dir, 0700 );
         path = g_build_filename( dir,file_name, NULL);
         g_free( dir );

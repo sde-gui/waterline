@@ -127,4 +127,15 @@ void restore_grabs(GtkWidget *w, gpointer data);
 
 gboolean is_my_own_window(Window window);
 
+typedef enum _RESOURCE_TYPE
+{
+    RESOURCE_LIB,
+    RESOURCE_LIBEXEC,
+    RESOURCE_DATA,
+    RESOURCE_LOCALE,
+} RESOURCE_TYPE;
+
+gchar * get_resource_path(RESOURCE_TYPE restype, ...);
+gchar * get_private_resource_path(RESOURCE_TYPE restype, ...);
+
 #endif

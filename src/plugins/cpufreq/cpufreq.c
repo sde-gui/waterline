@@ -33,7 +33,6 @@
 #include "gtkcompat.h"
 #include "dbg.h"
 
-#define PROC_ICON            PACKAGE_DATA_DIR "/lxpanel/images/cpufreq-icon.png"
 #define SYSFS_CPU_DIRECTORY "/sys/devices/system/cpu"
 #define SCALING_GOV         "scaling_governor"
 #define SCALING_AGOV        "scaling_available_governors"
@@ -354,7 +353,9 @@ cpufreq_constructor(Plugin *p, char** fp)
     gtk_widget_set_has_window(p->pwid, FALSE);
     gtk_container_set_border_width( GTK_CONTAINER(p->pwid), 2 );
 
-    cf->namew = gtk_image_new_from_file(PROC_ICON);
+    gchar * proc_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "cpufreq-icon.png", 0);
+    cf->namew = gtk_image_new_from_file(proc_icon_path);
+    g_free(proc_icon_path);
     gtk_container_add(GTK_CONTAINER(p->pwid), cf->namew);
 
     cf->main = p->pwid;

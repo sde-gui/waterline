@@ -1282,3 +1282,63 @@ gboolean is_my_own_window(Window window)
 }
 
 /********************************************************************/
+
+static gchar * _get_resource_path(RESOURCE_TYPE restype, gboolean private, va_list ap)
+{
+    if (private && restype == RESOURCE_LOCALE)
+        return NULL;
+
+    gchar * prefix = NULL;
+    switch (restype)
+    {
+        case RESOURCE_LIB     : prefix = PACKAGE_LIB_DIR;     break;
+        case RESOURCE_LIBEXEC : prefix = PACKAGE_LIBEXEC_DIR; break;
+        case RESOURCE_DATA    : prefix = PACKAGE_DATA_DIR;    break;
+        case RESOURCE_LOCALE  : prefix = PACKAGE_LOCALE_DIR;  break;
+    };
+
+    if (!prefix)
+        return NULL;
+
+    char * args[16];
+    int i = 0;
+
+    args[i++] = prefix;
+
+    if (private)
+        args[i++] = "lxpanel";
+
+    char * arg;
+    do {
+        arg = va_arg(ap, char*);
+        args[i++] = arg;
+        if (i >= 15)
+            return NULL;
+    } while (arg);
+
+    gchar * result = g_build_filenamev(args);
+//g_print("%s\n", result);
+    return result;
+}
+
+gchar * get_resource_path(RESOURCE_TYPE restype, ...)
+{
+    gchar * result;
+    va_list ap;
+    va_start(ap, restype);
+    result = _get_resource_path(restype, FALSE, ap);
+    va_end(ap);
+    return result;
+}
+
+gchar * get_private_resource_path(RESOURCE_TYPE restype, ...)
+{
+    gchar * result;
+    va_list ap;
+    va_start(ap, restype);
+    result = _get_resource_path(restype, TRUE, ap);
+    va_end(ap);
+    return result;
+}
+
+/********************************************************************/

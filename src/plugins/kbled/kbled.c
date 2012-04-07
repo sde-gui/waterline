@@ -72,10 +72,7 @@ static void kbled_panel_configuration_changed(Plugin * p);
 /* Update image to correspond to current state. */
 static void kbled_update_image(KeyboardLEDPlugin * kl, int i, unsigned int state)
 {
-    char * file = g_build_filename(
-        PACKAGE_DATA_DIR "/lxpanel/images",
-        ((state) ? on_icons[i] : off_icons[i]),
-        NULL);
+    gchar * file = get_private_resource_path(RESOURCE_DATA, "images", ((state) ? on_icons[i] : off_icons[i]), 0);
     panel_image_set_from_file(kl->plugin->panel, kl->indicator_image[i], file);
     g_free(file);
 }

@@ -176,9 +176,11 @@ Plugin * plugin_load(char * type)
     /* If not found and dynamic loading is available, try to locate an external plugin. */
     if ((pc == NULL) && (g_module_supported()))
     {
-        gchar path[PATH_MAX];
-        g_snprintf(path, sizeof(path), PACKAGE_LIB_DIR "/lxpanel/plugins/%s.so", type);
+        gchar * soname = g_strdup_printf("%s.so", type);
+        gchar * path = get_private_resource_path(RESOURCE_LIB, "plugins", soname, 0);
         pc = plugin_load_dynamic(type, path);
+        g_free(path);
+        g_free(soname);
     }
 #endif  /* DISABLE_PLUGINS_LOADING */
 
@@ -311,7 +313,10 @@ GList * plugin_get_available_classes(void)
     }
 
 #ifndef DISABLE_PLUGINS_LOADING
-    GDir * dir = g_dir_open(PACKAGE_LIB_DIR "/lxpanel/plugins", 0, NULL);
+    gchar * plugin_dir = get_private_resource_path(RESOURCE_LIB, "plugins", 0);
+    GDir * dir = g_dir_open(plugin_dir, 0, NULL);
+    g_free(plugin_dir);
+
     if (dir != NULL)
     {
         const char * file;
@@ -323,7 +328,7 @@ GList * plugin_get_available_classes(void)
                 if (plugin_find_class(type) == NULL)
                 {
                     /* If it has not been loaded, do it.  If successful, add it to the result. */
-                    char * path = g_build_filename(PACKAGE_LIB_DIR "/lxpanel/plugins", file, NULL );
+                    char * path = get_private_resource_path(RESOURCE_LIB, "plugins", file, 0);
                     PluginClass * pc = plugin_load_dynamic(type, path);
                     if (pc != NULL)
                     {

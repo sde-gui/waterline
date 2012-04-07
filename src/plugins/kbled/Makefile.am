@@ -1,7 +1,6 @@
 INCLUDES = \
     -I. \
     -I$(top_srcdir)/src \
-    -DPACKAGE_DATA_DIR=\""$(datadir)"\" \
     $(PACKAGE_CFLAGS) \
     $(G_CAST_CHECKS)
 

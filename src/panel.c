@@ -134,10 +134,10 @@ static Panel* panel_allocate(void)
     Panel* p = g_new0(Panel, 1);
     p->allign = ALLIGN_CENTER;
     p->edge = EDGE_NONE;
-    p->widthtype = WIDTH_PERCENT;
-    p->width = 100;
-    p->heighttype = HEIGHT_PIXEL;
-    p->height = PANEL_HEIGHT_DEFAULT;
+    p->oriented_width_type = WIDTH_PERCENT;
+    p->oriented_width = 100;
+    p->oriented_height_type = HEIGHT_PIXEL;
+    p->oriented_height = PANEL_HEIGHT_DEFAULT;
     p->setdocktype = 1;
     p->setstrut = 1;
     p->round_corners = 0;
@@ -163,16 +163,16 @@ static Panel* panel_allocate(void)
 static void panel_normalize_configuration(Panel* p)
 {
     panel_set_panel_configuration_changed( p );
-    if (p->width < 0)
-        p->width = 100;
-    if (p->widthtype == WIDTH_PERCENT && p->width > 100)
-        p->width = 100;
-    p->heighttype = HEIGHT_PIXEL;
-    if (p->heighttype == HEIGHT_PIXEL) {
-        if (p->height < PANEL_HEIGHT_MIN)
-            p->height = PANEL_HEIGHT_MIN;
-        else if (p->height > PANEL_HEIGHT_MAX)
-            p->height = PANEL_HEIGHT_MAX;
+    if (p->oriented_width < 0)
+        p->oriented_width = 100;
+    if (p->oriented_width_type == WIDTH_PERCENT && p->oriented_width > 100)
+        p->oriented_width = 100;
+    p->oriented_height_type = HEIGHT_PIXEL;
+    if (p->oriented_height_type == HEIGHT_PIXEL) {
+        if (p->oriented_height < PANEL_HEIGHT_MIN)
+            p->oriented_height = PANEL_HEIGHT_MIN;
+        else if (p->oriented_height > PANEL_HEIGHT_MAX)
+            p->oriented_height = PANEL_HEIGHT_MAX;
     }
     if (p->background)
         p->transparent = 0;
@@ -899,22 +899,22 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
     }
 
     if (np->edge == EDGE_TOP || np->edge == EDGE_BOTTOM) {
-        np->aw = np->width;
+        np->aw = np->oriented_width;
         np->ax = minx;
-        calculate_width(sswidth, np->widthtype, np->allign, np->margin,
+        calculate_width(sswidth, np->oriented_width_type, np->allign, np->margin,
               &np->aw, &np->ax);
-        np->ah = ((( ! np->autohide) || (np->autohide_visible)) ? np->height : np->height_when_hidden);
+        np->ah = ((( ! np->autohide) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
         np->ay = miny + ((np->edge == EDGE_TOP) ? 0 : (ssheight - np->ah));
 
     } else {
         miny += margin_top;
         ssheight -= (margin_top + margin_bottom);
 
-        np->ah = np->width;
+        np->ah = np->oriented_width;
         np->ay = miny;
-        calculate_width(ssheight, np->widthtype, np->allign, np->margin,
+        calculate_width(ssheight, np->oriented_width_type, np->allign, np->margin,
               &np->ah, &np->ay);
-        np->aw = ((( ! np->autohide) || (np->autohide_visible)) ? np->height : np->height_when_hidden);
+        np->aw = ((( ! np->autohide) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
         np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));
     }
     //g_debug("%s - x=%d y=%d w=%d h=%d\n", __FUNCTION__, np->ax, np->ay, np->aw, np->ah);
@@ -954,7 +954,7 @@ void update_panel_geometry(Panel* p)
     if (p->topgwin != NULL)
     {
         panel_calculate_position(p);
-        if (p->widthtype == WIDTH_REQUEST || p->heighttype == HEIGHT_REQUEST)
+        if (p->oriented_width_type == WIDTH_REQUEST || p->oriented_height_type == HEIGHT_REQUEST)
         {
             gtk_widget_set_size_request(p->topgwin, -1, -1);
             gtk_widget_queue_resize(p->topgwin);
@@ -976,10 +976,10 @@ static gint panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
 {
     ENTER;
 
-    if (p->widthtype == WIDTH_REQUEST)
-        p->width = (p->orientation == ORIENT_HORIZ) ? req->width : req->height;
-    if (p->heighttype == HEIGHT_REQUEST)
-        p->height = (p->orientation == ORIENT_HORIZ) ? req->height : req->width;
+    if (p->oriented_width_type == WIDTH_REQUEST)
+        p->oriented_width = (p->orientation == ORIENT_HORIZ) ? req->width : req->height;
+    if (p->oriented_height_type == HEIGHT_REQUEST)
+        p->oriented_height = (p->orientation == ORIENT_HORIZ) ? req->height : req->width;
     panel_calculate_position(p);
     req->width  = p->aw;
     req->height = p->ah;
@@ -1021,10 +1021,10 @@ static gint panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 {
     ENTER;
 
-    if (p->widthtype == WIDTH_REQUEST)
-        p->width = (p->orientation == ORIENT_HORIZ) ? a->width : a->height;
-    if (p->heighttype == HEIGHT_REQUEST)
-        p->height = (p->orientation == ORIENT_HORIZ) ? a->height : a->width;
+    if (p->oriented_width_type == WIDTH_REQUEST)
+        p->oriented_width = (p->orientation == ORIENT_HORIZ) ? a->width : a->height;
+    if (p->oriented_height_type == HEIGHT_REQUEST)
+        p->oriented_height = (p->orientation == ORIENT_HORIZ) ? a->height : a->width;
 
     //g_print("size-alloc: %d, %d, %d, %d\n", a->x, a->y, a->width, a->height);
 
@@ -1615,8 +1615,8 @@ void panel_set_panel_configuration_changed(Panel *p)
     {
         panel_adjust_geometry_terminology(p);
         if (p->height_control != NULL)
-            gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->height_control), p->height);
-        if ((p->widthtype == WIDTH_PIXEL) && (p->width_control != NULL))
+            gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->height_control), p->oriented_height);
+        if ((p->oriented_width_type == WIDTH_PIXEL) && (p->width_control != NULL))
         {
             int value = ((p->orientation == ORIENT_HORIZ) ? gdk_screen_width() : gdk_screen_height());
             gtk_spin_button_set_range(GTK_SPIN_BUTTON(p->width_control), 0, value);
@@ -1625,7 +1625,7 @@ void panel_set_panel_configuration_changed(Panel *p)
 
     }
 
-    int max_icon_size = (p->orientation == ORIENT_HORIZ) ?  p->height : p->width;
+    int max_icon_size = (p->orientation == ORIENT_HORIZ) ?  p->oriented_height : p->oriented_width;
     p->icon_size = (p->preferred_icon_size < max_icon_size) ? p->preferred_icon_size : max_icon_size;
 
     if (p->orientation == ORIENT_HORIZ) {
@@ -1682,13 +1682,13 @@ panel_parse_global(Panel *p, char **fp)
                 } else if (!g_ascii_strcasecmp(s.t[0], "margin")) {
                     p->margin = atoi(s.t[1]);
                 } else if (!g_ascii_strcasecmp(s.t[0], "widthtype")) {
-                    p->widthtype = str2num(width_pair, s.t[1], WIDTH_NONE);
+                    p->oriented_width_type = str2num(width_pair, s.t[1], WIDTH_NONE);
                 } else if (!g_ascii_strcasecmp(s.t[0], "width")) {
-                    p->width = atoi(s.t[1]);
+                    p->oriented_width = atoi(s.t[1]);
                 } else if (!g_ascii_strcasecmp(s.t[0], "heighttype")) {
-                    p->heighttype = str2num(height_pair, s.t[1], HEIGHT_NONE);
+                    p->oriented_height_type = str2num(height_pair, s.t[1], HEIGHT_NONE);
                 } else if (!g_ascii_strcasecmp(s.t[0], "height")) {
-                    p->height = atoi(s.t[1]);
+                    p->oriented_height = atoi(s.t[1]);
                 } else if (!g_ascii_strcasecmp(s.t[0], "spacing")) {
                     p->spacing = atoi(s.t[1]);
                 } else if (!g_ascii_strcasecmp(s.t[0], "SetDockType")) {

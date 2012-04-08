@@ -2989,7 +2989,7 @@ static void taskbar_update_style(TaskbarPlugin * tb)
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
         taskbar_get_task_button_max_width(tb), tb->icon_size + BUTTON_HEIGHT_EXTRA,
-        tb->spacing, 0, tb->plug->panel->height);
+        tb->spacing, 0, tb->plug->panel->oriented_height);
 }
 
 /* Update style on a task button when created or after a configuration change. */
@@ -4436,7 +4436,7 @@ static void taskbar_build_gui(Plugin * p)
 
     /* Make container for task buttons as a child of top level widget. */
     GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    tb->icon_grid = icon_grid_new(p->panel, p->pwid, bo, tb->task_width_max, tb->icon_size, tb->spacing, 0, p->panel->height);
+    tb->icon_grid = icon_grid_new(p->panel, p->pwid, bo, tb->task_width_max, tb->icon_size, tb->spacing, 0, p->panel->oriented_height);
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_use_separators(tb->icon_grid, tb->use_group_separators);
     icon_grid_set_separator_size(tb->icon_grid, tb->group_separator_size);
@@ -5061,7 +5061,7 @@ static void taskbar_panel_configuration_changed(Plugin * p)
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
         taskbar_get_task_button_max_width(tb), tb->plug->panel->icon_size + BUTTON_HEIGHT_EXTRA,
-        tb->spacing, 0, tb->plug->panel->height);
+        tb->spacing, 0, tb->plug->panel->oriented_height);
 
     /* If the icon size changed, refetch all the icons. */
     if (tb->plug->panel->icon_size != tb->icon_size)

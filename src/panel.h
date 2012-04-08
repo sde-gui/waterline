@@ -69,11 +69,11 @@ typedef struct _Panel {
     int round_corners_radius;
 
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
-    int cx, cy, cw, ch;  /* current allocation (as reported by configure event) allocation */
+    int cx, cy, cw, ch;  /* current allocation (as reported by configure event) */
     int allign, edge, margin;
     int orientation;
-    int widthtype, width;
-    int heighttype, height;
+    int oriented_width_type, oriented_width;
+    int oriented_height_type, oriented_height;
     gulong strut_size;			/* Values for WM_STRUT_PARTIAL */
     gulong strut_lower;
     gulong strut_upper;

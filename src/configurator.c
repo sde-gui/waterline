@@ -176,7 +176,7 @@ set_margin( GtkSpinButton* spin,  Panel* p  )
 static void
 set_width(  GtkSpinButton* spin, Panel* p )
 {
-    p->width = (int)gtk_spin_button_get_value(spin);
+    p->oriented_width = (int)gtk_spin_button_get_value(spin);
     update_panel_geometry(p);
     panel_set_panel_configuration_changed(p);
 }
@@ -184,7 +184,7 @@ set_width(  GtkSpinButton* spin, Panel* p )
 static void
 set_height( GtkSpinButton* spin, Panel* p )
 {
-    p->height = (int)gtk_spin_button_get_value(spin);
+    p->oriented_height = (int)gtk_spin_button_get_value(spin);
     update_panel_geometry(p);
     panel_set_panel_configuration_changed(p);
 }
@@ -195,7 +195,7 @@ static void set_width_type( GtkWidget *item, Panel* p )
     int widthtype;
     gboolean t;
     widthtype = gtk_combo_box_get_active(GTK_COMBO_BOX(item)) + 1;
-    p->widthtype = widthtype;
+    p->oriented_width_type = widthtype;
 
     spin = (GtkWidget*)g_object_get_data(G_OBJECT(item), "width_spin" );
     t = (widthtype != WIDTH_REQUEST);
@@ -920,18 +920,18 @@ void panel_configure( Panel* p, int sel_page )
     /* size */
     p->width_label = (GtkWidget*)gtk_builder_get_object( builder, "width_label");
     p->width_control = w = (GtkWidget*)gtk_builder_get_object( builder, "width" );
-    gtk_widget_set_sensitive( w, p->widthtype != WIDTH_REQUEST );
+    gtk_widget_set_sensitive( w, p->oriented_width_type != WIDTH_REQUEST );
     gint upper = 0;
-    if( p->widthtype == WIDTH_PERCENT)
+    if( p->oriented_width_type == WIDTH_PERCENT)
         upper = 100;
-    else if( p->widthtype == WIDTH_PIXEL)
+    else if( p->oriented_width_type == WIDTH_PIXEL)
         upper = (((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM)) ? gdk_screen_width() : gdk_screen_height());
     gtk_spin_button_set_range( (GtkSpinButton*)w, 0, upper );
-    gtk_spin_button_set_value( (GtkSpinButton*)w, p->width );
+    gtk_spin_button_set_value( (GtkSpinButton*)w, p->oriented_width );
     g_signal_connect( w, "value-changed", G_CALLBACK(set_width), p );
 
     w = (GtkWidget*)gtk_builder_get_object( builder, "width_unit" );
-    update_opt_menu( w, p->widthtype - 1 );
+    update_opt_menu( w, p->oriented_width_type - 1 );
     g_object_set_data(G_OBJECT(w), "width_spin", p->width_control );
     g_signal_connect( w, "changed",
                      G_CALLBACK(set_width_type), p);
@@ -939,7 +939,7 @@ void panel_configure( Panel* p, int sel_page )
     p->height_label = (GtkWidget*)gtk_builder_get_object( builder, "height_label");
     p->height_control = w = (GtkWidget*)gtk_builder_get_object( builder, "height" );
     gtk_spin_button_set_range( (GtkSpinButton*)w, PANEL_HEIGHT_MIN, PANEL_HEIGHT_MAX );
-    gtk_spin_button_set_value( (GtkSpinButton*)w, p->height );
+    gtk_spin_button_set_value( (GtkSpinButton*)w, p->oriented_height );
     g_signal_connect( w, "value-changed", G_CALLBACK(set_height), p );
 
     w = (GtkWidget*)gtk_builder_get_object( builder, "height_unit" );
@@ -1142,9 +1142,9 @@ panel_global_config_save( Panel* p, FILE *fp)
     lxpanel_put_str(fp, "edge", num2str(edge_pair, p->edge, "none"));
     lxpanel_put_str(fp, "allign", num2str(allign_pair, p->allign, "none"));
     lxpanel_put_int(fp, "margin", p->margin);
-    lxpanel_put_str(fp, "widthtype", num2str(width_pair, p->widthtype, "none"));
-    lxpanel_put_int(fp, "width", p->width);
-    lxpanel_put_int(fp, "height", p->height);
+    lxpanel_put_str(fp, "widthtype", num2str(width_pair, p->oriented_width_type, "none"));
+    lxpanel_put_int(fp, "width", p->oriented_width);
+    lxpanel_put_int(fp, "height", p->oriented_height);
     lxpanel_put_bool(fp, "RoundCorners", p->round_corners );
     lxpanel_put_int(fp, "RoundCornersRadius", p->round_corners_radius );
     lxpanel_put_bool(fp, "transparent", p->transparent );

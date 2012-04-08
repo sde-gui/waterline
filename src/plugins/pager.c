@@ -731,7 +731,7 @@ static int pager_constructor(Plugin * plug, char ** fp)
         (plug->panel->icon_size - BORDER_WIDTH * 2) * pg->aspect_ratio,
         plug->panel->icon_size - BORDER_WIDTH * 2,
         1, BORDER_WIDTH,
-        plug->panel->height);
+        plug->panel->oriented_height);
 
     /* Add GDK event filter. */
     gdk_window_add_filter(NULL, (GdkFilterFunc) pager_event_filter, pg);
@@ -790,7 +790,7 @@ static void pager_panel_configuration_changed(Plugin * p)
         (p->panel->icon_size - BORDER_WIDTH * 2) * pg->aspect_ratio,
         p->panel->icon_size - BORDER_WIDTH * 2,
         1, BORDER_WIDTH,
-        p->panel->height); 
+        p->panel->oriented_height); 
 }
 
 /* Plugin descriptor. */

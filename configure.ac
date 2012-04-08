@@ -157,7 +157,7 @@ if test ! -z "$LDFLAGS"; then
 fi
 
 LXPANEL_MODULE="-avoid-version \
--rpath \$(libdir)/lxpanel/plugins \
+-rpath \$(pkglibdir)/plugins \
 -no-undefined "'-export-symbols-regex "^[[^_]].*"'
 AC_SUBST(LXPANEL_MODULE)
 

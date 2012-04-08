@@ -46,6 +46,6 @@ EXTRA_DIST = \
 	icon.xpm
 
 install-exec-hook:
-	rm -f $(DESTDIR)$(libdir)/lxpanel/plugins/*.la
-	rm -f $(DESTDIR)$(libdir)/lxpanel/plugins/*.a
-	rm -f $(DESTDIR)$(libdir)/lxpanel/plugins/*.
+	rm -f $(DESTDIR)$(pkglibdir)/plugins/*.la
+	rm -f $(DESTDIR)$(pkglibdir)/plugins/*.a
+	rm -f $(DESTDIR)$(pkglibdir)/plugins/*.

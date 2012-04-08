@@ -6,7 +6,7 @@ INCLUDES = \
 
 module_LTLIBRARIES = kbled.la
 
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 
 kbled_la_SOURCES = kbled.c
 

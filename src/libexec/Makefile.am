@@ -1,2 +1,1 @@
-
-libexec_SCRIPTS = iface-info
+pkglibexec_SCRIPTS = iface-info

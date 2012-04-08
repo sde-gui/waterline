@@ -8,7 +8,7 @@ INCLUDES = \
 
 module_LTLIBRARIES = volume.la
 
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 
 volume_la_SOURCES = \
 	volume_xpm.h \

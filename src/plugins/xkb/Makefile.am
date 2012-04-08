@@ -2,11 +2,10 @@ INCLUDES = \
 	-I. \
 	-I$(top_srcdir)/src \
 	$(PACKAGE_CFLAGS) \
-	-DFLAGSDIR=\"$(datadir)/lxpanel/images/xkb-flags\"
 	$(G_CAST_CHECKS)
 
 module_LTLIBRARIES = xkb.la
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 
 xkb_la_SOURCES = \
 	xkb-plugin.c \
@@ -20,7 +19,7 @@ xkb_la_LDFLAGS = \
 	-module \
 	@LXPANEL_MODULE@
 
-flagsdir=$(datadir)/lxpanel/images/xkb-flags
+flagsdir=$(pkgdatadir)/images/xkb-flags
 flags_DATA= \
 	flags/ae.png \
 	flags/am.png \

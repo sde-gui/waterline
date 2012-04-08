@@ -6,7 +6,7 @@ INCLUDES = \
 
 module_LTLIBRARIES = thermal.la
 
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 
 thermal_la_SOURCES = \
 	thermal.c

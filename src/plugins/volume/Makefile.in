@@ -290,7 +290,7 @@ top_srcdir = @top_srcdir@
 @BUILD_OSS_PLUGINS_TRUE@	$(G_CAST_CHECKS)
 
 @BUILD_OSS_PLUGINS_TRUE@module_LTLIBRARIES = volume.la
-@BUILD_OSS_PLUGINS_TRUE@moduledir = $(libdir)/lxpanel/plugins
+@BUILD_OSS_PLUGINS_TRUE@moduledir = $(pkglibdir)/plugins
 @BUILD_OSS_PLUGINS_TRUE@volume_la_SOURCES = \
 @BUILD_OSS_PLUGINS_TRUE@	volume_xpm.h \
 @BUILD_OSS_PLUGINS_TRUE@	volume-impl.h \

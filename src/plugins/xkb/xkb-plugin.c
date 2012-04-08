@@ -58,9 +58,11 @@ void xkb_redraw(XkbPlugin * xkb)
         char * group_name = (char *) xkb_get_current_symbol_name_lowercase(xkb);
         if (group_name != NULL)
         {
-            char * filename = g_strdup_printf("%s/%s.png", FLAGSDIR, group_name);
+            gchar * pngname = g_strdup_printf("%s.png", group_name);
+            gchar * filename = get_private_resource_path(RESOURCE_DATA, "images", "xkb-flags", pngname, 0);
             GdkPixbuf * unscaled_pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
             g_free(filename);
+            g_free(pngname);
             g_free(group_name);
 
             if (unscaled_pixbuf != NULL)

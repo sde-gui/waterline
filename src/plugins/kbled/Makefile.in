@@ -285,7 +285,7 @@ INCLUDES = \
     $(G_CAST_CHECKS)
 
 module_LTLIBRARIES = kbled.la
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 kbled_la_SOURCES = kbled.c
 kbled_la_LIBADD = $(PACKAGE_LIBS)
 kbled_la_LDFLAGS = \

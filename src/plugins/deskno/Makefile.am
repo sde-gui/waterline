@@ -6,7 +6,7 @@ INCLUDES = \
 
 module_LTLIBRARIES = deskno.la
 
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 
 deskno_la_SOURCES = \
 	deskno.c

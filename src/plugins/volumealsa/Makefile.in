@@ -288,7 +288,7 @@ top_srcdir = @top_srcdir@
 @BUILD_ALSA_PLUGINS_TRUE@	$(G_CAST_CHECKS)
 
 @BUILD_ALSA_PLUGINS_TRUE@module_LTLIBRARIES = volumealsa.la
-@BUILD_ALSA_PLUGINS_TRUE@moduledir = $(libdir)/lxpanel/plugins
+@BUILD_ALSA_PLUGINS_TRUE@moduledir = $(pkglibdir)/plugins
 @BUILD_ALSA_PLUGINS_TRUE@volumealsa_la_SOURCES = volumealsa.c
 @BUILD_ALSA_PLUGINS_TRUE@volumealsa_la_LIBADD = -lasound $(PACKAGE_LIBS)
 @BUILD_ALSA_PLUGINS_TRUE@volumealsa_la_LDFLAGS = \

@@ -284,10 +284,10 @@ INCLUDES = \
 	-I. \
 	-I$(top_srcdir)/src \
 	$(PACKAGE_CFLAGS) \
-	-DFLAGSDIR=\"$(datadir)/lxpanel/images/xkb-flags\"
+	$(G_CAST_CHECKS)
 
 module_LTLIBRARIES = xkb.la
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 xkb_la_SOURCES = \
 	xkb-plugin.c \
 	xkb.c \
@@ -300,7 +300,7 @@ xkb_la_LDFLAGS = \
 	-module \
 	@LXPANEL_MODULE@
 
-flagsdir = $(datadir)/lxpanel/images/xkb-flags
+flagsdir = $(pkgdatadir)/images/xkb-flags
 flags_DATA = \
 	flags/ae.png \
 	flags/am.png \
@@ -709,7 +709,6 @@ uninstall-am: uninstall-flagsDATA uninstall-moduleLTLIBRARIES
 	tags uninstall uninstall-am uninstall-flagsDATA \
 	uninstall-moduleLTLIBRARIES
 
-	$(G_CAST_CHECKS)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

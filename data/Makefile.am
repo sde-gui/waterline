@@ -1,12 +1,12 @@
 default_config_DATA = \
 	default/config
-default_configdir = $(datadir)/lxpanel/profile/default
+default_configdir = $(pkgdatadir)/profile/default
 
 default_config_panel_DATA = \
 	default/panels/panel
-default_config_paneldir = $(datadir)/lxpanel/profile/default/panels
+default_config_paneldir = $(pkgdatadir)/profile/default/panels
 
-uidir=$(datadir)/lxpanel/ui
+uidir=$(pkgdatadir)/ui
 ui_in_files= \
 	ui/panel-pref.glade \
 	ui/launchbar.glade \
@@ -59,7 +59,7 @@ lxpanel_images_DATA = \
 	images/cpufreq-icon.png
 
 
-lxpanel_imagesdir = $(datadir)/lxpanel/images
+lxpanel_imagesdir = $(pkgdatadir)/images
 
 EXTRA_DIST = \
 	default/panels/panel.in \

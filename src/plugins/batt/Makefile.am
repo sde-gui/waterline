@@ -6,7 +6,7 @@ INCLUDES = \
 
 module_LTLIBRARIES = batt.la
 
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 
 batt_la_SOURCES = \
 	batt.c \

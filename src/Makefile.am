@@ -11,7 +11,6 @@ INCLUDES = \
 	-DPACKAGE_LIB_DIR=\""$(libdir)"\" \
 	-DPACKAGE_LIBEXEC_DIR=\""$(libexecdir)"\" \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" \
-	-DPACKAGE_UI_DIR=\""$(datadir)/lxpanel/ui"\" \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	$(PACKAGE_CFLAGS) \
 	$(XLIB_CFLAGS) \
@@ -45,7 +44,7 @@ lxpanel_SOURCES = \
 
 if BUILD_PLUGIN_LOADER
 DYNAMIC_FLAGS = -export-dynamic
-lxpanel_includedir = $(includedir)/lxpanel
+lxpanel_includedir = $(pkgincludedir)
 lxpanel_include_HEADERS = $(top_srcdir)/include/lxpanel/plugin.h
 endif
 lxpanel_LDFLAGS = $(DYNAMIC_FLAGS)

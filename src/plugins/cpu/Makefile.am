@@ -6,7 +6,7 @@ INCLUDES = \
 
 module_LTLIBRARIES = cpu.la
 
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 
 cpu_la_SOURCES = \
 	cpu.c

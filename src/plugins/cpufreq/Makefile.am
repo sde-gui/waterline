@@ -6,7 +6,7 @@ INCLUDES = \
 
 module_LTLIBRARIES = cpufreq.la
 
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 
 cpufreq_la_SOURCES = \
 	cpufreq.c

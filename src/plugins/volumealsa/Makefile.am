@@ -8,7 +8,7 @@ INCLUDES = \
 
 module_LTLIBRARIES = volumealsa.la
 
-moduledir = $(libdir)/lxpanel/plugins
+moduledir = $(pkglibdir)/plugins
 
 volumealsa_la_SOURCES = volumealsa.c
 

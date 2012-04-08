@@ -741,9 +741,9 @@ uninstall-am:
 
 
 install-exec-hook:
-	rm -f $(DESTDIR)$(libdir)/lxpanel/plugins/*.la
-	rm -f $(DESTDIR)$(libdir)/lxpanel/plugins/*.a
-	rm -f $(DESTDIR)$(libdir)/lxpanel/plugins/*.
+	rm -f $(DESTDIR)$(pkglibdir)/plugins/*.la
+	rm -f $(DESTDIR)$(pkglibdir)/plugins/*.a
+	rm -f $(DESTDIR)$(pkglibdir)/plugins/*.
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

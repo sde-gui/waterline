@@ -61,10 +61,18 @@ lxpanel_images_DATA = \
 
 lxpanel_imagesdir = $(pkgdatadir)/images
 
+defaults_applications_DATA = \
+	defaults/applications/file-manager \
+	defaults/applications/terminal-emulator \
+	defaults/applications/volume-control
+defaults_applicationsdir = $(pkgdatadir)/defaults/applications
+
+
 EXTRA_DIST = \
 	default/panels/panel.in \
 	$(lxpanel_DATA) \
 	$(lxpanel_images_DATA) \
 	$(ui_DATA) \
-	$(default_config_DATA)
+	$(default_config_DATA) \
+	$(defaults_DATA)
 

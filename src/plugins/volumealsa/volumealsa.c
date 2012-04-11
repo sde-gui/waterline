@@ -306,23 +306,7 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
             }
             if (strempty(vol->double_click_action))
             {
-                gchar * p = g_find_program_in_path("pulseaudio");
-                if (p)
-                {
-                    g_free(p);
-                    p = g_find_program_in_path("gnome-sound-applet");
-                    if (!p)
-                        p = g_find_program_in_path("pavucontrol");
-                }
-                else
-                {
-                    p = g_find_program_in_path("gnome-alsamixer");
-                    if (!p)
-                        p = g_find_program_in_path("alsamixer");
-                }
-                if (p)
-                    lxpanel_launch_app(p, NULL, strstr(p, "/alsamixer") != NULL);
-                g_free(p);
+                lxpanel_launch(get_default_application("volume-control"), NULL);
             }
             else
             {

@@ -1,0 +1,3 @@
+#fixme: urxvt -e %s
+lxterminal -e %s
+terminal -e %s

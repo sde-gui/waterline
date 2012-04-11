@@ -26,6 +26,7 @@
 #include "plugin.h"
 #include "panel.h"
 #include "misc.h"
+#include "defaultapplications.h"
 #include "bg.h"
 #include <stdlib.h>
 #include <sys/types.h>
@@ -1319,12 +1320,12 @@ extern const char* lxpanel_get_logout_command()
 
 extern const char* lxpanel_get_file_manager()
 {
-    return file_manager_cmd ? file_manager_cmd : "pcmanfm %s";
+    return file_manager_cmd ? file_manager_cmd : get_default_application("file-manager");
 }
 
 extern const char* lxpanel_get_terminal()
 {
-    return terminal_cmd ? terminal_cmd : "lxterminal -e %s";
+    return terminal_cmd ? terminal_cmd : get_default_application("terminal-emulator");
 }
 
 extern int lxpanel_is_in_kiosk_mode(void)

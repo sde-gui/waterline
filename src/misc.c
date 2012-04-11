@@ -305,9 +305,16 @@ gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal
     cmd = translate_app_exec_to_command_line(exec, files);
     if( in_terminal )
     {
-	char * escaped_cmd = g_shell_quote(cmd);
         char* term_cmd;
         const char* term = lxpanel_get_terminal();
+        if (!term)
+        {
+            g_free(cmd);
+            return FALSE;
+        }
+
+	char * escaped_cmd = g_shell_quote(cmd);
+
         if( strstr(term, "%s") )
             term_cmd = g_strdup_printf(term, escaped_cmd);
         else

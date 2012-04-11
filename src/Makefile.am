@@ -26,6 +26,7 @@ endif
 
 lxpanel_SOURCES = \
 	misc.c misc.h \
+	defaultapplications.c defaultapplications.h \
 	libfm.c libfm.h \
 	bg.c bg.h  \
 	commands.c commands.h \

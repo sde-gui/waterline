@@ -265,7 +265,15 @@ _finish:
         }
     }
 
-    return g_string_free( cmd, FALSE );
+    gchar * result = g_string_free( cmd, FALSE );
+
+    int len = strlen(result);
+    while (len && result[len - 1] == ' ')
+    {
+        result[--len] = 0;
+    }
+
+    return result; 
 }
 
 gboolean lxpanel_launch(const char* command, GList* files)
@@ -309,6 +317,9 @@ gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal
             g_free(cmd);
         cmd = term_cmd;
     }
+
+    //g_print("%s\n", cmd);
+
     if (! g_spawn_command_line_async(cmd, &error) ) {
         ERR("can't spawn %s\nError is %s\n", cmd, error->message);
         g_error_free (error);

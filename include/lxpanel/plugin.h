@@ -63,8 +63,6 @@ typedef struct _Panel {
     guint32 fontcolor;
     GdkColor gtintcolor;
     GdkColor gfontcolor;
-    guint fontsize;
-    int round_corners_radius;
 
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) allocation */
@@ -84,6 +82,7 @@ typedef struct _Panel {
     guint round_corners : 1;
     guint usefontcolor : 1;
     guint usefontsize : 1;
+    guint fontsize;
     guint transparent : 1;
     guint background : 1;
     guint spacing;
@@ -113,8 +112,6 @@ typedef struct _Panel {
     GtkWidget* alignment_right_label;	/* Label of alignment: right control */
     GtkWidget* height_control;		/* Height control in preference dialog */
     GtkWidget* width_control;		/* Width control in preference dialog */
-
-    int preferred_icon_size;
 } Panel;
 
 typedef struct {

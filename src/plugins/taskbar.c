@@ -468,7 +468,7 @@ typedef struct _taskbar {
     Task * button_pressed_task;
     gboolean moving_task_now;
 
-    GdkColormap * color_map; /* cached value of gdk_drawable_get_colormap(plug->panel->topgwin->window) */
+    GdkColormap * color_map; /* cached value of panel_get_color_map(plug->panel) */
 } TaskbarPlugin;
 
 /******************************************************************************/
@@ -1659,7 +1659,7 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
         _gdk_pixbuf_get_color_sample(pixbuf, &tk->bgcolor1, &tk->bgcolor2);
 
         if (!tb->color_map)
-            tb->color_map = gdk_drawable_get_colormap(panel_get_toplevel_window(tb->plug->panel));
+            tb->color_map = panel_get_color_map(tb->plug->panel);
 
         if (tk->bgcolor1.pixel)
         {

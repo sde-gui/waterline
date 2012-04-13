@@ -364,7 +364,7 @@ static void lb_set_bgcolor(lb_t * lb, gchar * color_s)
     }
 
     if (!lb->color_map)
-        lb->color_map = gdk_drawable_get_colormap(panel_get_toplevel_window(lb->plug->panel));
+        lb->color_map = panel_get_color_map(lb->plug->panel);
 
     if (!strempty(lb->bg_color_s) && strcmp(lb->bg_color_s, color_s) == 0)
         return;

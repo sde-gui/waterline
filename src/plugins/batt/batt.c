@@ -452,16 +452,11 @@ constructor(Plugin *p, char **fp)
     gdk_color_parse(lx_b->chargingColor2, &lx_b->charging2);
     gdk_color_parse(lx_b->dischargingColor1, &lx_b->discharging1);
     gdk_color_parse(lx_b->dischargingColor2, &lx_b->discharging2);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            panel_get_toplevel_window(p->panel)), &lx_b->background, FALSE, TRUE);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            panel_get_toplevel_window(p->panel)), &lx_b->charging1, FALSE, TRUE);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            panel_get_toplevel_window(p->panel)), &lx_b->charging2, FALSE, TRUE);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            panel_get_toplevel_window(p->panel)), &lx_b->discharging1, FALSE, TRUE);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            panel_get_toplevel_window(p->panel)), &lx_b->discharging2, FALSE, TRUE);
+    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->background, FALSE, TRUE);
+    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->charging1, FALSE, TRUE);
+    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->charging2, FALSE, TRUE);
+    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->discharging1, FALSE, TRUE);
+    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->discharging2, FALSE, TRUE);
     gdk_gc_set_foreground(lx_b->bg, &lx_b->background);
 
    
@@ -534,24 +529,19 @@ static void applyConfig(Plugin* p)
     /* Update colors */
     if (b->backgroundColor &&
             gdk_color_parse(b->backgroundColor, &b->background)) {
-        gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                panel_get_toplevel_window(p->panel)), &b->background, FALSE, TRUE);
+        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->background, FALSE, TRUE);
         gdk_gc_set_foreground(b->bg, &b->background);
     }
     if (b->chargingColor1 && gdk_color_parse(b->chargingColor1, &b->charging1))
-        gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                panel_get_toplevel_window(p->panel)), &b->charging1, FALSE, TRUE);
+        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->charging1, FALSE, TRUE);
     if (b->chargingColor2 && gdk_color_parse(b->chargingColor2, &b->charging2))
-        gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                panel_get_toplevel_window(p->panel)), &b->charging2, FALSE, TRUE);
+        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->charging2, FALSE, TRUE);
     if (b->dischargingColor1 &&
             gdk_color_parse(b->dischargingColor1, &b->discharging1))
-        gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                panel_get_toplevel_window(p->panel)), &b->discharging1, FALSE, TRUE);
+        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->discharging1, FALSE, TRUE);
     if (b->dischargingColor2 &&
             gdk_color_parse(b->dischargingColor2, &b->discharging2))
-        gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                panel_get_toplevel_window(p->panel)), &b->discharging2, FALSE, TRUE);
+        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->discharging2, FALSE, TRUE);
 
     /* Make sure the border value is acceptable */
     b->border = MIN(MAX(0, b->requestedBorder),

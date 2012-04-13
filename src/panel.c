@@ -151,6 +151,11 @@ Window      panel_get_toplevel_xwindow(Panel * p)
     return p->topxwin;
 }
 
+GdkColormap * panel_get_color_map(Panel * p)
+{
+    return gdk_drawable_get_colormap(panel_get_toplevel_window(p));
+}
+
 int panel_get_edge(Panel * p)
 {
     return p->edge;

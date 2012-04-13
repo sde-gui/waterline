@@ -54,6 +54,7 @@ extern GtkStyle * panel_get_default_style(Panel * p);
 extern GtkWidget * panel_get_toplevel_widget(Panel * p);
 extern GdkWindow * panel_get_toplevel_window(Panel * p);
 extern Window      panel_get_toplevel_xwindow(Panel * p);
+extern GdkColormap * panel_get_color_map(Panel * p);
 
 extern int panel_get_edge(Panel * p);
 extern int panel_get_orientation(Panel * p);

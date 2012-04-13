@@ -260,7 +260,7 @@ static void cpu_apply_configuration(Plugin * p)
     c->graphics_context = gdk_gc_new(panel_get_toplevel_window(p->panel));
 
     gdk_color_parse(c->fg_color,  &c->foreground_color);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(panel_get_toplevel_window(p->panel)), &c->foreground_color, FALSE, TRUE);
+    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &c->foreground_color, FALSE, TRUE);
     gdk_gc_set_foreground(c->graphics_context, &c->foreground_color);
 
     if (c->bg_graphics_context)
@@ -268,7 +268,7 @@ static void cpu_apply_configuration(Plugin * p)
     c->bg_graphics_context = gdk_gc_new(panel_get_toplevel_window(p->panel));
 
     gdk_color_parse(c->bg_color,  &c->background_color);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(panel_get_toplevel_window(p->panel)), &c->background_color, FALSE, TRUE);
+    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &c->background_color, FALSE, TRUE);
     gdk_gc_set_foreground(c->bg_graphics_context, &c->background_color);
 
     /* Show the widget.  Connect a timer to refresh the statistics. */

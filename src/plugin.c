@@ -32,6 +32,7 @@
 
 #include "misc.h"
 #include "bg.h"
+#include "panel_private.h"
 
 #include <glib-object.h>
 

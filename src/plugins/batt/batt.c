@@ -345,7 +345,7 @@ constructor(Plugin *p, char **fp)
 
     gtk_container_add( (GtkContainer*)p->pwid, lx_b->drawingArea );
 
-    if ((lx_b->orientation = p->panel->orientation) == ORIENT_HORIZ) {
+    if ((lx_b->orientation = panel_get_orientation(p->panel)) == ORIENT_HORIZ) {
         lx_b->height = lx_b->length = 20;
         lx_b->thickness = lx_b->width = 8;
     }
@@ -357,9 +357,9 @@ constructor(Plugin *p, char **fp)
 
     gtk_widget_show(lx_b->drawingArea);
 
-    lx_b->bg = gdk_gc_new(p->panel->topgwin->window);
-    lx_b->gc1 = gdk_gc_new(p->panel->topgwin->window);
-    lx_b->gc2 = gdk_gc_new(p->panel->topgwin->window);
+    lx_b->bg  = gdk_gc_new(panel_get_toplevel_window(p->panel));
+    lx_b->gc1 = gdk_gc_new(panel_get_toplevel_window(p->panel));
+    lx_b->gc2 = gdk_gc_new(panel_get_toplevel_window(p->panel));
 
     g_signal_connect (G_OBJECT (lx_b->drawingArea), "button_press_event",
             G_CALLBACK(buttonPressEvent), (gpointer) p);
@@ -453,15 +453,15 @@ constructor(Plugin *p, char **fp)
     gdk_color_parse(lx_b->dischargingColor1, &lx_b->discharging1);
     gdk_color_parse(lx_b->dischargingColor2, &lx_b->discharging2);
     gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            p->panel->topgwin->window), &lx_b->background, FALSE, TRUE);
+            panel_get_toplevel_window(p->panel)), &lx_b->background, FALSE, TRUE);
     gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            p->panel->topgwin->window), &lx_b->charging1, FALSE, TRUE);
+            panel_get_toplevel_window(p->panel)), &lx_b->charging1, FALSE, TRUE);
     gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            p->panel->topgwin->window), &lx_b->charging2, FALSE, TRUE);
+            panel_get_toplevel_window(p->panel)), &lx_b->charging2, FALSE, TRUE);
     gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            p->panel->topgwin->window), &lx_b->discharging1, FALSE, TRUE);
+            panel_get_toplevel_window(p->panel)), &lx_b->discharging1, FALSE, TRUE);
     gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-            p->panel->topgwin->window), &lx_b->discharging2, FALSE, TRUE);
+            panel_get_toplevel_window(p->panel)), &lx_b->discharging2, FALSE, TRUE);
     gdk_gc_set_foreground(lx_b->bg, &lx_b->background);
 
    
@@ -513,8 +513,8 @@ static void orientation(Plugin *p) {
 
     lx_battery *b = (lx_battery *) p->priv;
 
-    if (b->orientation != p->panel->orientation) {
-        b->orientation = p->panel->orientation;
+    if (b->orientation != panel_get_orientation(p->panel)) {
+        b->orientation = panel_get_orientation(p->panel);
         unsigned int swap = b->height;
         b->height = b->width;
         b->width = swap;
@@ -535,23 +535,23 @@ static void applyConfig(Plugin* p)
     if (b->backgroundColor &&
             gdk_color_parse(b->backgroundColor, &b->background)) {
         gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                p->panel->topgwin->window), &b->background, FALSE, TRUE);
+                panel_get_toplevel_window(p->panel)), &b->background, FALSE, TRUE);
         gdk_gc_set_foreground(b->bg, &b->background);
     }
     if (b->chargingColor1 && gdk_color_parse(b->chargingColor1, &b->charging1))
         gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                p->panel->topgwin->window), &b->charging1, FALSE, TRUE);
+                panel_get_toplevel_window(p->panel)), &b->charging1, FALSE, TRUE);
     if (b->chargingColor2 && gdk_color_parse(b->chargingColor2, &b->charging2))
         gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                p->panel->topgwin->window), &b->charging2, FALSE, TRUE);
+                panel_get_toplevel_window(p->panel)), &b->charging2, FALSE, TRUE);
     if (b->dischargingColor1 &&
             gdk_color_parse(b->dischargingColor1, &b->discharging1))
         gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                p->panel->topgwin->window), &b->discharging1, FALSE, TRUE);
+                panel_get_toplevel_window(p->panel)), &b->discharging1, FALSE, TRUE);
     if (b->dischargingColor2 &&
             gdk_color_parse(b->dischargingColor2, &b->discharging2))
         gdk_colormap_alloc_color(gdk_drawable_get_colormap(
-                p->panel->topgwin->window), &b->discharging2, FALSE, TRUE);
+                panel_get_toplevel_window(p->panel)), &b->discharging2, FALSE, TRUE);
 
     /* Make sure the border value is acceptable */
     b->border = MIN(MAX(0, b->requestedBorder),

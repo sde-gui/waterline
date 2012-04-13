@@ -20,6 +20,8 @@
 #include "misc.h"
 #include "plugin.h"
 
+#include "panel_private.h" /* FIXME! */
+
 #include <glib/gi18n.h>
 
 #include "dbg.h"

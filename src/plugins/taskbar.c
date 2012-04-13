@@ -1659,7 +1659,7 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
         _gdk_pixbuf_get_color_sample(pixbuf, &tk->bgcolor1, &tk->bgcolor2);
 
         if (!tb->color_map)
-            tb->color_map = gdk_drawable_get_colormap(tb->plug->panel->topgwin->window);
+            tb->color_map = gdk_drawable_get_colormap(panel_get_toplevel_window(tb->plug->panel));
 
         if (tk->bgcolor1.pixel)
         {
@@ -2985,11 +2985,11 @@ static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, 
 /* Update style on the taskbar when created or after a configuration change. */
 static void taskbar_update_style(TaskbarPlugin * tb)
 {
-    GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
         taskbar_get_task_button_max_width(tb), tb->icon_size + BUTTON_HEIGHT_EXTRA,
-        tb->spacing, 0, tb->plug->panel->oriented_height);
+        tb->spacing, 0, panel_get_oriented_height_pixels(tb->plug->panel));
 }
 
 /* Update style on a task button when created or after a configuration change. */
@@ -3545,7 +3545,7 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
     Task * ntk = NULL;
 
     /* Get the window that has focus. */
-    if (f == tb->plug->panel->topxwin)
+    if (f == panel_get_toplevel_xwindow(tb->plug->panel))
     {
         /* Taskbar window gained focus (this isn't supposed to be able to happen).  Remember current focus. */
         if (ctk != NULL)
@@ -4386,7 +4386,7 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     if (close2)
     {
         mi = gtk_menu_item_new_with_mnemonic (_("_Close Window"));
-        if (tb->plug->panel->edge != EDGE_BOTTOM)
+        if (panel_get_edge(tb->plug->panel) != EDGE_BOTTOM)
         {
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
@@ -4435,8 +4435,8 @@ static void taskbar_build_gui(Plugin * p)
     gtk_widget_set_name(p->pwid, "taskbar");
 
     /* Make container for task buttons as a child of top level widget. */
-    GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    tb->icon_grid = icon_grid_new(p->panel, p->pwid, bo, tb->task_width_max, tb->icon_size, tb->spacing, 0, p->panel->oriented_height);
+    GtkOrientation bo = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    tb->icon_grid = icon_grid_new(p->panel, p->pwid, bo, tb->task_width_max, tb->icon_size, tb->spacing, 0, panel_get_oriented_height_pixels(p->panel));
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_use_separators(tb->icon_grid, tb->use_group_separators);
     icon_grid_set_separator_size(tb->icon_grid, tb->group_separator_size);
@@ -4570,7 +4570,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     p->priv = tb;
 
     /* Initialize to defaults. */
-    tb->icon_size         = p->panel->icon_size;
+    tb->icon_size         = panel_get_icon_size(p->panel);
     tb->tooltips          = TRUE;
     tb->show_icons_titles = SHOW_BOTH;
     tb->custom_fallback_icon = "xorg";
@@ -5057,16 +5057,16 @@ static void taskbar_panel_configuration_changed(Plugin * p)
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     taskbar_update_style(tb);
     taskbar_make_menu(tb);
-    GtkOrientation bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
-        taskbar_get_task_button_max_width(tb), tb->plug->panel->icon_size + BUTTON_HEIGHT_EXTRA,
-        tb->spacing, 0, tb->plug->panel->oriented_height);
+        taskbar_get_task_button_max_width(tb), panel_get_icon_size(tb->plug->panel) + BUTTON_HEIGHT_EXTRA,
+        tb->spacing, 0, panel_get_oriented_height_pixels(tb->plug->panel));
 
     /* If the icon size changed, refetch all the icons. */
-    if (tb->plug->panel->icon_size != tb->icon_size)
+    if (panel_get_icon_size(tb->plug->panel) != tb->icon_size)
     {
-        tb->icon_size = tb->plug->panel->icon_size;
+        tb->icon_size = panel_get_icon_size(tb->plug->panel);
         Task * tk;
         for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         {

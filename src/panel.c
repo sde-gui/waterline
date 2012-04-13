@@ -36,6 +36,7 @@
 
 #include "plugin.h"
 #include "panel.h"
+#include "panel_private.h"
 #include "misc.h"
 #include "bg.h"
 #include "Xsupport.h"
@@ -124,6 +125,50 @@ static void panel_toplevel_class_init(PanelToplevelClass *klass)
 }
 static void panel_toplevel_init(PanelToplevel *self)
 {
+}
+
+/******************************************************************************/
+
+/*= getters =*/
+
+GtkStyle * panel_get_default_style(Panel * p)
+{
+    return p->defstyle;
+}
+
+GtkWidget * panel_get_toplevel_widget(Panel * p)
+{
+    return p->topgwin;
+}
+
+GdkWindow * panel_get_toplevel_window(Panel * p)
+{
+    return p->topgwin->window;
+}
+
+Window      panel_get_toplevel_xwindow(Panel * p)
+{
+    return p->topxwin;
+}
+
+int panel_get_edge(Panel * p)
+{
+    return p->edge;
+}
+
+int panel_get_orientation(Panel * p)
+{
+    return p->orientation;
+}
+
+int panel_get_oriented_height_pixels(Panel * p)
+{
+    return p->oriented_height;
+}
+
+int panel_get_icon_size(Panel * p)
+{
+    return p->icon_size;
 }
 
 /******************************************************************************/

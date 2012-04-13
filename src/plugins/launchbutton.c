@@ -364,7 +364,7 @@ static void lb_set_bgcolor(lb_t * lb, gchar * color_s)
     }
 
     if (!lb->color_map)
-        lb->color_map = gdk_drawable_get_colormap(lb->plug->panel->topgwin->window);
+        lb->color_map = gdk_drawable_get_colormap(panel_get_toplevel_window(lb->plug->panel));
 
     if (!strempty(lb->bg_color_s) && strcmp(lb->bg_color_s, color_s) == 0)
         return;
@@ -401,7 +401,7 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
     }
     else if (input == &lb->input_icon)
     {
-        int icon_size = lb->plug->panel->icon_size;
+        int icon_size = panel_get_icon_size(lb->plug->panel);
         fb_button_set_from_file(lb->button, line, icon_size, icon_size, TRUE);
     }
     else if (input == &lb->input_general)
@@ -415,7 +415,7 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
                 gtk_widget_set_tooltip_text(lb->button, parts[1]);
             else if (g_ascii_strcasecmp(parts[0], "IconPath") == 0 || g_ascii_strcasecmp(parts[0], "Icon") == 0)
 	    {
-		int icon_size = lb->plug->panel->icon_size;
+		int icon_size = panel_get_icon_size(lb->plug->panel);
 		fb_button_set_from_file(lb->button, parts[1], icon_size, icon_size, TRUE);
 	    }
             else if (g_ascii_strcasecmp(parts[0], "Command1") == 0)
@@ -536,7 +536,7 @@ static void lb_apply_configuration(Plugin * p)
     if (!lb->button)
     {
         lb->button = fb_button_new_from_file_with_label(lb->icon_path,
-                     p->panel->icon_size, p->panel->icon_size, PANEL_ICON_HIGHLIGHT, TRUE, p->panel, lb->title);
+                     panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), PANEL_ICON_HIGHLIGHT, TRUE, p->panel, lb->title);
         gtk_container_add(GTK_CONTAINER(p->pwid), lb->button);
         g_signal_connect(G_OBJECT(lb->button), "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
         g_signal_connect(G_OBJECT(lb->button), "scroll-event", G_CALLBACK(lb_scroll_event), (gpointer) lb);
@@ -545,10 +545,10 @@ static void lb_apply_configuration(Plugin * p)
     else
     {
         fb_button_set_label(lb->button, p->panel, lb->title);
-        fb_button_set_from_file(lb->button, lb->icon_path, p->panel->icon_size, p->panel->icon_size, TRUE);
+        fb_button_set_from_file(lb->button, lb->icon_path, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), TRUE);
     }
 
-    fb_button_set_orientation(lb->button, p->panel->orientation);
+    fb_button_set_orientation(lb->button, panel_get_orientation(p->panel));
 
     if (!strempty(lb->tooltip)) {
         gtk_widget_set_tooltip_text(lb->button, lb->tooltip);

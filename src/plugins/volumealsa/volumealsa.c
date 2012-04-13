@@ -454,7 +454,7 @@ static void volumealsa_build_popup_window(Plugin * p)
     vol->mute_check_handler = g_signal_connect(vol->mute_check, "toggled", G_CALLBACK(volumealsa_popup_mute_toggled), vol);
 
     /* Set background to default. */
-    gtk_widget_set_style(viewport, p->panel->defstyle);
+    gtk_widget_set_style(viewport, panel_get_default_style(p->panel));
 }
 
 /* Plugin constructor. */

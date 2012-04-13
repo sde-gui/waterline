@@ -734,7 +734,7 @@ static int tray_constructor(Plugin * p, char ** fp)
     tr->plugin = p;
 
     /* Get the screen and display. */
-    GdkScreen * screen = gtk_widget_get_screen(GTK_WIDGET(p->panel->topgwin));
+    GdkScreen * screen = gtk_widget_get_screen(GTK_WIDGET(panel_get_toplevel_widget(p->panel)));
     Screen * xscreen = GDK_SCREEN_XSCREEN(screen);
     GdkDisplay * display = gdk_screen_get_display(screen);
 
@@ -814,8 +814,8 @@ static int tray_constructor(Plugin * p, char ** fp)
     gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 1);
 
     /* Create an icon grid to manage the container. */
-    GtkOrientation bo = (p->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    tr->icon_grid = icon_grid_new(p->panel, p->pwid, bo, p->panel->icon_size, p->panel->icon_size, 3, 0, p->panel->oriented_height);
+    GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    tr->icon_grid = icon_grid_new(p->panel, p->pwid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 3, 0, panel_get_oriented_height_pixels(p->panel));
 
     g_signal_connect (tr->icon_grid->widget, "expose-event", G_CALLBACK (tray_expose_box), tr);
 
@@ -866,8 +866,8 @@ static void tray_panel_configuration_changed(Plugin * p)
     TrayPlugin * tr = (TrayPlugin *) p->priv;
     if (tr->icon_grid != NULL)
     {
-        GtkOrientation bo = (p->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-        icon_grid_set_geometry(tr->icon_grid, bo, p->panel->icon_size, p->panel->icon_size, 3, 0, p->panel->oriented_height);
+        GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+        icon_grid_set_geometry(tr->icon_grid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 3, 0, panel_get_oriented_height_pixels(p->panel));
     }
 }
 

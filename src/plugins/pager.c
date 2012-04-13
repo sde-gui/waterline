@@ -288,8 +288,8 @@ static gboolean desk_configure_event(GtkWidget * widget, GdkEventConfigure * eve
 
     /* Resize to optimal size. */
     gtk_widget_set_size_request(widget,
-        (d->pg->plugin->panel->icon_size - BORDER_WIDTH * 2) * d->pg->aspect_ratio,
-        d->pg->plugin->panel->icon_size - BORDER_WIDTH * 2);
+        (panel_get_icon_size(d->pg->plugin->panel) - BORDER_WIDTH * 2) * d->pg->aspect_ratio,
+        panel_get_icon_size(d->pg->plugin->panel) - BORDER_WIDTH * 2);
     return FALSE;
 }
 
@@ -726,12 +726,12 @@ static int pager_constructor(Plugin * plug, char ** fp)
     gtk_container_set_border_width(GTK_CONTAINER(plug->pwid), 0);
 
     /* Create an icon grid manager to manage the drawing areas within the container. */
-    GtkOrientation bo = (plug->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (panel_get_orientation(plug->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     pg->icon_grid = icon_grid_new(plug->panel, plug->pwid, bo,
-        (plug->panel->icon_size - BORDER_WIDTH * 2) * pg->aspect_ratio,
-        plug->panel->icon_size - BORDER_WIDTH * 2,
+        (panel_get_icon_size(plug->panel) - BORDER_WIDTH * 2) * pg->aspect_ratio,
+        panel_get_icon_size(plug->panel) - BORDER_WIDTH * 2,
         1, BORDER_WIDTH,
-        plug->panel->oriented_height);
+        panel_get_oriented_height_pixels(plug->panel));
 
     /* Add GDK event filter. */
     gdk_window_add_filter(NULL, (GdkFilterFunc) pager_event_filter, pg);
@@ -785,12 +785,12 @@ static void pager_panel_configuration_changed(Plugin * p)
 {
     /* Reset the icon grid orientation. */
     PagerPlugin * pg = (PagerPlugin *) p->priv;
-    GtkOrientation bo = (p->panel->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_geometry(pg->icon_grid, bo,
-        (p->panel->icon_size - BORDER_WIDTH * 2) * pg->aspect_ratio,
-        p->panel->icon_size - BORDER_WIDTH * 2,
+        (panel_get_icon_size(p->panel) - BORDER_WIDTH * 2) * pg->aspect_ratio,
+        panel_get_icon_size(p->panel) - BORDER_WIDTH * 2,
         1, BORDER_WIDTH,
-        p->panel->oriented_height); 
+        panel_get_oriented_height_pixels(p->panel));
 }
 
 /* Plugin descriptor. */

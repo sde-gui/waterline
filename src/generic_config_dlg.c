@@ -23,6 +23,7 @@
 
 #include "plugin.h"
 #include "panel.h"
+#include "panel_private.h"
 #include "misc.h"
 #include "bg.h"
 #include <stdlib.h>

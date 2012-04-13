@@ -38,6 +38,8 @@
 #include "menu-policy.h"
 #include "commands.h"
 
+#include "panel_private.h" /* FIXME! */
+
 #include "dbg.h"
 
 //#define DEFAULT_MENU_ICON PACKAGE_DATA_DIR "/lxpanel/images/my-computer.png"
@@ -573,15 +575,15 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
     if( name )
     {
         title = panel_translate_directory_name(name);
-        m->img = fb_button_new_from_file_with_label(fname, -1, p->panel->icon_size, gcolor2rgb24(tint), TRUE, p->panel, title);
+        m->img = fb_button_new_from_file_with_label(fname, -1, panel_get_icon_size(p->panel), gcolor2rgb24(tint), TRUE, p->panel, title);
         g_free(title);
     }
     else
     {
-        m->img = fb_button_new_from_file(fname, -1, p->panel->icon_size, gcolor2rgb24(tint), TRUE);
+        m->img = fb_button_new_from_file(fname, -1, panel_get_icon_size(p->panel), gcolor2rgb24(tint), TRUE);
     }
 
-    fb_button_set_orientation(m->img, p->panel->orientation);
+    fb_button_set_orientation(m->img, panel_get_orientation(p->panel));
 
     gtk_widget_show(m->img);
     gtk_box_pack_start(GTK_BOX(m->box), m->img, TRUE, TRUE, 0);
@@ -1152,9 +1154,9 @@ static void apply_config(Plugin* p)
 {
     menup* m = (menup*)p->priv;
     if( m->fname )
-        fb_button_set_from_file( m->img, m->fname, -1, p->panel->icon_size, TRUE );
+        fb_button_set_from_file( m->img, m->fname, -1, panel_get_icon_size(p->panel), TRUE );
     fb_button_set_label( m->img, p->panel, m->caption);
-    fb_button_set_orientation(m->img, p->panel->orientation);
+    fb_button_set_orientation(m->img, panel_get_orientation(p->panel));
 }
 
 static void menu_config( Plugin *p, GtkWindow* parent )

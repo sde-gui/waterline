@@ -257,18 +257,18 @@ static void cpu_apply_configuration(Plugin * p)
      * We will use this to draw the graph. */
     if (c->graphics_context)
         g_object_unref(c->graphics_context);
-    c->graphics_context = gdk_gc_new(p->panel->topgwin->window);
+    c->graphics_context = gdk_gc_new(panel_get_toplevel_window(p->panel));
 
     gdk_color_parse(c->fg_color,  &c->foreground_color);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(p->panel->topgwin->window), &c->foreground_color, FALSE, TRUE);
+    gdk_colormap_alloc_color(gdk_drawable_get_colormap(panel_get_toplevel_window(p->panel)), &c->foreground_color, FALSE, TRUE);
     gdk_gc_set_foreground(c->graphics_context, &c->foreground_color);
 
     if (c->bg_graphics_context)
         g_object_unref(c->bg_graphics_context);
-    c->bg_graphics_context = gdk_gc_new(p->panel->topgwin->window);
+    c->bg_graphics_context = gdk_gc_new(panel_get_toplevel_window(p->panel));
 
     gdk_color_parse(c->bg_color,  &c->background_color);
-    gdk_colormap_alloc_color(gdk_drawable_get_colormap(p->panel->topgwin->window), &c->background_color, FALSE, TRUE);
+    gdk_colormap_alloc_color(gdk_drawable_get_colormap(panel_get_toplevel_window(p->panel)), &c->background_color, FALSE, TRUE);
     gdk_gc_set_foreground(c->bg_graphics_context, &c->background_color);
 
     /* Show the widget.  Connect a timer to refresh the statistics. */

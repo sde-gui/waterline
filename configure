@@ -653,6 +653,12 @@ ENABLE_MENU_CACHE_FALSE
 ENABLE_MENU_CACHE_TRUE
 MENU_CACHE_LIBS
 MENU_CACHE_CFLAGS
+INDICATORICONSDIR
+INDICATORDIR
+APPLET_LIBS
+APPLET_CFLAGS
+ENABLE_INDICATOR_SUPPORT_FALSE
+ENABLE_INDICATOR_SUPPORT_TRUE
 X11_LIBS
 X11_CFLAGS
 PACKAGE_LIBS
@@ -821,6 +827,7 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 enable_nls
+enable_indicator_support
 with_menucache
 with_libfm
 enable_man
@@ -847,6 +854,8 @@ PACKAGE_CFLAGS
 PACKAGE_LIBS
 X11_CFLAGS
 X11_LIBS
+APPLET_CFLAGS
+APPLET_LIBS
 MENU_CACHE_CFLAGS
 MENU_CACHE_LIBS
 LIBFM_CFLAGS
@@ -1486,6 +1495,8 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-nls           do not use Native Language Support
+  --enable-indicator-support
+                          enable libindicator support (default: disable)
   --enable-man            regenerate roff man pages from Docbook [default=no]
   --enable-cast-checks    enable Glib casting checks (default: disable)
   --disable-alsa          compile ALSA providers (default: enable)
@@ -1531,6 +1542,9 @@ Some influential environment variables:
               linker flags for PACKAGE, overriding pkg-config
   X11_CFLAGS  C compiler flags for X11, overriding pkg-config
   X11_LIBS    linker flags for X11, overriding pkg-config
+  APPLET_CFLAGS
+              C compiler flags for APPLET, overriding pkg-config
+  APPLET_LIBS linker flags for APPLET, overriding pkg-config
   MENU_CACHE_CFLAGS
               C compiler flags for MENU_CACHE, overriding pkg-config
   MENU_CACHE_LIBS
@@ -12457,6 +12471,133 @@ fi
 
 
 
+###########################
+# Indicator Info
+###########################
+# Check whether --enable-indicator_support was given.
+if test "${enable_indicator_support+set}" = set; then :
+  enableval=$enable_indicator_support; indicator_support=$enableval
+else
+  indicator_support="no"
+fi
+
+ if test x"$indicator_support" = x"yes"; then
+  ENABLE_INDICATOR_SUPPORT_TRUE=
+  ENABLE_INDICATOR_SUPPORT_FALSE='#'
+else
+  ENABLE_INDICATOR_SUPPORT_TRUE='#'
+  ENABLE_INDICATOR_SUPPORT_FALSE=
+fi
+
+
+if test "$indicator_support" != "no"; then
+	INDICATOR_REQUIRED_VERSION=0.3.0
+	INDICATOR_PKG_NAME=indicator-0.4
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for APPLET" >&5
+$as_echo_n "checking for APPLET... " >&6; }
+
+if test -n "$APPLET_CFLAGS"; then
+    pkg_cv_APPLET_CFLAGS="$APPLET_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$INDICATOR_PKG_NAME >= \$INDICATOR_REQUIRED_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "$INDICATOR_PKG_NAME >= $INDICATOR_REQUIRED_VERSION") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_APPLET_CFLAGS=`$PKG_CONFIG --cflags "$INDICATOR_PKG_NAME >= $INDICATOR_REQUIRED_VERSION" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$APPLET_LIBS"; then
+    pkg_cv_APPLET_LIBS="$APPLET_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$INDICATOR_PKG_NAME >= \$INDICATOR_REQUIRED_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "$INDICATOR_PKG_NAME >= $INDICATOR_REQUIRED_VERSION") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_APPLET_LIBS=`$PKG_CONFIG --libs "$INDICATOR_PKG_NAME >= $INDICATOR_REQUIRED_VERSION" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        APPLET_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "$INDICATOR_PKG_NAME >= $INDICATOR_REQUIRED_VERSION" 2>&1`
+        else
+	        APPLET_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "$INDICATOR_PKG_NAME >= $INDICATOR_REQUIRED_VERSION" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$APPLET_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements ($INDICATOR_PKG_NAME >= $INDICATOR_REQUIRED_VERSION) were not met:
+
+$APPLET_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables APPLET_CFLAGS
+and APPLET_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables APPLET_CFLAGS
+and APPLET_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	APPLET_CFLAGS=$pkg_cv_APPLET_CFLAGS
+	APPLET_LIBS=$pkg_cv_APPLET_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+	if test "x$with_localinstall" = "xyes"; then
+		INDICATORDIR="${libdir}/indicators/2/"
+		INDICATORICONSDIR="${datadir}/libindicator/icons/"
+	else
+		INDICATORDIR=`$PKG_CONFIG --variable=indicatordir $INDICATOR_PKG_NAME`
+		INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir $INDICATOR_PKG_NAME`
+fi
+
+
+fi
+
 # menu cache
 
 
@@ -12890,6 +13031,7 @@ plugin_xkb=
 plugin_kbled=
 plugin_thermal=
 plugin_cpufreq=
+plugin_indicator=
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking which plugins should be built dynamically" >&5
 $as_echo_n "checking which plugins should be built dynamically... " >&6; }
@@ -12923,6 +13065,7 @@ if test x"$plugins" = xall; then
     plugin_xkb=xkb
     plugin_thermal=thermal
     plugin_cpufreq=cpufreq
+    plugin_indicator=indicator
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: all" >&5
 $as_echo "all" >&6; }
@@ -12962,6 +13105,9 @@ else
             cpufreq)
                 plugin_cpufreq=cpufreq
                 ;;
+            cpufreq)
+                plugin_indicator=indicator
+                ;;
             *)
                 echo "Unknown plugin $plugin."
                 exit 1
@@ -12982,6 +13128,13 @@ $as_echo "no ALSA headers/libraries found!" >&6; }
 else
         plugin_volume=
 fi
+
+
+if test x"$indicator_support" = "xno"; then
+    plugin_indicator=
+fi
+
+
 PLUGINS_LIST="\
     $plugin_netstatus \
     $plugin_volume \
@@ -12992,7 +13145,8 @@ PLUGINS_LIST="\
     $plugin_kbled \
     $plugin_xkb \
     $plugin_thermal \
-    $plugin_cpufreq"
+    $plugin_cpufreq \
+    $plugin_indicator"
 
 
 
@@ -14743,7 +14897,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files lxpanel.pc Makefile src/Makefile src/libexec/Makefile src/plugins/Makefile src/plugins/netstatus/Makefile src/plugins/volume/Makefile src/plugins/volumealsa/Makefile src/plugins/cpu/Makefile src/plugins/deskno/Makefile src/plugins/batt/Makefile src/plugins/kbled/Makefile src/plugins/xkb/Makefile src/plugins/thermal/Makefile src/plugins/cpufreq/Makefile po/Makefile.in data/Makefile data/default/panels/panel man/Makefile"
+ac_config_files="$ac_config_files lxpanel.pc Makefile src/Makefile src/libexec/Makefile src/plugins/Makefile src/plugins/netstatus/Makefile src/plugins/volume/Makefile src/plugins/volumealsa/Makefile src/plugins/cpu/Makefile src/plugins/deskno/Makefile src/plugins/batt/Makefile src/plugins/kbled/Makefile src/plugins/xkb/Makefile src/plugins/thermal/Makefile src/plugins/cpufreq/Makefile src/plugins/indicator/Makefile po/Makefile.in data/Makefile data/default/panels/panel man/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -14874,6 +15028,10 @@ fi
   ac_config_commands="$ac_config_commands po/stamp-it"
 
 
+if test -z "${ENABLE_INDICATOR_SUPPORT_TRUE}" && test -z "${ENABLE_INDICATOR_SUPPORT_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_INDICATOR_SUPPORT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${ENABLE_MENU_CACHE_TRUE}" && test -z "${ENABLE_MENU_CACHE_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_MENU_CACHE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -15799,6 +15957,7 @@ do
     "src/plugins/xkb/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/xkb/Makefile" ;;
     "src/plugins/thermal/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/thermal/Makefile" ;;
     "src/plugins/cpufreq/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/cpufreq/Makefile" ;;
+    "src/plugins/indicator/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/indicator/Makefile" ;;
     "po/Makefile.in") CONFIG_FILES="$CONFIG_FILES po/Makefile.in" ;;
     "data/Makefile") CONFIG_FILES="$CONFIG_FILES data/Makefile" ;;
     "data/default/panels/panel") CONFIG_FILES="$CONFIG_FILES data/default/panels/panel" ;;
@@ -17231,6 +17390,10 @@ $as_echo "    thermal - Temperature monitor" >&6; }
     if test x"$plugin_cpufreq" != x; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: result:     cpufreq - CpuFreq frontend" >&5
 $as_echo "    cpufreq - CpuFreq frontend" >&6; }
+    fi
+    if test x"$plugin_indicator" != x; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result:     indicator - Indicator support" >&5
+$as_echo "    indicator - Indicator support" >&6; }
     fi
 else
 echo Dynamic loader for plugins....... : disabled.

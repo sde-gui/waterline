@@ -51,8 +51,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = src/plugins/netstatus
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in COPYING
+subdir = src/plugins/indicator
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
@@ -92,17 +92,16 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(moduledir)"
 LTLIBRARIES = $(module_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-netstatus_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_netstatus_la_OBJECTS = netstatus-sysdeps.lo netstatus-icon.lo \
-	netstatus-util.lo netstatus.lo netstatus-enums.lo \
-	netstatus-iface.lo netstatus-dialog.lo
-netstatus_la_OBJECTS = $(am_netstatus_la_OBJECTS)
+indicator_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am_indicator_la_OBJECTS = indicator_la-indicator.lo
+indicator_la_OBJECTS = $(am_indicator_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
-netstatus_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(netstatus_la_LDFLAGS) $(LDFLAGS) -o $@
+indicator_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(indicator_la_CFLAGS) \
+	$(CFLAGS) $(indicator_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -129,8 +128,8 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(netstatus_la_SOURCES)
-DIST_SOURCES = $(netstatus_la_SOURCES)
+SOURCES = $(indicator_la_SOURCES)
+DIST_SOURCES = $(indicator_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -306,36 +305,27 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = \
+indicator_la_CFLAGS = \
 	-I. \
 	-I$(top_srcdir)/src \
+	-DINDICATOR_DIR=\""$(INDICATORDIR)"\" \
+	-DINDICATOR_ICONS_DIR=\""$(INDICATORICONSDIR)"\" \
 	$(PACKAGE_CFLAGS) \
+	$(APPLET_CFLAGS) \
 	$(G_CAST_CHECKS)
 
-module_LTLIBRARIES = netstatus.la
+module_LTLIBRARIES = indicator.la
 moduledir = $(pkglibdir)/plugins
-netstatus_la_SOURCES = \
-	netstatus-dialog.h \
-	netstatus-fallback-pixbuf.h \
-	netstatus-sysdeps.c \
-	netstatus-icon.c \
-	netstatus-sysdeps.h \
-	netstatus-icon.h \
-	netstatus-util.c \
-	netstatus.c \
-	netstatus-enums.c \
-	netstatus-iface.c \
-	netstatus-util.h \
-	netstatus-dialog.c \
-	netstatus-enums.h \
-	netstatus-iface.h
+indicator_la_SOURCES = \
+	indicator.c
 
-netstatus_la_LIBADD = \
-	$(PACKAGE_LIBS)
+indicator_la_LIBADD = \
+	$(PACKAGE_LIBS) \
+	$(APPLET_LIBS)
 
-netstatus_la_LDFLAGS = \
+indicator_la_LDFLAGS = \
 	-module \
-	$(LXPANEL_MODULE)
+	@LXPANEL_MODULE@
 
 all: all-am
 
@@ -350,9 +340,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/plugins/netstatus/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/plugins/indicator/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/plugins/netstatus/Makefile
+	  $(AUTOMAKE) --gnu src/plugins/indicator/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -403,8 +393,8 @@ clean-moduleLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-netstatus.la: $(netstatus_la_OBJECTS) $(netstatus_la_DEPENDENCIES) $(EXTRA_netstatus_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(netstatus_la_LINK) -rpath $(moduledir) $(netstatus_la_OBJECTS) $(netstatus_la_LIBADD) $(LIBS)
+indicator.la: $(indicator_la_OBJECTS) $(indicator_la_DEPENDENCIES) $(EXTRA_indicator_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(indicator_la_LINK) -rpath $(moduledir) $(indicator_la_OBJECTS) $(indicator_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -412,13 +402,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netstatus-dialog.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netstatus-enums.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netstatus-icon.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netstatus-iface.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netstatus-sysdeps.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netstatus-util.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netstatus.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_la-indicator.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -440,6 +424,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+indicator_la-indicator.lo: indicator.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_la_CFLAGS) $(CFLAGS) -MT indicator_la-indicator.lo -MD -MP -MF $(DEPDIR)/indicator_la-indicator.Tpo -c -o indicator_la-indicator.lo `test -f 'indicator.c' || echo '$(srcdir)/'`indicator.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/indicator_la-indicator.Tpo $(DEPDIR)/indicator_la-indicator.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='indicator.c' object='indicator_la-indicator.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_la_CFLAGS) $(CFLAGS) -c -o indicator_la-indicator.lo `test -f 'indicator.c' || echo '$(srcdir)/'`indicator.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -596,8 +587,7 @@ install-dvi: install-dvi-am
 install-dvi-am:
 
 install-exec-am:
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
+
 install-html: install-html-am
 
 install-html-am:
@@ -638,25 +628,22 @@ ps-am:
 
 uninstall-am: uninstall-moduleLTLIBRARIES
 
-.MAKE: install-am install-exec-am install-strip
+.MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
 	clean-libtool clean-moduleLTLIBRARIES ctags distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-exec-hook \
-	install-html install-html-am install-info install-info-am \
-	install-man install-moduleLTLIBRARIES install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-moduleLTLIBRARIES install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-moduleLTLIBRARIES
 
-
-install-exec-hook:
-	rm -f "$(moduledir)\*.la" *.a
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

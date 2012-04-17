@@ -87,6 +87,7 @@ extern void update_panel_geometry(Panel* p);
 
 static gchar version[] = VERSION;
 gchar *cprofile = "default";
+gchar *force_colormap = "system";
 
 static gboolean quit_in_menu = FALSE;
 static GtkWindowGroup* window_group; /* window group used to limit the scope of model dialog. */
@@ -819,7 +820,7 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
 
     if (pixmap != NULL)
     {
-        gtk_widget_set_app_paintable(widget, TRUE );
+        gtk_widget_set_app_paintable(widget, TRUE);
         gdk_window_set_back_pixmap(window, pixmap, FALSE);
         g_object_unref(pixmap);
     }
@@ -1488,6 +1489,30 @@ panel_start_gui(Panel *p)
     p->topgwin = (GtkWidget*)g_object_new(PANEL_TOPLEVEL_TYPE, NULL);
     gtk_widget_set_name(p->topgwin, "PanelToplevel");
     p->display = gdk_display_get_default();
+
+    /* Set colormap. */
+    GdkScreen * screen = gtk_widget_get_screen(p->topgwin);
+    GdkColormap * colormap = NULL;
+    //p->alpha_channel_support = FALSE;
+    if (strcmp(force_colormap, "rgba") == 0)
+    {
+        colormap = gdk_screen_get_rgba_colormap(screen);
+        /*if (colormap != NULL)
+            p->alpha_channel_support = TRUE;*/
+    }
+    else if (strcmp(force_colormap, "rgb") == 0)
+    {
+        colormap = gdk_screen_get_rgb_colormap(screen);
+    }
+    else if (strcmp(force_colormap, "system") == 0)
+    {
+        colormap = gdk_screen_get_system_colormap(screen);
+    }
+
+    if (colormap)
+        gtk_widget_set_colormap(p->topgwin, colormap);
+
+
     gtk_container_set_border_width(GTK_CONTAINER(p->topgwin), 0);
     gtk_window_set_resizable(GTK_WINDOW(p->topgwin), FALSE);
     gtk_window_set_wmclass(GTK_WINDOW(p->topgwin), "panel", "lxpanel");
@@ -2209,6 +2234,15 @@ int main(int argc, char *argv[], char *env[])
             enable_kiosk_mode();
         } else if (!strcmp(argv[i], "--quit-in-menu")) {
             quit_in_menu = TRUE;
+        } else if (!strcmp(argv[i], "--colormap")) {
+            i++;
+            if (i == argc) {
+                ERR( "lxpanel: missing colormap argument\n");
+                usage();
+                exit(1);
+            } else {
+                force_colormap = g_strdup(argv[i]);
+            }
         } else {
             printf("lxpanel: unknown option - %s\n", argv[i]);
             usage();

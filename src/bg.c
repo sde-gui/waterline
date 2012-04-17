@@ -185,11 +185,12 @@ fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget)
     Window win;
     Window dummy;
     Pixmap bgpix;
-    GdkPixmap *gbgpix;
+    GdkPixmap * gbgpix;
     guint  width, height, border, depth;
     int  x, y;
 
     ENTER;
+
     win =  GDK_WINDOW_XWINDOW(widget->window);
     if (!XGetGeometry(bg->dpy, win, &dummy, &x, &y, &width, &height, &border,
               &depth)) {
@@ -198,29 +199,48 @@ fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget)
     }
     XTranslateCoordinates(bg->dpy, win, bg->xroot, 0, 0, &x, &y, &dummy);
     DBG("win=%x %dx%d%+d%+d\n", win, width, height, x, y);
-    gbgpix = gdk_pixmap_new(NULL, width, height, depth);
+
+    GdkWindow * root_window = gdk_window_foreign_new_for_display(gtk_widget_get_display(widget), bg->xroot);
+    gbgpix = gdk_pixmap_new(root_window, width, height, -1);
+    g_object_unref(G_OBJECT(root_window));
+
     if (!gbgpix) {
         ERR("gdk_pixmap_new failed\n");
         RET(NULL);
     }
+
     bgpix =  gdk_x11_drawable_get_xid(gbgpix);
     XSetTSOrigin(bg->dpy, bg->gc, -x, -y) ;
     XFillRectangle(bg->dpy, bgpix, bg->gc, 0, 0, width, height);
+
+    if (gtk_widget_get_colormap(widget) != gdk_drawable_get_colormap(gbgpix))
+    {
+        GdkPixmap * pix = gdk_pixmap_new(widget->window, width, height, -1);
+
+        cairo_t * cr = gdk_cairo_create(pix);
+        gdk_cairo_set_source_pixmap(cr, gbgpix, 0, 0);
+        cairo_paint(cr);
+        cairo_destroy(cr);
+
+        g_object_unref(G_OBJECT(gbgpix));
+        gbgpix = pix;
+    }
+
     RET(gbgpix);
 }
 
 void
 fb_bg_composite(GdkDrawable *base, GdkGC *gc, guint32 tintcolor, gint alpha)
 {
+    ENTER;
+
     GdkPixbuf *ret, *ret2;
     int w, h;
-    static GdkColormap *cmap = NULL;
 
-    ENTER;
     gdk_drawable_get_size (base, &w, &h);
-    if (!cmap) {
-        cmap = gdk_colormap_get_system ();
-    }
+
+    GdkColormap * cmap = gdk_drawable_get_colormap(base);
+
     DBG("here\n");
     ret = gdk_pixbuf_get_from_drawable (NULL, base, cmap, 0, 0, 0, 0, w, h);
     if (!ret)

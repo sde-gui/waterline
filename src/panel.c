@@ -722,9 +722,8 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
             for( l = all_panels; l; l = l->next )
             {
                 Panel* p = (Panel*)l->data;
-                if (p->transparent) {
+                if (p->bg)
                     fb_bg_notify_changed_bg(p->bg);
-                }
             }
         }
         else if (at == a_NET_WORKAREA)
@@ -765,6 +764,76 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
 
 /******************************************************************************/
 
+static gboolean panel_expose_event(GtkWidget *widget, GdkEventExpose *event, Panel *p)
+{
+    cairo_t *cr;
+
+    cr = gdk_cairo_create(widget->window); /* create cairo context */
+
+    float a = (float) p->alpha / 255;
+    float r = (float) p->gtintcolor.red / 65535;
+    float g = (float) p->gtintcolor.green / 65535;
+    float b = (float) p->gtintcolor.blue / 65535;
+
+    if (p->background_pixmap)
+    {
+        cairo_set_source_rgba(cr, 0, 0, 0, 0);
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_paint(cr);
+
+        gdk_cairo_set_source_pixmap(cr, p->background_pixmap, 0, 0);
+        cairo_pattern_t * pattern = cairo_get_source(cr);
+        cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
+
+        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+        cairo_paint_with_alpha(cr, a);
+
+/*
+        cairo_pattern_t * pattern = gdk_window_get_background_pattern(widget->window);
+        cairo_set_source(cr, pattern);
+        cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+        cairo_paint_with_alpha(cr, a);
+*/
+    }
+    else if (p->transparent)
+    {
+        cairo_set_source_rgba(cr, r, g, b, a);
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_paint(cr);
+    }
+    else
+    {
+        GtkStyle * style = gtk_widget_get_style(widget);
+
+        cairo_set_source_rgba(cr, 0, 0, 0, 0);
+        cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+        cairo_paint(cr);
+
+        if (style->bg_pixmap[GTK_STATE_NORMAL])
+        {
+            gdk_cairo_set_source_pixmap(cr, style->bg_pixmap[GTK_STATE_NORMAL], 0, 0);
+            cairo_pattern_t * pattern = cairo_get_source(cr);
+            cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
+
+            cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+            cairo_paint_with_alpha(cr, a);
+        }
+        else
+        {
+            gdk_cairo_set_source_color(cr, &style->bg[GTK_STATE_NORMAL]);
+            cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+            cairo_paint_with_alpha(cr, a);
+        }
+
+    }
+
+    cairo_destroy(cr);
+
+    return FALSE;
+}
+
+/******************************************************************************/
+
 /*= panel's handlers for GTK events =*/
 
 static gint panel_delete_event(GtkWidget * widget, GdkEvent * event, gpointer data)
@@ -790,6 +859,8 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
 {
     GdkPixmap * pixmap = NULL;
 
+//p->real_transparent = TRUE;
+
     /* Free p->bg if it is not going to be used. */
     if (( ! p->transparent) && (p->bg != NULL))
     {
@@ -798,14 +869,31 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         p->bg = NULL;
     }
 
+    if (p->real_transparent)
+    {
+        if (!p->expose_event_connected && widget == p->topgwin)
+        {
+            g_signal_connect(G_OBJECT(p->topgwin), "expose_event", G_CALLBACK(panel_expose_event), p);
+            p->expose_event_connected = TRUE;
+        }
+    }
+    else
+    {
+        if (p->expose_event_connected && widget == p->topgwin)
+        {
+            g_signal_handlers_disconnect_by_func(G_OBJECT(p->topgwin), G_CALLBACK(panel_expose_event), p);
+            p->expose_event_connected = FALSE;
+        }
+    }
+
+
     if (p->background)
     {
         /* User specified background pixmap. */
         if (p->background_file != NULL)
             pixmap = fb_bg_get_pix_from_file(widget, p->background_file);
     }
-
-    else if (p->transparent)
+    else if (p->transparent && !p->real_transparent)
     {
         /* Transparent.  Determine the appropriate value from the root pixmap. */
         if (p->bg == NULL)
@@ -818,14 +906,30 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
             fb_bg_composite(pixmap, widget->style->black_gc, p->tintcolor, p->alpha);
     }
 
-    if (pixmap != NULL)
+    if (p->background_pixmap && widget == p->topgwin)
     {
+        g_object_unref(G_OBJECT(p->background_pixmap));
+        p->background_pixmap = NULL;
+    }
+
+    if (p->real_transparent)
+    {
+        if (widget == p->topgwin)
+            p->background_pixmap = pixmap;
+        else if (pixmap)
+            g_object_unref(pixmap);
+
         gtk_widget_set_app_paintable(widget, TRUE);
-        gdk_window_set_back_pixmap(window, pixmap, FALSE);
-        g_object_unref(pixmap);
+        gdk_window_set_back_pixmap(window, NULL, FALSE);
     }
     else
-        gtk_widget_set_app_paintable(widget, FALSE);
+    {
+        gdk_window_set_back_pixmap(window, pixmap, FALSE);
+        gtk_widget_set_app_paintable(widget, pixmap != NULL);
+
+        if (pixmap != NULL)
+            g_object_unref(pixmap);
+    }
 }
 
 /* Update the background of the entire panel.
@@ -1042,7 +1146,7 @@ static void panel_size_position_changed(Panel *p, gboolean position_changed)
 {
     if (position_changed)
     {
-        if (p->transparent)
+        if (p->bg)
             fb_bg_notify_changed_bg(p->bg);
     }
 
@@ -1493,12 +1597,12 @@ panel_start_gui(Panel *p)
     /* Set colormap. */
     GdkScreen * screen = gtk_widget_get_screen(p->topgwin);
     GdkColormap * colormap = NULL;
-    //p->alpha_channel_support = FALSE;
+    p->alpha_channel_support = FALSE;
     if (strcmp(force_colormap, "rgba") == 0)
     {
         colormap = gdk_screen_get_rgba_colormap(screen);
-        /*if (colormap != NULL)
-            p->alpha_channel_support = TRUE;*/
+        if (colormap != NULL)
+            p->alpha_channel_support = TRUE;
     }
     else if (strcmp(force_colormap, "rgb") == 0)
     {
@@ -1966,6 +2070,11 @@ static void panel_destroy(Panel *p)
     {
         g_signal_handlers_disconnect_by_func(G_OBJECT(p->bg), on_root_bg_changed, p);
         g_object_unref(p->bg);
+    }
+
+    if (p->background_pixmap)
+    {
+        g_object_unref(G_OBJECT(p->background_pixmap));
     }
 
     if( p->config_changed )

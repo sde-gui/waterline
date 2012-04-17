@@ -92,7 +92,13 @@ typedef struct _Panel {
 
     /* ^^^ lxpanel compat */
 
+    guint expose_event_connected : 1;
+    guint alpha_channel_support : 1;
+    guint real_transparent : 1;
+
     guint visible : 1;                  /* whether panel is actually visible */
+
+    GdkPixmap * background_pixmap;
 
     int round_corners_radius;
 

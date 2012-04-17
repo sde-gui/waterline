@@ -859,8 +859,6 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
 {
     GdkPixmap * pixmap = NULL;
 
-//p->real_transparent = TRUE;
-
     /* Free p->bg if it is not going to be used. */
     if (( ! p->transparent) && (p->bg != NULL))
     {
@@ -869,7 +867,7 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         p->bg = NULL;
     }
 
-    if (p->real_transparent)
+    if (p->rgba_transparency)
     {
         if (!p->expose_event_connected && widget == p->topgwin)
         {
@@ -893,7 +891,7 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         if (p->background_file != NULL)
             pixmap = fb_bg_get_pix_from_file(widget, p->background_file);
     }
-    else if (p->transparent && !p->real_transparent)
+    else if (p->transparent && !p->rgba_transparency)
     {
         /* Transparent.  Determine the appropriate value from the root pixmap. */
         if (p->bg == NULL)
@@ -912,7 +910,7 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         p->background_pixmap = NULL;
     }
 
-    if (p->real_transparent)
+    if (p->rgba_transparency)
     {
         if (widget == p->topgwin)
             p->background_pixmap = pixmap;
@@ -1907,7 +1905,7 @@ panel_parse_global(Panel *p, char **fp)
                 } else if (!g_ascii_strcasecmp(s.t[0], "Background")) {
                     p->background = str2num(bool_pair, s.t[1], 0);
                 } else if (!g_ascii_strcasecmp(s.t[0], "RGBATransparency")) {
-                    p->real_transparent = str2num(bool_pair, s.t[1], 0);
+                    p->rgba_transparency = str2num(bool_pair, s.t[1], 0);
                 } else if( !g_ascii_strcasecmp(s.t[0], "BackgroundFile") ) {
                     p->background_file = g_strdup( s.t[1] );
                 } else if (!g_ascii_strcasecmp(s.t[0], "IconSize")) {

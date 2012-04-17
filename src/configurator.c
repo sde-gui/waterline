@@ -243,17 +243,17 @@ static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
     RET();
 }
 
-static void real_transparency_toggle(GtkWidget * w, Panel*  p)
+static void rgba_transparency_toggle(GtkWidget * w, Panel*  p)
 {
     ENTER;    
 
     gboolean t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
 
-    p->real_transparent = t;
+    p->rgba_transparency = t;
     panel_update_background(p);
 
     GtkWidget* alpha_scale = (GtkWidget*)g_object_get_data(G_OBJECT(w), "alpha_scale");
-    gtk_widget_set_sensitive(alpha_scale, p->real_transparent);
+    gtk_widget_set_sensitive(alpha_scale, p->rgba_transparency);
 
     RET();
 }
@@ -1034,17 +1034,15 @@ void panel_configure( Panel* p, int sel_page )
     GtkWidget * alpha_scale = (GtkWidget*)gtk_builder_get_object(builder, "alpha_scale");
     gtk_range_set_range(GTK_RANGE(alpha_scale), 0, 255);
     gtk_range_set_value(GTK_RANGE(alpha_scale), p->alpha);
-    gtk_widget_set_sensitive(alpha_scale, p->real_transparent);
+    gtk_widget_set_sensitive(alpha_scale, p->rgba_transparency);
     g_object_set_data(G_OBJECT(alpha_scale), "tint_clr", tint_clr);
     g_object_set_data(G_OBJECT(tint_clr), "alpha_scale", alpha_scale);
     g_signal_connect(alpha_scale, "value-changed", G_CALLBACK(alpha_scale_value_changed), p);
 
-    GtkWidget * real_transparency = (GtkWidget*)gtk_builder_get_object(builder, "real_transparency");
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(real_transparency), p->real_transparent);
-    g_object_set_data(G_OBJECT(real_transparency), "alpha_scale", alpha_scale);
-    g_signal_connect(real_transparency, "toggled", G_CALLBACK(real_transparency_toggle), p);
-
-
+    GtkWidget * rgba_transparency = (GtkWidget*)gtk_builder_get_object(builder, "rgba_transparency");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rgba_transparency), p->rgba_transparency);
+    g_object_set_data(G_OBJECT(rgba_transparency), "alpha_scale", alpha_scale);
+    g_signal_connect(rgba_transparency, "toggled", G_CALLBACK(rgba_transparency_toggle), p);
 
     /* background */
     {
@@ -1209,7 +1207,7 @@ panel_global_config_save( Panel* p, FILE *fp)
     lxpanel_put_int(fp, "FontSize", p->fontsize);
     lxpanel_put_bool(fp, "background", p->background );
     lxpanel_put_str(fp, "backgroundfile", p->background_file);
-    lxpanel_put_bool(fp, "rgbatransparency", p->real_transparent);
+    lxpanel_put_bool(fp, "rgbatransparency", p->rgba_transparency);
     lxpanel_put_int(fp, "iconsize", p->preferred_icon_size);
     lxpanel_put_line(fp, "}\n");
 }

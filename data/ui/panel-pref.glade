@@ -540,7 +540,7 @@
                                 <property name="visible">True</property>
                                 <property name="spacing">40</property>
                                 <child>
-                                  <object class="GtkCheckButton" id="real_transparency">
+                                  <object class="GtkCheckButton" id="rgba_transparency">
                                     <property name="label" translatable="yes">RGBA transparency</property>
                                     <property name="tooltip-text" translatable="yes">Requires compositing manager</property>
                                     <property name="visible">True</property>

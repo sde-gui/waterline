@@ -145,27 +145,27 @@ static void edge_right_toggle(GtkToggleButton *widget, Panel *p)
 static void set_alignment(Panel* p, int align)
 {
     if (p->margin_control) 
-        gtk_widget_set_sensitive(p->margin_control, (align != ALLIGN_CENTER));
-    p->allign = align;
+        gtk_widget_set_sensitive(p->margin_control, (align != ALIGN_CENTER));
+    p->align = align;
     update_panel_geometry(p);
 }
 
 static void align_left_toggle(GtkToggleButton *widget, Panel *p)
 {
     if (gtk_toggle_button_get_active(widget))
-        set_alignment(p, ALLIGN_LEFT);
+        set_alignment(p, ALIGN_LEFT);
 }
 
 static void align_center_toggle(GtkToggleButton *widget, Panel *p)
 {
     if (gtk_toggle_button_get_active(widget))
-        set_alignment(p, ALLIGN_CENTER);
+        set_alignment(p, ALIGN_CENTER);
 }
 
 static void align_right_toggle(GtkToggleButton *widget, Panel *p)
 {
     if (gtk_toggle_button_get_active(widget))
-        set_alignment(p, ALLIGN_RIGHT);
+        set_alignment(p, ALIGN_RIGHT);
 }
 
 static void
@@ -936,19 +936,19 @@ void panel_configure( Panel* p, int sel_page )
 
     /* alignment */
     p->alignment_left_label = w = (GtkWidget*)gtk_builder_get_object( builder, "alignment_left" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->allign == ALLIGN_LEFT));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->align == ALIGN_LEFT));
     g_signal_connect(w, "toggled", G_CALLBACK(align_left_toggle), p);
     w = (GtkWidget*)gtk_builder_get_object( builder, "alignment_center" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->allign == ALLIGN_CENTER));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->align == ALIGN_CENTER));
     g_signal_connect(w, "toggled", G_CALLBACK(align_center_toggle), p);
     p->alignment_right_label = w = (GtkWidget*)gtk_builder_get_object( builder, "alignment_right" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->allign == ALLIGN_RIGHT));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->align == ALIGN_RIGHT));
     g_signal_connect(w, "toggled", G_CALLBACK(align_right_toggle), p);
 
     /* margin */
     p->margin_control = w = (GtkWidget*)gtk_builder_get_object( builder, "margin" );
     gtk_spin_button_set_value( (GtkSpinButton*)w, p->margin );
-    gtk_widget_set_sensitive(p->margin_control, (p->allign != ALLIGN_CENTER));
+    gtk_widget_set_sensitive(p->margin_control, (p->align != ALIGN_CENTER));
     g_signal_connect( w, "value-changed",
                       G_CALLBACK(set_margin), p);
 
@@ -1187,7 +1187,7 @@ panel_global_config_save(Panel* p, FILE *fp)
                 "# Use preference dialog in lxpanel to adjust config when you can.\n\n");
     lxpanel_put_line(fp, "Global {");
     lxpanel_put_str(fp, "Edge", num2str(edge_pair, p->edge, "none"));
-    lxpanel_put_str(fp, "Allign", num2str(allign_pair, p->allign, "none"));
+    lxpanel_put_str(fp, "Align", num2str(align_pair, p->align, "none"));
     lxpanel_put_int(fp, "Margin", p->margin);
     lxpanel_put_str(fp, "WidthType", num2str(width_pair, p->oriented_width_type, "none"));
     lxpanel_put_int(fp, "Width", p->oriented_width);

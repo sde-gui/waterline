@@ -24,11 +24,11 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-pair allign_pair[] = {
-    { ALLIGN_NONE, "none" },
-    { ALLIGN_LEFT, "left" },
-    { ALLIGN_RIGHT, "right" },
-    { ALLIGN_CENTER, "center"},
+pair align_pair[] = {
+    { ALIGN_NONE, "none" },
+    { ALIGN_LEFT, "left" },
+    { ALIGN_RIGHT, "right" },
+    { ALIGN_CENTER, "center"},
     { 0, NULL },
 };
 

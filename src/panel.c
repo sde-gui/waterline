@@ -183,7 +183,7 @@ int panel_get_icon_size(Panel * p)
 static Panel* panel_allocate(void)
 {
     Panel* p = g_new0(Panel, 1);
-    p->allign = ALLIGN_CENTER;
+    p->align = ALIGN_CENTER;
     p->edge = EDGE_NONE;
     p->oriented_width_type = WIDTH_PERCENT;
     p->oriented_width = 100;
@@ -994,7 +994,7 @@ static void panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
 /*= Panel size and position =*/
 
 /* Calculate real width of a horizontal panel (or height of a vertical panel) */
-static void calculate_width(int scrw, int wtype, int allign, int margin, int *panw, int *x)
+static void calculate_width(int scrw, int wtype, int align, int margin, int *panw, int *x)
 {
     ENTER;
     DBG("scrw=%d\n", scrw);
@@ -1014,19 +1014,19 @@ static void calculate_width(int scrw, int wtype, int allign, int margin, int *pa
         margin = 0;
     }
 
-    if (allign == ALLIGN_CENTER)
+    if (align == ALIGN_CENTER)
         margin = 0;
     
     *panw = MIN(scrw - margin, *panw);
 
     DBG("OUT panw=%d\n", *panw);
-    if (allign == ALLIGN_LEFT)
+    if (align == ALIGN_LEFT)
         *x += margin;
-    else if (allign == ALLIGN_RIGHT) {
+    else if (align == ALIGN_RIGHT) {
         *x += scrw - *panw - margin;
         if (*x < 0)
             *x = 0;
-    } else if (allign == ALLIGN_CENTER)
+    } else if (align == ALIGN_CENTER)
         *x += (scrw - *panw) / 2;
     RET();
 }
@@ -1054,7 +1054,7 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
     if (np->edge == EDGE_TOP || np->edge == EDGE_BOTTOM) {
         np->aw = np->oriented_width;
         np->ax = minx;
-        calculate_width(sswidth, np->oriented_width_type, np->allign, np->margin,
+        calculate_width(sswidth, np->oriented_width_type, np->align, np->margin,
               &np->aw, &np->ax);
         np->ah = ((( ! np->autohide) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
         np->ay = miny + ((np->edge == EDGE_TOP) ? 0 : (ssheight - np->ah));
@@ -1065,7 +1065,7 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
 
         np->ah = np->oriented_width;
         np->ay = miny;
-        calculate_width(ssheight, np->oriented_width_type, np->allign, np->margin,
+        calculate_width(ssheight, np->oriented_width_type, np->align, np->margin,
               &np->ah, &np->ay);
         np->aw = ((( ! np->autohide) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
         np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));
@@ -1854,8 +1854,8 @@ panel_parse_global(Panel *p, char **fp)
             if (s.type == LINE_VAR) {
                 if (!g_ascii_strcasecmp(s.t[0], "edge")) {
                     p->edge = str2num(edge_pair, s.t[1], EDGE_NONE);
-                } else if (!g_ascii_strcasecmp(s.t[0], "allign")) {
-                    p->allign = str2num(allign_pair, s.t[1], ALLIGN_NONE);
+                } else if (!g_ascii_strcasecmp(s.t[0], "align")) {
+                    p->align = str2num(align_pair, s.t[1], ALIGN_NONE);
                 } else if (!g_ascii_strcasecmp(s.t[0], "margin")) {
                     p->margin = atoi(s.t[1]);
                 } else if (!g_ascii_strcasecmp(s.t[0], "widthtype")) {

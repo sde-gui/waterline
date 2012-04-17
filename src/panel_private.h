@@ -43,7 +43,7 @@ typedef struct _Panel {
 
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) */
-    int allign, edge, margin;
+    int align, edge, margin;
     int orientation;
     int oriented_width_type, oriented_width;
     int oriented_height_type, oriented_height;

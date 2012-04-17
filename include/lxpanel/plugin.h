@@ -31,7 +31,7 @@ extern FbEv *fbev;
 extern pair bool_pair[];
 
 /* Panel */
-enum { ALLIGN_NONE, ALLIGN_LEFT, ALLIGN_CENTER, ALLIGN_RIGHT  };
+enum { ALIGN_NONE, ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT  };
 enum { EDGE_NONE, EDGE_LEFT, EDGE_RIGHT, EDGE_TOP, EDGE_BOTTOM };
 enum { WIDTH_NONE, WIDTH_REQUEST, WIDTH_PIXEL, WIDTH_PERCENT };
 enum { HEIGHT_NONE, HEIGHT_PIXEL, HEIGHT_REQUEST };
@@ -66,7 +66,7 @@ typedef struct _Panel {
 
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) allocation */
-    int allign, edge, margin;
+    int align, edge, margin;
     int orientation;
     int widthtype, width;
     int heighttype, height;

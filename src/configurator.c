@@ -1178,7 +1178,7 @@ void panel_configure( Panel* p, int sel_page )
 }
 
 void
-panel_global_config_save( Panel* p, FILE *fp)
+panel_global_config_save(Panel* p, FILE *fp)
 {
     if (lxpanel_is_in_kiosk_mode())
         return;
@@ -1186,29 +1186,35 @@ panel_global_config_save( Panel* p, FILE *fp)
     fprintf(fp, "# lxpanel <profile> config file. Manually editing is not recommended.\n"
                 "# Use preference dialog in lxpanel to adjust config when you can.\n\n");
     lxpanel_put_line(fp, "Global {");
-    lxpanel_put_str(fp, "edge", num2str(edge_pair, p->edge, "none"));
-    lxpanel_put_str(fp, "allign", num2str(allign_pair, p->allign, "none"));
-    lxpanel_put_int(fp, "margin", p->margin);
-    lxpanel_put_str(fp, "widthtype", num2str(width_pair, p->oriented_width_type, "none"));
-    lxpanel_put_int(fp, "width", p->oriented_width);
-    lxpanel_put_int(fp, "height", p->oriented_height);
+    lxpanel_put_str(fp, "Edge", num2str(edge_pair, p->edge, "none"));
+    lxpanel_put_str(fp, "Allign", num2str(allign_pair, p->allign, "none"));
+    lxpanel_put_int(fp, "Margin", p->margin);
+    lxpanel_put_str(fp, "WidthType", num2str(width_pair, p->oriented_width_type, "none"));
+    lxpanel_put_int(fp, "Width", p->oriented_width);
+    lxpanel_put_int(fp, "Height", p->oriented_height);
+
     lxpanel_put_bool(fp, "RoundCorners", p->round_corners );
     lxpanel_put_int(fp, "RoundCornersRadius", p->round_corners_radius );
-    lxpanel_put_bool(fp, "transparent", p->transparent );
-    lxpanel_put_line(fp, "tintcolor=#%06x", gcolor2rgb24(&p->gtintcolor));
-    lxpanel_put_int(fp, "alpha", p->alpha);
-    lxpanel_put_bool(fp, "autohide", p->autohide);
-    lxpanel_put_int(fp, "heightwhenhidden", p->height_when_hidden);
-    lxpanel_put_bool(fp, "setdocktype", p->setdocktype);
-    lxpanel_put_bool(fp, "setpartialstrut", p->setstrut);
-    lxpanel_put_bool(fp, "usefontcolor", p->usefontcolor);
-    lxpanel_put_line(fp, "fontcolor=#%06x", gcolor2rgb24(&p->gfontcolor));
+
+    lxpanel_put_bool(fp, "RGBATransparency", p->rgba_transparency);
+    lxpanel_put_bool(fp, "Background", p->background );
+    lxpanel_put_str(fp, "BackgroundFile", p->background_file);
+    lxpanel_put_bool(fp, "Transparent", p->transparent );
+    lxpanel_put_line(fp, "TintColor=#%06x", gcolor2rgb24(&p->gtintcolor));
+    lxpanel_put_int(fp, "Alpha", p->alpha);
+
+    lxpanel_put_bool(fp, "AutoHide", p->autohide);
+    lxpanel_put_int(fp, "HeightWhenHidden", p->height_when_hidden);
+    lxpanel_put_bool(fp, "SetDockType", p->setdocktype);
+    lxpanel_put_bool(fp, "SetPartialStrut", p->setstrut);
+
+    lxpanel_put_bool(fp, "UseFontColor", p->usefontcolor);
+    lxpanel_put_line(fp, "FontColor=#%06x", gcolor2rgb24(&p->gfontcolor));
     lxpanel_put_bool(fp, "UseFontSize", p->usefontsize);    
     lxpanel_put_int(fp, "FontSize", p->fontsize);
-    lxpanel_put_bool(fp, "background", p->background );
-    lxpanel_put_str(fp, "backgroundfile", p->background_file);
-    lxpanel_put_bool(fp, "rgbatransparency", p->rgba_transparency);
-    lxpanel_put_int(fp, "iconsize", p->preferred_icon_size);
+
+    lxpanel_put_int(fp, "IconSize", p->preferred_icon_size);
+
     lxpanel_put_line(fp, "}\n");
 }
 

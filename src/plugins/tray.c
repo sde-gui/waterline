@@ -526,7 +526,7 @@ static void trayclient_request_dock(TrayPlugin * tr, XClientMessageEvent * xeven
 
 
     GdkWindow * socket_window = gtk_widget_get_window (tc->socket);
-#if 0
+#if 1
     if (composited)
     {
         GdkColor transparent = { 0, 0, 0, 0 }; /* only pixel=0 matters */
@@ -638,8 +638,7 @@ static void tray_unmanage_selection(TrayPlugin * tr)
 }
 
 
-static void
-tray_expose_icon (GtkWidget * widget, gpointer data)
+static void tray_expose_icon(GtkWidget * widget, gpointer data)
 {
     cairo_t * cr = data;
 
@@ -651,7 +650,6 @@ tray_expose_icon (GtkWidget * widget, gpointer data)
     if (gdk_window_get_composited (window))
     {
       GtkAllocation allocation;
-
       gtk_widget_get_allocation (widget, &allocation);
 
       gdk_cairo_set_source_pixmap (cr,
@@ -662,8 +660,7 @@ tray_expose_icon (GtkWidget * widget, gpointer data)
     }
 }
 
-static void
-tray_expose_box (GtkWidget * box, GdkEventExpose * event, gpointer data)
+static void tray_expose_box(GtkWidget * box, GdkEventExpose * event, gpointer data)
 {
   TrayPlugin * tr = (TrayPlugin *) data;
 
@@ -684,10 +681,10 @@ static void tray_choose_visual(TrayPlugin * tr)
     GdkDisplay * display = gtk_widget_get_display(tr->invisible);
 
     GdkVisual * visual = NULL;
-/*
+
     if (gdk_display_supports_composite (display))
         visual = gdk_screen_get_rgba_visual(screen);
-*/
+
     if (!visual)
     {
         GdkColormap * colormap = gdk_screen_get_default_colormap (screen);

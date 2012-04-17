@@ -87,7 +87,7 @@ extern void update_panel_geometry(Panel* p);
 
 static gchar version[] = VERSION;
 gchar *cprofile = "default";
-gchar *force_colormap = "system";
+gchar *force_colormap = "rgba";
 
 static gboolean quit_in_menu = FALSE;
 static GtkWindowGroup* window_group; /* window group used to limit the scope of model dialog. */
@@ -1906,6 +1906,8 @@ panel_parse_global(Panel *p, char **fp)
                     p->fontsize = atoi(s.t[1]);   
                 } else if (!g_ascii_strcasecmp(s.t[0], "Background")) {
                     p->background = str2num(bool_pair, s.t[1], 0);
+                } else if (!g_ascii_strcasecmp(s.t[0], "RGBATransparency")) {
+                    p->real_transparent = str2num(bool_pair, s.t[1], 0);
                 } else if( !g_ascii_strcasecmp(s.t[0], "BackgroundFile") ) {
                     p->background_file = g_strdup( s.t[1] );
                 } else if (!g_ascii_strcasecmp(s.t[0], "IconSize")) {

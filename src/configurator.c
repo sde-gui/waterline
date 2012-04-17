@@ -225,7 +225,40 @@ static void set_width_type( GtkWidget *item, Panel* p )
     panel_set_panel_configuration_changed(p);
 }
 
-static void transparency_toggle( GtkWidget *b, Panel* p)
+static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
+{
+    ENTER;    
+
+    int alpha = gtk_range_get_value(GTK_RANGE(w));
+
+    if (p->alpha != alpha)
+    {
+        p->alpha = alpha;
+        panel_update_background(p);
+
+        GtkWidget* tr = (GtkWidget*)g_object_get_data(G_OBJECT(w), "tint_clr");
+        gtk_color_button_set_alpha(GTK_COLOR_BUTTON(tr), 256 * p->alpha);
+    }
+
+    RET();
+}
+
+static void real_transparency_toggle(GtkWidget * w, Panel*  p)
+{
+    ENTER;    
+
+    gboolean t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+
+    p->real_transparent = t;
+    panel_update_background(p);
+
+    GtkWidget* alpha_scale = (GtkWidget*)g_object_get_data(G_OBJECT(w), "alpha_scale");
+    gtk_widget_set_sensitive(alpha_scale, p->real_transparent);
+
+    RET();
+}
+
+static void bgcolor_toggle( GtkWidget *b, Panel* p)
 {
     GtkWidget* tr = (GtkWidget*)g_object_get_data(G_OBJECT(b), "tint_clr");
     gboolean t;
@@ -234,10 +267,7 @@ static void transparency_toggle( GtkWidget *b, Panel* p)
 
     t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b));
     gtk_widget_set_sensitive(tr, t);
-/*
-    gtk_widget_set_sensitive(tr_colorl, t);
-    gtk_widget_set_sensitive(tr_colorb, t);
-*/
+
     /* Update background immediately. */
     if (t&&!p->transparent) {
         p->transparent = 1;
@@ -310,6 +340,9 @@ on_tint_color_set( GtkColorButton* clr,  Panel* p )
     p->tintcolor = gcolor2rgb24(&p->gtintcolor);
     p->alpha = gtk_color_button_get_alpha( clr ) / 256;
     panel_update_background( p );
+
+    GtkWidget * alpha_scale = (GtkWidget*)g_object_get_data(G_OBJECT(clr), "alpha_scale");
+    gtk_range_set_value(GTK_RANGE(alpha_scale), p->alpha);
 }
 
 static void
@@ -998,28 +1031,42 @@ void panel_configure( Panel* p, int sel_page )
         gtk_widget_set_sensitive( w, FALSE );
     g_signal_connect( w, "color-set", G_CALLBACK( on_tint_color_set ), p );
 
+    GtkWidget * alpha_scale = (GtkWidget*)gtk_builder_get_object(builder, "alpha_scale");
+    gtk_range_set_range(GTK_RANGE(alpha_scale), 0, 255);
+    gtk_range_set_value(GTK_RANGE(alpha_scale), p->alpha);
+    gtk_widget_set_sensitive(alpha_scale, p->real_transparent);
+    g_object_set_data(G_OBJECT(alpha_scale), "tint_clr", tint_clr);
+    g_object_set_data(G_OBJECT(tint_clr), "alpha_scale", alpha_scale);
+    g_signal_connect(alpha_scale, "value-changed", G_CALLBACK(alpha_scale_value_changed), p);
+
+    GtkWidget * real_transparency = (GtkWidget*)gtk_builder_get_object(builder, "real_transparency");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(real_transparency), p->real_transparent);
+    g_object_set_data(G_OBJECT(real_transparency), "alpha_scale", alpha_scale);
+    g_signal_connect(real_transparency, "toggled", G_CALLBACK(real_transparency_toggle), p);
+
+
+
     /* background */
     {
-        GtkWidget* none, *trans, *img;
-        none = (GtkWidget*)gtk_builder_get_object( builder, "bg_none" );
-        trans = (GtkWidget*)gtk_builder_get_object( builder, "bg_transparency" );
-        img = (GtkWidget*)gtk_builder_get_object( builder, "bg_image" );
+        GtkWidget * button_bg_none  = (GtkWidget*)gtk_builder_get_object( builder, "bg_none" );
+        GtkWidget * button_bg_color = (GtkWidget*)gtk_builder_get_object( builder, "bg_transparency" );
+        GtkWidget * button_bg_img   = (GtkWidget*)gtk_builder_get_object( builder, "bg_image" );
 
-        g_object_set_data(G_OBJECT(trans), "tint_clr", tint_clr);
+        g_object_set_data(G_OBJECT(button_bg_color), "tint_clr", tint_clr);
 
         if (p->background)
-            gtk_toggle_button_set_active( (GtkToggleButton*)img, TRUE);
+            gtk_toggle_button_set_active( (GtkToggleButton*)button_bg_img, TRUE);
         else if (p->transparent)
-            gtk_toggle_button_set_active( (GtkToggleButton*)trans, TRUE);
+            gtk_toggle_button_set_active( (GtkToggleButton*)button_bg_color, TRUE);
         else
-            gtk_toggle_button_set_active( (GtkToggleButton*)none, TRUE);
+            gtk_toggle_button_set_active( (GtkToggleButton*)button_bg_none, TRUE);
 
-        g_signal_connect(none, "toggled", G_CALLBACK(background_disable_toggle), p);
-        g_signal_connect(trans, "toggled", G_CALLBACK(transparency_toggle), p);
-        g_signal_connect(img, "toggled", G_CALLBACK(background_toggle), p);
+        g_signal_connect(button_bg_none, "toggled", G_CALLBACK(background_disable_toggle), p);
+        g_signal_connect(button_bg_color, "toggled", G_CALLBACK(bgcolor_toggle), p);
+        g_signal_connect(button_bg_img, "toggled", G_CALLBACK(background_toggle), p);
 
         w = (GtkWidget*)gtk_builder_get_object( builder, "img_file" );
-        g_object_set_data(G_OBJECT(img), "img_file", w);
+        g_object_set_data(G_OBJECT(button_bg_img), "img_file", w);
         gchar * default_backgroud_path = get_private_resource_path(RESOURCE_DATA, "images", "background.png", 0);
         gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(w),
             ((p->background_file != NULL) ? p->background_file : default_backgroud_path));
@@ -1027,7 +1074,7 @@ void panel_configure( Panel* p, int sel_page )
 
         if (!p->background)
             gtk_widget_set_sensitive( w, FALSE);
-        g_object_set_data( G_OBJECT(w), "bg_image", img );
+        g_object_set_data( G_OBJECT(w), "bg_image", button_bg_img );
         g_signal_connect( w, "file-set", G_CALLBACK (background_changed), p);
     }
 
@@ -1162,6 +1209,7 @@ panel_global_config_save( Panel* p, FILE *fp)
     lxpanel_put_int(fp, "FontSize", p->fontsize);
     lxpanel_put_bool(fp, "background", p->background );
     lxpanel_put_str(fp, "backgroundfile", p->background_file);
+    lxpanel_put_bool(fp, "rgbatransparency", p->real_transparent);
     lxpanel_put_int(fp, "iconsize", p->preferred_icon_size);
     lxpanel_put_line(fp, "}\n");
 }

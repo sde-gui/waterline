@@ -704,6 +704,9 @@ netstatus_icon_realize (GtkWidget *widget)
 
       widget->window = gdk_window_new (gtk_widget_get_parent_window (widget), &attributes, attributes_mask);
       gdk_window_set_user_data (widget->window, widget);
+
+      widget->style = gtk_style_attach (widget->style, widget->window);
+      gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
   }
   else
   {
@@ -713,13 +716,9 @@ netstatus_icon_realize (GtkWidget *widget)
       attributes.wclass = GDK_INPUT_ONLY;
       attributes_mask = GDK_WA_X | GDK_WA_Y;
 
-
       icon->priv->event_window = gdk_window_new (widget->window, &attributes, attributes_mask);
       gdk_window_set_user_data (icon->priv->event_window, widget);
   }
-
-  widget->style = gtk_style_attach (widget->style, widget->window);
-  gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
 }
 
 

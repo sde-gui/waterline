@@ -52,12 +52,12 @@ static gboolean icon_grid_placement(IconGrid * ig)
 
     /* Make sure the container is visible. */
     gtk_widget_show(ig->container);
-
+#if 0
     /* Erase the window. */
     GdkWindow * window = ig->widget->window;
     if (window != NULL)
         panel_determine_background_pixmap(ig->panel, ig->widget, window);
-
+#endif
     /* Get and save the desired container geometry. */
     ig->container_width = ig->container->allocation.width;
     ig->container_height = ig->container->allocation.height;

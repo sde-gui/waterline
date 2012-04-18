@@ -884,7 +884,6 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         }
     }
 
-
     if (p->background)
     {
         /* User specified background pixmap. */
@@ -903,11 +902,40 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         if ((pixmap != NULL) && (pixmap != GDK_NO_BG) && (p->alpha != 0))
             fb_bg_composite(pixmap, widget->style->black_gc, p->tintcolor, p->alpha);
     }
+    else if (!p->background && !p->transparent)
+    {
+        if (p->stretch_background)
+        {
+            GtkStyle * style = gtk_widget_get_style(widget);
+            if (style && style->bg_pixmap[GTK_STATE_NORMAL])
+                pixmap = g_object_ref(style->bg_pixmap[GTK_STATE_NORMAL]);
+        }
+    }
 
     if (p->background_pixmap && widget == p->topgwin)
     {
         g_object_unref(G_OBJECT(p->background_pixmap));
         p->background_pixmap = NULL;
+    }
+
+
+    if (pixmap && p->stretch_background && widget == p->topgwin)
+    {
+         gint pixmap_width, pixmap_height;
+         gint window_width, window_height;
+         gdk_drawable_get_size(pixmap, &pixmap_width, &pixmap_height);
+         gdk_drawable_get_size(widget->window, &window_width, &window_height);
+         if (pixmap_width != window_width && pixmap_height != window_height)
+         {
+             GdkPixbuf * pixbuf1 = gdk_pixbuf_get_from_drawable(NULL, pixmap, NULL, 0, 0, 0, 0, pixmap_width, pixmap_height);
+             GdkPixbuf * pixbuf2 = gdk_pixbuf_scale_simple(pixbuf1, window_width, window_height, GDK_INTERP_HYPER);
+             GdkPixmap * pixmap2 = gdk_pixmap_new(pixmap, window_width, window_height, -1);
+             gdk_draw_pixbuf(pixmap2, widget->style->black_gc, pixbuf2, 0, 0, 0, 0, window_width, window_height, GDK_RGB_DITHER_NONE, 0, 0);
+             g_object_unref(pixbuf1);
+             g_object_unref(pixbuf2);
+             g_object_unref(pixmap);
+             pixmap = pixmap2;
+         }
     }
 
     if (p->rgba_transparency)
@@ -1904,10 +1932,12 @@ panel_parse_global(Panel *p, char **fp)
                     p->fontsize = atoi(s.t[1]);   
                 } else if (!g_ascii_strcasecmp(s.t[0], "Background")) {
                     p->background = str2num(bool_pair, s.t[1], 0);
-                } else if (!g_ascii_strcasecmp(s.t[0], "RGBATransparency")) {
-                    p->rgba_transparency = str2num(bool_pair, s.t[1], 0);
                 } else if( !g_ascii_strcasecmp(s.t[0], "BackgroundFile") ) {
                     p->background_file = g_strdup( s.t[1] );
+                } else if (!g_ascii_strcasecmp(s.t[0], "RGBATransparency")) {
+                    p->rgba_transparency = str2num(bool_pair, s.t[1], 0);
+                } else if (!g_ascii_strcasecmp(s.t[0], "StretchBackground")) {
+                    p->stretch_background = str2num(bool_pair, s.t[1], 0);
                 } else if (!g_ascii_strcasecmp(s.t[0], "IconSize")) {
                     p->preferred_icon_size = atoi(s.t[1]);
                 } else {

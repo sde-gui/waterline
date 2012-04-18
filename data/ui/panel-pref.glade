@@ -536,6 +536,32 @@
                             </child>
 
                             <child>
+                              <object class="GtkHBox" id="hbox_stretch_background">
+                                <property name="visible">True</property>
+                                <property name="spacing">40</property>
+                                <child>
+                                  <object class="GtkCheckButton" id="stretch_background">
+                                    <property name="label" translatable="yes">Stretch background image </property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+
+                            <child>
                               <object class="GtkHBox" id="hbox_real_transparency">
                                 <property name="visible">True</property>
                                 <property name="spacing">40</property>
@@ -567,7 +593,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">3</property>
+                                <property name="position">4</property>
                               </packing>
                             </child>
 

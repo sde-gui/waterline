@@ -95,6 +95,7 @@ typedef struct _Panel {
     guint expose_event_connected : 1;
     guint alpha_channel_support : 1;
     guint rgba_transparency : 1;
+    guint stretch_background : 1;
 
     guint visible : 1;                  /* whether panel is actually visible */
 

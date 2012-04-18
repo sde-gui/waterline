@@ -225,6 +225,18 @@ static void set_width_type( GtkWidget *item, Panel* p )
     panel_set_panel_configuration_changed(p);
 }
 
+static void stretch_background_toggle(GtkWidget * w, Panel*  p)
+{
+    ENTER;    
+
+    gboolean t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
+
+    p->stretch_background = t;
+    panel_update_background(p);
+
+    RET();
+}
+
 static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
 {
     ENTER;    
@@ -1039,10 +1051,16 @@ void panel_configure( Panel* p, int sel_page )
     g_object_set_data(G_OBJECT(tint_clr), "alpha_scale", alpha_scale);
     g_signal_connect(alpha_scale, "value-changed", G_CALLBACK(alpha_scale_value_changed), p);
 
+    /* rgba_transparency */
     GtkWidget * rgba_transparency = (GtkWidget*)gtk_builder_get_object(builder, "rgba_transparency");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rgba_transparency), p->rgba_transparency);
     g_object_set_data(G_OBJECT(rgba_transparency), "alpha_scale", alpha_scale);
     g_signal_connect(rgba_transparency, "toggled", G_CALLBACK(rgba_transparency_toggle), p);
+
+    /* stretch_background */
+    GtkWidget * stretch_background = (GtkWidget*)gtk_builder_get_object(builder, "stretch_background");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(stretch_background), p->stretch_background);
+    g_signal_connect(stretch_background, "toggled", G_CALLBACK(stretch_background_toggle), p);
 
     /* background */
     {
@@ -1197,6 +1215,7 @@ panel_global_config_save(Panel* p, FILE *fp)
     lxpanel_put_int(fp, "RoundCornersRadius", p->round_corners_radius );
 
     lxpanel_put_bool(fp, "RGBATransparency", p->rgba_transparency);
+    lxpanel_put_bool(fp, "StretchBackground", p->stretch_background);
     lxpanel_put_bool(fp, "Background", p->background );
     lxpanel_put_str(fp, "BackgroundFile", p->background_file);
     lxpanel_put_bool(fp, "Transparent", p->transparent );

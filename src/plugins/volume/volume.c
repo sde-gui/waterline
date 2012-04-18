@@ -76,24 +76,24 @@ static void update_icon (Plugin* p)
 	GtkIconInfo* info;
 	
 	theme = gtk_icon_theme_get_default();
-	
+
 	if (curr_volume <= 0) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-mute", p->panel->icon_size, 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-mute", panel_get_icon_size(p->panel), 0 );
 	}
 	else if (curr_volume > 0 && curr_volume <= 50) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-min", p->panel->icon_size, 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-min", panel_get_icon_size(p->panel), 0 );
 	}
 	else if (curr_volume > 50 && curr_volume <= 75) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-med", p->panel->icon_size, 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-med", panel_get_icon_size(p->panel), 0 );
 	}
 	else if (curr_volume > 75) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-max", p->panel->icon_size, 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-max", panel_get_icon_size(p->panel), 0 );
 	}
 
 	if (info ) {
 		icon = gdk_pixbuf_new_from_file_at_size(
 				gtk_icon_info_get_filename( info ),
-				p->panel->icon_size, p->panel->icon_size, NULL );
+				panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), NULL );
 		gtk_icon_info_free( info );
 	}
 	else {
@@ -181,7 +181,7 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 			vol->dlg = create_volume_window();
 
 			/* setting background to default */
-			gtk_widget_set_style(vol->dlg, p->panel->defstyle);
+			gtk_widget_set_style(vol->dlg, panel_get_default_style(p->panel));
 
 			g_signal_connect( vol->dlg, "focus-out-event",
 					G_CALLBACK(on_volume_focus), p );
@@ -278,7 +278,7 @@ static int volume_constructor(Plugin *p, char **fp)
             
     g_signal_connect( vol->mainw, "scroll-event",
             G_CALLBACK(on_mouse_scroll), p );
-    gtk_widget_set_size_request( vol->mainw, p->panel->icon_size, p->panel->icon_size );
+    gtk_widget_set_size_request( vol->mainw, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel) );
 
     /* obtain current volume */
     vol->dlg = create_volume_window();

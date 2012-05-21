@@ -19,9 +19,7 @@
 
 #ifndef PANEL_PRIVATE_H
 #define PANEL_PRIVATE_H
-
-/* Context of a panel on a given edge. */
-typedef struct _Panel {
+struct _Panel {
     char* name;
     GtkWidget * topgwin;		/* Main panel window */
     Window topxwin;			/* Main panel's X window   */
@@ -108,6 +106,6 @@ typedef struct _Panel {
     int update_background_idle_cb;
 
     int set_wm_strut_idle;
-} Panel;
+};
 
 #endif

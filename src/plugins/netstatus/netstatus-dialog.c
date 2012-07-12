@@ -180,7 +180,7 @@ print_bytes_string (GString *str,
     }
   else if (bytes >= 0)
     {
-      g_string_append_printf (str, " (%lld.%lld B)", bytes / 10, bytes % 10);
+      g_string_append_printf (str, " (%lld B)", bytes);
     }
 }
 

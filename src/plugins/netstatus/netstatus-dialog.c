@@ -392,6 +392,7 @@ netstatus_dialog_iface_name_changed (NetstatusIface      *iface,
 {
   netstatus_dialog_update_name (data);
   netstatus_dialog_update_signal_strength (data);
+  netstatus_dialog_update_activity (data);
 }
 
 static void

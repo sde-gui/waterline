@@ -12187,7 +12187,8 @@ fi
 # Checks for libraries.
 pkg_modules="gtk+-2.0 >= 2.12.0 \
              gio-unix-2.0 \
-             gthread-2.0"
+             gthread-2.0 \
+             gmodule-2.0"
 #             libstartup-notification-1.0"
 
 

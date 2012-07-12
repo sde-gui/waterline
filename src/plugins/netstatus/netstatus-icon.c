@@ -22,6 +22,7 @@
 
 #include <config.h>
 
+#include "misc.h"
 #include "gtkcompat.h"
 #include "netstatus-icon.h"
 
@@ -404,6 +405,25 @@ netstatus_update_tooltip (NetstatusIface *iface __attribute__((unused)),
      char * s = g_strdup_printf ("%s\n%s", tip, netstatus_get_state_string (state));
      g_free(tip);
      tip = s;
+
+     if (state != NETSTATUS_STATE_DISCONNECTED)
+     {
+         NetstatusStats  stats = { 0, };
+         netstatus_iface_get_statistics (icon->priv->iface, &stats);
+
+         char * s_in = format_bytes_with_suffix(stats.in_bytes);
+         char * s_out = format_bytes_with_suffix(stats.out_bytes);
+
+         if (s_in && s_out)
+         {
+             char * s = g_strdup_printf ("%s\nReceived: %s, Sent: %s", tip, s_in, s_out);
+             g_free(tip);
+             tip = s;
+         }
+
+         g_free(s_in);
+         g_free(s_out);
+     }
 
   }
 

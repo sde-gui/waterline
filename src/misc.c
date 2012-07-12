@@ -1069,6 +1069,54 @@ gchar * lxpanel_tooltip_for_file_stat(struct stat * stat_data)
 
 /********************************************************************/
 
+void get_format_for_bytes_with_suffix(guint64  bytes, const char ** format, guint64 * b1, guint64 * b2)
+{
+    const char * f = NULL;
+    if (bytes > 1 << 30)
+    {
+        bytes = (bytes * 10) / (1 << 30);
+        f = "%lld.%lld GiB";
+    }
+    else if (bytes > 1 << 20)
+    {
+        bytes = (bytes * 10) / (1 << 20);
+        f = "%lld.%lld MiB";
+    }
+    else if (bytes > 1 << 10)
+    {
+        bytes = (bytes * 10) / (1 << 10);
+        f = "%lld.%lld KiB";
+    }
+    else if (bytes >= 0)
+    {
+        bytes = bytes * 10;
+        f = "%lld B";
+    }
+
+    if (format)
+        *format = f;
+    if (b1)
+        *b1 = bytes / 10;
+    if (b2)
+        *b2 = bytes % 10;
+}
+
+char * format_bytes_with_suffix(guint64  bytes)
+{
+    const char * format = NULL;
+    guint64 b1;
+    guint64 b2;
+
+    get_format_for_bytes_with_suffix(bytes, &format, &b1, &b2);
+
+    if (format)
+        return g_strdup_printf (format, b1, b2);
+
+    return NULL;
+}
+
+/********************************************************************/
+
 /* filemode.c -- make a string describing file modes
 
    Copyright (C) 1985, 1990, 1993, 1998-2000, 2004, 2006, 2009-2012 Free

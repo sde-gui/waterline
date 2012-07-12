@@ -79,7 +79,7 @@ static void ev_desktop_names(FbEv *ev, gpointer p);
 static void ev_client_list(FbEv *ev, gpointer p);
 static void ev_client_list_stacking(FbEv *ev, gpointer p);
 
-static guint signals [LAST_SIGNAL] = { 0 };
+static guint signals [EV_LAST_SIGNAL] = { 0 };
 
 
 GType
@@ -211,7 +211,7 @@ void
 fb_ev_emit(FbEv *ev, int signal)
 {
     DBG("signal=%d\n", signal);
-    g_assert(signal >=0 && signal < LAST_SIGNAL);
+    g_assert(signal >=0 && signal < EV_LAST_SIGNAL);
     DBG("\n");
     if( signal == EV_ACTIVE_WINDOW )
     {

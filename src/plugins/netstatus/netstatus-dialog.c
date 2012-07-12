@@ -161,29 +161,17 @@ print_bytes_string (GString *str,
 		    guint64  bytes)
 {
   const char * format = NULL;
-  if (bytes > 1 << 30)
-    {
-      bytes = (bytes * 10) / (1 << 30);
-      format = " (%lld.%lld GiB)";
-    }
-  else if (bytes > 1 << 20)
-    {
-      bytes = (bytes * 10) / (1 << 20);
-      format = " (%lld.%lld MiB)";
-    }
-  else if (bytes > 1 << 10)
-    {
-      bytes = (bytes * 10) / (1 << 10);
-      format = " (%lld.%lld KiB)";
-    }
-  else if (bytes >= 0)
-    {
-      bytes = bytes * 10;
-      format = " (%lld B)";
-    }
+  guint64 b1;
+  guint64 b2;
+
+  get_format_for_bytes_with_suffix(bytes, &format, &b1, &b2);
 
   if (format)
-      g_string_append_printf (str, format, bytes / 10, bytes % 10);
+  {
+      g_string_append(str, " (");
+      g_string_append_printf (str, format, b1, b2);
+      g_string_append(str, ")");
+  }
 }
 
 static void

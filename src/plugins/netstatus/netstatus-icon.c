@@ -382,7 +382,7 @@ netstatus_update_tooltip (NetstatusIface *iface __attribute__((unused)),
      }
      else
      {
-        tip = _("Network Connection");
+        tip = g_strdup(_("Network Connection"));
      }
 
      char *addr = NULL;
@@ -399,6 +399,11 @@ netstatus_update_tooltip (NetstatusIface *iface __attribute__((unused)),
          g_free (addr);
          g_free (mask);
      }
+
+     NetstatusState state = netstatus_iface_get_state (icon->priv->iface);
+     char * s = g_strdup_printf ("%s\n%s", tip, netstatus_get_state_string (state));
+     g_free(tip);
+     tip = s;
 
   }
 
@@ -418,7 +423,7 @@ netstatus_icon_name_changed (NetstatusIface *iface,
 
 static void
 netstatus_icon_state_changed (NetstatusIface *iface,
-			      GParamSpec     *pspec __attribute__((unused)),
+			      GParamSpec     *pspec,
 			      NetstatusIcon  *icon)
 {
   NetstatusState state;
@@ -432,6 +437,7 @@ netstatus_icon_state_changed (NetstatusIface *iface,
       icon->priv->state = state;
 
       netstatus_icon_update_image (icon);
+      netstatus_update_tooltip(iface, pspec, icon);
     }
 }
 

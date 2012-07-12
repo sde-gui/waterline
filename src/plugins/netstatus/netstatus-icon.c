@@ -367,31 +367,53 @@ netstatus_icon_update_image (NetstatusIcon *icon)
 }
 
 static void
-netstatus_icon_name_changed (NetstatusIface *iface __attribute__((unused)),
-			     GParamSpec     *pspec __attribute__((unused)),
-			     NetstatusIcon  *icon)
+netstatus_update_tooltip (NetstatusIface *iface __attribute__((unused)),
+			  GParamSpec     *pspec __attribute__((unused)),
+			  NetstatusIcon  *icon)
 {
-  const char *iface_name;
-  const char *tip = "";
-  char       *freeme = NULL;
+  char * tip = NULL;
 
   if (icon->priv->tooltips_enabled)
   {
-     iface_name = netstatus_iface_get_name (icon->priv->iface);
+     const char * iface_name = netstatus_iface_get_name (icon->priv->iface);
      if (iface_name)
      {
-        freeme = g_strdup_printf (_("Network Connection: %s"), iface_name);
-        tip = freeme;
+        tip = g_strdup_printf (_("Network Connection: %s"), iface_name);
      }
      else
      {
         tip = _("Network Connection");
      }
+
+     char *addr = NULL;
+     char *mask = NULL;
+     if (netstatus_iface_get_inet4_details (icon->priv->iface, &addr, NULL, NULL, &mask))
+     {
+         if (addr && mask)
+	 {
+	     char * s = g_strdup_printf (_("%s\nIPv4 Address: %s/%s"), tip, addr, mask);
+	     g_free(tip);
+	     tip = s;
+         }
+
+         g_free (addr);
+         g_free (mask);
+     }
+
   }
 
-  gtk_widget_set_tooltip_text(GTK_WIDGET (icon), tip);
+  gtk_widget_set_tooltip_text(GTK_WIDGET (icon), tip ? tip : "");
 
-  g_free (freeme);
+  g_free (tip);
+}
+
+
+static void
+netstatus_icon_name_changed (NetstatusIface *iface,
+			     GParamSpec     *pspec,
+			     NetstatusIcon  *icon)
+{
+    netstatus_update_tooltip(iface, pspec, icon);
 }
 
 static void
@@ -1160,7 +1182,7 @@ netstatus_icon_set_tooltips_enabled (NetstatusIcon *icon,
   if (icon->priv->tooltips_enabled != enabled)
     {
       icon->priv->tooltips_enabled = enabled;
-      netstatus_icon_name_changed(NULL, NULL, icon);
+      netstatus_update_tooltip(NULL, NULL, icon);
     }
 }
 

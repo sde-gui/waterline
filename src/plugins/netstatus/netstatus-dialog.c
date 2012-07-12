@@ -160,28 +160,30 @@ static inline void
 print_bytes_string (GString *str,
 		    guint64  bytes)
 {
+  const char * format = NULL;
   if (bytes > 1 << 30)
     {
       bytes = (bytes * 10) / (1 << 30);
-
-      g_string_append_printf (str, " (%lld.%lld GiB)", bytes / 10, bytes % 10);
+      format = " (%lld.%lld GiB)";
     }
   else if (bytes > 1 << 20)
     {
       bytes = (bytes * 10) / (1 << 20);
-
-      g_string_append_printf (str, " (%lld.%lld MiB)", bytes / 10, bytes % 10);
+      format = " (%lld.%lld MiB)";
     }
   else if (bytes > 1 << 10)
     {
       bytes = (bytes * 10) / (1 << 10);
-
-      g_string_append_printf (str, " (%lld.%lld KiB)", bytes / 10, bytes % 10);
+      format = " (%lld.%lld KiB)";
     }
   else if (bytes >= 0)
     {
-      g_string_append_printf (str, " (%lld B)", bytes);
+      bytes = bytes * 10;
+      format = " (%lld B)";
     }
+
+  if (format)
+      g_string_append_printf (str, format, bytes / 10, bytes % 10);
 }
 
 static void

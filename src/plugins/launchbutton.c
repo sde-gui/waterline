@@ -103,6 +103,8 @@ typedef struct _lb_t {
     gchar *  bg_color_s;
     GdkColor bg_color_c;
     GdkColormap * color_map;
+
+    int pressed_mouse_button;
 } lb_t;
 
 /*****************************************************************************/
@@ -456,15 +458,31 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
 
 /*****************************************************************************/
 
-/* Handler for "button-press-event" event from launch button. */
 static gboolean lb_press_event(GtkWidget * widget, GdkEventButton * event, lb_t * lb)
 {
     /* Standard right-click handling. */
     if (event->state & GDK_CONTROL_MASK)
     {
+        lb->pressed_mouse_button = -1;
+
         if (plugin_button_press_event(widget, event, lb->plug))
             return TRUE;
     }
+
+    lb->pressed_mouse_button = event->button;
+
+    return TRUE;
+}
+
+static gboolean lb_release_event(GtkWidget * widget, GdkEventButton * event, lb_t * lb)
+{
+    if (event->button != lb->pressed_mouse_button)
+    {
+        lb->pressed_mouse_button = -1;
+        return TRUE;
+    }
+
+    lb->pressed_mouse_button = -1;
 
     const char* command = NULL;
 
@@ -539,6 +557,7 @@ static void lb_apply_configuration(Plugin * p)
                      panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), PANEL_ICON_HIGHLIGHT, TRUE, p->panel, lb->title);
         gtk_container_add(GTK_CONTAINER(p->pwid), lb->button);
         g_signal_connect(G_OBJECT(lb->button), "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
+        g_signal_connect(G_OBJECT(lb->button), "button-release-event", G_CALLBACK(lb_release_event), (gpointer) lb);
         g_signal_connect(G_OBJECT(lb->button), "scroll-event", G_CALLBACK(lb_scroll_event), (gpointer) lb);
         gtk_widget_show(lb->button);
     }

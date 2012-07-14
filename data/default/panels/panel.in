@@ -2,28 +2,30 @@
 # Use preference dialog in lxpanelx to adjust config when you can.
 
 Global {
-    edge=bottom
-    align=left
-    margin=0
-    widthtype=percent
-    width=100
-    height=26
-    transparent=0
-    tintcolor=#000000
-    alpha=0
-    setdocktype=1
-    setpartialstrut=1
-    usefontcolor=0
-    fontcolor=#ffffff
-    background=0
-    backgroundfile=@prefix@/share/lxpanelx/images/background.png
-}
-
-Plugin {
-    type = space
-    Config {
-        Size=2
-    }
+    Edge=bottom
+    Align=left
+    Margin=0
+    WidthType=percent
+    Width=100
+    Height=26
+    RoundCorners=0
+    RoundCornersRadius=7
+    RGBATransparency=0
+    StretchBackground=1
+    Background=0
+    BackgroundFile=@prefix@/share/lxpanelx/images/background.png
+    Transparent=0
+    TintColor=#000000
+    Alpha=0
+    AutoHide=0
+    HeightWhenHidden=2
+    SetDockType=1
+    SetPartialStrut=1
+    UseFontColor=0
+    FontColor=#ffffff
+    UseFontSize=0
+    FontSize=10
+    IconSize=22
 }
 
 Plugin {
@@ -61,9 +63,6 @@ Plugin {
             id=pcmanfm.desktop
         }
         Button {
-            id=gnome-terminal.desktop
-        }
-        Button {
             id=firefox.desktop
         }
     }
@@ -79,8 +78,10 @@ Plugin {
 Plugin {
     type = wincmd
     Config {
+        image=window-manager
         Button1=iconify
         Button2=shade
+        Toggle=0
     }
 }
 
@@ -107,21 +108,62 @@ Plugin {
     expand=1
     Config {
         tooltips=1
-        IconsOnly=0
-        AcceptSkipPager=1
+        ShowIconsTitles=Both
+        FallbackIcon=xorg
         ShowIconified=1
         ShowMapped=1
         ShowAllDesks=0
-        UseMouseWheel=1
+        ShowUrgencyAllDesks=1
         UseUrgencyHint=1
         FlatButton=0
+        ColorizeButtons=1
+        IconThumbnails=0
+        DimmIconified=1
         MaxTaskWidth=150
         spacing=1
+        Mode=Classic
+        GroupFoldThreshold=5
+        FoldThreshold=10
+        GroupBy=Class
+        ManualGrouping=1
+        UnfoldFocusedGroup=0
+        ShowSingleGroup=0
+        ShowCloseButtons=0
+        SortBy1=Timestamp
+        SortBy2=Timestamp
+        SortBy3=Timestamp
+        SortReverse1=0
+        SortReverse2=0
+        SortReverse3=0
+        RearrangeTasks=0
+        Button1Action=RaiseIconify
+        Button2Action=Shade
+        Button3Action=Menu
+        ScrollUpAction=PrevWindow
+        ScrollDownAction=NextWindow
+        ShiftButton1Action=Iconify
+        ShiftButton2Action=Maximize
+        ShiftButton3Action=Close
+        ShiftScrollUpAction=PrevWindowInCurrentGroup
+        ShiftScrollDownAction=NextWindowInCurrentGroup
+        MenuActionsTriggeredBy=Press
+        OtherActionsTriggeredBy=Click
+        MouseOverAction=None
+        HighlightModifiedTitles=1
+        UseGroupSeparators=0
+        GroupSeparatorSize=0
+        UseXNetWmIconGeometry=1
+        UseXWindowPosition=0
     }
 }
 
 Plugin {
     type = cpu
+    Config {
+        FgColor=green
+        BgColor=black
+        UpdateInterval=1500
+    }
 }
 
 Plugin {
@@ -134,6 +176,7 @@ Plugin {
         ClockFmt=%R
         TooltipFmt=%A %x
         BoldFont=0
+        IconOnly=0
+        CenterText=0
     }
 }
-

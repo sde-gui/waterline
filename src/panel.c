@@ -608,8 +608,43 @@ static void process_command(char ** argv, int argc)
         Panel * p = panel_get_by_name(argv[1]);
         process_panel_command(p, argv + 2, argc - 2);
     }
-}
+    else if (strcmp(argv[0], "run") == 0)
+    {
+        gtk_run();
+    }
+    else if (strcmp(argv[0], "menu") == 0)
+    {
+        GSList* l;
+        for( l = all_panels; l; l = l->next )
+        {
+            Panel* p = (Panel*)l->data;
+            if( p->system_menus )
+            {
+                /* show_system_menu( p->system_menus->data ); */
+                /* FIXME: I've no idea why this doesn't work without timeout
+                          under some WMs, like icewm. */
+                g_timeout_add( 200, (GSourceFunc)show_system_menu,
+                               p->system_menus->data );
+            }
+        }
+    }
+    else if (strcmp(argv[0], "config") == 0)
+    {
+        Panel * p = ((all_panels != NULL) ? all_panels->data : NULL);
+        if (p != NULL)
+            panel_configure(p, 0);
+    }
+    else if (strcmp(argv[0], "restart") == 0)
+    {
+        restart();
+    }
+    else if (strcmp(argv[0], "exit") == 0)
+    {
+        gtk_main_quit();
+    }
 
+}
+#if 0
 static void process_client_msg ( XClientMessageEvent* ev )
 {
     int cmd = ev->data.b[0];
@@ -641,12 +676,12 @@ static void process_client_msg ( XClientMessageEvent* ev )
             break;
 #endif
         case LXPANELX_CMD_CONFIG:
-            {
+        {
             Panel * p = ((all_panels != NULL) ? all_panels->data : NULL);
             if (p != NULL)
                 panel_configure(p, 0);
-            }
             break;
+        }
         case LXPANELX_CMD_RESTART:
             restart();
             break;
@@ -655,7 +690,7 @@ static void process_client_msg ( XClientMessageEvent* ev )
             break;
     }
 }
-
+#endif
 /******************************************************************************/
 
 /*= panel's handlers for WM events =*/
@@ -667,15 +702,18 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
     XEvent *ev = (XEvent *) xevent;
 
     ENTER;
-    DBG("win = 0x%x\n", ev->xproperty.window);
+
+    DBG("win  = 0x%x\n", ev->xproperty.window);
+    DBG("type = 0x%x\n", ev->type);
+
     if (ev->type != PropertyNotify )
     {
         /* private client message from lxpanelxctl */
-        if( ev->type == ClientMessage && ev->xproperty.atom == a_LXPANELX_CMD )
+/*        if( ev->type == ClientMessage && ev->xproperty.atom == a_LXPANELX_CMD )
         {
             process_client_msg( (XClientMessageEvent*)ev );
         }
-        else if( ev->type == DestroyNotify )
+        else*/ if( ev->type == DestroyNotify )
         {
             fb_ev_emit_destroy( fbev, ((XDestroyWindowEvent*)ev)->window );
         }
@@ -739,16 +777,16 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
         }
         else if (at == a_LXPANELX_TEXT_CMD)
         {
-            int remoute_command_argc = 0;;
-            char ** remoute_command_argv = NULL;
-            remoute_command_argv = get_utf8_property_list(GDK_ROOT_WINDOW(), a_LXPANELX_TEXT_CMD, &remoute_command_argc);
-            if (remoute_command_argc > 0 && remoute_command_argv)
+            int remote_command_argc = 0;;
+            char ** remote_command_argv = NULL;
+            remote_command_argv = get_utf8_property_list(GDK_ROOT_WINDOW(), a_LXPANELX_TEXT_CMD, &remote_command_argc);
+            if (remote_command_argc > 0 && remote_command_argv)
             {
                 unsigned char b[1];
                 XChangeProperty (GDK_DISPLAY(), GDK_ROOT_WINDOW(), a_LXPANELX_TEXT_CMD, XA_STRING, 8, PropModeReplace, b, 0);
-                process_command(remoute_command_argv, remoute_command_argc);
+                process_command(remote_command_argv, remote_command_argc);
             }
-            g_strfreev(remoute_command_argv);
+            g_strfreev(remote_command_argv);
         }
         else if (at == a_NET_SUPPORTED)
         {

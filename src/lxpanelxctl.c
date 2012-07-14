@@ -37,7 +37,7 @@ static const char usage[] =
         "config\tshow configuration dialog\n"
         "restart\trestart lxpanelx\n"
         "exit\texit lxpanelx\n\n";
-
+/*
 static int get_cmd( const char* cmd )
 {
     if( ! strcmp( cmd, "menu") )
@@ -51,7 +51,7 @@ static int get_cmd( const char* cmd )
     else if( ! strcmp( cmd, "exit") )
         return LXPANELX_CMD_EXIT;
     return -1;
-}
+}*/
 
 int main( int argc, char** argv )
 {
@@ -59,7 +59,7 @@ int main( int argc, char** argv )
     XEvent ev;
     Window root;
     Atom cmd_atom;
-    int cmd = -1;
+//    int cmd = -1;
     /* int restart; */
 
     if( argc < 2 )
@@ -67,7 +67,7 @@ int main( int argc, char** argv )
         printf( usage );
         return 1;
     }
-
+/*
     if (argc == 2)
         cmd = get_cmd(argv[1]);
 
@@ -93,7 +93,7 @@ int main( int argc, char** argv )
         XSync(dpy, False);
         XCloseDisplay(dpy);
     }
-    else
+    else*/
     {
         size_t buff_size = 0;
         int i;

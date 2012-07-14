@@ -79,7 +79,7 @@ static void
 response_event(GtkDialog *widget, gint arg1, Panel* panel )
 {
     switch (arg1) {
-    /* FIXME: what will happen if the user exit lxpanel without
+    /* FIXME: what will happen if the user exit lxpanelx without
               close this config dialog?
               Then the config won't be save, I guess. */
     case GTK_RESPONSE_DELETE_EVENT:
@@ -1201,8 +1201,8 @@ panel_global_config_save(Panel* p, FILE *fp)
     if (lxpanel_is_in_kiosk_mode())
         return;
 
-    fprintf(fp, "# lxpanel <profile> config file. Manually editing is not recommended.\n"
-                "# Use preference dialog in lxpanel to adjust config when you can.\n\n");
+    fprintf(fp, "# lxpanelx <profile> config file. Manually editing is not recommended.\n"
+                "# Use preference dialog in lxpanelx to adjust config when you can.\n\n");
     lxpanel_put_line(fp, "Global {");
     lxpanel_put_str(fp, "Edge", num2str(edge_pair, p->edge, "none"));
     lxpanel_put_str(fp, "Align", num2str(align_pair, p->align, "none"));

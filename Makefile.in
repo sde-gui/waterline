@@ -53,7 +53,7 @@ host_triplet = @host@
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/lxpanel.pc.in $(top_srcdir)/configure \
+	$(srcdir)/lxpanelx.pc.in $(top_srcdir)/configure \
 	$(top_srcdir)/data/default/panels/panel.in ABOUT-NLS AUTHORS \
 	COPYING ChangeLog INSTALL NEWS compile config.guess config.sub \
 	depcomp install-sh ltmain.sh missing
@@ -66,7 +66,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = lxpanel.pc data/default/panels/panel
+CONFIG_CLEAN_FILES = lxpanelx.pc data/default/panels/panel
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
@@ -233,7 +233,7 @@ LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
-LXPANEL_MODULE = @LXPANEL_MODULE@
+LXPANELX_MODULE = @LXPANELX_MODULE@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MENU_CACHE_CFLAGS = @MENU_CACHE_CFLAGS@
@@ -341,10 +341,10 @@ EXTRA_DIST = \
         intltool-extract.in \
         intltool-merge.in \
         intltool-update.in \
-        lxpanel.pc.in
+        lxpanelx.pc.in
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = lxpanel.pc
+pkgconfig_DATA = lxpanelx.pc
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -398,7 +398,7 @@ $(srcdir)/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-lxpanel.pc: $(top_builddir)/config.status $(srcdir)/lxpanel.pc.in
+lxpanelx.pc: $(top_builddir)/config.status $(srcdir)/lxpanelx.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 data/default/panels/panel: $(top_builddir)/config.status $(top_srcdir)/data/default/panels/panel.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@

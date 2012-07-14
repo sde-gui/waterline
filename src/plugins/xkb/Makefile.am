@@ -17,7 +17,7 @@ xkb_la_LIBADD = \
 
 xkb_la_LDFLAGS = \
 	-module \
-	@LXPANEL_MODULE@
+	@LXPANELX_MODULE@
 
 flagsdir=$(pkgdatadir)/images/xkb-flags
 flags_DATA= \

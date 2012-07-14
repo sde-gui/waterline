@@ -104,9 +104,9 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(default_configdir)" \
 	"$(DESTDIR)$(default_config_paneldir)" \
 	"$(DESTDIR)$(defaults_applicationsdir)" \
-	"$(DESTDIR)$(lxpanel_imagesdir)" "$(DESTDIR)$(uidir)"
+	"$(DESTDIR)$(lxpanelx_imagesdir)" "$(DESTDIR)$(uidir)"
 DATA = $(default_config_DATA) $(default_config_panel_DATA) \
-	$(defaults_applications_DATA) $(lxpanel_images_DATA) \
+	$(defaults_applications_DATA) $(lxpanelx_images_DATA) \
 	$(ui_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
@@ -174,7 +174,7 @@ LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
-LXPANEL_MODULE = @LXPANEL_MODULE@
+LXPANELX_MODULE = @LXPANELX_MODULE@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MENU_CACHE_CFLAGS = @MENU_CACHE_CFLAGS@
@@ -293,7 +293,7 @@ ui_DATA = $(ui_in_files:.glade=.ui)
 CLEANFILES = \
         $(ui_DATA)
 
-lxpanel_images_DATA = \
+lxpanelx_images_DATA = \
 	images/my-computer.png \
 	images/stock_volume.png \
 	images/file-manager.png \
@@ -328,7 +328,7 @@ lxpanel_images_DATA = \
 	images/clock.png \
 	images/cpufreq-icon.png
 
-lxpanel_imagesdir = $(pkgdatadir)/images
+lxpanelx_imagesdir = $(pkgdatadir)/images
 defaults_applications_DATA = \
 	defaults/applications/file-manager \
 	defaults/applications/terminal-emulator \
@@ -337,8 +337,8 @@ defaults_applications_DATA = \
 defaults_applicationsdir = $(pkgdatadir)/defaults/applications
 EXTRA_DIST = \
 	default/panels/panel.in \
-	$(lxpanel_DATA) \
-	$(lxpanel_images_DATA) \
+	$(lxpanelx_DATA) \
+	$(lxpanelx_images_DATA) \
 	$(ui_DATA) \
 	$(default_config_DATA) \
 	$(defaults_DATA)
@@ -445,27 +445,27 @@ uninstall-defaults_applicationsDATA:
 	@list='$(defaults_applications_DATA)'; test -n "$(defaults_applicationsdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(defaults_applicationsdir)'; $(am__uninstall_files_from_dir)
-install-lxpanel_imagesDATA: $(lxpanel_images_DATA)
+install-lxpanelx_imagesDATA: $(lxpanelx_images_DATA)
 	@$(NORMAL_INSTALL)
-	@list='$(lxpanel_images_DATA)'; test -n "$(lxpanel_imagesdir)" || list=; \
+	@list='$(lxpanelx_images_DATA)'; test -n "$(lxpanelx_imagesdir)" || list=; \
 	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(lxpanel_imagesdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(lxpanel_imagesdir)" || exit 1; \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(lxpanelx_imagesdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(lxpanelx_imagesdir)" || exit 1; \
 	fi; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(lxpanel_imagesdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(lxpanel_imagesdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(lxpanelx_imagesdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(lxpanelx_imagesdir)" || exit $$?; \
 	done
 
-uninstall-lxpanel_imagesDATA:
+uninstall-lxpanelx_imagesDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(lxpanel_images_DATA)'; test -n "$(lxpanel_imagesdir)" || list=; \
+	@list='$(lxpanelx_images_DATA)'; test -n "$(lxpanelx_imagesdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(lxpanel_imagesdir)'; $(am__uninstall_files_from_dir)
+	dir='$(DESTDIR)$(lxpanelx_imagesdir)'; $(am__uninstall_files_from_dir)
 install-uiDATA: $(ui_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(ui_DATA)'; test -n "$(uidir)" || list=; \
@@ -530,7 +530,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(default_configdir)" "$(DESTDIR)$(default_config_paneldir)" "$(DESTDIR)$(defaults_applicationsdir)" "$(DESTDIR)$(lxpanel_imagesdir)" "$(DESTDIR)$(uidir)"; do \
+	for dir in "$(DESTDIR)$(default_configdir)" "$(DESTDIR)$(default_config_paneldir)" "$(DESTDIR)$(defaults_applicationsdir)" "$(DESTDIR)$(lxpanelx_imagesdir)" "$(DESTDIR)$(uidir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -586,7 +586,7 @@ info-am:
 
 install-data-am: install-default_configDATA \
 	install-default_config_panelDATA \
-	install-defaults_applicationsDATA install-lxpanel_imagesDATA \
+	install-defaults_applicationsDATA install-lxpanelx_imagesDATA \
 	install-uiDATA
 
 install-dvi: install-dvi-am
@@ -634,7 +634,7 @@ ps-am:
 uninstall-am: uninstall-default_configDATA \
 	uninstall-default_config_panelDATA \
 	uninstall-defaults_applicationsDATA \
-	uninstall-lxpanel_imagesDATA uninstall-uiDATA
+	uninstall-lxpanelx_imagesDATA uninstall-uiDATA
 
 .MAKE: install-am install-strip
 
@@ -645,7 +645,7 @@ uninstall-am: uninstall-default_configDATA \
 	install-default_config_panelDATA \
 	install-defaults_applicationsDATA install-dvi install-dvi-am \
 	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-lxpanel_imagesDATA \
+	install-info install-info-am install-lxpanelx_imagesDATA \
 	install-man install-pdf install-pdf-am install-ps \
 	install-ps-am install-strip install-uiDATA installcheck \
 	installcheck-am installdirs maintainer-clean \
@@ -654,7 +654,7 @@ uninstall-am: uninstall-default_configDATA \
 	uninstall-default_configDATA \
 	uninstall-default_config_panelDATA \
 	uninstall-defaults_applicationsDATA \
-	uninstall-lxpanel_imagesDATA uninstall-uiDATA
+	uninstall-lxpanelx_imagesDATA uninstall-uiDATA
 
 
 # Generate GtkBuilder UI files from Glade files

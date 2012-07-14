@@ -51,10 +51,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = lxpanel$(EXEEXT) lxpanelctl$(EXEEXT)
+bin_PROGRAMS = lxpanelx$(EXEEXT) lxpanelxctl$(EXEEXT)
 noinst_PROGRAMS = xml-purge$(EXEEXT)
 subdir = src
-DIST_COMMON = $(am__lxpanel_include_HEADERS_DIST) \
+DIST_COMMON = $(am__lxpanelx_include_HEADERS_DIST) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -67,9 +67,9 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(lxpanel_includedir)"
+	"$(DESTDIR)$(lxpanelx_includedir)"
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
-am__lxpanel_SOURCES_DIST = misc.c misc.h defaultapplications.c \
+am__lxpanelx_SOURCES_DIST = misc.c misc.h defaultapplications.c \
 	defaultapplications.h libfm.c libfm.h bg.c bg.h commands.c \
 	commands.h configparser.c configparser.h generic_config_dlg.c \
 	Xsupport.c Xsupport.h pixbuf-stuff.c pixbuf-stuff.h \
@@ -78,26 +78,26 @@ am__lxpanel_SOURCES_DIST = misc.c misc.h defaultapplications.c \
 	plugin.c plugin.h gtk-run.c menu-policy.h menu-policy.c
 @ENABLE_MENU_CACHE_TRUE@am__objects_1 = gtk-run.$(OBJEXT) \
 @ENABLE_MENU_CACHE_TRUE@	menu-policy.$(OBJEXT)
-am_lxpanel_OBJECTS = misc.$(OBJEXT) defaultapplications.$(OBJEXT) \
+am_lxpanelx_OBJECTS = misc.$(OBJEXT) defaultapplications.$(OBJEXT) \
 	libfm.$(OBJEXT) bg.$(OBJEXT) commands.$(OBJEXT) \
 	configparser.$(OBJEXT) generic_config_dlg.$(OBJEXT) \
 	Xsupport.$(OBJEXT) pixbuf-stuff.$(OBJEXT) \
 	configurator.$(OBJEXT) dbg.$(OBJEXT) ev.$(OBJEXT) \
 	gtkbar.$(OBJEXT) icon-grid.$(OBJEXT) panel.$(OBJEXT) \
 	plugin.$(OBJEXT) $(am__objects_1)
-lxpanel_OBJECTS = $(am_lxpanel_OBJECTS)
+lxpanelx_OBJECTS = $(am_lxpanelx_OBJECTS)
 am__DEPENDENCIES_1 =
-lxpanel_DEPENDENCIES = $(BUILTIN_PLUGINS) $(am__DEPENDENCIES_1) \
+lxpanelx_DEPENDENCIES = $(BUILTIN_PLUGINS) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
-lxpanel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+lxpanelx_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(lxpanel_LDFLAGS) $(LDFLAGS) -o $@
-am_lxpanelctl_OBJECTS = lxpanelctl.$(OBJEXT)
-lxpanelctl_OBJECTS = $(am_lxpanelctl_OBJECTS)
-lxpanelctl_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(lxpanelx_LDFLAGS) $(LDFLAGS) -o $@
+am_lxpanelxctl_OBJECTS = lxpanelctl.$(OBJEXT)
+lxpanelxctl_OBJECTS = $(am_lxpanelxctl_OBJECTS)
+lxpanelxctl_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_xml_purge_OBJECTS = xml_purge-xml-purge.$(OBJEXT)
 xml_purge_OBJECTS = $(am_xml_purge_OBJECTS)
 xml_purge_DEPENDENCIES =
@@ -130,9 +130,9 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN     " $@;
-SOURCES = $(lxpanel_SOURCES) $(lxpanelctl_SOURCES) \
+SOURCES = $(lxpanelx_SOURCES) $(lxpanelxctl_SOURCES) \
 	$(xml_purge_SOURCES)
-DIST_SOURCES = $(am__lxpanel_SOURCES_DIST) $(lxpanelctl_SOURCES) \
+DIST_SOURCES = $(am__lxpanelx_SOURCES_DIST) $(lxpanelxctl_SOURCES) \
 	$(xml_purge_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
@@ -146,7 +146,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__lxpanel_include_HEADERS_DIST =  \
+am__lxpanelx_include_HEADERS_DIST =  \
 	$(top_srcdir)/include/lxpanel/plugin.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -175,7 +175,7 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-HEADERS = $(lxpanel_include_HEADERS)
+HEADERS = $(lxpanelx_include_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -275,7 +275,7 @@ LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
-LXPANEL_MODULE = @LXPANEL_MODULE@
+LXPANELX_MODULE = @LXPANELX_MODULE@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MENU_CACHE_CFLAGS = @MENU_CACHE_CFLAGS@
@@ -394,7 +394,7 @@ BUILTIN_PLUGINS = $(top_builddir)/src/plugins/libbuiltin_plugins.a
 @ENABLE_MENU_CACHE_TRUE@	gtk-run.c \
 @ENABLE_MENU_CACHE_TRUE@	menu-policy.h menu-policy.c
 
-lxpanel_SOURCES = \
+lxpanelx_SOURCES = \
 	misc.c misc.h \
 	defaultapplications.c defaultapplications.h \
 	libfm.c libfm.h \
@@ -414,17 +414,17 @@ lxpanel_SOURCES = \
 	$(MENU_SOURCES)
 
 @BUILD_PLUGIN_LOADER_TRUE@DYNAMIC_FLAGS = -export-dynamic
-@BUILD_PLUGIN_LOADER_TRUE@lxpanel_includedir = $(pkgincludedir)
-@BUILD_PLUGIN_LOADER_TRUE@lxpanel_include_HEADERS = $(top_srcdir)/include/lxpanel/plugin.h
-lxpanel_LDFLAGS = $(DYNAMIC_FLAGS)
-lxpanel_LDADD = \
+@BUILD_PLUGIN_LOADER_TRUE@lxpanelx_includedir = $(pkgincludedir)
+@BUILD_PLUGIN_LOADER_TRUE@lxpanelx_include_HEADERS = $(top_srcdir)/include/lxpanel/plugin.h
+lxpanelx_LDFLAGS = $(DYNAMIC_FLAGS)
+lxpanelx_LDADD = \
 		$(BUILTIN_PLUGINS) \
 		$(PACKAGE_LIBS) \
 		$(X11_LIBS) \
 		$(INTLLIBS)
 
-lxpanelctl_SOURCES = lxpanelctl.c lxpanelctl.h
-lxpanelctl_LDADD = $(X11_LIBS) $(INTLLIBS)
+lxpanelxctl_SOURCES = lxpanelctl.c lxpanelctl.h
+lxpanelxctl_LDADD = $(X11_LIBS) $(INTLLIBS)
 xml_purge_SOURCES = xml-purge.c
 xml_purge_CFLAGS = @PACKAGE_CFLAGS@
 xml_purge_LDADD = @PACKAGE_LIBS@
@@ -520,12 +520,12 @@ clean-noinstPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-lxpanel$(EXEEXT): $(lxpanel_OBJECTS) $(lxpanel_DEPENDENCIES) $(EXTRA_lxpanel_DEPENDENCIES) 
-	@rm -f lxpanel$(EXEEXT)
-	$(AM_V_CCLD)$(lxpanel_LINK) $(lxpanel_OBJECTS) $(lxpanel_LDADD) $(LIBS)
-lxpanelctl$(EXEEXT): $(lxpanelctl_OBJECTS) $(lxpanelctl_DEPENDENCIES) $(EXTRA_lxpanelctl_DEPENDENCIES) 
-	@rm -f lxpanelctl$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(lxpanelctl_OBJECTS) $(lxpanelctl_LDADD) $(LIBS)
+lxpanelx$(EXEEXT): $(lxpanelx_OBJECTS) $(lxpanelx_DEPENDENCIES) $(EXTRA_lxpanelx_DEPENDENCIES) 
+	@rm -f lxpanelx$(EXEEXT)
+	$(AM_V_CCLD)$(lxpanelx_LINK) $(lxpanelx_OBJECTS) $(lxpanelx_LDADD) $(LIBS)
+lxpanelxctl$(EXEEXT): $(lxpanelxctl_OBJECTS) $(lxpanelxctl_DEPENDENCIES) $(EXTRA_lxpanelxctl_DEPENDENCIES) 
+	@rm -f lxpanelxctl$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(lxpanelxctl_OBJECTS) $(lxpanelxctl_LDADD) $(LIBS)
 xml-purge$(EXEEXT): $(xml_purge_OBJECTS) $(xml_purge_DEPENDENCIES) $(EXTRA_xml_purge_DEPENDENCIES) 
 	@rm -f xml-purge$(EXEEXT)
 	$(AM_V_CCLD)$(xml_purge_LINK) $(xml_purge_OBJECTS) $(xml_purge_LDADD) $(LIBS)
@@ -597,27 +597,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-lxpanel_includeHEADERS: $(lxpanel_include_HEADERS)
+install-lxpanelx_includeHEADERS: $(lxpanelx_include_HEADERS)
 	@$(NORMAL_INSTALL)
-	@list='$(lxpanel_include_HEADERS)'; test -n "$(lxpanel_includedir)" || list=; \
+	@list='$(lxpanelx_include_HEADERS)'; test -n "$(lxpanelx_includedir)" || list=; \
 	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(lxpanel_includedir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(lxpanel_includedir)" || exit 1; \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(lxpanelx_includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(lxpanelx_includedir)" || exit 1; \
 	fi; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(lxpanel_includedir)'"; \
-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(lxpanel_includedir)" || exit $$?; \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(lxpanelx_includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(lxpanelx_includedir)" || exit $$?; \
 	done
 
-uninstall-lxpanel_includeHEADERS:
+uninstall-lxpanelx_includeHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(lxpanel_include_HEADERS)'; test -n "$(lxpanel_includedir)" || list=; \
+	@list='$(lxpanelx_include_HEADERS)'; test -n "$(lxpanelx_includedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(lxpanel_includedir)'; $(am__uninstall_files_from_dir)
+	dir='$(DESTDIR)$(lxpanelx_includedir)'; $(am__uninstall_files_from_dir)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run 'make' without going through this Makefile.
@@ -832,7 +832,7 @@ check: check-recursive
 all-am: Makefile $(PROGRAMS) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lxpanel_includedir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lxpanelx_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -888,7 +888,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-lxpanel_includeHEADERS
+install-data-am: install-lxpanelx_includeHEADERS
 
 install-dvi: install-dvi-recursive
 
@@ -934,7 +934,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-lxpanel_includeHEADERS
+uninstall-am: uninstall-binPROGRAMS uninstall-lxpanelx_includeHEADERS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) \
 	cscopelist-recursive ctags-recursive install-am install-strip \
@@ -949,14 +949,14 @@ uninstall-am: uninstall-binPROGRAMS uninstall-lxpanel_includeHEADERS
 	install install-am install-binPROGRAMS install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
-	install-info-am install-lxpanel_includeHEADERS install-man \
+	install-info-am install-lxpanelx_includeHEADERS install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	installdirs-am maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
 	uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-lxpanel_includeHEADERS
+	uninstall-lxpanelx_includeHEADERS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

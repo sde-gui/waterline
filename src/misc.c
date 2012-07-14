@@ -1372,7 +1372,7 @@ static gchar * _get_resource_path(RESOURCE_TYPE restype, gboolean private, va_li
     args[i++] = prefix;
 
     if (private)
-        args[i++] = "lxpanel";
+        args[i++] = "lxpanelx";
 
     char * arg;
     do {

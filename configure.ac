@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(lxpanel, 0.6.0-alpha, http://code.google.com/p/lxpanelx/)
+AC_INIT(lxpanelx, 0.6.0-alpha, http://code.google.com/p/lxpanelx/)
 AM_INIT_AUTOMAKE
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_CONFIG_SRCDIR([src/bg.c])
@@ -184,10 +184,10 @@ if test ! -z "$LDFLAGS"; then
     LDFLAGS=`echo "$LDFLAGS" | sed -e 's/-Wl,-z,defs//'`
 fi
 
-LXPANEL_MODULE="-avoid-version \
+LXPANELX_MODULE="-avoid-version \
 -rpath \$(pkglibdir)/plugins \
 -no-undefined "'-export-symbols-regex "^[[^_]].*"'
-AC_SUBST(LXPANEL_MODULE)
+AC_SUBST(LXPANELX_MODULE)
 
 AC_ARG_ENABLE([alsa],
     AS_HELP_STRING([--disable-alsa],
@@ -368,7 +368,7 @@ AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([bzero memset mkdir setlocale strchr])
 
 
-GETTEXT_PACKAGE=lxpanel
+GETTEXT_PACKAGE=lxpanelx
 #AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.14.1)
 AC_SUBST(GETTEXT_PACKAGE)
@@ -393,7 +393,7 @@ fi
 AM_CONDITIONAL(ENABLE_REGENERATE_MAN, test "x$enable_man" != "xno")
 
 AC_CONFIG_FILES([
-    lxpanel.pc
+    lxpanelx.pc
     Makefile
     src/Makefile
     src/libexec/Makefile
@@ -417,7 +417,7 @@ AC_CONFIG_FILES([
 AC_OUTPUT
 
 echo
-echo lxpanel ......................... : Version $VERSION
+echo lxpanelx ........................ : Version $VERSION
 echo
 echo Prefix........................... : $prefix
 if test x$plugins_loading = xyes; then
@@ -469,9 +469,9 @@ echo 'X11_LIBS          = ' $X11_LIBS
 echo 'LDFLAGS           = ' $LDFLAGS
 echo 'CFLAGS            = ' $CFLAGS
 
-echo
-echo 'LXPanel requires menu-cache and lxmenu-data packages since'
-echo 'version 0.4.0. Please make sure they are correctly installed.'
-echo 'Otherwise, you will not be able to use applications menu.'
-echo
+#echo
+#echo 'LXPanelX requires menu-cache and lxmenu-data packages since'
+#echo 'version 0.4.0. Please make sure they are correctly installed.'
+#echo 'Otherwise, you will not be able to use applications menu.'
+#echo
 

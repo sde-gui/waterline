@@ -29,7 +29,7 @@ netstatus_la_LIBADD = \
 
 netstatus_la_LDFLAGS = \
 	-module \
-	$(LXPANEL_MODULE)
+	$(LXPANELX_MODULE)
 
 install-exec-hook:
 	rm -f "$(moduledir)\*.la" *.a

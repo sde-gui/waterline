@@ -2,7 +2,7 @@
 
 SUBDIRS = plugins libexec
 
-bin_PROGRAMS = lxpanel lxpanelctl
+bin_PROGRAMS = lxpanelx lxpanelxctl
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -24,7 +24,7 @@ MENU_SOURCES = \
 	menu-policy.h menu-policy.c
 endif
 
-lxpanel_SOURCES = \
+lxpanelx_SOURCES = \
 	misc.c misc.h \
 	defaultapplications.c defaultapplications.h \
 	libfm.c libfm.h \
@@ -45,19 +45,19 @@ lxpanel_SOURCES = \
 
 if BUILD_PLUGIN_LOADER
 DYNAMIC_FLAGS = -export-dynamic
-lxpanel_includedir = $(pkgincludedir)
-lxpanel_include_HEADERS = $(top_srcdir)/include/lxpanel/plugin.h
+lxpanelx_includedir = $(pkgincludedir)
+lxpanelx_include_HEADERS = $(top_srcdir)/include/lxpanel/plugin.h
 endif
-lxpanel_LDFLAGS = $(DYNAMIC_FLAGS)
+lxpanelx_LDFLAGS = $(DYNAMIC_FLAGS)
 
-lxpanel_LDADD = \
+lxpanelx_LDADD = \
 		$(BUILTIN_PLUGINS) \
 		$(PACKAGE_LIBS) \
 		$(X11_LIBS) \
 		$(INTLLIBS)
 
-lxpanelctl_SOURCES = lxpanelctl.c lxpanelctl.h
-lxpanelctl_LDADD = $(X11_LIBS) $(INTLLIBS)
+lxpanelxctl_SOURCES = lxpanelctl.c lxpanelctl.h
+lxpanelxctl_LDADD = $(X11_LIBS) $(INTLLIBS)
 
 noinst_PROGRAMS=xml-purge
 xml_purge_SOURCES=xml-purge.c

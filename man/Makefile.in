@@ -170,7 +170,7 @@ LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
-LXPANEL_MODULE = @LXPANEL_MODULE@
+LXPANELX_MODULE = @LXPANELX_MODULE@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MENU_CACHE_CFLAGS = @MENU_CACHE_CFLAGS@
@@ -272,12 +272,12 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 man_MANS = \
-	lxpanel.1 \
-	lxpanelctl.1
+	lxpanelx.1 \
+	lxpanelxctl.1
 
 man_XMANS = \
-	lxpanel.xml \
-	lxpanelctl.xml
+	lxpanelx.xml \
+	lxpanelxctl.xml
 
 EXTRA_DIST = \
 	$(man_MANS) \
@@ -539,10 +539,10 @@ uninstall-man: uninstall-man1
 	uninstall uninstall-am uninstall-man uninstall-man1
 
 
-@ENABLE_REGENERATE_MAN_TRUE@lxpanel.1: lxpanel.xml
+@ENABLE_REGENERATE_MAN_TRUE@lxpanelx.1: lxpanelx.xml
 @ENABLE_REGENERATE_MAN_TRUE@	$(XSLTPROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
 
-@ENABLE_REGENERATE_MAN_TRUE@lxpanelctl.1: lxpanelctl.xml
+@ENABLE_REGENERATE_MAN_TRUE@lxpanelxctl.1: lxpanelxctl.xml
 @ENABLE_REGENERATE_MAN_TRUE@	$(XSLTPROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<        
 
 @ENABLE_REGENERATE_MAN_FALSE@$(man_MANS):

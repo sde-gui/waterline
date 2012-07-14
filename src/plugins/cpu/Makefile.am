@@ -16,4 +16,4 @@ cpu_la_LIBADD = \
 
 cpu_la_LDFLAGS = \
 	-module \
-	@LXPANEL_MODULE@
+	@LXPANELX_MODULE@

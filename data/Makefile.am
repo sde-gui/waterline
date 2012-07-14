@@ -23,7 +23,7 @@ CLEANFILES = \
         $(ui_DATA)
 
 
-lxpanel_images_DATA = \
+lxpanelx_images_DATA = \
 	images/my-computer.png \
 	images/stock_volume.png \
 	images/file-manager.png \
@@ -59,7 +59,7 @@ lxpanel_images_DATA = \
 	images/cpufreq-icon.png
 
 
-lxpanel_imagesdir = $(pkgdatadir)/images
+lxpanelx_imagesdir = $(pkgdatadir)/images
 
 defaults_applications_DATA = \
 	defaults/applications/file-manager \
@@ -70,8 +70,8 @@ defaults_applicationsdir = $(pkgdatadir)/defaults/applications
 
 EXTRA_DIST = \
 	default/panels/panel.in \
-	$(lxpanel_DATA) \
-	$(lxpanel_images_DATA) \
+	$(lxpanelx_DATA) \
+	$(lxpanelx_images_DATA) \
 	$(ui_DATA) \
 	$(default_config_DATA) \
 	$(defaults_DATA)

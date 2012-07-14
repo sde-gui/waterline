@@ -1,5 +1,5 @@
-# lxpanel <profile> config file. Manually editing is not recommended.
-# Use preference dialog in lxpanel to adjust config when you can.
+# lxpanelx <profile> config file. Manually editing is not recommended.
+# Use preference dialog in lxpanelx to adjust config when you can.
 
 Global {
     edge=bottom
@@ -16,7 +16,7 @@ Global {
     usefontcolor=0
     fontcolor=#ffffff
     background=0
-    backgroundfile=@prefix@/share/lxpanel/images/background.png
+    backgroundfile=@prefix@/share/lxpanelx/images/background.png
 }
 
 Plugin {

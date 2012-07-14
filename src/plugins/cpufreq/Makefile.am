@@ -16,4 +16,4 @@ cpufreq_la_LIBADD = \
 
 cpufreq_la_LDFLAGS = \
 	-module \
-	@LXPANEL_MODULE@
+	@LXPANELX_MODULE@

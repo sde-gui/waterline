@@ -1,10 +1,10 @@
 man_MANS = \
-	lxpanel.1 \
-	lxpanelctl.1
+	lxpanelx.1 \
+	lxpanelxctl.1
 
 man_XMANS = \
-	lxpanel.xml \
-	lxpanelctl.xml
+	lxpanelx.xml \
+	lxpanelxctl.xml
 
 EXTRA_DIST = \
 	$(man_MANS) \
@@ -13,10 +13,10 @@ EXTRA_DIST = \
 
 if ENABLE_REGENERATE_MAN
 
-lxpanel.1: lxpanel.xml
+lxpanelx.1: lxpanelx.xml
 	$(XSLTPROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
 
-lxpanelctl.1: lxpanelctl.xml
+lxpanelxctl.1: lxpanelxctl.xml
 	$(XSLTPROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<        
 
 CLEANFILES = $(man_MANS) 

@@ -19,4 +19,4 @@ batt_la_LIBADD = \
 
 batt_la_LDFLAGS = \
 	-module \
-	@LXPANEL_MODULE@
+	@LXPANELX_MODULE@

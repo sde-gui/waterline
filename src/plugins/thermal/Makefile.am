@@ -16,4 +16,4 @@ thermal_la_LIBADD = \
 
 thermal_la_LDFLAGS = \
 	-module \
-	@LXPANEL_MODULE@
+	@LXPANELX_MODULE@

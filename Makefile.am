@@ -8,10 +8,10 @@ EXTRA_DIST = \
         intltool-extract.in \
         intltool-merge.in \
         intltool-update.in \
-        lxpanel.pc.in
+        lxpanelx.pc.in
 
 pkgconfigdir   = $(libdir)/pkgconfig
-pkgconfig_DATA = lxpanel.pc
+pkgconfig_DATA = lxpanelx.pc
 
 ##desktopdir = $(datadir)/applications
 ##desktop_DATA = pcmanfm.desktop

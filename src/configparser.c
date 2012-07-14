@@ -158,9 +158,22 @@ lxpanel_put_line(FILE* fp, const char* format, ...)
     return (ret + 1);
 }
 
+#define VARNAME_ALIGN 20
+
 extern int
 lxpanel_put_str( FILE* fp, const char* name, const char* val )
 {
+    char s[VARNAME_ALIGN+1];
+    int l = strlen(name);
+    if (l < VARNAME_ALIGN-1)
+    {
+        memcpy(s, name, l);
+        for (; l < VARNAME_ALIGN; l++)
+            s[l] = ' ';
+        s[VARNAME_ALIGN] = 0;
+        name = s;
+    }
+
     if( G_UNLIKELY( !val || !*val ) )
         return 0;
     return lxpanel_put_line( fp, "%s = %s", name, val );
@@ -169,18 +182,51 @@ lxpanel_put_str( FILE* fp, const char* name, const char* val )
 extern int
 lxpanel_put_bool( FILE* fp, const char* name, gboolean val )
 {
+    char s[VARNAME_ALIGN+1];
+    int l = strlen(name);
+    if (l < VARNAME_ALIGN-1)
+    {
+        memcpy(s, name, l);
+        for (; l < VARNAME_ALIGN; l++)
+            s[l] = ' ';
+        s[VARNAME_ALIGN] = 0;
+        name = s;
+    }
+
     return lxpanel_put_line( fp, "%s = %c", name, val ? '1' : '0' );
 }
 
 extern int
 lxpanel_put_int( FILE* fp, const char* name, int val )
 {
+    char s[VARNAME_ALIGN+1];
+    int l = strlen(name);
+    if (l < VARNAME_ALIGN-1)
+    {
+        memcpy(s, name, l);
+        for (; l < VARNAME_ALIGN; l++)
+            s[l] = ' ';
+        s[VARNAME_ALIGN] = 0;
+        name = s;
+    }
+
     return lxpanel_put_line( fp, "%s = %d", name, val );
 }
 
 extern int
 lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair)
 {
+    char s[VARNAME_ALIGN+1];
+    int l = strlen(name);
+    if (l < VARNAME_ALIGN-1)
+    {
+        memcpy(s, name, l);
+        for (; l < VARNAME_ALIGN; l++)
+            s[l] = ' ';
+        s[VARNAME_ALIGN] = 0;
+        name = s;
+    }
+
     return lxpanel_put_str(fp, name, num2str(pair, val, NULL));
 }
 

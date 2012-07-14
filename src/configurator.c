@@ -1307,7 +1307,7 @@ char* get_config_file( const char* profile, const char* file_name, gboolean is_g
     }
     else
     {
-        char* dir = g_build_filename( g_get_user_config_dir(), "lxpanel" , profile, NULL);
+        char* dir = g_build_filename( g_get_user_config_dir(), "lxpanelx" , profile, NULL);
         /* make sure the private profile dir exists */
         /* FIXME: Should we do this everytime this func gets called?
          *        Maybe simply doing this before saving config files is enough. */

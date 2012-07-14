@@ -530,7 +530,64 @@ static Panel * panel_get_by_name(gchar * name)
     return NULL;
 }
 
-static void process_panel_command(Panel * panel, char ** argv, int argc)
+static void cmd_panel_visible(Panel * panel, char ** argv, int argc)
+{
+    gboolean visible = !panel->visible;
+
+    if (argc > 1)
+    {
+        if (strcmp(argv[1], "true") == 0 || strcmp(argv[1], "1") == 0)
+            visible = TRUE;
+        else if (strcmp(argv[1], "false") == 0 || strcmp(argv[1], "0") == 0)
+            visible = FALSE;
+    }
+
+    if (visible != panel->visible)
+    {
+        panel->visible = visible;
+        gtk_widget_set_visible(panel->topgwin, visible);
+        panel_set_wm_strut(panel);
+        panel_size_position_changed(panel, TRUE);
+        if (visible)
+        {
+            /* send it to running wm */
+            Xclimsg(panel->topxwin, a_NET_WM_DESKTOP, 0xFFFFFFFF, 0, 0, 0, 0);
+            /* and assign it ourself just for case when wm is not running */
+            guint32 val = 0xFFFFFFFF;
+            XChangeProperty(GDK_DISPLAY(), panel->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
+                  PropModeReplace, (unsigned char *) &val, 1);
+
+            Atom state[3];
+    
+            state[0] = a_NET_WM_STATE_SKIP_PAGER;
+            state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
+            state[2] = a_NET_WM_STATE_STICKY;
+            XChangeProperty(GDK_DISPLAY(), panel->topxwin, a_NET_WM_STATE, XA_ATOM,
+                  32, PropModeReplace, (unsigned char *) state, 3);
+        }
+    }
+}
+
+static void cmd_panel_autohide(Panel * panel, char ** argv, int argc)
+{
+    gboolean autohide = !panel->autohide;
+
+    if (argc > 1)
+    {
+        if (strcmp(argv[1], "true") == 0 || strcmp(argv[1], "1") == 0)
+            autohide = TRUE;
+        else if (strcmp(argv[1], "false") == 0 || strcmp(argv[1], "0") == 0)
+            autohide = FALSE;
+    }
+
+    if (autohide != panel->autohide)
+    {
+        panel->autohide = autohide;
+        update_panel_geometry(panel);
+    }
+}
+
+static void cmd_panel(Panel * panel, char ** argv, int argc)
 {
     if (!panel)
          return;
@@ -539,81 +596,22 @@ static void process_panel_command(Panel * panel, char ** argv, int argc)
         return;
 
     if (strcmp(argv[0], "visible") == 0)
-    {
-        gboolean visible = !panel->visible;
-
-        if (argc > 1)
-        {
-            if (strcmp(argv[1], "true") == 0 || strcmp(argv[1], "1") == 0)
-                visible = TRUE;
-            else if (strcmp(argv[1], "false") == 0 || strcmp(argv[1], "0") == 0)
-                visible = FALSE;
-        }
-
-        if (visible != panel->visible)
-        {
-            panel->visible = visible;
-            gtk_widget_set_visible(panel->topgwin, visible);
-            panel_set_wm_strut(panel);
-            panel_size_position_changed(panel, TRUE);
-            if (visible)
-            {
-                /* send it to running wm */
-                Xclimsg(panel->topxwin, a_NET_WM_DESKTOP, 0xFFFFFFFF, 0, 0, 0, 0);
-                /* and assign it ourself just for case when wm is not running */
-                guint32 val = 0xFFFFFFFF;
-                XChangeProperty(GDK_DISPLAY(), panel->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
-                      PropModeReplace, (unsigned char *) &val, 1);
-
-                Atom state[3];
-    
-                state[0] = a_NET_WM_STATE_SKIP_PAGER;
-                state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
-                state[2] = a_NET_WM_STATE_STICKY;
-                XChangeProperty(GDK_DISPLAY(), panel->topxwin, a_NET_WM_STATE, XA_ATOM,
-                      32, PropModeReplace, (unsigned char *) state, 3);
-            }
-        }
-    }
-
-    if (strcmp(argv[0], "autohide") == 0)
-    {
-        gboolean autohide = !panel->autohide;
-
-        if (argc > 1)
-        {
-            if (strcmp(argv[1], "true") == 0 || strcmp(argv[1], "1") == 0)
-                autohide = TRUE;
-            else if (strcmp(argv[1], "false") == 0 || strcmp(argv[1], "0") == 0)
-                autohide = FALSE;
-        }
-
-        if (autohide != panel->autohide)
-        {
-            panel->autohide = autohide;
-            update_panel_geometry(panel);
-        }
-    }
+        cmd_panel_visible(panel, argv, argc);
+    else if (strcmp(argv[0], "autohide") == 0)
+        cmd_panel_autohide(panel, argv, argc);
 }
 
-static void process_command(char ** argv, int argc)
+
+static void cmd_run(char ** argv, int argc)
 {
-    //g_print("%s\n", argv[0]);
-
-    if (argc < 1)
-        return;
-
-    if (strcmp(argv[0], "panel") == 0 && argc > 1)
-    {
-        Panel * p = panel_get_by_name(argv[1]);
-        process_panel_command(p, argv + 2, argc - 2);
-    }
-    else if (strcmp(argv[0], "run") == 0)
-    {
+#ifndef DISABLE_MENU
         gtk_run();
-    }
-    else if (strcmp(argv[0], "menu") == 0)
-    {
+#endif
+}
+
+static void cmd_menu(char ** argv, int argc)
+{
+#ifndef DISABLE_MENU
         GSList* l;
         for( l = all_panels; l; l = l->next )
         {
@@ -627,70 +625,75 @@ static void process_command(char ** argv, int argc)
                                p->system_menus->data );
             }
         }
-    }
-    else if (strcmp(argv[0], "config") == 0)
-    {
-        Panel * p = ((all_panels != NULL) ? all_panels->data : NULL);
-        if (p != NULL)
-            panel_configure(p, 0);
-    }
-    else if (strcmp(argv[0], "restart") == 0)
-    {
-        restart();
-    }
-    else if (strcmp(argv[0], "exit") == 0)
-    {
-        gtk_main_quit();
-    }
-
+#endif
 }
+
+static void cmd_config(char ** argv, int argc)
+{
+    Panel * p = ((all_panels != NULL) ? all_panels->data : NULL);
+    if (p != NULL)
+        panel_configure(p, 0);
+}
+
+static void cmd_restart(char ** argv, int argc)
+{
+    restart();
+}
+
+static void cmd_exit(char ** argv, int argc)
+{
+    gtk_main_quit();
+}
+
+static void process_command(char ** argv, int argc)
+{
+    //g_print("%s\n", argv[0]);
+
+    if (argc < 1)
+        return;
+
+    if (strcmp(argv[0], "panel") == 0 && argc > 1)
+    {
+        Panel * p = panel_get_by_name(argv[1]);
+        cmd_panel(p, argv + 2, argc - 2);
+    }
+    else if (strcmp(argv[0], "run") == 0)
+        cmd_run(argv + 1, argc - 1);
+    else if (strcmp(argv[0], "menu") == 0)
+        cmd_menu(argv + 1, argc - 1);
+    else if (strcmp(argv[0], "config") == 0)
+        cmd_config(argv + 1, argc - 1);
+    else if (strcmp(argv[0], "restart") == 0)
+        cmd_restart(argv + 1, argc - 1);
+    else if (strcmp(argv[0], "exit") == 0)
+        cmd_exit(argv + 1, argc - 1);
+}
+
 #if 0
 static void process_client_msg ( XClientMessageEvent* ev )
 {
     int cmd = ev->data.b[0];
     switch( cmd )
     {
-#ifndef DISABLE_MENU
         case LXPANELX_CMD_SYS_MENU:
-        {
-            GSList* l;
-            for( l = all_panels; l; l = l->next )
-            {
-                Panel* p = (Panel*)l->data;
-                if( p->system_menus )
-                {
-                    /* show_system_menu( p->system_menus->data ); */
-                    /* FIXME: I've no idea why this doesn't work without timeout
-                              under some WMs, like icewm. */
-                    g_timeout_add( 200, (GSourceFunc)show_system_menu,
-                                   p->system_menus->data );
-                }
-            }
+            cmd_menu(0, 0);
             break;
-        }
-#endif
-
-#ifndef DISABLE_MENU
         case LXPANELX_CMD_RUN:
-            gtk_run();
+            cmd_run(0, 0);
             break;
-#endif
         case LXPANELX_CMD_CONFIG:
-        {
-            Panel * p = ((all_panels != NULL) ? all_panels->data : NULL);
-            if (p != NULL)
-                panel_configure(p, 0);
+            cmd_config(0, 0);
             break;
-        }
         case LXPANELX_CMD_RESTART:
-            restart();
+            cmd_restart(0, 0);
             break;
         case LXPANELX_CMD_EXIT:
-            gtk_main_quit();
+            cmd_exit(0, 0);
             break;
     }
 }
 #endif
+
 /******************************************************************************/
 
 /*= panel's handlers for WM events =*/

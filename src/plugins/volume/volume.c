@@ -259,7 +259,6 @@ static int volume_constructor(Plugin *p, char **fp)
     skip_botton1_event = FALSE;
 
     ENTER;
-    s.len = 256;
     vol = g_new0(volume_t, 1);
     g_return_val_if_fail(vol != NULL, 0);
     p->priv = vol;

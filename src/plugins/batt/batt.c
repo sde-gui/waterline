@@ -378,7 +378,6 @@ constructor(Plugin *p, char **fp)
     lx_b->requestedBorder = 1;
 
     line s;
-    s.len = 256;
 
     if (fp) {
 

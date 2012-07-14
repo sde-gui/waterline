@@ -200,7 +200,6 @@ thermal_constructor(Plugin *p, char** fp)
           G_CALLBACK (plugin_button_press_event), (gpointer) p);
 
     line s;
-    s.len = 256;
 
     if (fp) {
         /* Apply options */

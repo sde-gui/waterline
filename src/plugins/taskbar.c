@@ -4638,7 +4638,6 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 
     /* Process configuration file. */
     line s;
-    s.len = 256;
     if( fp )
     {
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {

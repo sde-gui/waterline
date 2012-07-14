@@ -325,7 +325,6 @@ static int launchbutton_constructor(Plugin * p, char ** fp)
 
     /* Read parameters from the configuration file. */
     line s;
-    s.len = 256;
     if (fp != NULL)
     {
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
@@ -407,7 +406,6 @@ static int launchbar_constructor(Plugin * p, char ** fp)
     if (fp != NULL)
     {
         line s;
-        s.len = 256;
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
         {
             if (s.type == LINE_NONE)

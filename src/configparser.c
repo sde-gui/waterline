@@ -189,10 +189,13 @@ lxpanel_get_line(char**fp, line *s)
 {
     gchar *tmp, *tmp2;
 
+    s->ln = CONFIG_LINE_LENGTH;
+
     s->type = LINE_NONE;
     if (!fp)
         RET(s->type);
-    while (buf_gets(s->str, s->len, fp)) {
+
+    while (buf_gets(s->str, s->ln, fp)) {
 
         g_strstrip(s->str);
 
@@ -229,12 +232,15 @@ get_line_as_is(char** fp, line *s)
     gchar *tmp, *tmp2;
 
     ENTER;
+
+    s->ln = CONFIG_LINE_LENGTH;
+
     if (!fp) {
         s->type = LINE_NONE;
         RET(s->type);
     }
     s->type = LINE_NONE;
-    while (buf_gets(s->str, s->len, fp)) {
+    while (buf_gets(s->str, s->ln, fp)) {
         g_strstrip(s->str);
         if (s->str[0] == '#' || s->str[0] == 0)
         continue;

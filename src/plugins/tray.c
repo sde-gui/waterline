@@ -715,7 +715,6 @@ static int tray_constructor(Plugin * p, char ** fp)
 {
     /* Read configuration from file. */
     line s;
-    s.len = 256;
     if (fp != NULL)
     {
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)

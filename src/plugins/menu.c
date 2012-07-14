@@ -606,7 +606,6 @@ read_item(Plugin *p, char** fp)
     Command *cmd_entry = NULL;
 
     ENTER;
-    s.len = 256;
     name = fname = action = NULL;
 
     if( fp )
@@ -673,7 +672,6 @@ read_separator(Plugin *p, char **fp)
     line s;
 
     ENTER;
-    s.len = 256;
     if( fp )
     {
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
@@ -702,7 +700,6 @@ read_recently_used_menu(GtkMenu* menu, Plugin *p, char** fp)
     menup *m = (menup *)p->priv;
 
     line s;
-    s.len = 256;
     if( fp )
     {
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
@@ -810,7 +807,6 @@ read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
     gboolean show_tips = TRUE;
 
     line s;
-    s.len = 256;
     if( fp )
     {
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
@@ -901,7 +897,6 @@ read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
         m->reload_notify = menu_cache_add_reload_notify(m->menu_cache, (GFunc) on_reload_menu, m);
     }
 
-    s.len = 256;
     if( fp )
     {
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
@@ -926,7 +921,6 @@ read_include(Plugin *p, char **fp)
     menup *m = (menup *)p->priv;
     /* FIXME: this is disabled */
     ENTER;
-    s.len = 256;
     name = NULL;
     if( fp )
     {
@@ -964,7 +958,6 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
 
     ENTER;
 
-    s.len = 256;
     menu = gtk_menu_new ();
     gtk_container_set_border_width(GTK_CONTAINER(menu), 0);
 

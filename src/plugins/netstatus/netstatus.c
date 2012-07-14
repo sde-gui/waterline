@@ -111,7 +111,6 @@ netstatus_constructor(Plugin *p, char** fp)
     NetstatusIface* iface;
 
     ENTER;
-    s.len = 256;
     ns = g_new0(netstatus, 1);
     g_return_val_if_fail(ns != NULL, 0);
     p->priv = ns;

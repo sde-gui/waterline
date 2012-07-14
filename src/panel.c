@@ -1915,7 +1915,6 @@ static int
 panel_parse_global(Panel *p, char **fp)
 {
     line s;
-    s.len = 256;
 
     if( G_LIKELY( fp ) )
     {
@@ -2008,7 +2007,6 @@ panel_parse_plugin(Panel *p, char **fp)
     char* pconfig = NULL;
 
     ENTER;
-    s.len = 256;
     border = expand = padding = 0;
     while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
@@ -2086,7 +2084,6 @@ int panel_start( Panel *p, char **fp )
 
     /* parse global section */
     ENTER;
-    s.len = 256;
 
     if ((lxpanel_get_line(fp, &s) != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Global")) {
         ERR( "lxpanel: config file must start from Global section\n");

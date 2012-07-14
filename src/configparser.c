@@ -56,6 +56,8 @@ pair height_pair[] = {
 };
 
 pair bool_pair[] = {
+    { 0, "false" },
+    { 1, "true" },
     { 0, "0" },
     { 1, "1" },
     { 0, NULL },
@@ -193,7 +195,7 @@ lxpanel_put_bool( FILE* fp, const char* name, gboolean val )
         name = s;
     }
 
-    return lxpanel_put_line( fp, "%s = %c", name, val ? '1' : '0' );
+    return lxpanel_put_line( fp, "%s = %s", name, val ? "true" : "false" );
 }
 
 extern int

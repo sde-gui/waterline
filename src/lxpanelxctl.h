@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELCTL_H
-#define _LXPANELCTL_H
+#ifndef _LXPANELXCTL_H
+#define _LXPANELXCTL_H
 
 /* Commands controlling lxpanelx.
  * These are the parameter of a _LXPANEL_CMD ClientMessage to the root window.

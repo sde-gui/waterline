@@ -46,7 +46,7 @@ lxpanelx_SOURCES = \
 if BUILD_PLUGIN_LOADER
 DYNAMIC_FLAGS = -export-dynamic
 lxpanelx_includedir = $(pkgincludedir)
-lxpanelx_include_HEADERS = $(top_srcdir)/include/lxpanel/plugin.h
+lxpanelx_include_HEADERS = $(top_srcdir)/include/lxpanelx/plugin.h
 endif
 lxpanelx_LDFLAGS = $(DYNAMIC_FLAGS)
 
@@ -56,7 +56,7 @@ lxpanelx_LDADD = \
 		$(X11_LIBS) \
 		$(INTLLIBS)
 
-lxpanelxctl_SOURCES = lxpanelctl.c lxpanelctl.h
+lxpanelxctl_SOURCES = lxpanelxctl.c lxpanelxctl.h
 lxpanelxctl_LDADD = $(X11_LIBS) $(INTLLIBS)
 
 noinst_PROGRAMS=xml-purge

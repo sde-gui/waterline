@@ -18,7 +18,7 @@
 
 /* Remote controller of lxpanelx */
 
-#include "lxpanelctl.h"
+#include "lxpanelxctl.h"
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>

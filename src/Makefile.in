@@ -95,7 +95,7 @@ am__v_lt_0 = --silent
 lxpanelx_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(lxpanelx_LDFLAGS) $(LDFLAGS) -o $@
-am_lxpanelxctl_OBJECTS = lxpanelctl.$(OBJEXT)
+am_lxpanelxctl_OBJECTS = lxpanelxctl.$(OBJEXT)
 lxpanelxctl_OBJECTS = $(am_lxpanelxctl_OBJECTS)
 lxpanelxctl_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_xml_purge_OBJECTS = xml_purge-xml-purge.$(OBJEXT)
@@ -147,7 +147,7 @@ am__can_run_installinfo = \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 am__lxpanelx_include_HEADERS_DIST =  \
-	$(top_srcdir)/include/lxpanel/plugin.h
+	$(top_srcdir)/include/lxpanelx/plugin.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -415,7 +415,7 @@ lxpanelx_SOURCES = \
 
 @BUILD_PLUGIN_LOADER_TRUE@DYNAMIC_FLAGS = -export-dynamic
 @BUILD_PLUGIN_LOADER_TRUE@lxpanelx_includedir = $(pkgincludedir)
-@BUILD_PLUGIN_LOADER_TRUE@lxpanelx_include_HEADERS = $(top_srcdir)/include/lxpanel/plugin.h
+@BUILD_PLUGIN_LOADER_TRUE@lxpanelx_include_HEADERS = $(top_srcdir)/include/lxpanelx/plugin.h
 lxpanelx_LDFLAGS = $(DYNAMIC_FLAGS)
 lxpanelx_LDADD = \
 		$(BUILTIN_PLUGINS) \
@@ -423,7 +423,7 @@ lxpanelx_LDADD = \
 		$(X11_LIBS) \
 		$(INTLLIBS)
 
-lxpanelxctl_SOURCES = lxpanelctl.c lxpanelctl.h
+lxpanelxctl_SOURCES = lxpanelxctl.c lxpanelxctl.h
 lxpanelxctl_LDADD = $(X11_LIBS) $(INTLLIBS)
 xml_purge_SOURCES = xml-purge.c
 xml_purge_CFLAGS = @PACKAGE_CFLAGS@
@@ -549,7 +549,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/icon-grid.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfm.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lxpanelctl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lxpanelxctl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menu-policy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/panel.Po@am__quote@

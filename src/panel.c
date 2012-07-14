@@ -41,7 +41,7 @@
 #include "bg.h"
 #include "Xsupport.h"
 
-#include "lxpanelctl.h"
+#include "lxpanelxctl.h"
 #include "dbg.h"
 
 /******************************************************************************/

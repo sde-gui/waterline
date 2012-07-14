@@ -65,7 +65,7 @@ static gchar * indicator_order[][2] = {
 #define  IO_DATA_NAME                "indicator-name"
 #define  IO_DATA_ORDER_NUMBER        "indicator-order-number"
 
-#define LOG_FILE_NAME  "lxpanel-indicator-plugin.log"
+#define LOG_FILE_NAME  "lxpanelx-indicator-plugin.log"
 
 GOutputStream * log_file = NULL;
 

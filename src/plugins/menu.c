@@ -42,7 +42,7 @@
 
 #include "dbg.h"
 
-//#define DEFAULT_MENU_ICON PACKAGE_DATA_DIR "/lxpanel/images/my-computer.png"
+//#define DEFAULT_MENU_ICON PACKAGE_DATA_DIR "/lxpanelx/images/my-computer.png"
 #define DEFAULT_MENU_ICON "start-here"
 
 

@@ -19,7 +19,7 @@
 #ifndef _LXPANELCTL_H
 #define _LXPANELCTL_H
 
-/* Commands controlling lxpanel.
+/* Commands controlling lxpanelx.
  * These are the parameter of a _LXPANEL_CMD ClientMessage to the root window.
  * Endianness alert:  Note that the parameter is in b[0], not l[0]. */
 typedef enum {

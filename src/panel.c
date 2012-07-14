@@ -670,7 +670,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
     DBG("win = 0x%x\n", ev->xproperty.window);
     if (ev->type != PropertyNotify )
     {
-        /* private client message from lxpanelctl */
+        /* private client message from lxpanelxctl */
         if( ev->type == ClientMessage && ev->xproperty.atom == a_LXPANEL_CMD )
         {
             process_client_msg( (XClientMessageEvent*)ev );
@@ -1645,7 +1645,7 @@ panel_start_gui(Panel *p)
 
     gtk_container_set_border_width(GTK_CONTAINER(p->topgwin), 0);
     gtk_window_set_resizable(GTK_WINDOW(p->topgwin), FALSE);
-    gtk_window_set_wmclass(GTK_WINDOW(p->topgwin), "panel", "lxpanel");
+    gtk_window_set_wmclass(GTK_WINDOW(p->topgwin), "panel", "lxpanelx");
     gtk_window_set_title(GTK_WINDOW(p->topgwin), "panel");
     gtk_window_set_position(GTK_WINDOW(p->topgwin), GTK_WIN_POS_NONE);
     gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);

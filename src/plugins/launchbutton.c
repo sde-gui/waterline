@@ -760,7 +760,7 @@ static int lb_constructor(Plugin *p, char **fp)
           lb->f = g_strdup(v);
 
     if (!lb->title) {
-        //DEFAULT_STRING(icon_path, PACKAGE_DATA_DIR "/lxpanel/images/my-computer.png");
+        //DEFAULT_STRING(icon_path, PACKAGE_DATA_DIR "/lxpanelx/images/my-computer.png");
         DEFAULT_STRING(icon_path, "application-x-executable");
     } else {
         DEFAULT_STRING(icon_path, "");

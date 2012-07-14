@@ -16,7 +16,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* Remote controller of lxpanel */
+/* Remote controller of lxpanelx */
 
 #include "lxpanelctl.h"
 #include <X11/Xlib.h>
@@ -29,14 +29,14 @@
 static Display* dpy;
 
 static const char usage[] =
-        "\nlxpanelctl - LXPanel Controller\n"
-        "Usage: lxpanelctl <command>\n\n"
+        "\nlxpanelxctl - LXPanelX Controller\n"
+        "Usage: lxpanelxctl <command>\n\n"
         "Available commands:\n"
         "menu\tshow system menu\n"
         "run\tshow run dialog\n"
         "config\tshow configuration dialog\n"
-        "restart\trestart lxpanel\n"
-        "exit\texit lxpanel\n\n";
+        "restart\trestart lxpanelx\n"
+        "exit\texit lxpanelx\n\n";
 
 static int get_cmd( const char* cmd )
 {

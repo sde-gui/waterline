@@ -41,15 +41,15 @@ static const char usage[] =
 static int get_cmd( const char* cmd )
 {
     if( ! strcmp( cmd, "menu") )
-        return LXPANEL_CMD_SYS_MENU;
+        return LXPANELX_CMD_SYS_MENU;
     else if( ! strcmp( cmd, "run") )
-        return LXPANEL_CMD_RUN;
+        return LXPANELX_CMD_RUN;
     else if( ! strcmp( cmd, "config") )
-        return LXPANEL_CMD_CONFIG;
+        return LXPANELX_CMD_CONFIG;
     else if( ! strcmp( cmd, "restart") )
-        return LXPANEL_CMD_RESTART;
+        return LXPANELX_CMD_RESTART;
     else if( ! strcmp( cmd, "exit") )
-        return LXPANEL_CMD_EXIT;
+        return LXPANELX_CMD_EXIT;
     return -1;
 }
 
@@ -79,7 +79,7 @@ int main( int argc, char** argv )
             exit(1);
         }
         root = DefaultRootWindow(dpy);
-        cmd_atom = XInternAtom(dpy, "_LXPANEL_CMD", False);
+        cmd_atom = XInternAtom(dpy, "_LXPANELX_CMD", False);
         memset(&ev, '\0', sizeof ev);
         ev.xclient.type = ClientMessage;
         ev.xclient.window = root;
@@ -119,7 +119,7 @@ int main( int argc, char** argv )
             exit(1);
         }
         root = DefaultRootWindow(dpy);
-        cmd_atom = XInternAtom(dpy, "_LXPANEL_TEXT_CMD", False);
+        cmd_atom = XInternAtom(dpy, "_LXPANELX_TEXT_CMD", False);
 
         Atom type_atom = XInternAtom(dpy, "UTF8_STRING", False);
 

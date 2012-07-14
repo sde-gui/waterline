@@ -94,8 +94,8 @@ Atom a_MANAGER;
 
 Atom a_MOTIF_WM_HINTS;
 
-Atom a_LXPANEL_CMD; /* for private client message */
-Atom a_LXPANEL_TEXT_CMD;
+Atom a_LXPANELX_CMD; /* for private client message */
+Atom a_LXPANELX_TEXT_CMD;
 
 /* if current window manager is EWMH conforming. */
 gboolean is_ewmh_supported;
@@ -160,8 +160,8 @@ enum{
 
     I_MOTIF_WM_HINTS,
 
-    I_LXPANEL_CMD,
-    I_LXPANEL_TEXT_CMD,
+    I_LXPANELX_CMD,
+    I_LXPANELX_TEXT_CMD,
     N_ATOMS
 };
 
@@ -229,8 +229,8 @@ void resolve_atoms()
 
     atom_names[ I_MOTIF_WM_HINTS ] = "_MOTIF_WM_HINTS";
 
-    atom_names[ I_LXPANEL_CMD ] = "_LXPANEL_CMD";
-    atom_names[ I_LXPANEL_TEXT_CMD ] = "_LXPANEL_TEXT_CMD";
+    atom_names[ I_LXPANELX_CMD ] = "_LXPANELX_CMD";
+    atom_names[ I_LXPANELX_TEXT_CMD ] = "_LXPANELX_TEXT_CMD";
 
     Atom atoms[ N_ATOMS ];
 
@@ -315,8 +315,8 @@ void resolve_atoms()
 
     a_MOTIF_WM_HINTS = atoms[ I_MOTIF_WM_HINTS ];
 
-    a_LXPANEL_CMD = atoms[ I_LXPANEL_CMD ];
-    a_LXPANEL_TEXT_CMD = atoms[ I_LXPANEL_TEXT_CMD ];
+    a_LXPANELX_CMD = atoms[ I_LXPANELX_CMD ];
+    a_LXPANELX_TEXT_CMD = atoms[ I_LXPANELX_TEXT_CMD ];
 
     RET();
 }

@@ -148,8 +148,8 @@ extern Atom a_MANAGER;
 
 extern Atom a_MOTIF_WM_HINTS;
 
-extern Atom a_LXPANEL_CMD; /* for private client message */
-extern Atom a_LXPANEL_TEXT_CMD;
+extern Atom a_LXPANELX_CMD; /* for private client message */
+extern Atom a_LXPANELX_TEXT_CMD;
 
 /* if current window manager is EWMH conforming. */
 extern gboolean is_ewmh_supported;

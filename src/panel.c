@@ -616,7 +616,7 @@ static void process_client_msg ( XClientMessageEvent* ev )
     switch( cmd )
     {
 #ifndef DISABLE_MENU
-        case LXPANEL_CMD_SYS_MENU:
+        case LXPANELX_CMD_SYS_MENU:
         {
             GSList* l;
             for( l = all_panels; l; l = l->next )
@@ -636,21 +636,21 @@ static void process_client_msg ( XClientMessageEvent* ev )
 #endif
 
 #ifndef DISABLE_MENU
-        case LXPANEL_CMD_RUN:
+        case LXPANELX_CMD_RUN:
             gtk_run();
             break;
 #endif
-        case LXPANEL_CMD_CONFIG:
+        case LXPANELX_CMD_CONFIG:
             {
             Panel * p = ((all_panels != NULL) ? all_panels->data : NULL);
             if (p != NULL)
                 panel_configure(p, 0);
             }
             break;
-        case LXPANEL_CMD_RESTART:
+        case LXPANELX_CMD_RESTART:
             restart();
             break;
-        case LXPANEL_CMD_EXIT:
+        case LXPANELX_CMD_EXIT:
             gtk_main_quit();
             break;
     }
@@ -671,7 +671,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
     if (ev->type != PropertyNotify )
     {
         /* private client message from lxpanelxctl */
-        if( ev->type == ClientMessage && ev->xproperty.atom == a_LXPANEL_CMD )
+        if( ev->type == ClientMessage && ev->xproperty.atom == a_LXPANELX_CMD )
         {
             process_client_msg( (XClientMessageEvent*)ev );
         }
@@ -737,15 +737,15 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
                 /* print_wmdata(p); */
             }
         }
-        else if (at == a_LXPANEL_TEXT_CMD)
+        else if (at == a_LXPANELX_TEXT_CMD)
         {
             int remoute_command_argc = 0;;
             char ** remoute_command_argv = NULL;
-            remoute_command_argv = get_utf8_property_list(GDK_ROOT_WINDOW(), a_LXPANEL_TEXT_CMD, &remoute_command_argc);
+            remoute_command_argv = get_utf8_property_list(GDK_ROOT_WINDOW(), a_LXPANELX_TEXT_CMD, &remoute_command_argc);
             if (remoute_command_argc > 0 && remoute_command_argv)
             {
                 unsigned char b[1];
-                XChangeProperty (GDK_DISPLAY(), GDK_ROOT_WINDOW(), a_LXPANEL_TEXT_CMD, XA_STRING, 8, PropModeReplace, b, 0);
+                XChangeProperty (GDK_DISPLAY(), GDK_ROOT_WINDOW(), a_LXPANELX_TEXT_CMD, XA_STRING, 8, PropModeReplace, b, 0);
                 process_command(remoute_command_argv, remoute_command_argc);
             }
             g_strfreev(remoute_command_argv);

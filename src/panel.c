@@ -2291,7 +2291,7 @@ static void usage(void)
 {
     g_print(_("LXPanelX %s - lightweight GTK2+ panel for UNIX desktops"), version);
     g_print("\n\n");
-    g_print(_("Syntax: lxpanel [options]"));
+    g_print(_("Syntax: %s [options]"), "lxpanelx");
     g_print("\n\n");
     g_print(_("Options:"));
     g_print("\n");

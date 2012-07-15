@@ -160,14 +160,14 @@ lxpanel_put_line(FILE* fp, const char* format, ...)
     return (ret + 1);
 }
 
-#define VARNAME_ALIGN 20
+#define VARNAME_ALIGN 24
 
 extern int
 lxpanel_put_str( FILE* fp, const char* name, const char* val )
 {
     char s[VARNAME_ALIGN+1];
     int l = strlen(name);
-    if (l < VARNAME_ALIGN-1)
+    if (l < VARNAME_ALIGN)
     {
         memcpy(s, name, l);
         for (; l < VARNAME_ALIGN; l++)
@@ -186,7 +186,7 @@ lxpanel_put_bool( FILE* fp, const char* name, gboolean val )
 {
     char s[VARNAME_ALIGN+1];
     int l = strlen(name);
-    if (l < VARNAME_ALIGN-1)
+    if (l < VARNAME_ALIGN)
     {
         memcpy(s, name, l);
         for (; l < VARNAME_ALIGN; l++)
@@ -203,7 +203,7 @@ lxpanel_put_int( FILE* fp, const char* name, int val )
 {
     char s[VARNAME_ALIGN+1];
     int l = strlen(name);
-    if (l < VARNAME_ALIGN-1)
+    if (l < VARNAME_ALIGN)
     {
         memcpy(s, name, l);
         for (; l < VARNAME_ALIGN; l++)
@@ -220,7 +220,7 @@ lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair)
 {
     char s[VARNAME_ALIGN+1];
     int l = strlen(name);
-    if (l < VARNAME_ALIGN-1)
+    if (l < VARNAME_ALIGN)
     {
         memcpy(s, name, l);
         for (; l < VARNAME_ALIGN; l++)

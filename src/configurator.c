@@ -1271,27 +1271,29 @@ void panel_config_save( Panel* p )
     if (lxpanel_is_in_kiosk_mode())
         return;
 
-    gchar *fname, *dir;
-    FILE *fp;
+    FILE * fp = NULL;
 
-    dir = get_config_file( cprofile, "panels", FALSE );
-    fname = g_build_filename( dir, p->name, NULL );
+    gchar * dir = get_config_file( cprofile, "panels", FALSE );
+    gchar * file_name = g_strdup_printf("%s.panel", p->name);
+    gchar * file_path = g_build_filename( dir, file_name, NULL );
 
     /* ensure the 'panels' dir exists */
     if( ! g_file_test( dir, G_FILE_TEST_EXISTS ) )
         g_mkdir_with_parents( dir, 0755 );
     g_free( dir );
 
-    if (!(fp = fopen(fname, "w"))) {
-        ERR("can't open for write %s:", fname);
-        g_free( fname );
+    if (!(fp = fopen(file_path, "w"))) {
+        ERR("can't open for write %s:", file_path);
+        g_free( file_path );
+        g_free( file_name );
         perror(NULL);
         RET();
     }
     panel_global_config_save(p, fp);
     panel_plugin_config_save(p, fp);
     fclose(fp);
-    g_free( fname );
+    g_free( file_path );
+    g_free( file_name );
 
     /* save the global config file */
     save_global_config();

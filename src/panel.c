@@ -2223,17 +2223,27 @@ static gboolean start_all_panels(void)
             continue;
         }
 
-        const gchar* name;
-        while((name = g_dir_read_name(dir)) != NULL)
+        const gchar* file_name;
+        while ((file_name = g_dir_read_name(dir)) != NULL)
         {
-            char* panel_config = g_build_filename( panel_dir, name, NULL );
-            if (strchr(panel_config, '~') == NULL)	/* Skip editor backup files in case user has hand edited in this directory */
+            if (strchr(file_name, '~') == NULL && /* Skip editor backup files in case user has hand edited in this directory. */
+                file_name[0] != '.' && /* Skip hidden files. */
+                g_str_has_suffix(file_name, ".panel"))
             {
+                char* name = g_strdup(file_name);
+                name[strlen(name) - strlen(".panel")] = 0;
+
+                DBG("panel %s\n", name);
+
+                char* panel_config = g_build_filename( panel_dir, file_name, NULL );
+
                 Panel* panel = panel_new( panel_config, name );
                 if( panel )
                     all_panels = g_slist_prepend( all_panels, panel );
+
+                g_free( panel_config );
+                g_free( name );
             }
-            g_free( panel_config );
         }
         g_dir_close( dir );
         g_free( panel_dir );

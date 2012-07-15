@@ -3,7 +3,7 @@ default_config_DATA = \
 default_configdir = $(pkgdatadir)/profile/default
 
 default_config_panel_DATA = \
-	default/panels/panel
+	default/panels/panel.panel
 default_config_paneldir = $(pkgdatadir)/profile/default/panels
 
 uidir=$(pkgdatadir)/ui
@@ -69,7 +69,7 @@ defaults_applicationsdir = $(pkgdatadir)/defaults/applications
 
 
 EXTRA_DIST = \
-	default/panels/panel.in \
+	default/panels/panel.panel.in \
 	$(lxpanelx_DATA) \
 	$(lxpanelx_images_DATA) \
 	$(ui_DATA) \

@@ -1266,6 +1266,53 @@ panel_plugin_config_save( Panel* p, FILE *fp)
     }
 }
 
+int copyfile(char *src, char *dest)
+{
+    FILE * in = NULL;
+    FILE * out = NULL;
+    char * buffer = NULL;
+    int len = 0;;
+    int buff_size = 1024 * 8;
+    int result = 0;
+
+    buffer = malloc(buff_size);
+    if (!buffer)
+        goto ret;
+
+    in = fopen(src, "r");
+    if (!in)
+        goto ret;
+
+    out = fopen(dest,"w");
+    if (!out)
+        goto ret;
+    
+
+    result = 1;
+
+    while ( (len = fread(buffer, 1, buff_size, in)) > 0 )
+    {
+        int l = fwrite(buffer, 1, len, out);
+        if (l != len)
+        {
+            result = 0;
+            break;
+        }
+    }
+
+ret:
+
+    if (in)
+        fclose(in);
+    if (out)
+        fclose(out);
+    if (buffer)
+        free(buffer);
+
+    return result;
+}
+
+
 void panel_config_save( Panel* p )
 {
     if (lxpanel_is_in_kiosk_mode())
@@ -1274,30 +1321,58 @@ void panel_config_save( Panel* p )
     FILE * fp = NULL;
 
     gchar * dir = get_config_file( cprofile, "panels", FALSE );
+
     gchar * file_name = g_strdup_printf("%s.panel", p->name);
     gchar * file_path = g_build_filename( dir, file_name, NULL );
+
+    gchar * bak_file_name = g_strdup_printf("%s.panel.bak", p->name);
+    gchar * bak_file_path = g_build_filename( dir, bak_file_name, NULL );
 
     /* ensure the 'panels' dir exists */
     if( ! g_file_test( dir, G_FILE_TEST_EXISTS ) )
         g_mkdir_with_parents( dir, 0755 );
     g_free( dir );
 
-    if (!(fp = fopen(file_path, "w"))) {
-        ERR("can't open for write %s:", file_path);
-        g_free( file_path );
-        g_free( file_name );
-        perror(NULL);
-        RET();
+    if (g_file_test( file_path, G_FILE_TEST_EXISTS ) )
+    {
+        int r = copyfile(file_path, bak_file_path);
+        if (!r)
+        {
+            ERR("can't save .bak file %s:", bak_file_path);
+            perror(NULL);
+            goto err;
+        }
     }
+
+    if (!(fp = fopen(file_path, "w")))
+    {
+        ERR("can't open for write %s:", file_path);
+        perror(NULL);
+        goto err;
+    }
+
     panel_global_config_save(p, fp);
     panel_plugin_config_save(p, fp);
+
     fclose(fp);
+
     g_free( file_path );
     g_free( file_name );
+    g_free( bak_file_path );
+    g_free( bak_file_name );
 
     /* save the global config file */
     save_global_config();
     p->config_changed = 0;
+
+    RET();
+
+err:
+    g_free( file_path );
+    g_free( file_name );
+    g_free( bak_file_path );
+    g_free( bak_file_name );
+    RET();
 }
 
 char* get_config_file( const char* profile, const char* file_name, gboolean is_global )

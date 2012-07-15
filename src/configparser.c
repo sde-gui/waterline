@@ -165,6 +165,15 @@ lxpanel_put_line(FILE* fp, const char* format, ...)
 extern int
 lxpanel_put_str( FILE* fp, const char* name, const char* val )
 {
+    if( G_UNLIKELY( !val || !*val ) )
+        return 0;
+
+    if (strchr(val, '\n'))
+    {
+        ERR("Value of a config variable cannot contain newline character. Variable %s ignored.\n", name);
+        return 0;
+    }
+
     char s[VARNAME_ALIGN+1];
     int l = strlen(name);
     if (l < VARNAME_ALIGN)
@@ -176,8 +185,6 @@ lxpanel_put_str( FILE* fp, const char* name, const char* val )
         name = s;
     }
 
-    if( G_UNLIKELY( !val || !*val ) )
-        return 0;
     return lxpanel_put_line( fp, "%s = %s", name, val );
 }
 

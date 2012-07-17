@@ -216,6 +216,7 @@ if test x"$plugins_loading" = "xno"; then
 fi
 
 dnl Here are plugin listing.
+plugin_taskbar=
 plugin_netstatus=
 plugin_volume=
 plugin_volumealsa=
@@ -234,7 +235,7 @@ AC_ARG_WITH(plugins,
 [                         plugins may be comma separated ]
 [                         'all' builds all plugins (default), 'none' builds none ]
 [                         Possible plugins are: ]
-[                         netstatus, volume, volumealsa, cpu, deskno, batt, kbled, xkb, thermal, cpufreq], plugins="$withval",[plugins="all"])
+[                         taskbar, netstatus, volume, volumealsa, cpu, deskno, batt, kbled, xkb, thermal, cpufreq], plugins="$withval",[plugins="all"])
 
 if test x"$plugins" != xall -a x"$plugins" != xnone; then
     if test x"$plugins_loading" = xno; then
@@ -243,7 +244,7 @@ if test x"$plugins" != xall -a x"$plugins" != xnone; then
     fi
 fi
 
-ALL_PLUGINS_LIST="netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq"
+ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq"
 AC_SUBST(ALL_PLUGINS_LIST)
 
 if test x"$plugins" = xall; then
@@ -252,6 +253,7 @@ dnl    do
 dnl        export plugin_$name="$name"
 dnl    done
 
+    plugin_taskbar=taskbar
     plugin_netstatus=netstatus
     plugin_volume=volume
     plugin_volumealsa=volumealsa
@@ -271,6 +273,9 @@ else
         for plugin in $plugins
         do
         case "$plugin" in
+            taskbar)
+                plugin_netstatus=taskbar
+                ;;
             netstatus)
                 plugin_netstatus=netstatus
                 ;;
@@ -333,6 +338,7 @@ fi
 
 
 PLUGINS_LIST="\
+    $plugin_taskbar \
     $plugin_netstatus \
     $plugin_volume \
     $plugin_volumealsa \
@@ -398,6 +404,7 @@ AC_CONFIG_FILES([
     src/Makefile
     src/libexec/Makefile
     src/plugins/Makefile
+    src/plugins/taskbar/Makefile
     src/plugins/netstatus/Makefile
     src/plugins/volume/Makefile
     src/plugins/volumealsa/Makefile
@@ -422,6 +429,9 @@ echo
 echo Prefix........................... : $prefix
 if test x$plugins_loading = xyes; then
 echo Building dynamic plugins:
+    if test x"$plugin_taskbar" != x; then
+        AC_MSG_RESULT([    taskbar - Taskbar])
+    fi
     if test x"$plugin_netstatus" != x; then
         AC_MSG_RESULT([    netstatus - Monitor networking status])
     fi

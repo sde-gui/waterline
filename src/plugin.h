@@ -118,7 +118,6 @@ extern void plugin_run_command(Plugin * plugin, char ** argv, int argc);
 #define STATIC_DCLOCK
 #define STATIC_WINCMD
 #define STATIC_DIRMENU
-#define STATIC_TASKBAR
 #define STATIC_PAGER
 #define STATIC_TRAY
 #define STATIC_MENU

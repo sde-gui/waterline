@@ -27,7 +27,6 @@ endif
 
 PLUGINS_SOURCES = \
 	launchbutton.c \
-	taskbar.c \
 	dclock.c \
 	$(MENU_SOURCES) \
 	separator.c \
@@ -41,9 +40,6 @@ libbuiltin_plugins_a_SOURCES = \
 	$(PLUGINS_SOURCES)
 
 libbuiltin_plugins_a_LIBADD =
-
-EXTRA_DIST = \
-	icon.xpm
 
 install-exec-hook:
 	rm -f $(DESTDIR)$(pkglibdir)/plugins/*.la

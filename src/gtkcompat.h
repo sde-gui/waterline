@@ -295,19 +295,16 @@ gboolean gtk_widget_get_realized(GtkWidget *widget)
 
 #if !GTK_CHECK_VERSION(2,22,0)
 
-static gint
-gdk_visual_get_depth (GdkVisual *visual)
+static  inline
+gint gdk_visual_get_depth (GdkVisual *visual)
 {
   g_return_val_if_fail (GDK_IS_VISUAL (visual), 0);
 
   return visual->depth;
 }
 
-static void
-gdk_visual_get_red_pixel_details (GdkVisual *visual,
-                                  guint32   *mask,
-                                  gint      *shift,
-                                  gint      *precision)
+static inline
+void gdk_visual_get_red_pixel_details (GdkVisual *visual, guint32 *mask, gint *shift, gint *precision)
 {
   g_return_if_fail (GDK_IS_VISUAL (visual));
 
@@ -321,11 +318,8 @@ gdk_visual_get_red_pixel_details (GdkVisual *visual,
     *precision = visual->red_prec;
 }
 
-static void
-gdk_visual_get_green_pixel_details (GdkVisual *visual,
-                                    guint32   *mask,
-                                    gint      *shift,
-                                    gint      *precision)
+static inline
+void gdk_visual_get_green_pixel_details (GdkVisual *visual, guint32 *mask, gint *shift, gint *precision)
 {
   g_return_if_fail (GDK_IS_VISUAL (visual));
 
@@ -339,11 +333,8 @@ gdk_visual_get_green_pixel_details (GdkVisual *visual,
     *precision = visual->green_prec;
 }
 
-static void
-gdk_visual_get_blue_pixel_details (GdkVisual *visual,
-                                   guint32   *mask,
-                                   gint      *shift,
-                                   gint      *precision)
+static inline
+void gdk_visual_get_blue_pixel_details (GdkVisual *visual, guint32 *mask, gint *shift, gint *precision)
 {
   g_return_if_fail (GDK_IS_VISUAL (visual));
 

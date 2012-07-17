@@ -24,19 +24,24 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <stdio.h>
-#include "panel.h"
 
 struct _Plugin;
+typedef struct _Plugin Plugin;
+
+struct _PluginClass;
+typedef struct _PluginClass PluginClass;
+
+#include "panel.h"
 
 /* Support for external plugin versioning.
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */
-#define PLUGINCLASS_VERSION 1
+#define PLUGINCLASS_VERSION 2
 #define PLUGINCLASS_VERSIONING \
     structure_size : sizeof(PluginClass), \
     structure_version : PLUGINCLASS_VERSION
 
 /* Representative of an available plugin. */
-typedef struct {
+struct _PluginClass {
 
     /* Keep these first.  Do not make unnecessary changes in structure layout. */
     unsigned short structure_size;		/* Structure size, for versioning support */
@@ -65,10 +70,11 @@ typedef struct {
     void (*config)(struct _Plugin * plugin, GtkWindow * parent);	/* Request the plugin to display its configuration dialog */
     void (*save)(struct _Plugin * plugin, FILE * fp);			/* Request the plugin to save its configuration to a file */
     void (*panel_configuration_changed)(struct _Plugin * plugin);	/* Request the plugin to do a full redraw after a panel configuration change */
-} PluginClass;
+    void (*run_command)(struct _Plugin * plugin, char ** argv, int argc);
+};
 
 /* Representative of a loaded and active plugin attached to a panel. */
-typedef struct _Plugin {
+struct _Plugin {
     PluginClass * class;			/* Back pointer to PluginClass */
     Panel * panel;				/* Back pointer to Panel */
     GtkWidget * pwid;				/* Top level widget; plugin allocates, but plugin mechanism, not plugin itself, destroys this */
@@ -80,7 +86,7 @@ typedef struct _Plugin {
     GtkAllocation pwid_allocation;
     gboolean background_update_scheduled;
     int lock_visible;
-} Plugin;
+};
 
 extern Plugin * plugin_load(char * type);		/* Create an instance of a plugin, loading it if necessary */
 extern int plugin_start(Plugin * this, char ** fp);	/* Configure and start a plugin by calling its constructor */
@@ -102,6 +108,8 @@ extern void plugin_adjust_popup_position(GtkWidget * popup, Plugin * plugin);
 
 extern void plugin_lock_visible(Plugin * plugin);
 extern void plugin_unlock_visible(Plugin * plugin);
+
+extern void plugin_run_command(Plugin * plugin, char ** argv, int argc);
 
 /* FIXME: optional definitions */
 #define STATIC_SEPARATOR

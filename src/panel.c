@@ -518,6 +518,60 @@ void panel_establish_autohide(Panel *p)
 
 /*= command handling =*/
 
+Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name)
+{
+    GList * l;
+
+    /* First trying to match plugin name as is. */
+    for (l = p->plugins; l; l = l->next)
+    {
+        Plugin * pl = (Plugin *) l->data;
+        if (!strcmp(pl->class->type, name))
+            return pl;
+    }
+
+    /* Now trying to match plugin name as "name-index" */
+
+    int len = strlen(name);
+    if (len == 0)
+        return NULL;
+    
+    int i = len - 1;
+    while (name[i] >= '0' && name[i] <= '9' && i >= 0)
+        i--;
+
+    if (i == 0 || i == len - 1)
+        return NULL;
+
+    int index = atoi(name + i + 1);
+    if (index == 0)
+        return NULL;
+
+    gchar * prefix = g_strdup(name);
+    prefix[i + 1] = 0;
+    if (prefix[i] == '-')
+        prefix[i] = 0;
+
+    int current_index = 0;
+    for (l = p->plugins; l; l = l->next)
+    {
+        Plugin * pl = (Plugin *) l->data;
+        if (!strcmp(pl->class->type, prefix))
+        {
+            current_index++;
+            if (current_index == index)
+            {
+                g_free(prefix);
+                return pl;
+            }
+        }
+    }
+
+    g_free(prefix);
+
+    return NULL;
+}
+
 static Panel * panel_get_by_name(gchar * name)
 {   
     GSList * l;
@@ -599,6 +653,14 @@ static void cmd_panel(Panel * panel, char ** argv, int argc)
         cmd_panel_visible(panel, argv, argc);
     else if (strcmp(argv[0], "autohide") == 0)
         cmd_panel_autohide(panel, argv, argc);
+    else if (strcmp(argv[0], "plugin") == 0 && argc >= 3)
+    {
+        Plugin * pl = panel_get_plugin_by_name(panel, argv[1]);
+        if (pl)
+        {
+            plugin_run_command(pl, argv + 2, argc - 2);
+        }
+    }
 }
 
 

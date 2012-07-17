@@ -522,3 +522,9 @@ void plugin_unlock_visible(Plugin * plugin)
 		plugin->lock_visible = 0;
 	panel_autohide_conditions_changed(plugin->panel);
 }
+
+void plugin_run_command(Plugin * plugin, char ** argv, int argc)
+{
+    if (plugin && plugin->class->run_command)
+        plugin->class->run_command(plugin, argv, argc);
+}

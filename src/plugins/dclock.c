@@ -142,6 +142,25 @@ static GtkWidget * dclock_create_calendar(DClockPlugin * dc)
     return win;
 }
 
+static void dclock_show_calendar(DClockPlugin * dc)
+{
+    if (dc->calendar_window == NULL)
+    {
+        dc->calendar_window = dclock_create_calendar(dc);
+    }
+    plugin_adjust_popup_position(dc->calendar_window, dc->plugin);
+    gtk_widget_show_all(dc->calendar_window);
+}
+
+static void dclock_hide_calendar(DClockPlugin * dc)
+{
+    if (dc->calendar_window != NULL)
+    {
+        gtk_widget_destroy(dc->calendar_window);
+        dc->calendar_window = NULL;
+    }
+}
+
 /* Handler for "button-press-event" event from main widget. */
 static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * evt, Plugin * plugin)
 {
@@ -160,14 +179,11 @@ static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * e
     {
         if (dc->calendar_window == NULL)
         {
-            dc->calendar_window = dclock_create_calendar(dc);
-            plugin_adjust_popup_position(dc->calendar_window, plugin);
-            gtk_widget_show_all(dc->calendar_window);
+            dclock_show_calendar(dc);
         }
         else
         {
-            gtk_widget_destroy(dc->calendar_window);
-            dc->calendar_window = NULL;
+            dclock_hide_calendar(dc);
         }
     }
     return TRUE;
@@ -523,6 +539,54 @@ static void dclock_panel_configuration_changed(Plugin * p)
     dclock_apply_configuration(p);
 }
 
+static void dclock_run_command_calendar_visible(Plugin * p, char ** argv, int argc)
+{
+    DClockPlugin * dc = (DClockPlugin *) p->priv;
+
+    gboolean visible = dc->calendar_window != NULL;
+    gboolean old_visible = visible;
+    visible = !visible;
+
+    if (argc >= 1)
+    {
+        if (strcmp(argv[0], "true") == 0 || strcmp(argv[0], "1") == 0)
+            visible = TRUE;
+        else if (strcmp(argv[0], "false") == 0 || strcmp(argv[0], "0") == 0)
+            visible = FALSE;
+    }
+
+    if (visible != old_visible)
+    {
+        if (visible)
+            dclock_show_calendar(dc);
+        else
+            dclock_hide_calendar(dc);
+    }
+}
+
+static void dclock_run_command_calendar(Plugin * p, char ** argv, int argc)
+{
+    if (argc < 1)
+        return;
+
+    if (strcmp(argv[0], "visible") == 0)
+    {
+        dclock_run_command_calendar_visible(p, argv + 1, argc - 1);
+    }
+}
+
+static void dclock_run_command(Plugin * p, char ** argv, int argc)
+{
+    if (argc < 1)
+        return;
+
+    if (strcmp(argv[0], "calendar") == 0)
+    {
+        dclock_run_command_calendar(p, argv + 1, argc - 1);
+    }
+}
+
+
 /* Plugin descriptor. */
 PluginClass dclock_plugin_class = {
 
@@ -537,5 +601,6 @@ PluginClass dclock_plugin_class = {
     destructor  : dclock_destructor,
     config : dclock_configure,
     save : dclock_save_configuration,
-    panel_configuration_changed : dclock_panel_configuration_changed
+    panel_configuration_changed : dclock_panel_configuration_changed,
+    run_command : dclock_run_command
 };

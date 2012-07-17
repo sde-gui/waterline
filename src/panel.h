@@ -82,6 +82,9 @@ extern const char* lxpanel_get_terminal();
 int lxpanel_is_in_kiosk_mode(void);
 
 #ifdef _LXPANEL_INTERNALS
+
+#include "plugin.h"
+
 extern void panel_calculate_position(Panel *p);
 extern void update_panel_geometry(Panel* p);
 extern void panel_adjust_geometry_terminology(Panel *p);
@@ -92,6 +95,8 @@ extern void panel_set_panel_configuration_changed(Panel *p);
 extern void panel_update_background(Panel* p);
 extern void panel_autohide_conditions_changed(Panel* p);
 extern void panel_require_update_background(Panel* p);
+
+extern Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name);
 
 /* to check if we are in LXDE */
 extern gboolean is_in_lxde;

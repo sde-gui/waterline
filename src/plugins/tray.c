@@ -419,6 +419,11 @@ static void balloon_message_data_event(TrayPlugin * tr, XClientMessageEvent * xe
     }
 }
 
+/* FIXME: implement tray_icon class and emulate gdk_window_get_composited() for gtk < 2.22 */
+#if !GTK_CHECK_VERSION(2,22,0)
+#define DISABLE_COMPOSITING
+#endif
+
 /* Handler for request dock message. */
 static void trayclient_request_dock(TrayPlugin * tr, XClientMessageEvent * xevent)
 {
@@ -514,8 +519,9 @@ static void trayclient_request_dock(TrayPlugin * tr, XClientMessageEvent * xeven
     depth = gdk_visual_get_depth (visual);
 
     visual_has_alpha = red_prec + blue_prec + green_prec < depth;
+#ifndef DISABLE_COMPOSITING
     composited = (visual_has_alpha && gdk_display_supports_composite (gdk_screen_get_display (screen)));
-
+#endif
     //g_print("has_alpha = %d\n", (int)has_alpha);
 
     if (new_colormap)
@@ -638,7 +644,6 @@ static void tray_unmanage_selection(TrayPlugin * tr)
     }
 }
 
-
 static void tray_expose_icon(GtkWidget * widget, gpointer data)
 {
     cairo_t * cr = data;
@@ -647,7 +652,7 @@ static void tray_expose_icon(GtkWidget * widget, gpointer data)
         return;
 
     GdkWindow * window = gtk_widget_get_window (widget);
-
+#ifndef DISABLE_COMPOSITING
     if (gdk_window_get_composited (window))
     {
       GtkAllocation allocation;
@@ -659,6 +664,7 @@ static void tray_expose_icon(GtkWidget * widget, gpointer data)
 				   allocation.y);
       cairo_paint (cr);
     }
+#endif
 }
 
 static void tray_expose_box(GtkWidget * box, GdkEventExpose * event, gpointer data)
@@ -757,9 +763,9 @@ static int tray_constructor(Plugin * p, char ** fp)
     tr->invisible = invisible;
     tr->invisible_window = GDK_WINDOW_XWINDOW(invisible->window);
     g_object_ref(G_OBJECT(invisible));
-
+#ifndef DISABLE_COMPOSITING
     tray_choose_visual(tr);
-
+#endif
     /* Try to claim the _NET_SYSTEM_TRAY_Sn selection. */
     guint32 timestamp = gdk_x11_get_server_time(invisible->window);
     if (gdk_selection_owner_set_for_display(
@@ -813,9 +819,9 @@ static int tray_constructor(Plugin * p, char ** fp)
     /* Create an icon grid to manage the container. */
     GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     tr->icon_grid = icon_grid_new(p->panel, p->pwid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 3, 0, panel_get_oriented_height_pixels(p->panel));
-
+#ifndef DISABLE_COMPOSITING
     g_signal_connect (tr->icon_grid->widget, "expose-event", G_CALLBACK (tray_expose_box), tr);
-
+#endif
     return 1;
 }
 

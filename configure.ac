@@ -216,18 +216,8 @@ if test x"$plugins_loading" = "xno"; then
 fi
 
 dnl Here are plugin listing.
-plugin_taskbar=
-plugin_netstatus=
-plugin_volume=
-plugin_volumealsa=
-plugin_cpu=
-plugin_deskno=
-plugin_batt=
-plugin_xkb=
-plugin_kbled=
-plugin_thermal=
-plugin_cpufreq=
-plugin_indicator=
+ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq indicator"
+AC_SUBST(ALL_PLUGINS_LIST)
 
 AC_MSG_CHECKING([which plugins should be built dynamically])
 AC_ARG_WITH(plugins,
@@ -235,7 +225,8 @@ AC_ARG_WITH(plugins,
 [                         plugins may be comma separated ]
 [                         'all' builds all plugins (default), 'none' builds none ]
 [                         Possible plugins are: ]
-[                         taskbar, netstatus, volume, volumealsa, cpu, deskno, batt, kbled, xkb, thermal, cpufreq], plugins="$withval",[plugins="all"])
+[                         taskbar, netstatus, volume, volumealsa, cpu, deskno, batt,]
+[                         kbled xkb thermal cpufreq], plugins="$withval",[plugins="all"])
 
 if test x"$plugins" != xall -a x"$plugins" != xnone; then
     if test x"$plugins_loading" = xno; then
@@ -244,27 +235,16 @@ if test x"$plugins" != xall -a x"$plugins" != xnone; then
     fi
 fi
 
-ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq"
-AC_SUBST(ALL_PLUGINS_LIST)
+for name in $ALL_PLUGINS_LIST
+do
+    eval plugin_$name=
+done
 
 if test x"$plugins" = xall; then
-dnl    for name in $ALL_PLUGINS
-dnl    do
-dnl        export plugin_$name="$name"
-dnl    done
-
-    plugin_taskbar=taskbar
-    plugin_netstatus=netstatus
-    plugin_volume=volume
-    plugin_volumealsa=volumealsa
-    plugin_cpu=cpu
-    plugin_deskno=deskno
-    plugin_batt=batt
-    plugin_kbled=kbled
-    plugin_xkb=xkb
-    plugin_thermal=thermal
-    plugin_cpufreq=cpufreq
-    plugin_indicator=indicator
+    for name in $ALL_PLUGINS_LIST
+    do
+        eval plugin_$name="$name"
+    done
 
     AC_MSG_RESULT(all)
 else
@@ -272,48 +252,18 @@ else
         plugins=`echo $plugins | sed 's/,/ /g'`
         for plugin in $plugins
         do
-        case "$plugin" in
-            taskbar)
-                plugin_netstatus=taskbar
-                ;;
-            netstatus)
-                plugin_netstatus=netstatus
-                ;;
-            volume)
-                plugin_volume=volume
-                ;;
-            volumealsa)
-                plugin_volumealsa=volumealsa
-                ;;
-            cpu)
-                plugin_cpu=cpu
-                ;;
-            deskno)
-                plugin_deskno=deskno
-                ;;
-            batt)
-                plugin_batt=batt
-                ;;
-            kbled)
-                plugin_kbled=kbled
-                ;;
-            xkb)
-                plugin_xkb=xkb
-                ;;
-            thermal)
-                plugin_thermal=thermal
-                ;;
-            cpufreq)
-                plugin_cpufreq=cpufreq
-                ;;
-            cpufreq)
-                plugin_indicator=indicator
-                ;;
-            *)
+            valid=no
+            for name in $ALL_PLUGINS_LIST
+            do
+                if test x"$name" = x"$plugin" ; then
+                    eval plugin_$name="$name"
+                    valid=yes
+                fi
+            done
+            if test "$valid" = "no" ; then
                 echo "Unknown plugin $plugin."
                 exit 1
-                ;;
-        esac
+            fi
         done
         AC_MSG_RESULT($plugins)
     fi

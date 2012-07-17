@@ -1537,7 +1537,8 @@ Optional Packages:
                          plugins may be comma separated
                          'all' builds all plugins (default), 'none' builds none
                          Possible plugins are:
-                         taskbar, netstatus, volume, volumealsa, cpu, deskno, batt, kbled, xkb, thermal, cpufreq
+                         taskbar, netstatus, volume, volumealsa, cpu, deskno, batt,
+                         kbled xkb thermal cpufreq
   --with-x                use the X Window System
   --with-xml-catalog=CATALOG
                           path to xml catalog to use
@@ -13056,18 +13057,8 @@ $as_echo "#define DISABLE_PLUGINS_LOADING 1" >>confdefs.h
 
 fi
 
-plugin_taskbar=
-plugin_netstatus=
-plugin_volume=
-plugin_volumealsa=
-plugin_cpu=
-plugin_deskno=
-plugin_batt=
-plugin_xkb=
-plugin_kbled=
-plugin_thermal=
-plugin_cpufreq=
-plugin_indicator=
+ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq indicator"
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking which plugins should be built dynamically" >&5
 $as_echo_n "checking which plugins should be built dynamically... " >&6; }
@@ -13086,23 +13077,16 @@ if test x"$plugins" != xall -a x"$plugins" != xnone; then
     fi
 fi
 
-ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq"
-
+for name in $ALL_PLUGINS_LIST
+do
+    eval plugin_$name=
+done
 
 if test x"$plugins" = xall; then
-
-    plugin_taskbar=taskbar
-    plugin_netstatus=netstatus
-    plugin_volume=volume
-    plugin_volumealsa=volumealsa
-    plugin_cpu=cpu
-    plugin_deskno=deskno
-    plugin_batt=batt
-    plugin_kbled=kbled
-    plugin_xkb=xkb
-    plugin_thermal=thermal
-    plugin_cpufreq=cpufreq
-    plugin_indicator=indicator
+    for name in $ALL_PLUGINS_LIST
+    do
+        eval plugin_$name="$name"
+    done
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: all" >&5
 $as_echo "all" >&6; }
@@ -13111,48 +13095,18 @@ else
         plugins=`echo $plugins | sed 's/,/ /g'`
         for plugin in $plugins
         do
-        case "$plugin" in
-            taskbar)
-                plugin_netstatus=taskbar
-                ;;
-            netstatus)
-                plugin_netstatus=netstatus
-                ;;
-            volume)
-                plugin_volume=volume
-                ;;
-            volumealsa)
-                plugin_volumealsa=volumealsa
-                ;;
-            cpu)
-                plugin_cpu=cpu
-                ;;
-            deskno)
-                plugin_deskno=deskno
-                ;;
-            batt)
-                plugin_batt=batt
-                ;;
-            kbled)
-                plugin_kbled=kbled
-                ;;
-            xkb)
-                plugin_xkb=xkb
-                ;;
-            thermal)
-                plugin_thermal=thermal
-                ;;
-            cpufreq)
-                plugin_cpufreq=cpufreq
-                ;;
-            cpufreq)
-                plugin_indicator=indicator
-                ;;
-            *)
+            valid=no
+            for name in $ALL_PLUGINS_LIST
+            do
+                if test x"$name" = x"$plugin" ; then
+                    eval plugin_$name="$name"
+                    valid=yes
+                fi
+            done
+            if test "$valid" = "no" ; then
                 echo "Unknown plugin $plugin."
                 exit 1
-                ;;
-        esac
+            fi
         done
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $plugins" >&5
 $as_echo "$plugins" >&6; }

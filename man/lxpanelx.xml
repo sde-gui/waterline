@@ -22,7 +22,7 @@
   </refentryinfo>
   <refmeta
 >    <refentrytitle
->LXPANEL</refentrytitle>
+>LXPANELX</refentrytitle>
 <refmiscinfo class="source">http://LXDE.org</refmiscinfo>
 
     <manvolnum
@@ -30,7 +30,7 @@
   </refmeta>
   <refnamediv
 >    <refname
->lxpanel</refname>
+>lxpanelx</refname>
 
     <refpurpose
 >a lightweight GTK2-based panel for the LXDE desktop.</refpurpose>

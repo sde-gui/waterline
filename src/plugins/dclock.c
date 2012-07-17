@@ -464,6 +464,12 @@ static void dclock_apply_configuration(Plugin * p)
     dc->experiment_count = 0;
     dc->prev_clock_value = NULL;
     dc->prev_tooltip_value = NULL;
+
+    /* Remove the timer before calling dclock_update_display(),
+       as dclock_timer_set() overwrites dc->timer without removing old one. */
+    if (dc->timer != 0)
+        g_source_remove(dc->timer);
+
     dclock_update_display(dc);
 
     /* Hide the calendar. */

@@ -13129,19 +13129,11 @@ if test x"$indicator_support" = "xno"; then
 fi
 
 
-PLUGINS_LIST="\
-    $plugin_taskbar \
-    $plugin_netstatus \
-    $plugin_volume \
-    $plugin_volumealsa \
-    $plugin_cpu \
-    $plugin_deskno \
-    $plugin_batt \
-    $plugin_kbled \
-    $plugin_xkb \
-    $plugin_thermal \
-    $plugin_cpufreq \
-    $plugin_indicator"
+PLUGINS_LIST=""
+for name in $ALL_PLUGINS_LIST
+do
+    eval 'PLUGINS_LIST="$PLUGINS_LIST $plugin_'"$name"'"'
+done
 
 
 
@@ -17390,6 +17382,7 @@ $as_echo "    cpufreq - CpuFreq frontend" >&6; }
         { $as_echo "$as_me:${as_lineno-$LINENO}: result:     indicator - Indicator support" >&5
 $as_echo "    indicator - Indicator support" >&6; }
     fi
+echo "PLUGINS_LIST = $PLUGINS_LIST"
 else
 echo Dynamic loader for plugins....... : disabled.
 fi

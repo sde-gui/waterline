@@ -287,19 +287,11 @@ if test x"$indicator_support" = "xno"; then
 fi
 
 
-PLUGINS_LIST="\
-    $plugin_taskbar \
-    $plugin_netstatus \
-    $plugin_volume \
-    $plugin_volumealsa \
-    $plugin_cpu \
-    $plugin_deskno \
-    $plugin_batt \
-    $plugin_kbled \
-    $plugin_xkb \
-    $plugin_thermal \
-    $plugin_cpufreq \
-    $plugin_indicator"
+PLUGINS_LIST=""
+for name in $ALL_PLUGINS_LIST
+do
+    eval 'PLUGINS_LIST="$PLUGINS_LIST $plugin_'"$name"'"'
+done
 
 AC_SUBST(PLUGINS_LIST)
 
@@ -415,6 +407,7 @@ echo Building dynamic plugins:
     if test x"$plugin_indicator" != x; then
         AC_MSG_RESULT([    indicator - Indicator support])
     fi
+echo "PLUGINS_LIST = $PLUGINS_LIST"
 else
 echo Dynamic loader for plugins....... : disabled.
 fi

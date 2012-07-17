@@ -1419,14 +1419,19 @@ static void panel_popupmenu_delete_panel( GtkMenuItem* item, Panel* panel )
     
     if (ok)
     {
-        gchar *fname, *dir;
         all_panels = g_slist_remove( all_panels, panel );
 
         /* delete the config file of this panel */
-        dir = get_config_file( cprofile, "panels", FALSE );
-        fname = g_build_filename( dir, panel->name, NULL );
-        g_free( dir );
-        g_unlink( fname );
+        gchar * dir = get_config_file( cprofile, "panels", FALSE );
+        gchar * file_name = g_strdup_printf("%s.panel", panel->name);
+        gchar * file_path = g_build_filename( dir, file_name, NULL );
+
+        g_unlink( file_path );
+
+        g_free(file_path);
+        g_free(file_name);
+        g_free(dir);
+
         panel->config_changed = 0;
         panel_destroy( panel );
     }

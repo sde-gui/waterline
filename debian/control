@@ -11,8 +11,6 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, lxmenu-data
 Recommends: manpages-dev
 Suggests: lxsession-lite (>=0.3.5) | lxsession (>=0.3.2) | menu, www-browser
-Conflicts: lxpanel
-Replaces: lxpanel
 Description: a lightweight desktop panel for X
  LXPanel is a lightweight GTK+2 desktop panel derived from fbpanel. Its
  features include:

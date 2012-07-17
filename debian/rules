@@ -53,6 +53,7 @@ endif
 	--mandir=\$${prefix}/share/man \
 	--infodir=\$${prefix}/share/info \
 	--sysconfdir=/etc \
+	--without-libfm \
 	CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,--as-needed"
 
 
@@ -63,7 +64,7 @@ build-stamp:  config.status
 
 	# Add here commands to compile the package.
 	$(MAKE)
-	#docbook-to-man debian/lxpanel.sgml > lxpanel.1
+	#docbook-to-man debian/lxpanelx.sgml > lxpanelx.1
 
 	touch $@
 
@@ -78,8 +79,8 @@ clean: unpatch
 	rm -f intltool-extract \
 	      intltool-update \
 	      intltool-merge \
-	      man/lxpanel.1  \
-	      man/lxpanelctl.1 
+	      man/lxpanelx.1 \
+	      man/lxpanelctlx.1 
 
 	dh_clean 
 

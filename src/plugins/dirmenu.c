@@ -87,7 +87,7 @@ static void dirmenu_menuitem_deselect(GtkMenuItem * item, Plugin * p);
 void dirmenu_menu_selection_done(GtkWidget * menu, Plugin * p);
 static void dirmenu_popup_set_position(GtkWidget * menu, gint * px, gint * py, gboolean * push_in, Plugin * p);
 static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top, GtkWidget * parent_item);
-static void dirmenu_show_menu(GtkWidget * widget, Plugin * p, int btn, guint32 time);
+static void dirmenu_show_menu(Plugin * p, int btn, guint32 time);
 static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * event, Plugin * p);
 static int dirmenu_constructor(Plugin * p, char ** fp);
 static void dirmenu_destructor(Plugin * p);
@@ -746,7 +746,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 }
 
 /* Show a menu of subdirectories. */
-static void dirmenu_show_menu(GtkWidget * widget, Plugin * p, int btn, guint32 time)
+static void dirmenu_show_menu(Plugin * p, int btn, guint32 time)
 {
     DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
 
@@ -772,7 +772,7 @@ static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * 
 
     if (event->button == 1)
     {
-        dirmenu_show_menu(widget, p, event->button, event->time);
+        dirmenu_show_menu(p, event->button, event->time);
     }
     else
     {
@@ -984,6 +984,24 @@ static void dirmenu_panel_configuration_changed(Plugin * p)
     dirmenu_apply_configuration(p);
 }
 
+
+static void dirmenu_run_command_activate(Plugin * p, char ** argv, int argc)
+{
+    dirmenu_show_menu(p, 0, 0);
+}
+
+static void dirmenu_run_command(Plugin * p, char ** argv, int argc)
+{
+    if (argc < 1)
+        return;
+
+    if (strcmp(argv[0], "activate") == 0)
+    {
+        dirmenu_run_command_activate(p, argv + 1, argc - 1);
+    }
+}
+
+
 /* Plugin descriptor. */
 PluginClass dirmenu_plugin_class = {
 
@@ -998,6 +1016,6 @@ PluginClass dirmenu_plugin_class = {
     destructor  : dirmenu_destructor,
     config : dirmenu_configure,
     save : dirmenu_save_configuration,
-    panel_configuration_changed : dirmenu_panel_configuration_changed
-
+    panel_configuration_changed : dirmenu_panel_configuration_changed,
+    run_command : dirmenu_run_command
 };

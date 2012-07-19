@@ -260,8 +260,12 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
             /* Desktop file located.  Get Icon, Name, Exec, and Terminal parameters. */
             gchar * icon = g_key_file_get_string(desktop, desktop_ent, "Icon", NULL);
             gchar * title = g_key_file_get_locale_string(desktop, desktop_ent, "Name", NULL, NULL);
+            gchar * comment = g_key_file_get_locale_string(desktop, desktop_ent, "Comment", NULL, NULL);
+
             if ((btn->image == NULL) && (icon != NULL))
                 btn->image = icon;
+            if (btn->image != icon)
+                g_free(icon);
 
             if ( ! btn->customize_action )
             {
@@ -273,11 +277,11 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
             btn->use_terminal = g_key_file_get_boolean(desktop, desktop_ent, "Terminal", NULL);
 
             if ( ! btn->customize_tooltip)
-                btn->tooltip = title;
-            if (btn->image != icon)
-                g_free(icon);
-            if (btn->tooltip != title)
-                g_free(title);
+            {
+                btn->tooltip = strempty(comment) ? g_strdup(title) : g_strdup_printf("%s\n%s", title, comment);
+            }
+            g_free(title);
+            g_free(comment);
         }
 
         g_free(desktop_file);

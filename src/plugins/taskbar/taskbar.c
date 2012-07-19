@@ -346,6 +346,9 @@ typedef struct _taskbar {
     GtkWidget * preview_panel_window;
     GtkWidget * preview_panel_box;
     GtkAllocation preview_panel_window_alloc;
+    guint preview_panel_motion_timer;
+    int preview_panel_speed;
+    int preview_panel_root_x;
 
     Task * popup_task;                          /* Task that owns popup. */
     guint hide_popup_delay_timer;               /* Timer to close popup if mouse leaves it */
@@ -2286,6 +2289,19 @@ static void task_raise_window(Task * tk, guint32 time)
 
 /* preview panel */
 
+
+static  gboolean preview_panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, TaskbarPlugin * tb)
+{
+    tb->preview_panel_window_alloc.x = e->x;
+    tb->preview_panel_window_alloc.y = e->y;
+    tb->preview_panel_window_alloc.width = e->width;
+    tb->preview_panel_window_alloc.height = e->height;
+
+    //g_print("configure: %d, %d, %d, %d\n", e->x, e->y, e->width, e->height);
+
+    return FALSE;
+}
+
 static void preview_panel_size_allocate(GtkWidget * w, GtkAllocation * alloc, TaskbarPlugin * tb)
 {
     tb->preview_panel_window_alloc = *alloc;
@@ -2313,6 +2329,82 @@ static gboolean preview_panel_press_event(GtkWidget * widget, GdkEventButton * e
     return taskbar_task_control_event(widget, event, tk, TRUE);
 }*/
 
+static void preview_panel_calculate_speed(TaskbarPlugin * tb, int window_left, int window_right)
+{
+    int border = 50;
+    int left_border = 0;
+    int right_border = gdk_screen_width();
+    int x = tb->preview_panel_root_x;
+    int speed = 0;
+
+    if (x < left_border + border && window_left < left_border)
+    {
+        speed = MIN((left_border + border) - x, left_border - window_left);
+        if (speed > border)
+            speed = border;
+
+        if (speed > 4)
+            speed /= 4;
+        else
+            speed = 1;
+    }
+    else if (x > right_border - border && window_right > right_border)
+    {
+        speed = MAX((right_border - border) - x, right_border - window_right);
+        if (speed < -border)
+            speed = -border;
+
+        if (speed < -4)
+            speed /= 4;
+        else
+            speed = -1;
+    }
+
+    tb->preview_panel_speed = speed;
+
+    //g_print("%d\n", speed);
+}
+
+static gboolean preview_panel_motion_timer(TaskbarPlugin * tb)
+{
+    if (tb->preview_panel_speed == 0 || !gtk_widget_get_visible(tb->preview_panel_window))
+    {
+        tb->preview_panel_motion_timer = 0;
+        return FALSE;
+    }
+
+    gint x = 0;
+    gint y = 0;
+    gtk_window_get_position(GTK_WINDOW(tb->preview_panel_window), &x, &y);
+
+    x += tb->preview_panel_speed;
+
+    gtk_window_move(GTK_WINDOW(tb->preview_panel_window), x, y);
+
+    int window_left  = x;
+    int window_right = x + tb->preview_panel_window_alloc.width;
+
+    preview_panel_calculate_speed(tb, window_left, window_right);
+
+    return TRUE;
+}
+
+static gboolean preview_panel_motion_event(GtkWidget * widget, GdkEventMotion * event, TaskbarPlugin * tb)
+{
+    int window_left  = tb->preview_panel_window_alloc.x;
+    int window_right = tb->preview_panel_window_alloc.x + tb->preview_panel_window_alloc.width;
+
+    tb->preview_panel_root_x = event->x_root;
+    preview_panel_calculate_speed(tb, window_left, window_right);
+
+    if (tb->preview_panel_speed && tb->preview_panel_motion_timer == 0)
+    {
+        tb->preview_panel_motion_timer = g_timeout_add(10, (GSourceFunc) preview_panel_motion_timer, tb);
+    }
+
+    return FALSE;
+}
+
 static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 {
     GtkWidget * win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -2327,8 +2419,11 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
     GTK_WIDGET_UNSET_FLAGS(win, GTK_CAN_FOCUS);
 
     g_signal_connect(G_OBJECT (win), "size-allocate", G_CALLBACK(preview_panel_size_allocate), (gpointer) tb);
+    g_signal_connect(G_OBJECT (win), "configure-event",  G_CALLBACK(preview_panel_configure_event), (gpointer) tb);
     g_signal_connect_after(G_OBJECT (win), "enter-notify-event", G_CALLBACK(preview_panel_enter), (gpointer) tb);
     g_signal_connect_after(G_OBJECT (win), "leave-notify-event", G_CALLBACK(preview_panel_leave), (gpointer) tb);
+    g_signal_connect_after(G_OBJECT (win), "motion-notify-event", G_CALLBACK(preview_panel_motion_event), (gpointer) tb);
+
 
     gtk_widget_realize(win);
     wm_noinput(GDK_WINDOW_XWINDOW(win->window));
@@ -2381,7 +2476,7 @@ static void task_show_preview_panel(Task * tk)
         }
     }
 */
-    GtkWidget * box = gtk_hbox_new(FALSE, 5);
+    GtkWidget * box = gtk_hbox_new(TRUE, 5);
     gtk_container_set_border_width(GTK_CONTAINER(box), 5);
     gtk_container_add(GTK_CONTAINER(tb->preview_panel_box), box);
 
@@ -4786,6 +4881,9 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 static void taskbar_destructor(Plugin * p)
 {
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
+
+    if (tb->preview_panel_motion_timer != 0)
+        g_source_remove(tb->preview_panel_motion_timer);
 
     if (tb->deferred_desktop_switch_timer != 0)
         g_source_remove(tb->deferred_desktop_switch_timer);

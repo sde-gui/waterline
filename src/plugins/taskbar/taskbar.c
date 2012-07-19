@@ -348,7 +348,7 @@ typedef struct _taskbar {
     GtkAllocation preview_panel_window_alloc;
     guint preview_panel_motion_timer;
     int preview_panel_speed;
-    int preview_panel_root_x;
+    int preview_panel_mouse_position;
 
     Task * popup_task;                          /* Task that owns popup. */
     guint hide_popup_delay_timer;               /* Timer to close popup if mouse leaves it */
@@ -2331,10 +2331,13 @@ static gboolean preview_panel_press_event(GtkWidget * widget, GdkEventButton * e
 
 static void preview_panel_calculate_speed(TaskbarPlugin * tb, int window_left, int window_right)
 {
+    gboolean h = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ);
+
+    int right_border = h ? gdk_screen_width() : gdk_screen_height();
+
     int border = 50;
     int left_border = 0;
-    int right_border = gdk_screen_width();
-    int x = tb->preview_panel_root_x;
+    int x = tb->preview_panel_mouse_position;
     int speed = 0;
 
     if (x < left_border + border && window_left < left_border)
@@ -2373,16 +2376,32 @@ static gboolean preview_panel_motion_timer(TaskbarPlugin * tb)
         return FALSE;
     }
 
+    gboolean h = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ);
+
     gint x = 0;
     gint y = 0;
     gtk_window_get_position(GTK_WINDOW(tb->preview_panel_window), &x, &y);
 
-    x += tb->preview_panel_speed;
+    if (h)
+        x += tb->preview_panel_speed;
+    else
+        y += tb->preview_panel_speed;
 
     gtk_window_move(GTK_WINDOW(tb->preview_panel_window), x, y);
 
-    int window_left  = x;
-    int window_right = x + tb->preview_panel_window_alloc.width;
+    int window_left;
+    int window_right;
+
+    if (h)
+    {
+        window_left  = x;
+        window_right = x + tb->preview_panel_window_alloc.width;
+    }
+    else
+    {
+        window_left  = y;
+        window_right = y + tb->preview_panel_window_alloc.height;
+    }
 
     preview_panel_calculate_speed(tb, window_left, window_right);
 
@@ -2391,10 +2410,24 @@ static gboolean preview_panel_motion_timer(TaskbarPlugin * tb)
 
 static gboolean preview_panel_motion_event(GtkWidget * widget, GdkEventMotion * event, TaskbarPlugin * tb)
 {
-    int window_left  = tb->preview_panel_window_alloc.x;
-    int window_right = tb->preview_panel_window_alloc.x + tb->preview_panel_window_alloc.width;
+    gboolean h = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ);
 
-    tb->preview_panel_root_x = event->x_root;
+    int window_left;
+    int window_right;
+
+    if (h)
+    {
+        window_left  = tb->preview_panel_window_alloc.x;
+        window_right = tb->preview_panel_window_alloc.x + tb->preview_panel_window_alloc.width;
+        tb->preview_panel_mouse_position = event->x_root;
+    }
+    else
+    {
+        window_left  = tb->preview_panel_window_alloc.y;
+        window_right = tb->preview_panel_window_alloc.y + tb->preview_panel_window_alloc.height;
+        tb->preview_panel_mouse_position = event->y_root;
+    }
+
     preview_panel_calculate_speed(tb, window_left, window_right);
 
     if (tb->preview_panel_speed && tb->preview_panel_motion_timer == 0)
@@ -2476,7 +2509,10 @@ static void task_show_preview_panel(Task * tk)
         }
     }
 */
-    GtkWidget * box = gtk_hbox_new(TRUE, 5);
+    GtkWidget * box = 
+        (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ) ?
+        gtk_hbox_new(TRUE, 5):
+        gtk_vbox_new(TRUE, 5);
     gtk_container_set_border_width(GTK_CONTAINER(box), 5);
     gtk_container_add(GTK_CONTAINER(tb->preview_panel_box), box);
 

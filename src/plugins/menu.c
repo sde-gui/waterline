@@ -233,18 +233,13 @@ static void on_add_menu_item_to_desktop(GtkMenuItem* item, MenuCacheApp* app)
     g_free(dest);
 }
 
-/* TODO: add menu item to panel */
 
-static void on_add_menu_item_to_panel(GtkMenuItem* item, MenuCacheApp* app)
+static Plugin * get_launchbar_plugin(void)
 {
     /* Find a penel containing launchbar applet.
      * The launchbar with most buttons will be choosen if
      * there are several launchbar applets loaded.
      */
-
-    /*
-    FIXME: let user choose launchbar
-    */
 
     GSList * l;
     Plugin * lb = NULL;
@@ -269,13 +264,17 @@ static void on_add_menu_item_to_panel(GtkMenuItem* item, MenuCacheApp* app)
         }
     }
 
-#if 0
-    if( ! lb ) /* launchbar is not currently in use */
-    {
-        /* FIXME: add a launchbar plugin to the panel which has a menu, too. */
-    }
-#endif
+    return lb;
+}
 
+
+static void on_add_menu_item_to_panel(GtkMenuItem* item, MenuCacheApp* app)
+{
+    /*
+    FIXME: let user choose launchbar
+    */
+
+    Plugin * lb = get_launchbar_plugin();
     if (lb)
     {
         lb->class->add_launch_item(lb, menu_cache_item_get_file_basename(MENU_CACHE_ITEM(app)));
@@ -319,7 +318,7 @@ static gboolean on_menu_button_press(GtkWidget* mi, GdkEventButton* evt, MenuCac
         g_signal_connect(item, "activate", G_CALLBACK(on_add_menu_item_to_desktop), data);
         gtk_menu_shell_append(GTK_MENU_SHELL(p), item);
 
-        if (1)
+        if (get_launchbar_plugin())
         {
             item = gtk_menu_item_new_with_label(_("Add to launch bar"));
             g_signal_connect(item, "activate", G_CALLBACK(on_add_menu_item_to_panel), data);

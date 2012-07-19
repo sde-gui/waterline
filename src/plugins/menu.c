@@ -234,51 +234,53 @@ static void on_add_menu_item_to_desktop(GtkMenuItem* item, MenuCacheApp* app)
 }
 
 /* TODO: add menu item to panel */
-#if 0
+
 static void on_add_menu_item_to_panel(GtkMenuItem* item, MenuCacheApp* app)
 {
     /* Find a penel containing launchbar applet.
      * The launchbar with most buttons will be choosen if
      * there are several launchbar applets loaded.
      */
-    GSList* l;
-    Plugin* lb = NULL;
-    int n_btns = -1;
 
-    for(l = all_panels; !lb && l; l = l->next)
+    /*
+    FIXME: let user choose launchbar
+    */
+
+    GSList * l;
+    Plugin * lb = NULL;
+    int prio = -1;
+
+    for (l = all_panels; !lb && l; l = l->next)
     {
-        Panel* panel = (Panel*)l->data;
-        GList* pl;
-        for(pl=panel->plugins; pl; pl = pl->next)
+        Panel * panel = (Panel *) l->data;
+        GList * pl;
+        for (pl = panel->plugins; pl; pl = pl->next)
         {
-            Plugin* plugin = (Plugin*)pl;
-            if( strcmp(plugin->class->type, "launchbar") == 0 )
+            Plugin* plugin = (Plugin *) pl->data;
+            if (plugin->class->add_launch_item && plugin->class->get_priority_of_launch_item_adding)
             {
-                /* FIXME: should we let the users choose which launcherbar to add the btn? */
-                break;
-#if 0
-                int n = launchbar_get_n_btns(plugin);
-                if( n > n_btns )
+                int n = plugin->class->get_priority_of_launch_item_adding(plugin);
+                if( n > prio )
                 {
                     lb = plugin;
-                    n_btns = n;
+                    prio = n;
                 }
-#endif
             }
         }
     }
 
+#if 0
     if( ! lb ) /* launchbar is not currently in use */
     {
         /* FIXME: add a launchbar plugin to the panel which has a menu, too. */
     }
+#endif
 
-    if( lb )
+    if (lb)
     {
-
+        lb->class->add_launch_item(lb, menu_cache_item_get_file_basename(MENU_CACHE_ITEM(app)));
     }
 }
-#endif
 
 static void on_menu_item_properties(GtkMenuItem* item, MenuCacheApp* app)
 {
@@ -316,6 +318,13 @@ static gboolean on_menu_button_press(GtkWidget* mi, GdkEventButton* evt, MenuCac
         item = gtk_menu_item_new_with_label(_("Add to desktop"));
         g_signal_connect(item, "activate", G_CALLBACK(on_add_menu_item_to_desktop), data);
         gtk_menu_shell_append(GTK_MENU_SHELL(p), item);
+
+        if (1)
+        {
+            item = gtk_menu_item_new_with_label(_("Add to launch bar"));
+            g_signal_connect(item, "activate", G_CALLBACK(on_add_menu_item_to_panel), data);
+            gtk_menu_shell_append(GTK_MENU_SHELL(p), item);
+        }
 
         tmp = g_find_program_in_path("lxshortcut");
         if( tmp )

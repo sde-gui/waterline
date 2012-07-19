@@ -65,13 +65,15 @@ struct _PluginClass {
     char * version;				/* Version of plugin */
     char * description;				/* Brief textual description of plugin for selection UI */
 
-    int (*constructor)(struct _Plugin * plugin, char ** fp);		/* Create an instance of the plugin */
+    int  (*constructor)(struct _Plugin * plugin, char ** fp);		/* Create an instance of the plugin */
     void (*destructor)(struct _Plugin * plugin);			/* Destroy an instance of the plugin */
     void (*config)(struct _Plugin * plugin, GtkWindow * parent);	/* Request the plugin to display its configuration dialog */
     void (*save)(struct _Plugin * plugin, FILE * fp);			/* Request the plugin to save its configuration to a file */
     void (*panel_configuration_changed)(struct _Plugin * plugin);	/* Request the plugin to do a full redraw after a panel configuration change */
     void (*run_command)(struct _Plugin * plugin, char ** argv, int argc);
     void (*open_system_menu)(struct _Plugin * plugin);
+    void (*add_launch_item)(struct _Plugin * plugin, const char * name);
+    int  (*get_priority_of_launch_item_adding)(struct _Plugin * plugin);
 };
 
 /* Representative of a loaded and active plugin attached to a panel. */

@@ -886,6 +886,21 @@ static void launchbar_panel_configuration_changed(Plugin * p)
             lxpanel_load_icon(GTK_STOCK_ADD, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), FALSE));
 }
 
+static void launchbar_add_launch_item(struct _Plugin * plugin, const char * name)
+{
+    LaunchbarPlugin * lb = (LaunchbarPlugin *) plugin->priv;
+    LaunchButton * defined_button = g_new0(LaunchButton, 1);
+    defined_button->plugin = plugin;
+    defined_button->desktop_id = g_strdup(name);
+    launchbutton_build_gui(plugin, defined_button);
+}
+
+static int launchbar_get_priority_of_launch_item_adding(struct _Plugin * plugin)
+{
+    LaunchbarPlugin * lb = (LaunchbarPlugin *) plugin->priv;
+    return g_slist_length(lb->buttons);
+}
+
 /* Plugin descriptor. */
 PluginClass launchbar_plugin_class = {
 
@@ -900,5 +915,7 @@ PluginClass launchbar_plugin_class = {
     destructor  : launchbar_destructor,
     config : launchbar_configure,
     save : launchbar_save_configuration,
-    panel_configuration_changed : launchbar_panel_configuration_changed
+    panel_configuration_changed : launchbar_panel_configuration_changed,
+    add_launch_item : launchbar_add_launch_item,
+    get_priority_of_launch_item_adding : launchbar_get_priority_of_launch_item_adding
 };

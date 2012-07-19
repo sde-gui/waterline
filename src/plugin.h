@@ -71,6 +71,7 @@ struct _PluginClass {
     void (*save)(struct _Plugin * plugin, FILE * fp);			/* Request the plugin to save its configuration to a file */
     void (*panel_configuration_changed)(struct _Plugin * plugin);	/* Request the plugin to do a full redraw after a panel configuration change */
     void (*run_command)(struct _Plugin * plugin, char ** argv, int argc);
+    void (*open_system_menu)(struct _Plugin * plugin);
 };
 
 /* Representative of a loaded and active plugin attached to a panel. */
@@ -82,6 +83,8 @@ struct _Plugin {
     int padding;				/* Padding setting for container */
     int border;					/* Border setting for container */
     gpointer priv;				/* Private context for plugin; plugin frees this in its destructor */
+
+    gboolean has_system_menu;
 
     GtkAllocation pwid_allocation;
     gboolean background_update_scheduled;

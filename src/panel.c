@@ -50,10 +50,6 @@
 
 extern void gtk_run(void);
 
-/* defined in plugins/menu.c */
-
-extern gboolean show_system_menu(gpointer system_menu);
-
 /* defined in configurator.c */
 
 extern void restart(void);
@@ -671,23 +667,32 @@ static void cmd_run(char ** argv, int argc)
 #endif
 }
 
-static void cmd_menu(char ** argv, int argc)
+static gboolean show_system_menu()
 {
-#ifndef DISABLE_MENU
-        GSList* l;
-        for( l = all_panels; l; l = l->next )
+    GSList * l1;
+    for (l1 = all_panels; l1; l1 = l1->next)
+    {
+        Panel * p = (Panel *) l1->data;
+
+        GList * l2;
+        for (l2 = p->plugins; l2; l2 = l2->next)
         {
-            Panel* p = (Panel*)l->data;
-            if( p->system_menus )
+            Plugin * pl = (Plugin *) l2->data;
+            if (pl->has_system_menu && pl->class->open_system_menu)
             {
-                /* show_system_menu( p->system_menus->data ); */
-                /* FIXME: I've no idea why this doesn't work without timeout
-                          under some WMs, like icewm. */
-                g_timeout_add( 200, (GSourceFunc)show_system_menu,
-                               p->system_menus->data );
+                pl->class->open_system_menu(pl);
+                return FALSE;
             }
         }
-#endif
+    }
+    return FALSE;
+}
+
+static void cmd_menu(char ** argv, int argc)
+{
+    /* FIXME: I've no idea why this doesn't work without timeout
+       under some WMs, like icewm. */
+    g_timeout_add( 200, (GSourceFunc)show_system_menu, NULL );
 }
 
 static void cmd_config(char ** argv, int argc)
@@ -2219,18 +2224,12 @@ static void panel_destroy(Panel *p)
     g_list_free(p->plugins);
     p->plugins = NULL;
 
-    if( p->system_menus ){
-        do{
-        } while ( g_source_remove_by_user_data( p->system_menus ) );
-    }
-
     gtk_window_group_remove_window( window_group, GTK_WINDOW(  p->topgwin ) );
 
     if( p->topgwin )
         gtk_widget_destroy(p->topgwin);
     g_free(p->workarea);
     g_free( p->background_file );
-    g_slist_free( p->system_menus );
     gdk_flush();
     XFlush(GDK_DISPLAY());
     XSync(GDK_DISPLAY(), True);

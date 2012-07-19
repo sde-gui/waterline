@@ -76,7 +76,6 @@ typedef struct {
     gulong handler_id;
     int iconsize, paneliconsize;
     GSList *files;
-    gboolean has_system_menu;
     char* config_data;
     int sysmenu_pos;
     char *config_start, *config_end;
@@ -104,9 +103,6 @@ menu_destructor(Plugin *p)
         g_source_remove( idle_loader );
         idle_loader = 0;
     }
-
-    if( m->has_system_menu )
-        p->panel->system_menus = g_slist_remove( p->panel->system_menus, p );
 
     g_signal_handler_disconnect(G_OBJECT(m->img), m->handler_id);
     gtk_widget_destroy(m->menu);
@@ -554,12 +550,11 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, Plugin* plugin)
     RET(TRUE);
 }
 
-gboolean show_system_menu( gpointer system_menu )
+static
+void menu_open_system_menu(struct _Plugin * p)
 {
-    Plugin* p = (Plugin*)system_menu;
     menup* m = (menup*)p->priv;
     show_menu( m->img, p, 0, GDK_CURRENT_TIME );
-    return FALSE;
 }
 
 static GtkWidget *
@@ -906,9 +901,7 @@ read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
     }
 
     sys_menu_insert_items( m, menu, -1 );
-    m->has_system_menu = TRUE;
-
-    p->panel->system_menus = g_slist_append( p->panel->system_menus, p );
+    p->has_system_menu = TRUE;
 }
 
 static void
@@ -1185,6 +1178,7 @@ PluginClass menu_plugin_class = {
     destructor  : menu_destructor,
     config : menu_config,
     save : save_config,
-    panel_configuration_changed : menu_panel_configuration_changed
+    panel_configuration_changed : menu_panel_configuration_changed,
+    open_system_menu : menu_open_system_menu
 };
 

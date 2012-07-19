@@ -76,7 +76,6 @@ struct _Panel {
     char* background_file;
 
     GList * plugins;			/* List of all plugins */
-    GSList * system_menus;		/* List of plugins having menus */
 
     GtkWidget* plugin_pref_dialog;	/* Plugin preference dialog */
     GtkWidget* pref_dialog;		/* preference dialog */

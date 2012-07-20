@@ -1302,6 +1302,9 @@ static void panel_size_position_changed(Panel *p, gboolean position_changed)
             }
         }
     }
+
+    if (p->stretch_background)
+        panel_update_background(p);
 }
 
 /* size-allocate signal handler */

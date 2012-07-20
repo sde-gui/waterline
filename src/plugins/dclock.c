@@ -404,7 +404,10 @@ static int dclock_constructor(Plugin * p, char ** fp)
      * Only one of these is visible at a time, controlled by user preference. */
     dc->clock_label = gtk_label_new(NULL);
     gtk_misc_set_alignment(GTK_MISC(dc->clock_label), 0.5, 0.5);
-    gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
+    if (panel_get_orientation(dc->plugin->panel) == ORIENT_HORIZ)
+        gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
+    else
+        gtk_misc_set_padding(GTK_MISC(dc->clock_label), 0, 4);
     gtk_container_add(GTK_CONTAINER(hbox), dc->clock_label);
     dc->clock_icon = gtk_image_new();
     gtk_container_add(GTK_CONTAINER(hbox), dc->clock_icon);
@@ -467,6 +470,11 @@ static void dclock_apply_configuration(Plugin * p)
         gtk_widget_show(dc->clock_label);
         gtk_widget_hide(dc->clock_icon);
     }
+
+    if (panel_get_orientation(dc->plugin->panel) == ORIENT_HORIZ)
+        gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
+    else
+        gtk_misc_set_padding(GTK_MISC(dc->clock_label), 0, 4);
 
     if (dc->center_text)
         gtk_label_set_justify(GTK_LABEL(dc->clock_label), GTK_JUSTIFY_CENTER);

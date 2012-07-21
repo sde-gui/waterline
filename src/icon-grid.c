@@ -41,6 +41,9 @@ enum {
    GEOMETRY_DEMAND_RESIZE
 };
 
+
+#define DPRINT(fmt, args...) if (ig->debug_output) { g_print(fmt, ## args); }
+
 /* Establish the widget placement of an icon grid. */
 static gboolean icon_grid_placement(IconGrid * ig)
 {
@@ -67,6 +70,9 @@ static gboolean icon_grid_placement(IconGrid * ig)
     /* Get the required container geometry if all elements get the client's desired allocation. */
     int container_width_needed = (ig->columns * (child_width + ig->spacing)) - ig->spacing + ig->separator_size * ig->col_separators;
     int container_height_needed = (ig->rows * (child_height + ig->spacing)) - ig->spacing + ig->separator_size * ig->row_separators;;
+
+    DPRINT("container_width_needed: %d\n", container_width_needed);
+    DPRINT("container_height_needed: %d\n", container_height_needed);
 
     int centering_offset_x = 0;
     int centering_offset_y = 0;
@@ -109,6 +115,10 @@ static gboolean icon_grid_placement(IconGrid * ig)
     centering_offset_x = centering_offset_x < ig->border ? ig->border : centering_offset_x;
     centering_offset_y = centering_offset_y < ig->border ? ig->border : centering_offset_y;
 
+    DPRINT("border: %d\n", ig->border);
+    DPRINT("centering_offset_x: %d\n", centering_offset_x);
+    DPRINT("centering_offset_y: %d\n", centering_offset_y);
+
     /* Initialize parameters to control repositioning each visible child. */
     GtkTextDirection direction = gtk_widget_get_direction(ig->container);
     int limit = ((ig->orientation == GTK_ORIENTATION_HORIZONTAL)
@@ -138,6 +148,8 @@ static gboolean icon_grid_placement(IconGrid * ig)
     int y = centering_offset_y;
     gboolean contains_sockets = FALSE;
     gboolean first = TRUE;
+    int children_count = 0;
+
     for (ige = ig->child_list; ige != NULL; ige = ige->flink)
     {
         if (!ige->visible)
@@ -190,11 +202,17 @@ static gboolean icon_grid_placement(IconGrid * ig)
         gtk_fixed_move(GTK_FIXED(ig->widget), ige->widget, x, y);
         gtk_widget_queue_draw(ige->widget);
 
+        children_count++;
+        DPRINT("#%d: x = %d, y = %d\n", children_count, x, y);
+
         /* Note if a socket is placed. */
         if (GTK_IS_SOCKET(ige->widget))
             contains_sockets = TRUE;
 
         prev_is_separator = ige->separator && ig->use_separators;
+
+        if (prev_is_separator)
+            DPRINT("#%d: prev_is_separator\n");
     }
 
     /* Redraw the container. */
@@ -378,6 +396,9 @@ static void icon_grid_element_size_request(GtkWidget * widget, GtkRequisition * 
     IconGrid * ig = ige->ig;
     requisition->width = ig->allocated_child_width;
     requisition->height = ig->allocated_child_height;
+
+    DPRINT("element-size-request: %d %d\n", requisition->width, requisition->height);
+
     RET();
 }
 
@@ -398,6 +419,9 @@ static void icon_grid_size_request(GtkWidget * widget, GtkRequisition * requisit
         gtk_widget_hide(ig->widget);	/* Necessary to get the plugin to disappear */
     else
         gtk_widget_show(ig->widget);
+
+    DPRINT("size-request: %d %d\n", requisition->width, requisition->height);
+
     RET();
 }
 
@@ -406,6 +430,8 @@ static void icon_grid_size_allocate(GtkWidget * widget, GtkAllocation * allocati
 {
     ENTER;
     //g_print("[0x%x] icon_grid_size_allocate: %d %d %d %d\n", (int)ig, allocation->x, allocation->y, allocation->width, allocation->height);
+
+    DPRINT("size-allocate: %d %d %d %d\n", allocation->x, allocation->y, allocation->width, allocation->height);
 
     /* This is our notification that there is a resize of the entire panel.
      * Compute the geometry and recompute layout if the geometry changed. */
@@ -783,3 +809,9 @@ extern void icon_grid_to_be_removed(IconGrid * ig)
 {
     ig->to_be_removed = TRUE;
 }
+
+extern void icon_grid_debug_output(IconGrid * ig, gboolean debug_output)
+{
+    ig->debug_output = debug_output;
+}
+

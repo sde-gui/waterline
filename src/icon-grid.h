@@ -74,6 +74,8 @@ typedef struct _icon_grid {
     gboolean to_be_removed;
 
     guint placement_idle_cb;
+
+    gboolean debug_output;
 } IconGrid;
 
 extern IconGrid * icon_grid_new(
@@ -105,5 +107,7 @@ extern void icon_grid_to_be_removed(IconGrid * ig);
 extern void icon_grid_set_separator(IconGrid * ig, GtkWidget * child, gboolean separator);
 extern void icon_grid_use_separators(IconGrid * ig, gboolean use_separators);
 extern void icon_grid_set_separator_size(IconGrid * ig, int separator_size);
+
+extern void icon_grid_debug_output(IconGrid * ig, gboolean debug_output);
 
 #endif

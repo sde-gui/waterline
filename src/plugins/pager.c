@@ -729,6 +729,8 @@ static int pager_constructor(Plugin * plug, char ** fp)
         1, BORDER_WIDTH,
         panel_get_oriented_height_pixels(plug->panel));
 
+//    icon_grid_debug_output(pg->icon_grid, TRUE);
+
     /* Add GDK event filter. */
     gdk_window_add_filter(NULL, (GdkFilterFunc) pager_event_filter, pg);
 

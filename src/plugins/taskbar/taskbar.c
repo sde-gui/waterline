@@ -2573,6 +2573,10 @@ static void task_show_preview_panel(Task * tk)
     gtk_window_move(GTK_WINDOW(tb->preview_panel_window), px, py);
 
     gtk_widget_show_all(tb->preview_panel_window);
+
+    gtk_window_move(GTK_WINDOW(tb->preview_panel_window), px, py);
+
+    g_print("%d, %d\n", px, py);
 }
 
 /******************************************************************************/

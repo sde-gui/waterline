@@ -1946,7 +1946,7 @@ void panel_set_panel_configuration_changed(Panel *p)
 
     }
 
-    int max_icon_size = (p->orientation == ORIENT_HORIZ) ?  p->oriented_height : p->oriented_width;
+    int max_icon_size = p->oriented_height;
     p->icon_size = (p->preferred_icon_size < max_icon_size) ? p->preferred_icon_size : max_icon_size;
 
     if (p->orientation == ORIENT_HORIZ) {

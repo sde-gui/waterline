@@ -74,8 +74,8 @@ static gboolean icon_grid_placement(IconGrid * ig)
     DPRINT("container_width_needed: %d\n", container_width_needed);
     DPRINT("container_height_needed: %d\n", container_height_needed);
 
-    int centering_offset_x = 0;
-    int centering_offset_y = 0;
+    int centering_offset_x = ig->border;
+    int centering_offset_y = ig->border;
 
     /* Get the constrained child geometry if the allocated geometry is insufficient.
      * All children are still the same size and share equally in the deficit. */
@@ -112,6 +112,9 @@ static gboolean icon_grid_placement(IconGrid * ig)
     ig->allocated_child_width = child_width;
     ig->allocated_child_height = child_height;
 
+    DPRINT("child_width: %d\n", child_width);
+    DPRINT("child_height: %d\n", child_height);
+
     centering_offset_x = centering_offset_x < ig->border ? ig->border : centering_offset_x;
     centering_offset_y = centering_offset_y < ig->border ? ig->border : centering_offset_y;
 
@@ -126,7 +129,7 @@ static gboolean icon_grid_placement(IconGrid * ig)
         : centering_offset_x + (ig->columns * (child_width + ig->spacing)));
     int x_initial = ((direction == GTK_TEXT_DIR_RTL)
         ? ig->widget->allocation.width - child_width - centering_offset_x
-        : ig->border + centering_offset_x);
+        : centering_offset_x);
     int x_delta = child_width + ig->spacing;
     if (direction == GTK_TEXT_DIR_RTL) x_delta = - x_delta;
 
@@ -678,6 +681,10 @@ void icon_grid_set_geometry(IconGrid * ig,
     ig->spacing = spacing;
     ig->border = border;
     ig->target_dimension = target_dimension;
+
+    DPRINT("icon_grid_set_geometry: child_width = %d, child_height = %d, spacing = %d, border = %d, target_dimension = %d\n", 
+        ig->child_width, ig->child_height, ig->spacing,  ig->border, ig->target_dimension);
+
     icon_grid_demand_resize(ig);
 }
 
@@ -812,6 +819,14 @@ extern void icon_grid_to_be_removed(IconGrid * ig)
 
 extern void icon_grid_debug_output(IconGrid * ig, gboolean debug_output)
 {
-    ig->debug_output = debug_output;
+    if (debug_output && !ig->debug_output)
+    {
+        ig->debug_output = TRUE;
+        DPRINT("icon_grid: debug print enabled\n"
+               "child_width = %d, child_height = %d, spacing = %d, border = %d, target_dimension = %d\n", 
+               ig->child_width, ig->child_height, ig->spacing,  ig->border, ig->target_dimension);
+    }
+    else
+        ig->debug_output = debug_output;
 }
 

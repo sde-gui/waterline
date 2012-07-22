@@ -942,6 +942,13 @@ static gboolean panel_expose_event(GtkWidget *widget, GdkEventExpose *event, Pan
 
 /******************************************************************************/
 
+gboolean panel_is_composited(Panel * p)
+{
+    return gtk_widget_is_composited(p->topgwin);
+}
+
+/******************************************************************************/
+
 /*= panel's handlers for GTK events =*/
 
 static gint panel_delete_event(GtkWidget * widget, GdkEvent * event, gpointer data)

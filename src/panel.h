@@ -62,6 +62,7 @@ extern int panel_get_oriented_height_pixels(Panel * p);
 
 extern int panel_get_icon_size(Panel * p);
 
+extern gboolean panel_is_composited(Panel * p);
 
 extern int verbose;
 

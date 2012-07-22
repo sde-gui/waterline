@@ -4665,7 +4665,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     recompute_visibility |= tb->_show_single_group != show_single_group;
     recompute_visibility |= tb->use_group_separators_prev != tb->use_group_separators;
 
-    tb->thumbnails = (tb->thumbnails_preview || tb->use_thumbnails_as_icons) && is_xcomposite_available();
+    tb->thumbnails = (tb->thumbnails_preview || tb->use_thumbnails_as_icons) && panel_is_composited(tb->plug->panel);
 
     if (tb->dimm_iconified_prev != tb->dimm_iconified)
     {

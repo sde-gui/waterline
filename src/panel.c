@@ -2435,6 +2435,11 @@ static void usage(void)
     g_print("  --profile <name>   %s\n", _("Use specified profile"));
     g_print("  --kiosk-mode       %s\n", _("Enable kiosk mode"));
     g_print("  --quit-in-menu     %s\n", _("Display 'quit' command in popup menu"));
+    g_print("  --colormap <name>  %s\n", _("Force specified colormap (rgba, rgb, systemd, default)"));
+    g_print("  --force-compositing-wm-disabled\n"
+            "                     %s\n", _("Behave as if no compositing wm avaiable"));
+    g_print("  --force-composite-disabled\n"
+            "                     %s\n", _("Behave as if there is no compositing support at all"));
     g_print("\n");
     g_print(_("Short options:"));
     g_print("\n");
@@ -2442,7 +2447,7 @@ static void usage(void)
     g_print("  -p                 %s\n", _("same as --profile"));
     g_print("  -v                 %s\n", _("same as --version"));
     g_print("\n");
-    g_print(_("Visit http://lxde.org/ for detail."));
+    //g_print(_("Visit http://lxde.org/ for detail."));
     g_print("\n\n");
 }
 

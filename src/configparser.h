@@ -17,8 +17,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CONFIG_PARSER_H
-#define CONFIG_PARSER_H
+#ifndef _LXPANELX_CONFIG_PARSER_H
+#define _LXPANELX_CONFIG_PARSER_H
 
 #include <gtk/gtk.h>
 #include <stdio.h>

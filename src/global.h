@@ -17,8 +17,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#ifndef _LXPANELX_GLOBAL_H
+#define _LXPANELX_GLOBAL_H
 
 #include <X11/Xlib.h>
 #include <gtk/gtk.h>

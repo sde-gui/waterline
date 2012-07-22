@@ -17,8 +17,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef XSUPPORT_H
-#define XSUPPORT_H
+#ifndef _LXPANELX_XSUPPORT_H
+#define _LXPANELX_XSUPPORT_H
 
 #include <X11/X.h>
 

@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PLUGIN_H
-#define PLUGIN_H
+#ifndef _LXPANELX_PLUGIN_H
+#define _LXPANELX_PLUGIN_H
 
 #include <gmodule.h>
 

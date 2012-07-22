@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef LXPANEL_LIBFM_H
-#define LXPANEL_LIBFM_H
+#ifndef _LXPANELX_LIBFM_H
+#define _LXPANELX_LIBFM_H
 
 #include <gtk/gtk.h>
 

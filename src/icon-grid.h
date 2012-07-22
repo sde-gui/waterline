@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef ICON_GRID_H
-#define ICON_GRID_H
+#ifndef _LXPANELX_ICON_GRID_H
+#define _LXPANELX_ICON_GRID_H
 
 #include <gtk/gtk.h>
 

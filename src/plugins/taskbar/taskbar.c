@@ -924,7 +924,7 @@ static void taskbar_update_x_window_position(TaskbarPlugin * tb)
         {
             tk->x_window_position = p;
             gint32 data = p;
-            XChangeProperty(GDK_DISPLAY(), tk->win,
+            XChangeProperty(gdk_x11_get_default_xdisplay(), tk->win,
                 atom_LXPANEL_TASKBAR_WINDOW_POSITION,
                 XA_CARDINAL, 32, PropModeReplace, (guchar *) &data, 1);
         }
@@ -1203,7 +1203,7 @@ static gchar* task_read_wm_class(Task * tk) {
     XClassHint ch;
     ch.res_name = NULL;
     ch.res_class = NULL;
-    XGetClassHint(GDK_DISPLAY(), tk->win, &ch);
+    XGetClassHint(gdk_x11_get_default_xdisplay(), tk->win, &ch);
 
     gchar * res_class = NULL;
     if (ch.res_class != NULL)
@@ -1364,7 +1364,7 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
     /* Free thumbnails. */
     if (tk->backing_pixmap != 0)
-        XFreePixmap(GDK_DISPLAY(), tk->backing_pixmap);
+        XFreePixmap(gdk_x11_get_default_xdisplay(), tk->backing_pixmap);
     if (tk->thumbnail)
         g_object_unref(G_OBJECT(tk->thumbnail));
     if (tk->thumbnail_icon)
@@ -1488,7 +1488,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
 
     if (tk->backing_pixmap != 0)
     {
-        XFreePixmap(GDK_DISPLAY(), tk->backing_pixmap);
+        XFreePixmap(gdk_x11_get_default_xdisplay(), tk->backing_pixmap);
         tk->backing_pixmap = 0;
     }
 
@@ -1499,7 +1499,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
     {
         XWindowAttributes window_attributes;
         window_attributes.map_state = IsUnmapped;
-        /*status =*/ XGetWindowAttributes(GDK_DISPLAY(), tk->win, &window_attributes);
+        /*status =*/ XGetWindowAttributes(gdk_x11_get_default_xdisplay(), tk->win, &window_attributes);
         if (window_attributes.map_state == IsUnmapped)
         {
             skip = TRUE;
@@ -1516,7 +1516,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         Window *children_return = NULL;
         unsigned int nchildren_return;
 
-        /*status =*/ XQueryTree(GDK_DISPLAY(), w, &root_return, &parent_return, &children_return, &nchildren_return);
+        /*status =*/ XQueryTree(gdk_x11_get_default_xdisplay(), w, &root_return, &parent_return, &children_return, &nchildren_return);
         if (children_return)
             XFree(children_return);
 
@@ -1532,10 +1532,10 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         {
             XWindowAttributes window_attributes;
             window_attributes.map_state = IsUnmapped;
-            /*status =*/ XGetWindowAttributes(GDK_DISPLAY(), w, &window_attributes);
+            /*status =*/ XGetWindowAttributes(gdk_x11_get_default_xdisplay(), w, &window_attributes);
             if (window_attributes.map_state != IsUnmapped)
             {
-                tk->backing_pixmap = XCompositeNameWindowPixmap(GDK_DISPLAY(), w);
+                tk->backing_pixmap = XCompositeNameWindowPixmap(gdk_x11_get_default_xdisplay(), w);
             }
         }
 
@@ -2015,7 +2015,7 @@ static void task_close(Task * tk)
 
 static void task_iconify(Task * tk)
 {
-    XIconifyWindow(GDK_DISPLAY(), tk->win, DefaultScreen(GDK_DISPLAY()));
+    XIconifyWindow(gdk_x11_get_default_xdisplay(), tk->win, DefaultScreen(gdk_x11_get_default_xdisplay()));
 }
 
 static void task_raiseiconify(Task * tk, GdkEventButton * event)
@@ -2269,19 +2269,19 @@ static void task_raise_window(Task * tk, guint32 time)
         if (gdkwindow != NULL)
             gdk_window_show(gdkwindow);
         else
-            XMapRaised(GDK_DISPLAY(), tk->win);
+            XMapRaised(gdk_x11_get_default_xdisplay(), tk->win);
 
 	/* There is a race condition between the X server actually executing the XMapRaised and this code executing XSetInputFocus.
 	 * If the window is not viewable, the XSetInputFocus will fail with BadMatch. */
 	XWindowAttributes attr;
-	XGetWindowAttributes(GDK_DISPLAY(), tk->win, &attr);
+	XGetWindowAttributes(gdk_x11_get_default_xdisplay(), tk->win, &attr);
 	if (attr.map_state == IsViewable)
-            XSetInputFocus(GDK_DISPLAY(), tk->win, RevertToNone, time);
+            XSetInputFocus(gdk_x11_get_default_xdisplay(), tk->win, RevertToNone, time);
     }
 
     /* Change viewport if needed. */
     XWindowAttributes xwa;
-    XGetWindowAttributes(GDK_DISPLAY(), tk->win, &xwa);
+    XGetWindowAttributes(gdk_x11_get_default_xdisplay(), tk->win, &xwa);
     Xclimsg(tk->win, a_NET_DESKTOP_VIEWPORT, xwa.x, xwa.y, 0, 0, 0);
 }
 
@@ -2465,7 +2465,7 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
     state[0] = a_NET_WM_STATE_SKIP_PAGER;
     state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
     state[2] = a_NET_WM_STATE_STICKY;
-    XChangeProperty(GDK_DISPLAY(), GDK_WINDOW_XWINDOW(win->window), a_NET_WM_STATE, XA_ATOM,
+    XChangeProperty(gdk_x11_get_default_xdisplay(), GDK_WINDOW_XWINDOW(win->window), a_NET_WM_STATE, XA_ATOM,
           32, PropModeReplace, (unsigned char *) state, 3);
 */
 
@@ -3085,7 +3085,7 @@ static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc,
             data[1] = y;
             data[2] = alloc->width;
             data[3] = alloc->height;
-            XChangeProperty(GDK_DISPLAY(), tk->win,
+            XChangeProperty(gdk_x11_get_default_xdisplay(), tk->win,
                 gdk_x11_get_xatom_by_name("_NET_WM_ICON_GEOMETRY"),
                 XA_CARDINAL, 32, PropModeReplace, (guchar *) &data, 4);
         }
@@ -3204,7 +3204,7 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
      * Do not change event mask to gtk windows spawned by this gtk client
      * this breaks gtk internals */
     if (!is_my_own_window(tk->win))
-        XSelectInput(GDK_DISPLAY(), tk->win, PropertyChangeMask | StructureNotifyMask);
+        XSelectInput(gdk_x11_get_default_xdisplay(), tk->win, PropertyChangeMask | StructureNotifyMask);
 
     /* Allocate a toggle button as the top level widget. */
     tk->button = gtk_toggle_button_new();
@@ -4016,7 +4016,7 @@ static void menu_raise_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     if ((tb->menutask->desktop != ALL_WORKSPACES) && (tb->menutask->desktop != tb->current_desktop))
         Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, tb->menutask->desktop, 0, 0, 0, 0);
-    XMapRaised(GDK_DISPLAY(), tb->menutask->win);
+    XMapRaised(gdk_x11_get_default_xdisplay(), tb->menutask->win);
     taskbar_group_menu_destroy(tb);
 }
 
@@ -4697,7 +4697,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
 /* Plugin constructor. */
 static int taskbar_constructor(Plugin * p, char ** fp)
 {
-    atom_LXPANEL_TASKBAR_WINDOW_POSITION = XInternAtom( GDK_DISPLAY(), "_LXPANEL_TASKBAR_WINDOW_POSITION", False );
+    atom_LXPANEL_TASKBAR_WINDOW_POSITION = XInternAtom( gdk_x11_get_default_xdisplay(), "_LXPANEL_TASKBAR_WINDOW_POSITION", False );
 
     /* Allocate plugin context and set into Plugin private data pointer. */
     TaskbarPlugin * tb = g_new0(TaskbarPlugin, 1);

@@ -1349,7 +1349,7 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
         g_free(tk->run_path);
 
     if (tk->preview_image)
-        gtk_widget_unref(tk->preview_image);
+        g_object_unref(G_OBJECT(tk->preview_image));
 
     if (tk == tb->popup_task ||
         (tb->popup_task && tb->popup_task->task_class && tb->popup_task->task_class == tk->task_class))
@@ -2034,7 +2034,7 @@ static void task_raiseiconify(Task * tk, GdkEventButton * event)
 
 static void task_maximize(Task* tk)
 {
-    GdkWindow * win = gdk_window_foreign_new(tk->win);
+    GdkWindow * win = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), tk->win);
     if (tk->maximized) {
         gdk_window_unmaximize(win);
     } else {
@@ -2265,7 +2265,7 @@ static void task_raise_window(Task * tk, guint32 time)
         Xclimsg(tk->win, a_NET_ACTIVE_WINDOW, 2, time, 0, 0, 0);
     else
     {
-        GdkWindow * gdkwindow = gdk_xid_table_lookup(tk->win);
+        GdkWindow * gdkwindow = gdk_x11_window_lookup_for_display(gdk_display_get_default(), tk->win);
         if (gdkwindow != NULL)
             gdk_window_show(gdkwindow);
         else
@@ -2449,7 +2449,7 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
     gtk_window_set_keep_above(GTK_WINDOW(win), TRUE);
     gtk_window_stick(GTK_WINDOW(win));
 
-    GTK_WIDGET_UNSET_FLAGS(win, GTK_CAN_FOCUS);
+    gtk_widget_set_can_focus(win, FALSE);
 
     g_signal_connect(G_OBJECT (win), "size-allocate", G_CALLBACK(preview_panel_size_allocate), (gpointer) tb);
     g_signal_connect(G_OBJECT (win), "configure-event",  G_CALLBACK(preview_panel_configure_event), (gpointer) tb);
@@ -2537,10 +2537,10 @@ static void task_show_preview_panel(Task * tk)
 //        g_signal_connect(button, "button_release_event", G_CALLBACK(preview_panel_release_event), (gpointer) tk_cursor);
 
         if (tk_cursor->preview_image)
-            gtk_widget_unref(tk_cursor->preview_image);
+            g_object_unref(G_OBJECT(tk_cursor->preview_image));
         tk_cursor->preview_image = gtk_image_new_from_pixbuf(
             tk_cursor->thumbnail_preview ? tk_cursor->thumbnail_preview : tk_cursor->icon_pixbuf);
-        gtk_widget_ref(tk_cursor->preview_image);
+        g_object_unref(G_OBJECT(tk_cursor->preview_image));
 
         GtkWidget * image = tk_cursor->preview_image;
 
@@ -3071,7 +3071,7 @@ static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc,
     if (size_changed)
         tk->adapt_to_allocated_size_idle_cb = g_idle_add((GSourceFunc) task_adapt_to_allocated_size, tk);
 
-    if (GTK_WIDGET_REALIZED(btn))
+    if (gtk_widget_get_realized(btn))
     {
         /* Get the coordinates of the button. */
         int x, y;
@@ -3250,8 +3250,8 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
 
     /* Add the button to the taskbar. */
     icon_grid_add(tb->icon_grid, tk->button, FALSE);
-    GTK_WIDGET_UNSET_FLAGS(tk->button, GTK_CAN_FOCUS);
-    GTK_WIDGET_UNSET_FLAGS(tk->button, GTK_CAN_DEFAULT);
+    gtk_widget_set_can_focus(tk->button, FALSE);
+    gtk_widget_set_can_default(tk->button, FALSE);
 
     /* Update styles on the button. */
     task_update_style(tk, tb);
@@ -4566,7 +4566,7 @@ static void taskbar_build_gui(Plugin * p)
     /* Allocate top level widget and set into Plugin widget pointer. */
     p->pwid = gtk_event_box_new();
     gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
-    GTK_WIDGET_SET_FLAGS(p->pwid, GTK_NO_WINDOW);
+    gtk_widget_set_has_window(p->pwid, FALSE);
     gtk_widget_set_name(p->pwid, "taskbar");
 
     /* Make container for task buttons as a child of top level widget. */

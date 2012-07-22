@@ -34,6 +34,7 @@
 #include <string.h>
 #include <gdk/gdkx.h>
 
+#include "global.h"
 #include "plugin.h"
 #include "panel.h"
 #include "panel_private.h"

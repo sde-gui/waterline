@@ -22,6 +22,7 @@
 #include <gtk/gtk.h>
 #include <glib.h>
 
+#include "global.h"
 #include "plugin.h"
 #include "misc.h"
 #include "panel.h"

@@ -40,6 +40,7 @@
 #include <glib/gi18n.h>
 
 #include "gtkcompat.h"
+#include "global.h"
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"

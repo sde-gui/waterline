@@ -23,6 +23,7 @@
 
 #define _LXPANEL_INTERNALS
 
+#include "global.h"
 #include "plugin.h"
 #include "panel.h"
 #include "panel_private.h"

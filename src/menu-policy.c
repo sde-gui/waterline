@@ -21,6 +21,7 @@
 #include <menu-cache.h>
 #include <glib.h>
 
+#include "global.h"
 #include "menu-policy.h"
 #include "panel.h"
 

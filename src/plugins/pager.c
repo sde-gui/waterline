@@ -28,6 +28,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
+#include "global.h"
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"

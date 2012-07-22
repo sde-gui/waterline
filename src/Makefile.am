@@ -25,6 +25,7 @@ MENU_SOURCES = \
 endif
 
 lxpanelx_SOURCES = \
+	global.h \
 	misc.c misc.h \
 	defaultapplications.c defaultapplications.h \
 	libfm.c libfm.h \

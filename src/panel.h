@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2011-2012 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,9 +25,6 @@
 #include <gdk/gdk.h>
 
 #include "config.h"
-
-#include "bg.h"
-#include "ev.h"
 
 enum { ALIGN_NONE, ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT  };
 enum { EDGE_NONE, EDGE_LEFT, EDGE_RIGHT, EDGE_TOP, EDGE_BOTTOM };
@@ -64,23 +62,9 @@ extern int panel_get_icon_size(Panel * p);
 
 extern gboolean panel_is_composited(Panel * p);
 
-extern int verbose;
-
-extern FbEv *fbev;
-
-extern void panel_apply_icon(GtkWindow *w);
 extern void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean bold, gboolean custom_color);
 extern void panel_image_set_from_file(Panel * p, GtkWidget * image, char * file);
 extern gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const gchar * icon);
-
-extern int panel_handle_x_error(Display * d, XErrorEvent * ev);
-extern int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent * ev);
-
-extern const char* lxpanel_get_logout_command();
-extern const char* lxpanel_get_file_manager();
-extern const char* lxpanel_get_terminal();
-
-int lxpanel_is_in_kiosk_mode(void);
 
 #ifdef _LXPANEL_INTERNALS
 
@@ -98,11 +82,6 @@ extern void panel_autohide_conditions_changed(Panel* p);
 extern void panel_require_update_background(Panel* p);
 
 extern Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name);
-
-/* to check if we are in LXDE */
-extern gboolean is_in_lxde;
-
-extern gchar *cprofile;
 
 #endif
 

@@ -26,7 +26,6 @@
 
 #include "config.h"
 
-#include "bg.h"
 #include "ev.h"
 
 extern int verbose;

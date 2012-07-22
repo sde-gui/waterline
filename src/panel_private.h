@@ -19,6 +19,9 @@
 
 #ifndef PANEL_PRIVATE_H
 #define PANEL_PRIVATE_H
+
+#include "bg.h"
+
 struct _Panel {
     char* name;
     GtkWidget * topgwin;		/* Main panel window */

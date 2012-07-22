@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef DEFAULT_APPLICATIONS_H
-#define DEFAULT_APPLICATIONS_H
+#ifndef _LXPANELX_DEFAULT_APPLICATIONS_H
+#define _LXPANELX_DEFAULT_APPLICATIONS_H
 
 char * get_default_application(char * type);
 

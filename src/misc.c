@@ -51,6 +51,7 @@
 #include <pwd.h>
 #include <grp.h>
 
+#include "global.h"
 #include "misc.h"
 #include "panel.h"
 #include "Xsupport.h"

@@ -129,7 +129,7 @@ static void dirmenu_menuitem_open_directory_plain(GtkWidget * item, Plugin * p)
 
 static gboolean dirmenu_menuitem_button_press(GtkWidget * item, GdkEventButton* evt, Plugin * p)
 {
-    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    //DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
 
     if (evt->button == 3)  /* right */
     {
@@ -539,7 +539,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         filemenu = submenu;
     }
 
-    char submenu_index_len = 0;
+    int  submenu_index_len = 0;
     char submenu_index[20] = {0};
     int  submenu_item_count = 0;
     GtkWidget * filesubmenu = NULL;

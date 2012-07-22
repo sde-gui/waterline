@@ -215,7 +215,7 @@ static gboolean icon_grid_placement(IconGrid * ig)
         prev_is_separator = ige->separator && ig->use_separators;
 
         if (prev_is_separator)
-            DPRINT("#%d: prev_is_separator\n");
+            DPRINT("#%d: prev_is_separator\n", children_count);
     }
 
     /* Redraw the container. */

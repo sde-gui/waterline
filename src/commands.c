@@ -23,6 +23,7 @@
 #endif
 
 #include "commands.h"
+#include "global.h"
 #include "panel.h"
 #include "plugin.h"
 #include "misc.h"

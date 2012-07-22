@@ -669,7 +669,7 @@ static void tray_expose_icon(GtkWidget * widget, gpointer data)
 
 static void tray_expose_box(GtkWidget * box, GdkEventExpose * event, gpointer data)
 {
-  TrayPlugin * tr = (TrayPlugin *) data;
+  //TrayPlugin * tr = (TrayPlugin *) data;
 
   cairo_t * cr = gdk_cairo_create (gtk_widget_get_window (box));
 

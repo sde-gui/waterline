@@ -950,10 +950,10 @@ static gboolean panel_expose_event(GtkWidget *widget, GdkEventExpose *event, Pan
 
 gboolean panel_is_composited(Panel * p)
 {
-    return !force_compositing_wm_disabled && panel_is_composite_avaiable(p) && gtk_widget_is_composited(p->topgwin);
+    return !force_compositing_wm_disabled && panel_is_composite_available(p) && gtk_widget_is_composited(p->topgwin);
 }
 
-gboolean panel_is_composite_avaiable(Panel * p)
+gboolean panel_is_composite_available(Panel * p)
 {
     return !force_composite_disabled && is_xcomposite_available();
 }

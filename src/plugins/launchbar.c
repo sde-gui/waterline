@@ -34,6 +34,7 @@
 
 #include <menu-cache.h>
 
+#include "global.h"
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
@@ -892,7 +893,7 @@ static void launchbar_panel_configuration_changed(Plugin * p)
 
 static void launchbar_add_launch_item(struct _Plugin * plugin, const char * name)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) plugin->priv;
+    //LaunchbarPlugin * lb = (LaunchbarPlugin *) plugin->priv;
     LaunchButton * defined_button = g_new0(LaunchButton, 1);
     defined_button->plugin = plugin;
     defined_button->desktop_id = g_strdup(name);

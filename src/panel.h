@@ -66,6 +66,9 @@ extern void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gbo
 extern void panel_image_set_from_file(Panel * p, GtkWidget * image, char * file);
 extern gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const gchar * icon);
 
+extern GList * panel_get_plugins(Panel * p);
+
+
 #ifdef _LXPANEL_INTERNALS
 
 #include "plugin.h"

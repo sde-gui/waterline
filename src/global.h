@@ -38,6 +38,8 @@ extern void panel_apply_icon(GtkWindow *w);
 extern int panel_handle_x_error(Display * d, XErrorEvent * ev);
 extern int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent * ev);
 
+extern GSList * get_all_panels(void);
+
 extern const char* lxpanel_get_logout_command();
 extern const char* lxpanel_get_file_manager();
 extern const char* lxpanel_get_terminal();

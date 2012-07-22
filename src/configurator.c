@@ -57,7 +57,6 @@ static int kiosk_mode = 0;
 
 static int arg_kiosk_mode = 0;
 
-extern GSList* all_panels;
 extern gchar *cprofile;
 extern int config;
 
@@ -103,12 +102,12 @@ static gboolean edge_selector(Panel* p, int edge)
 gboolean panel_edge_available(Panel* p, int edge)
 {
     GSList* l;
-    for (l = all_panels; l != NULL; l = l->next)
-        {
+    for (l = get_all_panels(); l != NULL; l = l->next)
+    {
         Panel* pl = (Panel*) l->data;
         if ((pl != p) && (pl->edge == edge))
             return FALSE;
-        }
+    }
     return TRUE;
 }
 

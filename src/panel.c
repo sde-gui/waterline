@@ -1709,6 +1709,18 @@ void lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * eve
 
 /******************************************************************************/
 
+GSList * get_all_panels()
+{
+    return all_panels;
+}
+
+GList * panel_get_plugins(Panel * p)
+{
+    return p->plugins;
+}
+
+/******************************************************************************/
+
 /* Set an image from a file with scaling to the panel icon size. */
 void panel_image_set_from_file(Panel * p, GtkWidget * image, char * file)
 {

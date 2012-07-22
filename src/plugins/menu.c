@@ -31,14 +31,13 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "global.h"
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
 #include "bg.h"
 #include "menu-policy.h"
 #include "commands.h"
-
-#include "panel_private.h" /* FIXME! */
 
 #include "dbg.h"
 
@@ -88,10 +87,6 @@ typedef struct {
 static guint idle_loader = 0;
 
 GQuark SYS_MENU_ITEM_ID = 0;
-
-/* a single-linked list storing all panels */
-extern GSList* all_panels;
-
 
 static void
 menu_destructor(Plugin *p)
@@ -245,11 +240,11 @@ static Plugin * get_launchbar_plugin(void)
     Plugin * lb = NULL;
     int prio = -1;
 
-    for (l = all_panels; !lb && l; l = l->next)
+    for (l = get_all_panels(); !lb && l; l = l->next)
     {
         Panel * panel = (Panel *) l->data;
         GList * pl;
-        for (pl = panel->plugins; pl; pl = pl->next)
+        for (pl = panel_get_plugins(panel); pl; pl = pl->next)
         {
             Plugin* plugin = (Plugin *) pl->data;
             if (plugin->class->add_launch_item && plugin->class->get_priority_of_launch_item_adding)

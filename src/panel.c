@@ -1095,10 +1095,13 @@ void panel_update_background(Panel * p)
     }
 
     /* Redraw the top level widget. */
-    panel_determine_background_pixmap(p, p->topgwin, p->topgwin->window);
-    gdk_window_clear(p->topgwin->window);
+    if (gtk_widget_get_realized(p->topgwin))
+    {
+        panel_determine_background_pixmap(p, p->topgwin, p->topgwin->window);
+        gdk_window_clear(p->topgwin->window);
+    }
     gtk_widget_queue_draw(p->topgwin);
-
+#if 0
     /* Loop over all plugins redrawing each plugin. */
     GList * l;
     for (l = p->plugins; l != NULL; l = l->next)
@@ -1107,6 +1110,7 @@ void panel_update_background(Panel * p)
         if (pl->pwid != NULL)
             plugin_widget_set_background(pl->pwid, p);
     }
+#endif
 }
 
 static gboolean delay_update_background( Panel* p )

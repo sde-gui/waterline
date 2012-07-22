@@ -38,7 +38,6 @@ lxpanelx_SOURCES = \
 	configurator.c \
 	dbg.c dbg.h \
 	ev.c ev.h \
-	gtkbar.h gtkbar.c \
 	icon-grid.h icon-grid.c \
 	panel.c panel.h panel_private.h \
 	plugin.c plugin.h \

@@ -46,7 +46,6 @@
 #include "plugin.h"
 #include "Xsupport.h"
 #include "icon.xpm"
-#include "gtkbar.h"
 #include "icon-grid.h"
 
 //#define DEBUG

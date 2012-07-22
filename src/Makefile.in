@@ -73,10 +73,9 @@ am__lxpanelx_SOURCES_DIST = global.h misc.c misc.h \
 	defaultapplications.c defaultapplications.h libfm.c libfm.h \
 	bg.c bg.h commands.c commands.h configparser.c configparser.h \
 	generic_config_dlg.c Xsupport.c Xsupport.h pixbuf-stuff.c \
-	pixbuf-stuff.h configurator.c dbg.c dbg.h ev.c ev.h gtkbar.h \
-	gtkbar.c icon-grid.h icon-grid.c panel.c panel.h \
-	panel_private.h plugin.c plugin.h gtk-run.c menu-policy.h \
-	menu-policy.c
+	pixbuf-stuff.h configurator.c dbg.c dbg.h ev.c ev.h \
+	icon-grid.h icon-grid.c panel.c panel.h panel_private.h \
+	plugin.c plugin.h gtk-run.c menu-policy.h menu-policy.c
 @ENABLE_MENU_CACHE_TRUE@am__objects_1 = gtk-run.$(OBJEXT) \
 @ENABLE_MENU_CACHE_TRUE@	menu-policy.$(OBJEXT)
 am_lxpanelx_OBJECTS = misc.$(OBJEXT) defaultapplications.$(OBJEXT) \
@@ -84,8 +83,8 @@ am_lxpanelx_OBJECTS = misc.$(OBJEXT) defaultapplications.$(OBJEXT) \
 	configparser.$(OBJEXT) generic_config_dlg.$(OBJEXT) \
 	Xsupport.$(OBJEXT) pixbuf-stuff.$(OBJEXT) \
 	configurator.$(OBJEXT) dbg.$(OBJEXT) ev.$(OBJEXT) \
-	gtkbar.$(OBJEXT) icon-grid.$(OBJEXT) panel.$(OBJEXT) \
-	plugin.$(OBJEXT) $(am__objects_1)
+	icon-grid.$(OBJEXT) panel.$(OBJEXT) plugin.$(OBJEXT) \
+	$(am__objects_1)
 lxpanelx_OBJECTS = $(am_lxpanelx_OBJECTS)
 am__DEPENDENCIES_1 =
 lxpanelx_DEPENDENCIES = $(BUILTIN_PLUGINS) $(am__DEPENDENCIES_1) \
@@ -419,7 +418,6 @@ lxpanelx_SOURCES = \
 	configurator.c \
 	dbg.c dbg.h \
 	ev.c ev.h \
-	gtkbar.h gtkbar.c \
 	icon-grid.h icon-grid.c \
 	panel.c panel.h panel_private.h \
 	plugin.c plugin.h \
@@ -558,7 +556,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ev.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generic_config_dlg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-run.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkbar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/icon-grid.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lxpanelxctl.Po@am__quote@

@@ -98,6 +98,11 @@ gboolean is_in_lxde = FALSE;
 
 /******************************************************************************/
 
+static gboolean force_compositing_wm_disabled = FALSE;
+static gboolean force_composite_disabled = FALSE;
+
+/******************************************************************************/
+
 /* A hack used to be compatible with Gnome panel for gtk+ themes.
  * Some gtk+ themes define special styles for desktop panels.
  * http://live.gnome.org/GnomeArt/Tutorials/GtkThemes/GnomePanel
@@ -944,7 +949,12 @@ static gboolean panel_expose_event(GtkWidget *widget, GdkEventExpose *event, Pan
 
 gboolean panel_is_composited(Panel * p)
 {
-    return gtk_widget_is_composited(p->topgwin);
+    return !force_compositing_wm_disabled && panel_is_composite_avaiable(p) && gtk_widget_is_composited(p->topgwin);
+}
+
+gboolean panel_is_composite_avaiable(Panel * p)
+{
+    return !force_composite_disabled && is_xcomposite_available();
 }
 
 /******************************************************************************/
@@ -2497,6 +2507,10 @@ int main(int argc, char *argv[], char *env[])
             enable_kiosk_mode();
         } else if (!strcmp(argv[i], "--quit-in-menu")) {
             quit_in_menu = TRUE;
+        } else if (!strcmp(argv[i], "--force-compositing-wm-disabled")) {
+            force_compositing_wm_disabled = TRUE;
+        } else if (!strcmp(argv[i], "--force-composite-disabled")) {
+           force_composite_disabled = TRUE;
         } else if (!strcmp(argv[i], "--colormap")) {
             i++;
             if (i == argc) {

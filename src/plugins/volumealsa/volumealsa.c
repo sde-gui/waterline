@@ -25,6 +25,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <alsa/asoundlib.h>
 #include <poll.h>
+#include "defaultapplications.h"
 #include "panel.h"
 #include "gtkcompat.h"
 #include "misc.h"

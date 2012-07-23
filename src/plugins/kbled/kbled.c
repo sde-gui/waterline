@@ -175,19 +175,19 @@ static int kbled_constructor(Plugin * p, char ** fp)
         int min = XkbMinorVersion;
         if ( ! XkbLibraryVersion(&maj, &min))
             return 0;
-        if ( ! XkbQueryExtension(GDK_DISPLAY(), &opcode, &xkb_event_base, &xkb_error_base, &maj, &min))
+        if ( ! XkbQueryExtension(gdk_x11_get_default_xdisplay(), &opcode, &xkb_event_base, &xkb_error_base, &maj, &min))
             return 0;
     }
 
     /* Add GDK event filter and enable XkbIndicatorStateNotify events. */
     gdk_window_add_filter(NULL, (GdkFilterFunc) kbled_event_filter, p);
-    if ( ! XkbSelectEvents(GDK_DISPLAY(), XkbUseCoreKbd, XkbIndicatorStateNotifyMask, XkbIndicatorStateNotifyMask))
+    if ( ! XkbSelectEvents(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, XkbIndicatorStateNotifyMask, XkbIndicatorStateNotifyMask))
         return 0;
 
     /* Get current indicator state and update display.
      * Force current state to differ in all bits so a full redraw will occur. */
     unsigned int current_state;
-    XkbGetIndicatorState(GDK_DISPLAY(), XkbUseCoreKbd, &current_state);
+    XkbGetIndicatorState(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, &current_state);
     kl->current_state = ~ current_state;
     kbled_update_display(p, current_state);
 

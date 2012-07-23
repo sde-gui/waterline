@@ -46,11 +46,13 @@ struct cpu_stat {
 
 /* Private context for CPU plugin. */
 typedef struct {
-    GdkGC * graphics_context;			/* Graphics context for drawing area */
-    GdkColor foreground_color;			/* Foreground color for drawing area */
+    double foreground_color_r;
+    double foreground_color_g;
+    double foreground_color_b;
 
-    GdkGC * bg_graphics_context;		/* Graphics context for drawing background */
-    GdkColor background_color;			/* Background color for drawing area */
+    double background_color_r;
+    double background_color_g;
+    double background_color_b;
 
     GtkWidget * da;				/* Drawing area */
     GdkPixmap * pixmap;				/* Pixmap to be drawn on drawing area */
@@ -78,8 +80,18 @@ static void cpu_save_configuration(Plugin * p, FILE * fp);
 /* Redraw after timer callback or resize. */
 static void redraw_pixmap(CPUPlugin * c)
 {
+    cairo_t * cr = gdk_cairo_create(c->pixmap);
+
     /* Erase pixmap. */
-    gdk_draw_rectangle(c->pixmap, c->bg_graphics_context, TRUE, 0, 0, c->pixmap_width, c->pixmap_height);
+    cairo_set_line_width (cr, 1.0);
+    cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
+
+    cairo_set_source_rgb(cr, c->background_color_r, c->background_color_g, c->background_color_b);
+    cairo_rectangle(cr, 0, 0, c->pixmap_width, c->pixmap_height);
+    cairo_fill(cr);
+
+
+    cairo_set_source_rgb(cr, c->foreground_color_r, c->foreground_color_g, c->foreground_color_b);
 
     /* Recompute pixmap. */
     unsigned int i;
@@ -88,15 +100,19 @@ static void redraw_pixmap(CPUPlugin * c)
     {
         /* Draw one bar of the CPU usage graph. */
         if (c->stats_cpu[drawing_cursor] != 0.0)
-            gdk_draw_line(c->pixmap, c->graphics_context,
-                i, c->pixmap_height,
-                i, c->pixmap_height - c->stats_cpu[drawing_cursor] * c->pixmap_height);
+        {
+            cairo_move_to (cr, i + 0.5, c->pixmap_height - 0.5);
+            cairo_line_to (cr, i + 0.5, c->pixmap_height - c->stats_cpu[drawing_cursor] * c->pixmap_height - 0.5);
+            cairo_stroke (cr);
+        }
 
         /* Increment and wrap drawing cursor. */
         drawing_cursor += 1;
 	if (drawing_cursor >= c->pixmap_width)
             drawing_cursor = 0;
     }
+
+    cairo_destroy(cr);
 
     /* Redraw pixmap. */
     gtk_widget_queue_draw(c->da);
@@ -208,20 +224,12 @@ static gboolean expose_event(GtkWidget * widget, GdkEventExpose * event, CPUPlug
      * Translate it in both x and y by the border size. */
     if (c->pixmap != NULL)
     {
-        int x = event->area.x - BORDER_SIZE;
-        int y = event->area.y - BORDER_SIZE;
-        if (x < 0)
-            x = 0;
-        if (y < 0)
-            y = 0;
-        gdk_draw_drawable (widget->window,
-              c->da->style->black_gc,
-              c->pixmap,
-//              event->area.x, event->area.y,
-//              event->area.x + BORDER_SIZE, event->area.y + BORDER_SIZE,
-              x, y,
-              x + BORDER_SIZE, y + BORDER_SIZE,
-              event->area.width, event->area.height);
+        cairo_t * cr = gdk_cairo_create(widget->window);
+
+        gdk_cairo_set_source_pixmap(cr, c->pixmap, BORDER_SIZE, BORDER_SIZE);
+        cairo_paint(cr);
+
+        cairo_destroy(cr);
     }
     return FALSE;
 }
@@ -253,23 +261,19 @@ static void cpu_apply_configuration(Plugin * p)
         g_signal_connect(c->da, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
     }
 
-    /* Clone a graphics context and set "green" as its foreground color.
-     * We will use this to draw the graph. */
-    if (c->graphics_context)
-        g_object_unref(c->graphics_context);
-    c->graphics_context = gdk_gc_new(panel_get_toplevel_window(p->panel));
+    GdkColor foreground_color;
+    GdkColor background_color;
 
-    gdk_color_parse(c->fg_color,  &c->foreground_color);
-    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &c->foreground_color, FALSE, TRUE);
-    gdk_gc_set_foreground(c->graphics_context, &c->foreground_color);
+    gdk_color_parse(c->fg_color, &foreground_color);
+    gdk_color_parse(c->bg_color, &background_color);
 
-    if (c->bg_graphics_context)
-        g_object_unref(c->bg_graphics_context);
-    c->bg_graphics_context = gdk_gc_new(panel_get_toplevel_window(p->panel));
+    c->foreground_color_r = ((double) foreground_color.red) / 65535.0;
+    c->foreground_color_g = ((double) foreground_color.green) / 65535.0;
+    c->foreground_color_b = ((double) foreground_color.blue) / 65535.0;
 
-    gdk_color_parse(c->bg_color,  &c->background_color);
-    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &c->background_color, FALSE, TRUE);
-    gdk_gc_set_foreground(c->bg_graphics_context, &c->background_color);
+    c->background_color_r = ((double) background_color.red) / 65535.0;
+    c->background_color_g = ((double) background_color.green) / 65535.0;
+    c->background_color_b = ((double) background_color.blue) / 65535.0;
 
     /* Show the widget.  Connect a timer to refresh the statistics. */
     gtk_widget_show(c->da);
@@ -344,8 +348,6 @@ static void cpu_destructor(Plugin * p)
     g_source_remove(c->timer);
 
     /* Deallocate memory. */
-    g_object_unref(c->graphics_context);
-    g_object_unref(c->bg_graphics_context);
     g_object_unref(c->pixmap);
     g_free(c->stats_cpu);
     g_free(c->fg_color);

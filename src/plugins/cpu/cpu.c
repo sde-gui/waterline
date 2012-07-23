@@ -38,7 +38,10 @@
 #include "dbg.h"
 
 typedef unsigned long CPUTick;			/* Value from /proc/stat */
-typedef float CPUSample;			/* Saved CPU utilization value as 0.0..1.0 */
+
+typedef struct {
+    float u, n, s;
+} CPUSample;
 
 struct cpu_stat {
     CPUTick u, n, s, i;				/* User, nice, system, idle */
@@ -46,9 +49,17 @@ struct cpu_stat {
 
 /* Private context for CPU plugin. */
 typedef struct {
-    double foreground_color_r;
-    double foreground_color_g;
-    double foreground_color_b;
+    double foreground_color_u_r;
+    double foreground_color_u_g;
+    double foreground_color_u_b;
+
+    double foreground_color_n_r;
+    double foreground_color_n_g;
+    double foreground_color_n_b;
+
+    double foreground_color_s_r;
+    double foreground_color_s_g;
+    double foreground_color_s_b;
 
     double background_color_r;
     double background_color_g;
@@ -64,7 +75,9 @@ typedef struct {
     int pixmap_height;				/* Height of drawing area pixmap; does not include border size */
     struct cpu_stat previous_cpu_stat;		/* Previous value of cpu_stat */
 
-    char * fg_color;
+    char * fg_color_u;
+    char * fg_color_n;
+    char * fg_color_s;
     char * bg_color;
     int update_interval;
 } CPUPlugin;
@@ -90,19 +103,56 @@ static void redraw_pixmap(CPUPlugin * c)
     cairo_rectangle(cr, 0, 0, c->pixmap_width, c->pixmap_height);
     cairo_fill(cr);
 
-
-    cairo_set_source_rgb(cr, c->foreground_color_r, c->foreground_color_g, c->foreground_color_b);
-
     /* Recompute pixmap. */
+
     unsigned int i;
-    unsigned int drawing_cursor = c->ring_cursor;
-    for (i = 0; i < c->pixmap_width; i++)
+    unsigned int drawing_cursor;
+
+    cairo_set_source_rgb(cr, c->foreground_color_n_r, c->foreground_color_n_g, c->foreground_color_n_b);
+    for (i = 0, drawing_cursor = c->ring_cursor; i < c->pixmap_width; i++)
     {
         /* Draw one bar of the CPU usage graph. */
-        if (c->stats_cpu[drawing_cursor] != 0.0)
+        float v = c->stats_cpu[drawing_cursor].u + c->stats_cpu[drawing_cursor].n + c->stats_cpu[drawing_cursor].s;
+        if (v)
         {
             cairo_move_to (cr, i + 0.5, c->pixmap_height - 0.5);
-            cairo_line_to (cr, i + 0.5, c->pixmap_height - c->stats_cpu[drawing_cursor] * c->pixmap_height - 0.5);
+            cairo_line_to (cr, i + 0.5, c->pixmap_height - v * c->pixmap_height - 0.5);
+            cairo_stroke (cr);
+        }
+
+        /* Increment and wrap drawing cursor. */
+        drawing_cursor += 1;
+	if (drawing_cursor >= c->pixmap_width)
+            drawing_cursor = 0;
+    }
+
+    cairo_set_source_rgb(cr, c->foreground_color_u_r, c->foreground_color_u_g, c->foreground_color_u_b);
+    for (i = 0, drawing_cursor = c->ring_cursor; i < c->pixmap_width; i++)
+    {
+        /* Draw one bar of the CPU usage graph. */
+        float v = c->stats_cpu[drawing_cursor].u + c->stats_cpu[drawing_cursor].s;
+        if (v)
+        {
+            cairo_move_to (cr, i + 0.5, c->pixmap_height - 0.5);
+            cairo_line_to (cr, i + 0.5, c->pixmap_height - v * c->pixmap_height - 0.5);
+            cairo_stroke (cr);
+        }
+
+        /* Increment and wrap drawing cursor. */
+        drawing_cursor += 1;
+	if (drawing_cursor >= c->pixmap_width)
+            drawing_cursor = 0;
+    }
+
+    cairo_set_source_rgb(cr, c->foreground_color_s_r, c->foreground_color_s_g, c->foreground_color_s_b);
+    for (i = 0, drawing_cursor = c->ring_cursor; i < c->pixmap_width; i++)
+    {
+        /* Draw one bar of the CPU usage graph. */
+        float v = c->stats_cpu[drawing_cursor].s;
+        if (v)
+        {
+            cairo_move_to (cr, i + 0.5, c->pixmap_height - 0.5);
+            cairo_line_to (cr, i + 0.5, c->pixmap_height - v * c->pixmap_height - 0.5);
             cairo_stroke (cr);
         }
 
@@ -148,18 +198,20 @@ static gboolean cpu_update(CPUPlugin * c)
              * Introduce this sample to ring buffer, increment and wrap ring buffer cursor. */
             float cpu_uns = cpu_delta.u + cpu_delta.n + cpu_delta.s;
             float cpu_load = cpu_uns / (cpu_uns + cpu_delta.i);
+            float cpu_load_u = cpu_delta.u / (cpu_uns + cpu_delta.i);
+            float cpu_load_n = cpu_delta.n / (cpu_uns + cpu_delta.i);
+            float cpu_load_s = cpu_delta.s / (cpu_uns + cpu_delta.i);
 
-            c->stats_cpu[c->ring_cursor] = cpu_load;
+            c->stats_cpu[c->ring_cursor].u = cpu_load_u;
+            c->stats_cpu[c->ring_cursor].n = cpu_load_n;
+            c->stats_cpu[c->ring_cursor].s = cpu_load_s;
+
             c->ring_cursor += 1;
             if (c->ring_cursor >= c->pixmap_width)
                 c->ring_cursor = 0;
 
             /* Redraw with the new sample. */
             redraw_pixmap(c);
-
-            float cpu_load_u = cpu_delta.u / (cpu_uns + cpu_delta.i);
-            float cpu_load_n = cpu_delta.n / (cpu_uns + cpu_delta.i);
-            float cpu_load_s = cpu_delta.s / (cpu_uns + cpu_delta.i);
 
             gchar * tooltip = g_strdup_printf(
                 "Total: %.1f\nUser: %.1f\nNice: %.1f\nSystem: %.1f",
@@ -273,15 +325,27 @@ static void cpu_apply_configuration(Plugin * p)
         g_signal_connect(c->da, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
     }
 
-    GdkColor foreground_color;
+    GdkColor foreground_color_u;
+    GdkColor foreground_color_n;
+    GdkColor foreground_color_s;
     GdkColor background_color;
 
-    gdk_color_parse(c->fg_color, &foreground_color);
+    gdk_color_parse(c->fg_color_u, &foreground_color_u);
+    gdk_color_parse(c->fg_color_n, &foreground_color_n);
+    gdk_color_parse(c->fg_color_s, &foreground_color_s);
     gdk_color_parse(c->bg_color, &background_color);
 
-    c->foreground_color_r = ((double) foreground_color.red) / 65535.0;
-    c->foreground_color_g = ((double) foreground_color.green) / 65535.0;
-    c->foreground_color_b = ((double) foreground_color.blue) / 65535.0;
+    c->foreground_color_u_r = ((double) foreground_color_u.red) / 65535.0;
+    c->foreground_color_u_g = ((double) foreground_color_u.green) / 65535.0;
+    c->foreground_color_u_b = ((double) foreground_color_u.blue) / 65535.0;
+
+    c->foreground_color_n_r = ((double) foreground_color_n.red) / 65535.0;
+    c->foreground_color_n_g = ((double) foreground_color_n.green) / 65535.0;
+    c->foreground_color_n_b = ((double) foreground_color_n.blue) / 65535.0;
+
+    c->foreground_color_s_r = ((double) foreground_color_s.red) / 65535.0;
+    c->foreground_color_s_g = ((double) foreground_color_s.green) / 65535.0;
+    c->foreground_color_s_b = ((double) foreground_color_s.blue) / 65535.0;
 
     c->background_color_r = ((double) background_color.red) / 65535.0;
     c->background_color_g = ((double) background_color.green) / 65535.0;
@@ -301,8 +365,6 @@ static int cpu_constructor(Plugin * p, char ** fp)
     CPUPlugin * c = g_new0(CPUPlugin, 1);
     p->priv = c;
 
-    c->fg_color = NULL;
-    c->bg_color = NULL;
     c->update_interval = 1500;
 
     /* Load parameters from the configuration file. */
@@ -318,8 +380,12 @@ static int cpu_constructor(Plugin * p, char ** fp)
             }
             if (s.type == LINE_VAR)
             {
-                if (g_ascii_strcasecmp(s.t[0], "FgColor") == 0)
-                    c->fg_color = g_strdup(s.t[1]);
+                if (g_ascii_strcasecmp(s.t[0], "FgColorUser") == 0)
+                    c->fg_color_u = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "FgColorNice") == 0)
+                    c->fg_color_n = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "FgColorSystem") == 0)
+                    c->fg_color_s = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "BgColor") == 0)
                     c->bg_color = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "UpdateInterval") == 0)
@@ -341,7 +407,9 @@ static int cpu_constructor(Plugin * p, char ** fp)
       if (c->f == NULL) \
           c->f = g_strdup(v);
 
-    DEFAULT_STRING(fg_color, "green");
+    DEFAULT_STRING(fg_color_u, "green");
+    DEFAULT_STRING(fg_color_n, "blue");
+    DEFAULT_STRING(fg_color_s, "red");
     DEFAULT_STRING(bg_color, "black");
 
     #undef DEFAULT_STRING
@@ -362,7 +430,9 @@ static void cpu_destructor(Plugin * p)
     /* Deallocate memory. */
     g_object_unref(c->pixmap);
     g_free(c->stats_cpu);
-    g_free(c->fg_color);
+    g_free(c->fg_color_u);
+    g_free(c->fg_color_n);
+    g_free(c->fg_color_s);
     g_free(c->bg_color);
     g_free(c);
 }
@@ -381,7 +451,9 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
         GTK_WIDGET(parent),
         (GSourceFunc) cpu_apply_configuration, (gpointer) p,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
-        _("Foreground color"), &c->fg_color, (GType)CONF_TYPE_COLOR,
+        _("Foreground color (user)"), &c->fg_color_u, (GType)CONF_TYPE_COLOR,
+        _("Foreground color (nice)"), &c->fg_color_n, (GType)CONF_TYPE_COLOR,
+        _("Foreground color (system)"), &c->fg_color_s, (GType)CONF_TYPE_COLOR,
         _("Background color"), &c->bg_color, (GType)CONF_TYPE_COLOR,
         _("Update interval" ), &c->update_interval, (GType)CONF_TYPE_INT,
         "int-min-value", (gpointer)&update_interval_min, (GType)CONF_TYPE_SET_PROPERTY,
@@ -396,7 +468,9 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
 static void cpu_save_configuration(Plugin * p, FILE * fp)
 {
     CPUPlugin * c = (CPUPlugin *) p->priv;
-    lxpanel_put_str(fp, "FgColor", c->fg_color);
+    lxpanel_put_str(fp, "FgColorUser", c->fg_color_u);
+    lxpanel_put_str(fp, "FgColorNice", c->fg_color_n);
+    lxpanel_put_str(fp, "FgColorSystem", c->fg_color_s);
     lxpanel_put_str(fp, "BgColor", c->bg_color);
     lxpanel_put_int(fp, "UpdateInterval", c->update_interval);
 }

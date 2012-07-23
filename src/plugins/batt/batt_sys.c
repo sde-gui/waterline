@@ -247,12 +247,6 @@ void battery_update( battery *b ) {
 	    
 }
 
-static battery* acpi_sys_get_battery_from_dir (const gchar *device_name ) {
-    battery *b = battery_new();
-    b->path = g_strdup( device_name );    
-    return b;
-}
-
 battery *battery_get() {
     GError * error = NULL;
     const gchar *entry;
@@ -265,7 +259,8 @@ battery *battery_get() {
     }
     while ( ( entry = g_dir_read_name (dir) ) != NULL )  
     {
-	b = acpi_sys_get_battery_from_dir(entry);
+        b = battery_new();
+        b->path = g_strdup( entry );
 	battery_update ( b );
 	if ( b->type_battery == TRUE ) 
 	    break;

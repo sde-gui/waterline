@@ -561,13 +561,14 @@ static void config(Plugin *p, GtkWindow* parent) {
 #if 0
             _("Hide if there is no battery"), &b->hide_if_no_battery, (GType)CONF_TYPE_BOOL,
 #endif
+            "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
             _("Alarm command"), &b->alarmCommand, (GType)CONF_TYPE_STR,
             _("Alarm time (minutes left)"), &b->alarmTime, (GType)CONF_TYPE_INT,
-            _("Background color"), &b->backgroundColor, (GType)CONF_TYPE_STR,
-            _("Charging color 1"), &b->chargingColor1, (GType)CONF_TYPE_STR,
-            _("Charging color 2"), &b->chargingColor2, (GType)CONF_TYPE_STR,
-            _("Discharging color 1"), &b->dischargingColor1, (GType)CONF_TYPE_STR,
-            _("Discharging color 2"), &b->dischargingColor2, (GType)CONF_TYPE_STR,
+            _("Background color"), &b->backgroundColor, (GType)CONF_TYPE_COLOR,
+            _("Charging color 1"), &b->chargingColor1, (GType)CONF_TYPE_COLOR,
+            _("Charging color 2"), &b->chargingColor2, (GType)CONF_TYPE_COLOR,
+            _("Discharging color 1"), &b->dischargingColor1, (GType)CONF_TYPE_COLOR,
+            _("Discharging color 2"), &b->dischargingColor2, (GType)CONF_TYPE_COLOR,
             _("Border width"), &b->requestedBorder, (GType)CONF_TYPE_INT,
             _("Size"), &b->thickness, (GType)CONF_TYPE_INT,
             NULL);

@@ -158,7 +158,7 @@ static int kbled_constructor(Plugin * p, char ** fp)
 
     /* Allocate an icon grid manager to manage the container.
      * Then allocate three images for the three indications, but make them visible only when the configuration requests. */
-    GtkOrientation bo = (panel_get_toplevel_window(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;    
     kl->icon_grid = icon_grid_new(p->panel, p->pwid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 0, 0, panel_get_oriented_height_pixels(p->panel));
     int i;
     for (i = 0; i < 3; i++)

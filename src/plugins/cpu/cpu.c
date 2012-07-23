@@ -147,13 +147,25 @@ static gboolean cpu_update(CPUPlugin * c)
             /* Compute user+nice+system as a fraction of total.
              * Introduce this sample to ring buffer, increment and wrap ring buffer cursor. */
             float cpu_uns = cpu_delta.u + cpu_delta.n + cpu_delta.s;
-            c->stats_cpu[c->ring_cursor] = cpu_uns / (cpu_uns + cpu_delta.i);
+            float cpu_load = cpu_uns / (cpu_uns + cpu_delta.i);
+
+            c->stats_cpu[c->ring_cursor] = cpu_load;
             c->ring_cursor += 1;
             if (c->ring_cursor >= c->pixmap_width)
                 c->ring_cursor = 0;
 
             /* Redraw with the new sample. */
             redraw_pixmap(c);
+
+            float cpu_load_u = cpu_delta.u / (cpu_uns + cpu_delta.i);
+            float cpu_load_n = cpu_delta.n / (cpu_uns + cpu_delta.i);
+            float cpu_load_s = cpu_delta.s / (cpu_uns + cpu_delta.i);
+
+            gchar * tooltip = g_strdup_printf(
+                "Total: %.1f\nUser: %.1f\nNice: %.1f\nSystem: %.1f",
+                cpu_load * 100, cpu_load_u * 100, cpu_load_n * 100, cpu_load_s * 100);
+            gtk_widget_set_tooltip_text(c->da, tooltip);
+            g_free(tooltip);
         }
     }
     return TRUE;
@@ -313,11 +325,11 @@ static int cpu_constructor(Plugin * p, char ** fp)
                 else if (g_ascii_strcasecmp(s.t[0], "UpdateInterval") == 0)
                     c->update_interval = atoi(s.t[1]);
                 else
-                    ERR( "dclock: unknown var %s\n", s.t[0]);
+                    ERR( "cpu: unknown var %s\n", s.t[0]);
             }
             else
             {
-                ERR( "dclock: illegal in this context %s\n", s.str);
+                ERR( "cpu: illegal in this context %s\n", s.str);
                 return 0;
             }
         }

@@ -327,9 +327,16 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
     gtk_container_add(GTK_CONTAINER(alignment2), hbox);
 
     /* Create a combo box as the child of the horizontal box. */
+
+#if !GTK_CHECK_VERSION(2,24,0)
     GtkWidget * display_type_optmenu = gtk_combo_box_new_text();
     gtk_combo_box_append_text(GTK_COMBO_BOX(display_type_optmenu), _("image"));
     gtk_combo_box_append_text(GTK_COMBO_BOX(display_type_optmenu), _("text"));
+#else
+    GtkWidget * display_type_optmenu = gtk_combo_box_text_new();
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(display_type_optmenu), _("image"));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(display_type_optmenu), _("text"));
+#endif
     gtk_box_pack_start(GTK_BOX(hbox), display_type_optmenu, TRUE, TRUE, 2);
     g_signal_connect(display_type_optmenu, "changed", G_CALLBACK(xkb_display_type_changed), xkb);
     gtk_combo_box_set_active(GTK_COMBO_BOX(display_type_optmenu), xkb->display_type);
@@ -365,7 +372,11 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
     gtk_box_pack_start(GTK_BOX(hbox3), label4, FALSE, FALSE, 2);
 
     /* Create a combo box as the child of the horizontal box. */
+#if !GTK_CHECK_VERSION(2,24,0)
     xkb->per_app_default_layout_menu = gtk_combo_box_new_text();
+#else
+    xkb->per_app_default_layout_menu = gtk_combo_box_text_new();
+#endif
     gtk_box_pack_start(GTK_BOX(hbox3), xkb->per_app_default_layout_menu, FALSE, TRUE, 2);
     gtk_widget_set_sensitive(xkb->per_app_default_layout_menu, xkb->enable_perapp);
 
@@ -373,9 +384,16 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
     int i;
     for (i = 0; i < xkb_get_group_count(xkb); i++) 
     {
+#if !GTK_CHECK_VERSION(2,24,0)
         gtk_combo_box_append_text(
             GTK_COMBO_BOX(xkb->per_app_default_layout_menu), 
             xkb_get_symbol_name_by_res_no(xkb, i));
+#else
+        gtk_combo_box_text_append_text(
+            GTK_COMBO_BOX_TEXT(xkb->per_app_default_layout_menu), 
+            xkb_get_symbol_name_by_res_no(xkb, i));
+#endif
+
     }
     gtk_combo_box_set_active(GTK_COMBO_BOX(xkb->per_app_default_layout_menu), xkb->default_group);
     g_signal_connect(xkb->per_app_default_layout_menu, "changed", G_CALLBACK(xkb_default_language_changed), xkb);

@@ -141,6 +141,11 @@ static gboolean xkb_button_press_event(GtkWidget * widget,  GdkEventButton * eve
     return TRUE;
 }
 
+static void xkb_button_enter(GtkWidget * widget, XkbPlugin * xkb)
+{
+    gtk_widget_set_state(widget, GTK_STATE_NORMAL);
+}
+
 /* Plugin constructor. */
 static int xkb_constructor(Plugin * plugin, char ** fp)
 {
@@ -216,6 +221,7 @@ static int xkb_constructor(Plugin * plugin, char ** fp)
     /* Connect signals. */
     g_signal_connect(xkb->btn, "button-press-event", G_CALLBACK(xkb_button_press_event), xkb);
     g_signal_connect(xkb->btn, "scroll-event", G_CALLBACK(xkb_scroll_event), xkb);
+    g_signal_connect_after(G_OBJECT(xkb->btn), "enter", G_CALLBACK(xkb_button_enter), (gpointer) xkb);
     g_signal_connect(G_OBJECT(fbev), "active_window", G_CALLBACK(xkb_active_window_event), xkb);
 
     /* Show the widget and return. */

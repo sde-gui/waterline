@@ -61,11 +61,13 @@ typedef struct {
         *chargingColor2,
         *dischargingColor1,
         *dischargingColor2;
-    GdkColor background,
-        charging1,
-        charging2,
-        discharging1,
-        discharging2;
+
+    double background_color[3];
+    double charging1_color[3];
+    double charging2_color[3];
+    double discharging1_color[3];
+    double discharging2_color[3];
+
     GdkPixmap *pixmap;
     GtkWidget *drawingArea;
     int orientation;
@@ -123,51 +125,31 @@ static void update_bar(lx_battery *lx_b)
 
     gboolean isCharging = battery_is_charging(lx_b->b);
 
-    double background_color_r = ((double) lx_b->background.red) / 65535.0;
-    double background_color_g = ((double) lx_b->background.green) / 65535.0;
-    double background_color_b = ((double) lx_b->background.blue) / 65535.0;
-
-    double charging1_r = ((double) lx_b->charging1.red) / 65535.0;
-    double charging1_g = ((double) lx_b->charging1.green) / 65535.0;
-    double charging1_b = ((double) lx_b->charging1.blue) / 65535.0;
-
-    double charging2_r = ((double) lx_b->charging2.red) / 65535.0;
-    double charging2_g = ((double) lx_b->charging2.green) / 65535.0;
-    double charging2_b = ((double) lx_b->charging2.blue) / 65535.0;
-
-    double discharging1_r = ((double) lx_b->discharging1.red) / 65535.0;
-    double discharging1_g = ((double) lx_b->discharging1.green) / 65535.0;
-    double discharging1_b = ((double) lx_b->discharging1.blue) / 65535.0;
-
-    double discharging2_r = ((double) lx_b->discharging2.red) / 65535.0;
-    double discharging2_g = ((double) lx_b->discharging2.green) / 65535.0;
-    double discharging2_b = ((double) lx_b->discharging2.blue) / 65535.0;
-
-
     /* Bar color */
 
-    double R, G, B;
+    double bar_color[3];
     if (isCharging)
     {
         double v = lx_b->b->percentage / 100.0;
-        R = charging1_r * v + charging2_r * (1.0 - v);
-        G = charging1_g * v + charging2_g * (1.0 - v);
-        B = charging1_b * v + charging2_b * (1.0 - v);
+        bar_color[0] = lx_b->charging1_color[0] * v + lx_b->charging2_color[0] * (1.0 - v);
+        bar_color[1] = lx_b->charging1_color[1] * v + lx_b->charging2_color[1] * (1.0 - v);
+        bar_color[2] = lx_b->charging1_color[2] * v + lx_b->charging2_color[2] * (1.0 - v);
     }
     else
     {
         double v = lx_b->b->percentage / 100.0;
-        R = discharging1_r * v + discharging2_r * (1.0 - v);
-        G = discharging1_g * v + discharging2_g * (1.0 - v);
-        B = discharging1_b * v + discharging2_b * (1.0 - v);
+        bar_color[0] = lx_b->discharging1_color[0] * v + lx_b->discharging2_color[0] * (1.0 - v);
+        bar_color[1] = lx_b->discharging1_color[1] * v + lx_b->discharging2_color[1] * (1.0 - v);
+        bar_color[2] = lx_b->discharging1_color[2] * v + lx_b->discharging2_color[2] * (1.0 - v);
     }
 
     double v = 0.3;
 
-    double background_color1_r = R * v + background_color_r * (1.0 - v);
-    double background_color1_g = G * v + background_color_g * (1.0 - v);
-    double background_color1_b = B * v + background_color_b * (1.0 - v);
-    
+    double background_color1[3];
+
+    background_color1[0] = bar_color[0] * v + lx_b->background_color[0] * (1.0 - v);
+    background_color1[1] = bar_color[1] * v + lx_b->background_color[1] * (1.0 - v);
+    background_color1[2] = bar_color[2] * v + lx_b->background_color[2] * (1.0 - v);
 
     int border = lx_b->border;
     while (1)
@@ -186,21 +168,21 @@ static void update_bar(lx_battery *lx_b)
     cairo_set_line_width (cr, 1.0);
     cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
 
-    cairo_set_source_rgb(cr, background_color1_r, background_color1_g, background_color1_b);
+    cairo_set_source_rgb(cr, background_color1[0], background_color1[1], background_color1[2]);
     cairo_rectangle(cr, 0, 0, lx_b->width, lx_b->height);
     cairo_fill(cr);
 
     /* Draw border. */
 
     cairo_set_line_width (cr, border);
-    cairo_set_source_rgb(cr, background_color_r, background_color_g, background_color_b);
+    cairo_set_source_rgb(cr, lx_b->background_color[0], lx_b->background_color[1], lx_b->background_color[2]);
     cairo_rectangle(cr, border / 2.0, border / 2.0, lx_b->width - border, lx_b->height - border);
     cairo_stroke(cr);
 
 
-    cairo_set_source_rgb(cr, R, G, B);
-
     /* Draw bar. */
+
+    cairo_set_source_rgb(cr, bar_color[0], bar_color[1], bar_color[2]);
 
     int chargeLevel = lx_b->b->percentage * (lx_b->length - 2 * border) / 100;
 
@@ -504,11 +486,11 @@ constructor(Plugin *p, char **fp)
     if (! lx_b->dischargingColor2)
         lx_b->dischargingColor2 = g_strdup("#FF0000");
 
-    gdk_color_parse(lx_b->backgroundColor, &lx_b->background);
-    gdk_color_parse(lx_b->chargingColor1, &lx_b->charging1);
-    gdk_color_parse(lx_b->chargingColor2, &lx_b->charging2);
-    gdk_color_parse(lx_b->dischargingColor1, &lx_b->discharging1);
-    gdk_color_parse(lx_b->dischargingColor2, &lx_b->discharging2);
+    color_parse_d(lx_b->backgroundColor, lx_b->background_color);
+    color_parse_d(lx_b->chargingColor1, lx_b->charging1_color);
+    color_parse_d(lx_b->chargingColor2, lx_b->charging2_color);
+    color_parse_d(lx_b->dischargingColor1, lx_b->discharging1_color);
+    color_parse_d(lx_b->dischargingColor2, lx_b->discharging2_color);
 
     batt_panel_configuration_changed(p);
 
@@ -585,11 +567,11 @@ static void applyConfig(Plugin* p)
     lx_battery *b = (lx_battery *) p->priv;
 
     /* Update colors */
-    gdk_color_parse(b->backgroundColor, &b->background);
-    gdk_color_parse(b->chargingColor1, &b->charging1);
-    gdk_color_parse(b->chargingColor2, &b->charging2);
-    gdk_color_parse(b->dischargingColor1, &b->discharging1);
-    gdk_color_parse(b->dischargingColor2, &b->discharging2);
+    color_parse_d(b->backgroundColor, b->background_color);
+    color_parse_d(b->chargingColor1, b->charging1_color);
+    color_parse_d(b->chargingColor2, b->charging2_color);
+    color_parse_d(b->dischargingColor1, b->discharging1_color);
+    color_parse_d(b->dischargingColor2, b->discharging2_color);
 
     /* Make sure the border value is acceptable */
     b->border = MAX(0, b->border);

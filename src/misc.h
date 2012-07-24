@@ -141,4 +141,6 @@ gchar * get_private_resource_path(RESOURCE_TYPE restype, ...);
 void get_format_for_bytes_with_suffix(guint64  bytes, const char ** format, guint64 * b1, guint64 * b2);
 char * format_bytes_with_suffix(guint64  bytes);
 
+void color_parse_d(const char * src, double dst[3]);
+
 #endif

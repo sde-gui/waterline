@@ -1409,3 +1409,17 @@ gchar * get_private_resource_path(RESOURCE_TYPE restype, ...)
 }
 
 /********************************************************************/
+
+void color_parse_d(const char * src, double dst[3])
+{
+    GdkColor color;
+
+    gdk_color_parse(src, &color);
+
+    dst[0] = ((double) color.red) / 65535.0;
+    dst[1] = ((double) color.green) / 65535.0;
+    dst[2] = ((double) color.blue) / 65535.0;
+}
+
+/********************************************************************/
+

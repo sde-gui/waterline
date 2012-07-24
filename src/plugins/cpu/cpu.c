@@ -49,21 +49,10 @@ struct cpu_stat {
 
 /* Private context for CPU plugin. */
 typedef struct {
-    double foreground_color_u_r;
-    double foreground_color_u_g;
-    double foreground_color_u_b;
-
-    double foreground_color_n_r;
-    double foreground_color_n_g;
-    double foreground_color_n_b;
-
-    double foreground_color_s_r;
-    double foreground_color_s_g;
-    double foreground_color_s_b;
-
-    double background_color_r;
-    double background_color_g;
-    double background_color_b;
+    double foreground_color_u[3];
+    double foreground_color_n[3];
+    double foreground_color_s[3];
+    double background_color[3];
 
     GtkWidget * da;				/* Drawing area */
     GdkPixmap * pixmap;				/* Pixmap to be drawn on drawing area */
@@ -99,7 +88,7 @@ static void redraw_pixmap(CPUPlugin * c)
     cairo_set_line_width (cr, 1.0);
     cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
 
-    cairo_set_source_rgb(cr, c->background_color_r, c->background_color_g, c->background_color_b);
+    cairo_set_source_rgb(cr, c->background_color[0], c->background_color[1], c->background_color[2]);
     cairo_rectangle(cr, 0, 0, c->pixmap_width, c->pixmap_height);
     cairo_fill(cr);
 
@@ -108,7 +97,7 @@ static void redraw_pixmap(CPUPlugin * c)
     unsigned int i;
     unsigned int drawing_cursor;
 
-    cairo_set_source_rgb(cr, c->foreground_color_n_r, c->foreground_color_n_g, c->foreground_color_n_b);
+    cairo_set_source_rgb(cr, c->foreground_color_n[0], c->foreground_color_n[1], c->foreground_color_n[2]);
     for (i = 0, drawing_cursor = c->ring_cursor; i < c->pixmap_width; i++)
     {
         /* Draw one bar of the CPU usage graph. */
@@ -126,7 +115,7 @@ static void redraw_pixmap(CPUPlugin * c)
             drawing_cursor = 0;
     }
 
-    cairo_set_source_rgb(cr, c->foreground_color_u_r, c->foreground_color_u_g, c->foreground_color_u_b);
+    cairo_set_source_rgb(cr, c->foreground_color_u[0], c->foreground_color_u[1], c->foreground_color_u[2]);
     for (i = 0, drawing_cursor = c->ring_cursor; i < c->pixmap_width; i++)
     {
         /* Draw one bar of the CPU usage graph. */
@@ -144,7 +133,7 @@ static void redraw_pixmap(CPUPlugin * c)
             drawing_cursor = 0;
     }
 
-    cairo_set_source_rgb(cr, c->foreground_color_s_r, c->foreground_color_s_g, c->foreground_color_s_b);
+    cairo_set_source_rgb(cr, c->foreground_color_s[0], c->foreground_color_s[1], c->foreground_color_s[2]);
     for (i = 0, drawing_cursor = c->ring_cursor; i < c->pixmap_width; i++)
     {
         /* Draw one bar of the CPU usage graph. */
@@ -325,31 +314,11 @@ static void cpu_apply_configuration(Plugin * p)
         g_signal_connect(c->da, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
     }
 
-    GdkColor foreground_color_u;
-    GdkColor foreground_color_n;
-    GdkColor foreground_color_s;
-    GdkColor background_color;
 
-    gdk_color_parse(c->fg_color_u, &foreground_color_u);
-    gdk_color_parse(c->fg_color_n, &foreground_color_n);
-    gdk_color_parse(c->fg_color_s, &foreground_color_s);
-    gdk_color_parse(c->bg_color, &background_color);
-
-    c->foreground_color_u_r = ((double) foreground_color_u.red) / 65535.0;
-    c->foreground_color_u_g = ((double) foreground_color_u.green) / 65535.0;
-    c->foreground_color_u_b = ((double) foreground_color_u.blue) / 65535.0;
-
-    c->foreground_color_n_r = ((double) foreground_color_n.red) / 65535.0;
-    c->foreground_color_n_g = ((double) foreground_color_n.green) / 65535.0;
-    c->foreground_color_n_b = ((double) foreground_color_n.blue) / 65535.0;
-
-    c->foreground_color_s_r = ((double) foreground_color_s.red) / 65535.0;
-    c->foreground_color_s_g = ((double) foreground_color_s.green) / 65535.0;
-    c->foreground_color_s_b = ((double) foreground_color_s.blue) / 65535.0;
-
-    c->background_color_r = ((double) background_color.red) / 65535.0;
-    c->background_color_g = ((double) background_color.green) / 65535.0;
-    c->background_color_b = ((double) background_color.blue) / 65535.0;
+    color_parse_d(c->fg_color_u, c->foreground_color_u);
+    color_parse_d(c->fg_color_n, c->foreground_color_n);
+    color_parse_d(c->fg_color_s, c->foreground_color_s);
+    color_parse_d(c->bg_color, c->background_color);
 
     /* Show the widget.  Connect a timer to refresh the statistics. */
     gtk_widget_show(c->da);

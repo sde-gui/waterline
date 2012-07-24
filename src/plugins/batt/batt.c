@@ -66,9 +66,6 @@ typedef struct {
         charging2,
         discharging1,
         discharging2;
-    GdkGC *bg,
-        *gc1,
-        *gc2;
     GdkPixmap *pixmap;
     GtkWidget *drawingArea;
     int orientation;
@@ -114,6 +111,91 @@ static void * alarmProcess(void *arg) {
     return NULL;
 }
 
+static void update_bar(lx_battery *lx_b)
+{
+    if (!lx_b->pixmap)
+        return;
+
+    gboolean isCharging = battery_is_charging(lx_b->b);
+
+    double background_color_r = ((double) lx_b->background.red) / 65535.0;
+    double background_color_g = ((double) lx_b->background.green) / 65535.0;
+    double background_color_b = ((double) lx_b->background.blue) / 65535.0;
+
+    double charging1_r = ((double) lx_b->charging1.red) / 65535.0;
+    double charging1_g = ((double) lx_b->charging1.green) / 65535.0;
+    double charging1_b = ((double) lx_b->charging1.blue) / 65535.0;
+
+    double charging2_r = ((double) lx_b->charging2.red) / 65535.0;
+    double charging2_g = ((double) lx_b->charging2.green) / 65535.0;
+    double charging2_b = ((double) lx_b->charging2.blue) / 65535.0;
+
+    double discharging1_r = ((double) lx_b->discharging1.red) / 65535.0;
+    double discharging1_g = ((double) lx_b->discharging1.green) / 65535.0;
+    double discharging1_b = ((double) lx_b->discharging1.blue) / 65535.0;
+
+    double discharging2_r = ((double) lx_b->discharging2.red) / 65535.0;
+    double discharging2_g = ((double) lx_b->discharging2.green) / 65535.0;
+    double discharging2_b = ((double) lx_b->discharging2.blue) / 65535.0;
+
+
+    cairo_t * cr = gdk_cairo_create(lx_b->pixmap);
+
+    /* Erase pixmap. */
+
+    cairo_set_line_width (cr, 1.0);
+    cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
+
+    cairo_set_source_rgb(cr, background_color_r, background_color_g, background_color_b);
+    cairo_rectangle(cr, 0, 0, lx_b->width, lx_b->height);
+    cairo_fill(cr);
+
+    /* Bar color */
+
+    double R, G, B;
+    if (isCharging)
+    {
+        double v = lx_b->b->percentage / 100.0;
+	R = charging1_r * v + charging2_r * (1.0 - v);
+	G = charging1_g * v + charging2_g * (1.0 - v);
+	B = charging1_b * v + charging2_b * (1.0 - v);
+    }
+    else
+    {
+        double v = lx_b->b->percentage / 100.0;
+	R = discharging1_r * v + discharging2_r * (1.0 - v);
+	G = discharging1_g * v + discharging2_g * (1.0 - v);
+	B = discharging1_b * v + discharging2_b * (1.0 - v);
+    }
+    cairo_set_source_rgb(cr, R, G, B);
+
+    /* draw bar */
+
+    int chargeLevel = lx_b->b->percentage * (lx_b->length - 2 * lx_b->border) / 100;
+
+    if (lx_b->orientation == ORIENT_HORIZ)
+    {
+        cairo_rectangle(cr,
+            lx_b->border,
+            lx_b->height - lx_b->border - chargeLevel,
+            lx_b->width - lx_b->border,
+            chargeLevel);
+
+    }
+    else
+    {
+        cairo_rectangle(cr,
+            lx_b->border,
+            lx_b->border,
+            chargeLevel,
+            lx_b->height / 2 - lx_b->border);
+    }
+    cairo_fill(cr);
+
+    cairo_destroy(cr);
+
+    gtk_widget_queue_draw(lx_b->drawingArea);
+}
 
 /* FIXME:
    Don't repaint if percentage of remaining charge and remaining time aren't changed. */
@@ -121,11 +203,7 @@ void update_display(lx_battery *lx_b, gboolean repaint) {
     char tooltip[ 256 ];
     battery *b = lx_b->b;
     /* unit: mW */
-    int rate;
-    gboolean isCharging;
 
-    if (! lx_b->pixmap )
-        return;
 
     /* no battery is found */
     if( b == NULL ) 
@@ -134,13 +212,10 @@ void update_display(lx_battery *lx_b, gboolean repaint) {
 	return;
     }
     
-    /* draw background */
-    gdk_draw_rectangle(lx_b->pixmap, lx_b->bg, TRUE, 0, 0, lx_b->width, lx_b->height);
-
     /* fixme: only one battery supported */
 
-    rate = lx_b->b->current_now;
-    isCharging = battery_is_charging ( b );
+    int rate = lx_b->b->current_now;
+    gboolean isCharging = battery_is_charging ( b );
     
     /* Consider running the alarm command */
     if ( !isCharging && rate > 0 &&
@@ -198,44 +273,8 @@ void update_display(lx_battery *lx_b, gboolean repaint) {
 
     gtk_widget_set_tooltip_text(lx_b->drawingArea, tooltip);
 
-    int chargeLevel = lx_b->b->percentage * (lx_b->length - 2 * lx_b->border) / 100;
+    update_bar(lx_b);
 
-    /* Choose the right colors for the charge bar */
-    if (isCharging) {
-	gdk_gc_set_foreground(lx_b->gc1, &lx_b->charging1);
-	gdk_gc_set_foreground(lx_b->gc2, &lx_b->charging2);
-    }
-    else {
-	gdk_gc_set_foreground(lx_b->gc1, &lx_b->discharging1);
-	gdk_gc_set_foreground(lx_b->gc2, &lx_b->discharging2);
-    }
-
-    gdk_draw_rectangle(lx_b->pixmap, lx_b->bg, TRUE, 0, 0, lx_b->width, lx_b->height);
-
-    if (lx_b->orientation == ORIENT_HORIZ) {
-
-	/* Draw the battery bar vertically, using color 1 for the left half and
-	   color 2 for the right half */
-	gdk_draw_rectangle(lx_b->pixmap, lx_b->gc1, TRUE, lx_b->border,
-		lx_b->height - lx_b->border - chargeLevel, lx_b->width / 2
-		- lx_b->border, chargeLevel);
-	gdk_draw_rectangle(lx_b->pixmap, lx_b->gc2, TRUE, lx_b->width / 2,
-		lx_b->height - lx_b->border - chargeLevel, (lx_b->width + 1) / 2
-		- lx_b->border, chargeLevel);
-
-    }
-    else {
-
-	/* Draw the battery bar horizontally, using color 1 for the top half and
-	   color 2 for the bottom half */
-	gdk_draw_rectangle(lx_b->pixmap, lx_b->gc1, TRUE, lx_b->border,
-		lx_b->border, chargeLevel, lx_b->height / 2 - lx_b->border);
-	gdk_draw_rectangle(lx_b->pixmap, lx_b->gc2, TRUE, lx_b->border, (lx_b->height + 1)
-		/ 2, chargeLevel, lx_b->height / 2 - lx_b->border);
-
-    }
-    if( repaint )
-	gtk_widget_queue_draw( lx_b->drawingArea );
 }
 
 /* This callback is called every 3 seconds */
@@ -350,10 +389,6 @@ constructor(Plugin *p, char **fp)
 
     gtk_widget_show(lx_b->drawingArea);
 
-    lx_b->bg  = gdk_gc_new(panel_get_toplevel_window(p->panel));
-    lx_b->gc1 = gdk_gc_new(panel_get_toplevel_window(p->panel));
-    lx_b->gc2 = gdk_gc_new(panel_get_toplevel_window(p->panel));
-
     g_signal_connect (G_OBJECT (lx_b->drawingArea), "button_press_event",
             G_CALLBACK(buttonPressEvent), (gpointer) p);
     g_signal_connect (G_OBJECT (lx_b->drawingArea),"configure_event",
@@ -444,13 +479,6 @@ constructor(Plugin *p, char **fp)
     gdk_color_parse(lx_b->chargingColor2, &lx_b->charging2);
     gdk_color_parse(lx_b->dischargingColor1, &lx_b->discharging1);
     gdk_color_parse(lx_b->dischargingColor2, &lx_b->discharging2);
-    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->background, FALSE, TRUE);
-    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->charging1, FALSE, TRUE);
-    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->charging2, FALSE, TRUE);
-    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->discharging1, FALSE, TRUE);
-    gdk_colormap_alloc_color(panel_get_color_map(p->panel), &lx_b->discharging2, FALSE, TRUE);
-    gdk_gc_set_foreground(lx_b->bg, &lx_b->background);
-
    
     /* Start the update loop */
     lx_b->timer = g_timeout_add_seconds( 3, (GSourceFunc) update_timout, (gpointer) lx_b);
@@ -472,10 +500,6 @@ destructor(Plugin *p)
     if (b->pixmap)
         g_object_unref(b->pixmap);
 
-    if (b->gc1)
-        g_object_unref(b->gc1);
-    if (b->gc2)
-        g_object_unref(b->gc2);
     g_free(b->alarmCommand);
     g_free(b->backgroundColor);
     g_free(b->chargingColor1);
@@ -519,21 +543,11 @@ static void applyConfig(Plugin* p)
     lx_battery *b = (lx_battery *) p->priv;
 
     /* Update colors */
-    if (b->backgroundColor &&
-            gdk_color_parse(b->backgroundColor, &b->background)) {
-        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->background, FALSE, TRUE);
-        gdk_gc_set_foreground(b->bg, &b->background);
-    }
-    if (b->chargingColor1 && gdk_color_parse(b->chargingColor1, &b->charging1))
-        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->charging1, FALSE, TRUE);
-    if (b->chargingColor2 && gdk_color_parse(b->chargingColor2, &b->charging2))
-        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->charging2, FALSE, TRUE);
-    if (b->dischargingColor1 &&
-            gdk_color_parse(b->dischargingColor1, &b->discharging1))
-        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->discharging1, FALSE, TRUE);
-    if (b->dischargingColor2 &&
-            gdk_color_parse(b->dischargingColor2, &b->discharging2))
-        gdk_colormap_alloc_color(panel_get_color_map(p->panel), &b->discharging2, FALSE, TRUE);
+    gdk_color_parse(b->backgroundColor, &b->background);
+    gdk_color_parse(b->chargingColor1, &b->charging1);
+    gdk_color_parse(b->chargingColor2, &b->charging2);
+    gdk_color_parse(b->dischargingColor1, &b->discharging1);
+    gdk_color_parse(b->dischargingColor2, &b->discharging2);
 
     /* Make sure the border value is acceptable */
     b->border = MIN(MAX(0, b->requestedBorder),

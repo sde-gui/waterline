@@ -97,7 +97,7 @@ typedef struct {
 } Alarm;
 
 static void destructor(Plugin *p);
-static void update_display(lx_battery *lx_b, gboolean repaint);
+static void update_display(lx_battery *lx_b);
 static void batt_panel_configuration_changed(Plugin *p);
 
 /* alarmProcess takes the address of a dynamically allocated alarm struct (which
@@ -212,7 +212,7 @@ static void update_bar(lx_battery *lx_b)
 
 /* FIXME:
    Don't repaint if percentage of remaining charge and remaining time aren't changed. */
-void update_display(lx_battery *lx_b, gboolean repaint) {
+void update_display(lx_battery *lx_b) {
     char tooltip[ 256 ];
     battery *b = lx_b->b;
     /* unit: mW */
@@ -302,7 +302,7 @@ static int update_timout(lx_battery *lx_b) {
     else
         lx_b->b = battery_get();
 
-    update_display( lx_b, TRUE );
+    update_display(lx_b);
 
     GDK_THREADS_LEAVE();
     return TRUE;
@@ -314,7 +314,7 @@ static gint buttonPressEvent(GtkWidget *widget, GdkEventButton *event,
 
     lx_battery *lx_b = (lx_battery*)plugin->priv;
 
-    update_display(lx_b, TRUE);
+    update_display(lx_b);
 
     if( event->button == 3 )  /* right button */
     {
@@ -354,7 +354,7 @@ static gint configureEvent(GtkWidget *widget, GdkEventConfigure *event,
           widget->allocation.height, -1);
 
     /* Perform an update so the bar will look right in its new orientation */
-    update_display(lx_b, FALSE);
+    update_display(lx_b);
 
     RET(TRUE);
 
@@ -576,6 +576,8 @@ static void applyConfig(Plugin* p)
 
     /* Make sure the border value is acceptable */
     b->border = MAX(0, b->border);
+
+    update_display(b);
 
     RET();
 }

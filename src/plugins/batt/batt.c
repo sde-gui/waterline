@@ -296,9 +296,11 @@ static int update_timout(lx_battery *lx_b) {
     lx_b->state_elapsed_time++;
     lx_b->info_elapsed_time++;
 
-    /* check the  batteries every 3 seconds */
+    /* check the batteries every 3 seconds */
     if (lx_b->b)
         battery_update( lx_b->b );
+    else
+        lx_b->b = battery_get();
 
     update_display( lx_b, TRUE );
 

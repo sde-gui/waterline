@@ -54,6 +54,17 @@
    This helps prevent spikes in the "time left" values the user sees. */
 #define MAX_SAMPLES 10
 
+enum {
+    DISPLAY_AS_BAR,
+    DISPLAY_AS_TEXT
+};
+
+static pair display_as_pair[] = {
+    { DISPLAY_AS_BAR, "Bar"},
+    { DISPLAY_AS_TEXT, "Text"},
+    { 0, NULL},
+};
+
 typedef struct {
     char *alarmCommand,
         *backgroundColor,
@@ -68,8 +79,14 @@ typedef struct {
     double discharging1_color[3];
     double discharging2_color[3];
 
+    GtkWidget *vbox;
+    GtkWidget *hbox;
     GdkPixmap *pixmap;
     GtkWidget *drawingArea;
+    GtkWidget *label;
+
+    int display_as;
+
     int orientation;
     unsigned int alarmTime,
         border,
@@ -115,6 +132,34 @@ static void * alarmProcess(void *arg) {
     return NULL;
 }
 
+static void get_status_color(lx_battery *lx_b, double color[3])
+{
+    if (!lx_b->b)
+    {
+       color[0] = 0;
+       color[1] = 0;
+       color[2] = 0;
+    }
+
+    gboolean isCharging = battery_is_charging(lx_b->b);
+
+    double v = lx_b->b->percentage / 100.0;
+
+    if (isCharging)
+    {
+        color[0] = lx_b->charging1_color[0] * v + lx_b->charging2_color[0] * (1.0 - v);
+        color[1] = lx_b->charging1_color[1] * v + lx_b->charging2_color[1] * (1.0 - v);
+        color[2] = lx_b->charging1_color[2] * v + lx_b->charging2_color[2] * (1.0 - v);
+    }
+    else
+    {
+        color[0] = lx_b->discharging1_color[0] * v + lx_b->discharging2_color[0] * (1.0 - v);
+        color[1] = lx_b->discharging1_color[1] * v + lx_b->discharging2_color[1] * (1.0 - v);
+        color[2] = lx_b->discharging1_color[2] * v + lx_b->discharging2_color[2] * (1.0 - v);
+    }
+
+}
+
 static void update_bar(lx_battery *lx_b)
 {
     if (!lx_b->pixmap)
@@ -123,25 +168,11 @@ static void update_bar(lx_battery *lx_b)
     if (!lx_b->b)
         return;
 
-    gboolean isCharging = battery_is_charging(lx_b->b);
 
     /* Bar color */
 
     double bar_color[3];
-    if (isCharging)
-    {
-        double v = lx_b->b->percentage / 100.0;
-        bar_color[0] = lx_b->charging1_color[0] * v + lx_b->charging2_color[0] * (1.0 - v);
-        bar_color[1] = lx_b->charging1_color[1] * v + lx_b->charging2_color[1] * (1.0 - v);
-        bar_color[2] = lx_b->charging1_color[2] * v + lx_b->charging2_color[2] * (1.0 - v);
-    }
-    else
-    {
-        double v = lx_b->b->percentage / 100.0;
-        bar_color[0] = lx_b->discharging1_color[0] * v + lx_b->discharging2_color[0] * (1.0 - v);
-        bar_color[1] = lx_b->discharging1_color[1] * v + lx_b->discharging2_color[1] * (1.0 - v);
-        bar_color[2] = lx_b->discharging1_color[2] * v + lx_b->discharging2_color[2] * (1.0 - v);
-    }
+    get_status_color(lx_b, bar_color);
 
     double v = 0.3;
 
@@ -209,6 +240,37 @@ static void update_bar(lx_battery *lx_b)
     gtk_widget_queue_draw(lx_b->drawingArea);
 }
 
+void update_label(lx_battery *lx_b) {
+
+    if (!lx_b->label)
+        return;
+
+    if (!lx_b->b)
+        return;
+
+
+    gboolean isCharging = battery_is_charging(lx_b->b);
+
+    gchar * text = NULL;
+    if (isCharging)
+        text = g_strdup_printf(_("%d%%↑"), lx_b->b->percentage);
+    else
+        text = g_strdup_printf(_("%d%%↓"), lx_b->b->percentage);
+
+    double status_color[3];
+    get_status_color(lx_b, status_color);
+    int color = (((int) (status_color[0] * 255)) << 16) +
+                (((int) (status_color[1] * 255)) << 8) +
+                 ((int) (status_color[2] * 255));
+    
+    gchar * markup = g_strdup_printf("<span color=\"#%06x\">%s</span>", color, text);
+
+    gtk_label_set_markup(GTK_LABEL(lx_b->label), markup);
+
+    g_free(markup);
+    g_free(text);
+}
+
 /* FIXME:
    Don't repaint if percentage of remaining charge and remaining time aren't changed. */
 void update_display(lx_battery *lx_b) {
@@ -220,7 +282,7 @@ void update_display(lx_battery *lx_b) {
     /* no battery is found */
     if( b == NULL ) 
     {
-	gtk_widget_set_tooltip_text( lx_b->drawingArea, _("No batteries found") );
+	gtk_widget_set_tooltip_text( lx_b->vbox, _("No batteries found") );
 	return;
     }
     
@@ -283,9 +345,26 @@ void update_display(lx_battery *lx_b) {
 	}
     }
 
-    gtk_widget_set_tooltip_text(lx_b->drawingArea, tooltip);
+    gtk_widget_set_tooltip_text(lx_b->vbox, tooltip);
 
-    update_bar(lx_b);
+    if (lx_b->display_as == DISPLAY_AS_BAR)
+    {
+        if (lx_b->label)
+            gtk_widget_hide(lx_b->label);
+        gtk_widget_show(lx_b->drawingArea);
+        update_bar(lx_b);
+    }
+    else
+    {
+        if (!lx_b->label)
+        {
+            lx_b->label = gtk_label_new("");
+            gtk_box_pack_start(GTK_BOX(lx_b->hbox), lx_b->label, TRUE, FALSE, 0);
+        }
+        gtk_widget_show(lx_b->label);
+        gtk_widget_hide(lx_b->drawingArea);
+        update_label(lx_b);
+    }
 
 }
 
@@ -398,21 +477,21 @@ constructor(Plugin *p, char **fp)
     gtk_widget_set_has_window(p->pwid, FALSE);
     gtk_container_set_border_width( GTK_CONTAINER(p->pwid), 1 );
 
-    GtkWidget * vbox = gtk_vbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(p->pwid), vbox);
-    gtk_widget_show(vbox);
+    lx_b->vbox = gtk_vbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(p->pwid), lx_b->vbox);
+    gtk_widget_show(lx_b->vbox);
 
-    GtkWidget * hbox = gtk_hbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, FALSE, 0);
-    gtk_widget_show(hbox);
+    lx_b->hbox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(lx_b->vbox), lx_b->hbox, TRUE, FALSE, 0);
+    gtk_widget_show(lx_b->hbox);
 
     lx_b->drawingArea = gtk_drawing_area_new();
     gtk_widget_add_events( lx_b->drawingArea, GDK_BUTTON_PRESS_MASK );
-    gtk_box_pack_start(GTK_BOX(hbox), lx_b->drawingArea, TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(lx_b->hbox), lx_b->drawingArea, TRUE, FALSE, 0);
 
     gtk_widget_show(lx_b->drawingArea);
 
-    g_signal_connect (G_OBJECT (lx_b->drawingArea), "button_press_event",
+    g_signal_connect (G_OBJECT (p->pwid), "button_press_event",
             G_CALLBACK(buttonPressEvent), (gpointer) p);
     g_signal_connect (G_OBJECT (lx_b->drawingArea),"configure_event",
           G_CALLBACK (configureEvent), (gpointer) lx_b);
@@ -429,6 +508,7 @@ constructor(Plugin *p, char **fp)
     /* Set default values for integers */
     lx_b->alarmTime = 5;
     lx_b->border = 3;
+    lx_b->display_as = DISPLAY_AS_TEXT;
 
     line s;
 
@@ -459,6 +539,8 @@ constructor(Plugin *p, char **fp)
                     lx_b->alarmTime = atoi(s.t[1]);
                 else if (!g_ascii_strcasecmp(s.t[0], "BorderWidth"))
                     lx_b->border = MAX(0, atoi(s.t[1]));
+                else if (g_ascii_strcasecmp(s.t[0], "DisplayAs") == 0)
+                    lx_b->display_as = str2num(display_as_pair, s.t[1], lx_b->display_as);
                 else {
                     ERR( "batt: unknown var %s\n", s.t[0]);
                     continue;
@@ -596,6 +678,8 @@ static void config(Plugin *p, GtkWindow* parent) {
             "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
             _("Alarm command"), &b->alarmCommand, (GType)CONF_TYPE_STR,
             _("Alarm time (minutes left)"), &b->alarmTime, (GType)CONF_TYPE_INT,
+
+            _("|Display as:|Bar|Text"), &b->display_as, (GType)CONF_TYPE_ENUM,
             _("Background color"), &b->backgroundColor, (GType)CONF_TYPE_COLOR,
             _("Charging color 1"), &b->chargingColor1, (GType)CONF_TYPE_COLOR,
             _("Charging color 2"), &b->chargingColor2, (GType)CONF_TYPE_COLOR,
@@ -616,6 +700,7 @@ static void save(Plugin* p, FILE* fp) {
     lxpanel_put_bool(fp, "HideIfNoBattery",lx_b->hide_if_no_battery);
     lxpanel_put_str(fp, "AlarmCommand", lx_b->alarmCommand);
     lxpanel_put_int(fp, "AlarmTime", lx_b->alarmTime);
+    lxpanel_put_enum(fp, "DisplayAs", lx_b->display_as, display_as_pair);
     lxpanel_put_str(fp, "BackgroundColor", lx_b->backgroundColor);
     lxpanel_put_int(fp, "BorderWidth", lx_b->border);
     lxpanel_put_str(fp, "ChargingColor1", lx_b->chargingColor1);

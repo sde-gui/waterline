@@ -74,10 +74,8 @@ typedef struct {
         height,
         length,
         numSamples,
-        requestedBorder,
         *rateSamples,
         rateSamplesSum,
-        thickness,
         timer,
         state_elapsed_time,
         info_elapsed_time,
@@ -87,6 +85,9 @@ typedef struct {
     sem_t alarmProcessLock;
     battery* b;
     gboolean has_ac_adapter;
+
+    int bar_preferred_width;
+    int bar_preferred_height;
 } lx_battery;
 
 
@@ -97,6 +98,7 @@ typedef struct {
 
 static void destructor(Plugin *p);
 static void update_display(lx_battery *lx_b, gboolean repaint);
+static void batt_panel_configuration_changed(Plugin *p);
 
 /* alarmProcess takes the address of a dynamically allocated alarm struct (which
    it must free). It ensures that alarm commands do not run concurrently. */
@@ -171,24 +173,32 @@ static void update_bar(lx_battery *lx_b)
 
     /* draw bar */
 
-    int chargeLevel = lx_b->b->percentage * (lx_b->length - 2 * lx_b->border) / 100;
+    int border = lx_b->border;
+    while (1)
+    {
+        int barroom = MIN(lx_b->width, lx_b->height) - border * 2;
+        if (barroom >= border || border < 1)
+           break;
+        border--;
+    }
+
+    int chargeLevel = lx_b->b->percentage * (lx_b->length - 2 * border) / 100;
 
     if (lx_b->orientation == ORIENT_HORIZ)
     {
         cairo_rectangle(cr,
-            lx_b->border,
-            lx_b->height - lx_b->border - chargeLevel,
-            lx_b->width - lx_b->border,
+            border,
+            lx_b->height - border - chargeLevel,
+            lx_b->width - border * 2,
             chargeLevel);
-
     }
     else
     {
         cairo_rectangle(cr,
-            lx_b->border,
-            lx_b->border,
+            border,
+            border,
             chargeLevel,
-            lx_b->height / 2 - lx_b->border);
+            lx_b->height - border * 2);
     }
     cairo_fill(cr);
 
@@ -314,20 +324,25 @@ static gint configureEvent(GtkWidget *widget, GdkEventConfigure *event,
 
     ENTER;
 
-    if (lx_b->pixmap)
-        g_object_unref(lx_b->pixmap);
+    if (lx_b->width == widget->allocation.width && lx_b->height == widget->allocation.height)
+    {
+        RET(TRUE);
+    }
+
+    //g_print("allocation: %d, %d\n", widget->allocation.width, widget->allocation.height);
 
     /* Update the plugin's dimensions */
     lx_b->width = widget->allocation.width;
     lx_b->height = widget->allocation.height;
     if (lx_b->orientation == ORIENT_HORIZ) {
         lx_b->length = lx_b->height;
-        lx_b->thickness = lx_b->width;
     }
     else {
         lx_b->length = lx_b->width;
-        lx_b->thickness = lx_b->height;
     }
+
+    if (lx_b->pixmap)
+        g_object_unref(lx_b->pixmap);
 
     lx_b->pixmap = gdk_pixmap_new (widget->window, widget->allocation.width,
           widget->allocation.height, -1);
@@ -339,6 +354,12 @@ static gint configureEvent(GtkWidget *widget, GdkEventConfigure *event,
 
 }
 
+static void sizeRequest(GtkWidget * widget, GtkRequisition * requisition, lx_battery *lx_b)
+{
+    requisition->width = lx_b->bar_preferred_width;
+    requisition->height = lx_b->bar_preferred_height;
+    //g_print("requisition: %d, %d\n", lx_b->bar_preferred_width, lx_b->bar_preferred_height);
+}
 
 static gint exposeEvent(GtkWidget *widget, GdkEventExpose *event, lx_battery *lx_b) {
 
@@ -372,20 +393,17 @@ constructor(Plugin *p, char **fp)
     gtk_widget_set_has_window(p->pwid, FALSE);
     gtk_container_set_border_width( GTK_CONTAINER(p->pwid), 1 );
 
+    GtkWidget * vbox = gtk_vbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(p->pwid), vbox);
+    gtk_widget_show(vbox);
+
+    GtkWidget * hbox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, FALSE, 0);
+    gtk_widget_show(hbox);
+
     lx_b->drawingArea = gtk_drawing_area_new();
     gtk_widget_add_events( lx_b->drawingArea, GDK_BUTTON_PRESS_MASK );
-
-    gtk_container_add( (GtkContainer*)p->pwid, lx_b->drawingArea );
-
-    if ((lx_b->orientation = panel_get_orientation(p->panel)) == ORIENT_HORIZ) {
-        lx_b->height = lx_b->length = 20;
-        lx_b->thickness = lx_b->width = 8;
-    }
-    else {
-        lx_b->height = lx_b->thickness = 8;
-        lx_b->length = lx_b->width = 20;
-    }
-    gtk_widget_set_size_request(lx_b->drawingArea, lx_b->width, lx_b->height);
+    gtk_box_pack_start(GTK_BOX(hbox), lx_b->drawingArea, TRUE, FALSE, 0);
 
     gtk_widget_show(lx_b->drawingArea);
 
@@ -393,6 +411,8 @@ constructor(Plugin *p, char **fp)
             G_CALLBACK(buttonPressEvent), (gpointer) p);
     g_signal_connect (G_OBJECT (lx_b->drawingArea),"configure_event",
           G_CALLBACK (configureEvent), (gpointer) lx_b);
+    g_signal_connect (G_OBJECT (lx_b->drawingArea), "size-request",
+          G_CALLBACK (sizeRequest), (gpointer) lx_b);
     g_signal_connect (G_OBJECT (lx_b->drawingArea), "expose_event",
           G_CALLBACK (exposeEvent), (gpointer) lx_b);
 
@@ -403,7 +423,7 @@ constructor(Plugin *p, char **fp)
 
     /* Set default values for integers */
     lx_b->alarmTime = 5;
-    lx_b->requestedBorder = 1;
+    lx_b->border = 3;
 
     line s;
 
@@ -433,16 +453,7 @@ constructor(Plugin *p, char **fp)
                 else if (!g_ascii_strcasecmp(s.t[0], "AlarmTime"))
                     lx_b->alarmTime = atoi(s.t[1]);
                 else if (!g_ascii_strcasecmp(s.t[0], "BorderWidth"))
-                    lx_b->requestedBorder = atoi(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "Size")) {
-                    lx_b->thickness = MAX(1, atoi(s.t[1]));
-                    if (lx_b->orientation == ORIENT_HORIZ)
-                        lx_b->width = lx_b->thickness;
-                    else
-                        lx_b->height = lx_b->thickness;
-                    gtk_widget_set_size_request(lx_b->drawingArea, lx_b->width,
-                            lx_b->height);
-                }
+                    lx_b->border = MAX(0, atoi(s.t[1]));
                 else {
                     ERR( "batt: unknown var %s\n", s.t[0]);
                     continue;
@@ -455,10 +466,6 @@ constructor(Plugin *p, char **fp)
         }
 
     }
-
-    /* Make sure the border value is acceptable */
-    lx_b->border = MIN(MAX(0, lx_b->requestedBorder),
-            (MIN(lx_b->length, lx_b->thickness) - 1) / 2);
 
     /* Apply more default options */
     if (! lx_b->alarmCommand)
@@ -479,7 +486,9 @@ constructor(Plugin *p, char **fp)
     gdk_color_parse(lx_b->chargingColor2, &lx_b->charging2);
     gdk_color_parse(lx_b->dischargingColor1, &lx_b->discharging1);
     gdk_color_parse(lx_b->dischargingColor2, &lx_b->discharging2);
-   
+
+    batt_panel_configuration_changed(p);
+
     /* Start the update loop */
     lx_b->timer = g_timeout_add_seconds( 3, (GSourceFunc) update_timout, (gpointer) lx_b);
 
@@ -518,20 +527,30 @@ destructor(Plugin *p)
 }
 
 
-static void orientation(Plugin *p) {
+static void batt_panel_configuration_changed(Plugin *p) {
 
     ENTER;
 
     lx_battery *b = (lx_battery *) p->priv;
 
-    if (b->orientation != panel_get_orientation(p->panel)) {
-        b->orientation = panel_get_orientation(p->panel);
-        unsigned int swap = b->height;
-        b->height = b->width;
-        b->width = swap;
-        gtk_widget_set_size_request(b->drawingArea, b->width, b->height);
+    b->orientation = panel_get_orientation(p->panel);
+    
+    if (b->orientation == ORIENT_HORIZ)
+    {
+        b->bar_preferred_height = panel_get_icon_size(p->panel);;
+        b->bar_preferred_width = b->bar_preferred_height / 3;
+        if (b->bar_preferred_width < 5)
+            b->bar_preferred_width = 5;
     }
-
+    else
+    {
+        b->bar_preferred_width = panel_get_icon_size(p->panel);;
+        b->bar_preferred_height = b->bar_preferred_width / 3;
+        if (b->bar_preferred_height < 5)
+            b->bar_preferred_height = 5;
+    }
+    gtk_widget_queue_resize(b->drawingArea);
+    
     RET();
 }
 
@@ -550,15 +569,7 @@ static void applyConfig(Plugin* p)
     gdk_color_parse(b->dischargingColor2, &b->discharging2);
 
     /* Make sure the border value is acceptable */
-    b->border = MIN(MAX(0, b->requestedBorder),
-            (MIN(b->length, b->thickness) - 1) / 2);
-
-    /* Resize the widget */
-    if (b->orientation == ORIENT_HORIZ)
-        b->width = b->thickness;
-    else
-        b->height = b->thickness;
-    gtk_widget_set_size_request(b->drawingArea, b->width, b->height);
+    b->border = MAX(0, b->border);
 
     RET();
 }
@@ -583,8 +594,7 @@ static void config(Plugin *p, GtkWindow* parent) {
             _("Charging color 2"), &b->chargingColor2, (GType)CONF_TYPE_COLOR,
             _("Discharging color 1"), &b->dischargingColor1, (GType)CONF_TYPE_COLOR,
             _("Discharging color 2"), &b->dischargingColor2, (GType)CONF_TYPE_COLOR,
-            _("Border width"), &b->requestedBorder, (GType)CONF_TYPE_INT,
-            _("Size"), &b->thickness, (GType)CONF_TYPE_INT,
+            _("Border width"), &b->border, (GType)CONF_TYPE_INT,
             NULL);
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));
@@ -600,12 +610,11 @@ static void save(Plugin* p, FILE* fp) {
     lxpanel_put_str(fp, "AlarmCommand", lx_b->alarmCommand);
     lxpanel_put_int(fp, "AlarmTime", lx_b->alarmTime);
     lxpanel_put_str(fp, "BackgroundColor", lx_b->backgroundColor);
-    lxpanel_put_int(fp, "BorderWidth", lx_b->requestedBorder);
+    lxpanel_put_int(fp, "BorderWidth", lx_b->border);
     lxpanel_put_str(fp, "ChargingColor1", lx_b->chargingColor1);
     lxpanel_put_str(fp, "ChargingColor2", lx_b->chargingColor2);
     lxpanel_put_str(fp, "DischargingColor1", lx_b->dischargingColor1);
     lxpanel_put_str(fp, "DischargingColor2", lx_b->dischargingColor2);
-    lxpanel_put_int(fp, "Size", lx_b->thickness);
 }
 
 
@@ -622,5 +631,5 @@ PluginClass batt_plugin_class = {
     destructor  : destructor,
     config      : config,
     save        : save,
-    panel_configuration_changed : orientation
+    panel_configuration_changed : batt_panel_configuration_changed
 };

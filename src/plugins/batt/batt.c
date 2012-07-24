@@ -144,37 +144,30 @@ static void update_bar(lx_battery *lx_b)
     double discharging2_b = ((double) lx_b->discharging2.blue) / 65535.0;
 
 
-    cairo_t * cr = gdk_cairo_create(lx_b->pixmap);
-
-    /* Erase pixmap. */
-
-    cairo_set_line_width (cr, 1.0);
-    cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
-
-    cairo_set_source_rgb(cr, background_color_r, background_color_g, background_color_b);
-    cairo_rectangle(cr, 0, 0, lx_b->width, lx_b->height);
-    cairo_fill(cr);
-
     /* Bar color */
 
     double R, G, B;
     if (isCharging)
     {
         double v = lx_b->b->percentage / 100.0;
-	R = charging1_r * v + charging2_r * (1.0 - v);
-	G = charging1_g * v + charging2_g * (1.0 - v);
-	B = charging1_b * v + charging2_b * (1.0 - v);
+        R = charging1_r * v + charging2_r * (1.0 - v);
+        G = charging1_g * v + charging2_g * (1.0 - v);
+        B = charging1_b * v + charging2_b * (1.0 - v);
     }
     else
     {
         double v = lx_b->b->percentage / 100.0;
-	R = discharging1_r * v + discharging2_r * (1.0 - v);
-	G = discharging1_g * v + discharging2_g * (1.0 - v);
-	B = discharging1_b * v + discharging2_b * (1.0 - v);
+        R = discharging1_r * v + discharging2_r * (1.0 - v);
+        G = discharging1_g * v + discharging2_g * (1.0 - v);
+        B = discharging1_b * v + discharging2_b * (1.0 - v);
     }
-    cairo_set_source_rgb(cr, R, G, B);
 
-    /* draw bar */
+    double v = 0.3;
+
+    double background_color1_r = R * v + background_color_r * (1.0 - v);
+    double background_color1_g = G * v + background_color_g * (1.0 - v);
+    double background_color1_b = B * v + background_color_b * (1.0 - v);
+    
 
     int border = lx_b->border;
     while (1)
@@ -184,6 +177,30 @@ static void update_bar(lx_battery *lx_b)
            break;
         border--;
     }
+
+
+    cairo_t * cr = gdk_cairo_create(lx_b->pixmap);
+
+    /* Erase pixmap. */
+
+    cairo_set_line_width (cr, 1.0);
+    cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
+
+    cairo_set_source_rgb(cr, background_color1_r, background_color1_g, background_color1_b);
+    cairo_rectangle(cr, 0, 0, lx_b->width, lx_b->height);
+    cairo_fill(cr);
+
+    /* Draw border. */
+
+    cairo_set_line_width (cr, border);
+    cairo_set_source_rgb(cr, background_color_r, background_color_g, background_color_b);
+    cairo_rectangle(cr, border / 2.0, border / 2.0, lx_b->width - border, lx_b->height - border);
+    cairo_stroke(cr);
+
+
+    cairo_set_source_rgb(cr, R, G, B);
+
+    /* Draw bar. */
 
     int chargeLevel = lx_b->b->percentage * (lx_b->length - 2 * border) / 100;
 

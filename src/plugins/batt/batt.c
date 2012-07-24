@@ -466,13 +466,13 @@ constructor(Plugin *p, char **fp)
     if (! lx_b->backgroundColor)
         lx_b->backgroundColor = g_strdup("black");
     if (! lx_b->chargingColor1)
-        lx_b->chargingColor1 = g_strdup("#28f200");
+        lx_b->chargingColor1 = g_strdup("#1B3BC6");
     if (! lx_b->chargingColor2)
-        lx_b->chargingColor2 = g_strdup("#22cc00");
+        lx_b->chargingColor2 = g_strdup("#B52FC3");
     if (! lx_b->dischargingColor1)
-        lx_b->dischargingColor1 = g_strdup("#ffee00");
+        lx_b->dischargingColor1 = g_strdup("#00FF00");
     if (! lx_b->dischargingColor2)
-        lx_b->dischargingColor2 = g_strdup("#d9ca00");
+        lx_b->dischargingColor2 = g_strdup("#FF0000");
 
     gdk_color_parse(lx_b->backgroundColor, &lx_b->background);
     gdk_color_parse(lx_b->chargingColor1, &lx_b->charging1);

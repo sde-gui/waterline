@@ -118,6 +118,9 @@ static void update_bar(lx_battery *lx_b)
     if (!lx_b->pixmap)
         return;
 
+    if (!lx_b->b)
+        return;
+
     gboolean isCharging = battery_is_charging(lx_b->b);
 
     double background_color_r = ((double) lx_b->background.red) / 65535.0;
@@ -294,7 +297,8 @@ static int update_timout(lx_battery *lx_b) {
     lx_b->info_elapsed_time++;
 
     /* check the  batteries every 3 seconds */
-    battery_update( lx_b->b );
+    if (lx_b->b)
+        battery_update( lx_b->b );
 
     update_display( lx_b, TRUE );
 
@@ -386,8 +390,8 @@ constructor(Plugin *p, char **fp)
     lx_b->b = battery_get ();
     
     /* no battery available */
-    if ( lx_b->b == NULL )
-	goto error;
+/*    if ( lx_b->b == NULL )
+	goto error;*/
     
     p->pwid = gtk_event_box_new();
     gtk_widget_set_has_window(p->pwid, FALSE);

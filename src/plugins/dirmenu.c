@@ -32,6 +32,8 @@
 #include <string.h>
 #include <gio/gio.h>
 
+#define PLUGIN_PRIV_TYPE DirMenuPlugin
+
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
@@ -129,7 +131,7 @@ static void dirmenu_menuitem_open_directory_plain(GtkWidget * item, Plugin * p)
 
 static gboolean dirmenu_menuitem_button_press(GtkWidget * item, GdkEventButton* evt, Plugin * p)
 {
-    //DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    //DirMenuPlugin * dm = PRIV(p);
 
     if (evt->button == 3)  /* right */
     {
@@ -321,7 +323,7 @@ static gboolean dirmenu_query_tooltip(GtkWidget * item, gint x, gint y, gboolean
 /* Create a menu populated with all files and subdirectories. */
 static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top, GtkWidget * parent_item)
 {
-    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    DirMenuPlugin * dm = PRIV(p);
 
 //g_print("[%d] %s\n", (int)time(NULL), path);
 
@@ -748,7 +750,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 /* Show a menu of subdirectories. */
 static void dirmenu_show_menu(Plugin * p, int btn, guint32 time)
 {
-    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    DirMenuPlugin * dm = PRIV(p);
 
     /* Create a menu populated with all subdirectories. */
     GtkWidget * menu = dirmenu_create_menu(
@@ -764,7 +766,7 @@ static void dirmenu_show_menu(Plugin * p, int btn, guint32 time)
 /* Handler for button-press-event on top level widget. */
 static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * event, Plugin * p)
 {
-    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    DirMenuPlugin * dm = PRIV(p);
 
     /* Standard left-click handling. */
     if (plugin_button_press_event(widget, event, p))
@@ -787,7 +789,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
     DirMenuPlugin * dm = g_new0(DirMenuPlugin, 1);
     dm->plugin = p;
-    p->priv = dm;
+    plugin_set_priv(p, dm);
 
     dm->show_hidden = FALSE;
     dm->show_files = TRUE;
@@ -868,7 +870,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void dirmenu_destructor(Plugin * p)
 {
-    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    DirMenuPlugin * dm = PRIV(p);
 
     /* Release a reference on the folder icon if held. */
     if (dm->folder_icon)
@@ -884,7 +886,7 @@ static void dirmenu_destructor(Plugin * p)
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void dirmenu_apply_configuration(Plugin * p)
 {
-    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    DirMenuPlugin * dm = PRIV(p);
 
     gchar * icon_name = NULL;
     
@@ -927,7 +929,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
     char* sort_directories = g_strdup_printf("%s%s", _("|Sort directories by"), sort_by);
     char* sort_files = g_strdup_printf("%s%s", _("|Sort files by"), sort_by);
 
-    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    DirMenuPlugin * dm = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
@@ -960,7 +962,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void dirmenu_save_configuration(Plugin * p, FILE * fp)
 {
-    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    DirMenuPlugin * dm = PRIV(p);
     lxpanel_put_str(fp, "path", dm->path);
     lxpanel_put_str(fp, "name", dm->name);
     lxpanel_put_str(fp, "image", dm->image);
@@ -978,7 +980,7 @@ static void dirmenu_save_configuration(Plugin * p, FILE * fp)
 /* Callback when panel configuration changes. */
 static void dirmenu_panel_configuration_changed(Plugin * p)
 {
-    DirMenuPlugin * dm = (DirMenuPlugin *) p->priv;
+    DirMenuPlugin * dm = PRIV(p);
     fb_button_set_from_file(plugin_widget(p),
         ((dm->image != NULL) ? dm->image : "file-manager"),
         panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), TRUE);

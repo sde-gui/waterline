@@ -21,6 +21,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
+#define PLUGIN_PRIV_TYPE SpacePlugin
+
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
@@ -43,7 +45,7 @@ static int space_constructor(Plugin * p, char ** fp)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
     SpacePlugin * sp = g_new0(SpacePlugin, 1);
-    p->priv = sp;
+    plugin_set_priv(p, sp);
 
     /* Load parameters from the configuration file. */
     line s;
@@ -94,14 +96,14 @@ static int space_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void space_destructor(Plugin * p)
 {
-    SpacePlugin * sp = (SpacePlugin *) p->priv;
+    SpacePlugin * sp = PRIV(p);
     g_free(sp);
 }
 
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void space_apply_configuration(Plugin * p)
 {
-    SpacePlugin * sp = (SpacePlugin *) p->priv;
+    SpacePlugin * sp = PRIV(p);
 
     /* Apply settings. */
     if (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ)
@@ -113,7 +115,7 @@ static void space_apply_configuration(Plugin * p)
 /* Callback when the configuration dialog is to be shown. */
 static void space_configure(Plugin * p, GtkWindow * parent)
 {
-    SpacePlugin * sp = (SpacePlugin *) p->priv;
+    SpacePlugin * sp = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
@@ -129,7 +131,7 @@ static void space_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void space_save_configuration(Plugin * p, FILE * fp)
 {
-    SpacePlugin * sp = (SpacePlugin *) p->priv;
+    SpacePlugin * sp = PRIV(p);
     lxpanel_put_int(fp, "Size", sp->size);
 }
 

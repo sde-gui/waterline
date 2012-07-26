@@ -152,7 +152,7 @@ static int xkb_constructor(Plugin * plugin, char ** fp)
     /* Allocate plugin context and set into Plugin private data pointer. */
     XkbPlugin * xkb = g_new0(XkbPlugin, 1);
     xkb->plugin = plugin;
-    plugin->priv = xkb;
+    plugin_set_priv(plugin, xkb);
 
     /* Initialize to defaults. */
     xkb->display_type = IMAGE;
@@ -234,7 +234,7 @@ static int xkb_constructor(Plugin * plugin, char ** fp)
 /* Plugin destructor. */
 static void xkb_destructor(Plugin * plugin)
 {
-    XkbPlugin * xkb = (XkbPlugin *) plugin->priv;
+    XkbPlugin * xkb = PRIV(plugin);
 
     /* Disconnect root window event handler. */
     g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), xkb_active_window_event, xkb);
@@ -299,7 +299,7 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
     if (lxpanel_is_in_kiosk_mode())
         return;
 
-    XkbPlugin * xkb = (XkbPlugin *) p->priv;
+    XkbPlugin * xkb = PRIV(p);
 
     /* Create dialog window. */
     GtkWidget * dlg = gtk_dialog_new_with_buttons(
@@ -417,7 +417,7 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void xkb_save_configuration(Plugin * p, FILE * fp)
 {
-    XkbPlugin * xkb = (XkbPlugin *) p->priv;
+    XkbPlugin * xkb = PRIV(p);
     lxpanel_put_int(fp, "DisplayType", xkb->display_type);
     lxpanel_put_int(fp, "PerAppLayout", xkb->enable_perapp);
     lxpanel_put_int(fp, "DefaultGroup", xkb->default_group);
@@ -427,7 +427,7 @@ static void xkb_save_configuration(Plugin * p, FILE * fp)
 static void xkb_panel_configuration_changed(Plugin * p)
 {
     /* Do a full redraw. */
-    XkbPlugin * xkb = (XkbPlugin *) p->priv;
+    XkbPlugin * xkb = PRIV(p);
     xkb_redraw(xkb);
 }
 

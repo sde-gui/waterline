@@ -21,6 +21,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
+#define PLUGIN_PRIV_TYPE WinCmdPlugin
+
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
@@ -123,7 +125,7 @@ static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
 /* Handler for "clicked" signal on main widget. */
 static gboolean wincmd_button_clicked(GtkWidget * widget, GdkEventButton * event, Plugin * plugin)
 {
-    WinCmdPlugin * wc = (WinCmdPlugin *) plugin->priv;
+    WinCmdPlugin * wc = PRIV(plugin);
 
     /* Standard right-click handling. */
     if (plugin_button_press_event(widget, event, plugin))
@@ -161,7 +163,7 @@ static int wincmd_constructor(Plugin * p, char ** fp)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
     WinCmdPlugin * wc = g_new0(WinCmdPlugin, 1);
-    p->priv = wc;
+    plugin_set_priv(p, wc);
 
     /* Initialize to defaults. */
     wc->button_1_command = WC_ICONIFY;
@@ -218,7 +220,7 @@ static int wincmd_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void wincmd_destructor(Plugin * p)
 {
-    WinCmdPlugin * wc = (WinCmdPlugin *) p->priv;
+    WinCmdPlugin * wc = PRIV(p);
     g_free(wc->image);
     g_free(wc);
 }
@@ -231,7 +233,7 @@ static void wincmd_apply_configuration(Plugin * p)
 /* Callback when the configuration dialog is to be shown. */
 static void wincmd_configure(Plugin * p, GtkWindow * parent)
 {
-    WinCmdPlugin * wc = (WinCmdPlugin *) p->priv;
+    WinCmdPlugin * wc = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
@@ -246,7 +248,7 @@ static void wincmd_configure(Plugin * p, GtkWindow * parent)
 /* Save the configuration to the configuration file. */
 static void wincmd_save_configuration(Plugin * p, FILE * fp)
 {
-    WinCmdPlugin * wc = (WinCmdPlugin *) p->priv;
+    WinCmdPlugin * wc = PRIV(p);
     lxpanel_put_str(fp, "image", wc->image);
     lxpanel_put_enum(fp, "Button1", wc->button_1_command, wincmd_pair);
     lxpanel_put_enum(fp, "Button2", wc->button_2_command, wincmd_pair);
@@ -256,7 +258,7 @@ static void wincmd_save_configuration(Plugin * p, FILE * fp)
 /* Callback when panel configuration changes. */
 static void wincmd_panel_configuration_changed(Plugin * p)
 {
-    WinCmdPlugin * wc = (WinCmdPlugin *) p->priv;
+    WinCmdPlugin * wc = PRIV(p);
     fb_button_set_from_file(plugin_widget(p), wc->image, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), TRUE);
 }
 

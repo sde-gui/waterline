@@ -25,6 +25,8 @@
 #include <glib/gi18n.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
+#define PLUGIN_PRIV_TYPE volume_t
+
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
@@ -53,7 +55,7 @@ typedef struct {
 static void
 volume_destructor(Plugin *p)
 {
-    volume_t *vol = (volume_t *) p->priv;
+    volume_t *vol = PRIV(p);
 
     ENTER;
     if (vol->dlg)
@@ -68,7 +70,7 @@ volume_destructor(Plugin *p)
 
 static void update_icon (Plugin* p)
 {
-	volume_t *vol = (volume_t*) p->priv;
+	volume_t *vol = PRIV(p);
 	
 	GdkPixbuf *icon;
 	GtkWidget *image;
@@ -118,7 +120,7 @@ static void update_icon (Plugin* p)
 
 static void on_volume_focus (GtkWidget* dlg, GdkEventFocus *event, Plugin* p)
 {
-	volume_t *vol = (volume_t*) p->priv;
+	volume_t *vol = PRIV(p);
 	
 	if (! vol_spin) return;
 	GtkAdjustment *vol_adjustment = gtk_spin_button_get_adjustment (vol_spin);
@@ -134,7 +136,7 @@ static void on_volume_focus (GtkWidget* dlg, GdkEventFocus *event, Plugin* p)
 
 static void on_mouse_scroll (GtkWidget* widget, GdkEventScroll* evt, Plugin* p)
 {
-	volume_t *vol = (volume_t*) p->priv;
+	volume_t *vol = PRIV(p);
 
 	if ( ! vol->dlg ) {
 
@@ -166,7 +168,7 @@ static void on_mouse_scroll (GtkWidget* widget, GdkEventScroll* evt, Plugin* p)
 
 static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin* p)
 {
-	volume_t *vol = (volume_t*) p->priv;
+	volume_t *vol = PRIV(p);
 
 	/* for scroll correction */
 	if (skip_botton1_event) {
@@ -252,7 +254,7 @@ static int volume_constructor(Plugin *p, char **fp)
 //    GtkWidget *image;
 //    GtkIconTheme* theme;
 //    GtkIconInfo* info;
-    
+
     vol_before_mute = 1;
     curr_volume = 0;
     curr_image = NULL;
@@ -261,7 +263,7 @@ static int volume_constructor(Plugin *p, char **fp)
     ENTER;
     vol = g_new0(volume_t, 1);
     g_return_val_if_fail(vol != NULL, 0);
-    p->priv = vol;
+    plugin_set_priv(p, vol);
 
     /* check if OSS mixer device could be open */
     mixer_fd = open ("/dev/mixer", O_RDWR, 0);

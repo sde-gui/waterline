@@ -27,6 +27,8 @@
 
 #include <string.h>
 
+#define PLUGIN_PRIV_TYPE cpufreq
+
 #include "panel.h"
 #include "paths.h"
 #include "misc.h"
@@ -307,7 +309,7 @@ clicked( GtkWidget *widget, GdkEventButton* evt, Plugin* plugin)
     if( evt->button == 1 )
     {
 // Setting governor can't work without root privilege
-//      gtk_menu_popup( cpufreq_menu((cpufreq*)plugin->priv), NULL, NULL, NULL, NULL, 
+//      gtk_menu_popup( cpufreq_menu(PRIV(plugin)), NULL, NULL, NULL, NULL, 
 //                      evt->button, evt->time );
       return TRUE;
     }else if ( evt->button == 3 )
@@ -348,7 +350,7 @@ cpufreq_constructor(Plugin *p, char** fp)
     cf->governors = NULL;
     cf->cpus = NULL;
     g_return_val_if_fail(cf != NULL, 0);
-    p->priv = cf;
+    plugin_set_priv(p, cf);
 
     GtkWidget * pwid = gtk_event_box_new();
     plugin_set_widget(p, pwid);
@@ -408,7 +410,7 @@ static void config(Plugin *p, GtkWindow* parent) {
     ENTER;
 
     GtkWidget *dialog;
-    cpufreq *cf = (cpufreq *) p->priv;
+    cpufreq *cf = PRIV(p);
     dialog = create_generic_config_dlg(_(p->class->name),
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
@@ -423,7 +425,7 @@ static void config(Plugin *p, GtkWindow* parent) {
 static void
 cpufreq_destructor(Plugin *p)
 {
-    cpufreq *cf = (cpufreq *)p->priv;
+    cpufreq *cf = PRIV(p);
     g_list_free ( cf->cpus );
     g_list_free ( cf->governors );
     g_source_remove(cf->timer);
@@ -432,7 +434,7 @@ cpufreq_destructor(Plugin *p)
 /*
 static void save_config( Plugin* p, FILE* fp )
 {
-    cpufreq *cf = (cpufreq *)p->priv;
+    cpufreq *cf = PRIV(p);
 
     lxpanel_put_bool( fp, "Remember", cf->remember);
     lxpanel_put_str( fp, "Governor", cf->cur_governor );

@@ -36,6 +36,8 @@
 //#include <unistd.h>
 //#include <fcntl.h>
 
+#define PLUGIN_PRIV_TYPE lb_t
+
 #include "panel.h"
 #include "misc.h"
 //#include "plugin.h"
@@ -540,7 +542,7 @@ static gboolean lb_input_timeout(lb_t * lb)
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void lb_apply_configuration(Plugin * p)
 {
-    lb_t * lb = (lb_t *) p->priv;
+    lb_t * lb = PRIV(p);
 
     if (!plugin_widget(p))
     {
@@ -682,7 +684,7 @@ static int lb_constructor(Plugin *p, char **fp)
     /* Allocate plugin context and set into Plugin private data pointer. */
     lb_t * lb = g_new0(lb_t, 1);
     lb->plug = p;
-    p->priv = lb;
+    plugin_set_priv(p, lb);
 
     lb->input_title.lb = lb;
     lb->input_icon.lb = lb;
@@ -784,7 +786,7 @@ static int lb_constructor(Plugin *p, char **fp)
 /* Plugin destructor. */
 static void lb_destructor(Plugin * p)
 {
-    lb_t * lb = (lb_t *) p->priv;
+    lb_t * lb = PRIV(p);
 
     if (lb->input_timeout)
         g_source_remove(lb->input_timeout);
@@ -830,7 +832,7 @@ static void lb_destructor(Plugin * p)
 /* Callback when the configuration dialog is to be shown. */
 static void lb_configure(Plugin * p, GtkWindow * parent)
 {
-    lb_t * lb = (lb_t *) p->priv;
+    lb_t * lb = PRIV(p);
 
     int min_input_restart_interval = 0;
     int max_input_restart_interval = 100000;
@@ -875,7 +877,7 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void lb_save_configuration(Plugin * p, FILE * fp)
 {
-    lb_t * lb = (lb_t *) p->priv;
+    lb_t * lb = PRIV(p);
     lxpanel_put_str(fp, "IconPath", lb->icon_path);
     lxpanel_put_str(fp, "Title", lb->title);
     lxpanel_put_str(fp, "Tooltip", lb->tooltip);

@@ -31,6 +31,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#define PLUGIN_PRIV_TYPE menup
+
 #include "global.h"
 #include "panel.h"
 #include "misc.h"
@@ -91,7 +93,7 @@ GQuark SYS_MENU_ITEM_ID = 0;
 static void
 menu_destructor(Plugin *p)
 {
-    menup *m = (menup *)p->priv;
+    menup *m = PRIV(p);
 
     if( G_UNLIKELY( idle_loader ) )
     {
@@ -529,7 +531,7 @@ reload_system_menu( menup* m, GtkMenu* menu )
 
 static void show_menu( GtkWidget* widget, Plugin* p, int btn, guint32 time )
 {
-    menup* m = (menup*)p->priv;
+    menup* m = PRIV(p);
     gtk_menu_popup(GTK_MENU(m->menu),
                    NULL, NULL,
                    (GtkMenuPositionFunc)menu_pos, p,
@@ -556,7 +558,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, Plugin* plugin)
 static
 void menu_open_system_menu(struct _Plugin * p)
 {
-    menup* m = (menup*)p->priv;
+    menup* m = PRIV(p);
     show_menu( m->img, p, 0, GDK_CURRENT_TIME );
 }
 
@@ -567,7 +569,7 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
     menup *m;
 
     ENTER;
-    m = (menup *)p->priv;
+    m = PRIV(p);
     m->menu = menu;
 
     if( name )
@@ -600,7 +602,7 @@ read_item(Plugin *p, char** fp)
     line s;
     gchar *name, *fname, *action;
     GtkWidget *item;
-    menup *m = (menup *)p->priv;
+    menup *m = PRIV(p);
     Command *cmd_entry = NULL;
 
     ENTER;
@@ -695,7 +697,7 @@ static void ru_menuitem_open(GtkWidget * item, Plugin * p)
 static void
 read_recently_used_menu(GtkMenu* menu, Plugin *p, char** fp)
 {
-    menup *m = (menup *)p->priv;
+    menup *m = PRIV(p);
 
     line s;
     if( fp )
@@ -797,7 +799,7 @@ recent_documents_activate_cb (GtkRecentChooser *chooser, Plugin * p)
 static void
 read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
 {
-    menup *m = (menup *)p->priv;
+    menup *m = PRIV(p);
 
     int limit = 20;
     gboolean show_private = FALSE;
@@ -880,7 +882,7 @@ static void
 read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
 {
     line s;
-    menup *m = (menup *)p->priv;
+    menup *m = PRIV(p);
 
     if (m->menu_cache == NULL)
     {
@@ -914,7 +916,7 @@ read_include(Plugin *p, char **fp)
 #if 0
     gchar *name;
     line s;
-    menup *m = (menup *)p->priv;
+    menup *m = PRIV(p);
     /* FIXME: this is disabled */
     ENTER;
     name = NULL;
@@ -949,7 +951,7 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
     line s;
     GtkWidget *mi, *menu;
     gchar *name, *fname;
-    menup *m = (menup *)p->priv;
+    menup *m = PRIV(p);
     GdkColor color={0, 0, 36 * 0xffff / 0xff, 96 * 0xffff / 0xff};
 
     ENTER;
@@ -1077,7 +1079,7 @@ menu_constructor(Plugin *p, char **fp)
     m->fname = NULL;
     m->caption = NULL;
 
-    p->priv = m;
+    plugin_set_priv(p, m);
 
     gtk_icon_size_lookup( GTK_ICON_SIZE_MENU, &iw, &ih );
     m->iconsize = MAX(iw, ih);
@@ -1110,7 +1112,7 @@ menu_constructor(Plugin *p, char **fp)
 
 static void save_config( Plugin* p, FILE* fp )
 {
-    menup* menu = (menup*)p->priv;
+    menup* menu = PRIV(p);
     int level = 0;
     lxpanel_put_str( fp, "name", menu->caption );
     lxpanel_put_str( fp, "image", menu->fname );
@@ -1141,7 +1143,7 @@ static void save_config( Plugin* p, FILE* fp )
 
 static void apply_config(Plugin* p)
 {
-    menup* m = (menup*)p->priv;
+    menup* m = PRIV(p);
     if( m->fname )
         fb_button_set_from_file( m->img, m->fname, -1, panel_get_icon_size(plugin_panel(p)), TRUE );
     fb_button_set_label( m->img, plugin_panel(p), m->caption);
@@ -1151,7 +1153,7 @@ static void apply_config(Plugin* p)
 static void menu_config( Plugin *p, GtkWindow* parent )
 {
     GtkWidget* dlg;
-    menup* menu = (menup*)p->priv;
+    menup* menu = PRIV(p);
     dlg = create_generic_config_dlg( _(p->class->name),
                                      GTK_WIDGET(parent),
                                     (GSourceFunc) apply_config, (gpointer) p,

@@ -34,6 +34,8 @@
 
 #include <menu-cache.h>
 
+#define PLUGIN_PRIV_TYPE LaunchbarPlugin
+
 #include "global.h"
 #include "panel.h"
 #include "paths.h"
@@ -201,7 +203,7 @@ static void launchbutton_drag_data_received_event(
 /* Build the graphic elements for the bootstrap launchbar button. */
 static void launchbutton_build_bootstrap(Plugin * p)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
 
     if (lb->bootstrap_button == NULL)
     {
@@ -234,7 +236,7 @@ static void launchbutton_build_bootstrap(Plugin * p)
 /* Build the graphic elements for a launchbar button.  The desktop_id field is already established. */
 static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
 
     if (btn->desktop_id != NULL)
     {
@@ -397,7 +399,7 @@ static int launchbar_constructor(Plugin * p, char ** fp)
 
     /* Allocate plugin context and set into Plugin private data pointer. */
     LaunchbarPlugin * lb = g_new0(LaunchbarPlugin, 1);
-    p->priv = lb;
+    plugin_set_priv(p, lb);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
@@ -452,7 +454,7 @@ static int launchbar_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void launchbar_destructor(Plugin * p)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
 
     icon_grid_to_be_removed(lb->icon_grid);
 
@@ -475,7 +477,7 @@ static void launchbar_destructor(Plugin * p)
 /* Handler for "clicked" action on launchbar configuration dialog "Add" button. */
 static void launchbar_configure_add_button(GtkButton * widget, Plugin * p)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
     GtkTreeView * menu_view = GTK_TREE_VIEW(g_object_get_data(G_OBJECT(lb->config_dlg), "menu_view"));
     GtkTreeView * defined_view = GTK_TREE_VIEW(g_object_get_data(G_OBJECT(lb->config_dlg), "defined_view"));
     GtkTreeModel * list;
@@ -510,7 +512,7 @@ static void launchbar_configure_add_button(GtkButton * widget, Plugin * p)
 /* Handler for "clicked" action on launchbar configuration dialog "Remove" button. */
 static void launchbar_configure_remove_button(GtkButton * widget, Plugin * p)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
     GtkTreeView * defined_view = GTK_TREE_VIEW(g_object_get_data(G_OBJECT(lb->config_dlg), "defined_view"));
     GtkTreeModel * list;
     GtkTreeIter it;
@@ -535,7 +537,7 @@ static void launchbar_configure_remove_button(GtkButton * widget, Plugin * p)
 /* Handler for "clicked" action on launchbar configuration dialog "Move Up" button. */
 static void launchbar_configure_move_up_button(GtkButton * widget, Plugin * p)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
 
     GtkTreeView * defined_view = GTK_TREE_VIEW(g_object_get_data(G_OBJECT(lb->config_dlg), "defined_view"));
     GtkTreeModel * list;
@@ -567,7 +569,7 @@ static void launchbar_configure_move_up_button(GtkButton * widget, Plugin * p)
 /* Handler for "clicked" action on launchbar configuration dialog "Move Down" button. */
 static void launchbar_configure_move_down_button(GtkButton * widget, Plugin * p)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
 
     GtkTreeView * defined_view = GTK_TREE_VIEW(g_object_get_data(G_OBJECT(lb->config_dlg), "defined_view"));
     GtkTreeModel * list;
@@ -618,7 +620,7 @@ static void launchbar_configure_free_btns_in_model(GtkTreeModel* model, GtkTreeI
 /* Handler for "response" signal from launchbar configuration dialog. */
 static void launchbar_configure_response(GtkDialog * dlg, int response, Plugin * p)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
 
     /* Deallocate LaunchButtons that were loaded from the menu. */
     GtkTreeView * menu_view = GTK_TREE_VIEW(g_object_get_data(G_OBJECT(lb->config_dlg), "menu_view"));
@@ -731,7 +733,7 @@ static void on_menu_cache_reload(MenuCache* menu_cache, GtkTreeStore* tree)
 /* Initialize the list of existing launchbar buttons when the configuration dialog is shown. */
 static void launchbar_configure_initialize_list(Plugin * p, GtkWidget * dlg, GtkTreeView * view, gboolean from_menu)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
 
     /* Set the selection mode. */
     gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_BROWSE);
@@ -799,7 +801,7 @@ static void launchbar_configure(Plugin * p, GtkWindow * parent)
     if (lxpanel_is_in_kiosk_mode())
         return;
 
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
 
     if (lb->config_dlg == NULL)
     {
@@ -851,7 +853,7 @@ static void launchbar_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void launchbar_save_configuration(Plugin * p, FILE * fp)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
     GSList * l;
     for (l = lb->buttons; l != NULL; l = l->next)
     {
@@ -875,7 +877,7 @@ static void launchbar_save_configuration(Plugin * p, FILE * fp)
 static void launchbar_panel_configuration_changed(Plugin * p)
 {
     /* Set orientation into the icon grid. */
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
+    LaunchbarPlugin * lb = PRIV(p);
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_geometry(lb->icon_grid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
@@ -895,7 +897,7 @@ static void launchbar_panel_configuration_changed(Plugin * p)
 
 static void launchbar_add_launch_item(struct _Plugin * plugin, const char * name)
 {
-    //LaunchbarPlugin * lb = (LaunchbarPlugin *) plugin->priv;
+    //LaunchbarPlugin * lb = PRIV(plugin);
     LaunchButton * defined_button = g_new0(LaunchButton, 1);
     defined_button->plugin = plugin;
     defined_button->desktop_id = g_strdup(name);
@@ -904,7 +906,7 @@ static void launchbar_add_launch_item(struct _Plugin * plugin, const char * name
 
 static int launchbar_get_priority_of_launch_item_adding(struct _Plugin * plugin)
 {
-    LaunchbarPlugin * lb = (LaunchbarPlugin *) plugin->priv;
+    LaunchbarPlugin * lb = PRIV(plugin);
     return g_slist_length(lb->buttons);
 }
 

@@ -25,6 +25,9 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <alsa/asoundlib.h>
 #include <poll.h>
+
+#define PLUGIN_PRIV_TYPE VolumeALSAPlugin
+
 #include "defaultapplications.h"
 #include "panel.h"
 #include "gtkcompat.h"
@@ -401,7 +404,7 @@ static void volumealsa_popup_mute_toggled(GtkWidget * widget, VolumeALSAPlugin *
 /* Build the window that appears when the top level widget is clicked. */
 static void volumealsa_build_popup_window(Plugin * p)
 {
-    VolumeALSAPlugin * vol = p->priv;
+    VolumeALSAPlugin * vol = PRIV(p);
 
     /* Create a new window. */
     vol->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -465,7 +468,7 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
     VolumeALSAPlugin * vol = g_new0(VolumeALSAPlugin, 1);
     vol->plugin = p;
-    p->priv = vol;
+    plugin_set_priv(p, vol);
 
     /* Initialize ALSA.  If that fails, present nothing. */
     if ( ! asound_initialize(vol))
@@ -537,7 +540,7 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void volumealsa_destructor(Plugin * p)
 {
-    VolumeALSAPlugin * vol = (VolumeALSAPlugin *) p->priv;
+    VolumeALSAPlugin * vol = PRIV(p);
 
     /* Remove the periodic timer. */
     if (vol->mixer_evt_idle != 0)
@@ -562,7 +565,7 @@ static void volumealsa_apply_configuration(Plugin * p)
 /* Callback when the configuration dialog is to be shown. */
 static void volumealsa_configure(Plugin * p, GtkWindow * parent)
 {
-    VolumeALSAPlugin * vol = (VolumeALSAPlugin *) p->priv;
+    VolumeALSAPlugin * vol = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
@@ -576,7 +579,7 @@ static void volumealsa_configure(Plugin * p, GtkWindow * parent)
 /* Save the configuration to the configuration file. */
 static void volumealsa_save_configuration(Plugin * p, FILE * fp)
 {
-    VolumeALSAPlugin * vol = (VolumeALSAPlugin *) p->priv;
+    VolumeALSAPlugin * vol = PRIV(p);
     lxpanel_put_str(fp, "DoubleClickAction", vol->double_click_action);
 }
 
@@ -585,7 +588,7 @@ static void volumealsa_save_configuration(Plugin * p, FILE * fp)
 static void volumealsa_panel_configuration_changed(Plugin * p)
 {
     /* Do a full redraw. */
-    volumealsa_update_display((VolumeALSAPlugin *) p->priv);
+    volumealsa_update_display(PRIV(p));
 }
 
 /* Plugin descriptor. */

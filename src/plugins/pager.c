@@ -28,6 +28,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
+#define PLUGIN_PRIV_TYPE PagerPlugin
+
 #include "global.h"
 #include "panel.h"
 #include "misc.h"
@@ -711,7 +713,7 @@ static int pager_constructor(Plugin * plug, char ** fp)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
     PagerPlugin * pg = g_new0(PagerPlugin, 1);
-    plug->priv = pg;
+    plugin_set_priv(plug, pg);
     pg->plugin = plug;
 
     /* Compute aspect ratio of screen image. */
@@ -752,7 +754,7 @@ static int pager_constructor(Plugin * plug, char ** fp)
 /* Plugin destructor. */
 static void pager_destructor(Plugin * p)
 {
-    PagerPlugin * pg = (PagerPlugin *) p->priv;
+    PagerPlugin * pg = PRIV(p);
 
     icon_grid_to_be_removed(pg->icon_grid);
 
@@ -784,7 +786,7 @@ static void pager_destructor(Plugin * p)
 static void pager_panel_configuration_changed(Plugin * p)
 {
     /* Reset the icon grid orientation. */
-    PagerPlugin * pg = (PagerPlugin *) p->priv;
+    PagerPlugin * pg = PRIV(p);
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_geometry(pg->icon_grid, bo,
         (panel_get_icon_size(plugin_panel(p)) - BORDER_WIDTH * 2) * pg->aspect_ratio,

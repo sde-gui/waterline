@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #include <glib/gi18n.h>
 
+#define PLUGIN_PRIV_TYPE CPUPlugin
+
 #include "gtkcompat.h"
 #include "plugin.h"
 #include "panel.h"
@@ -290,7 +292,7 @@ static gboolean expose_event(GtkWidget * widget, GdkEventExpose * event, CPUPlug
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void cpu_apply_configuration(Plugin * p)
 {
-    CPUPlugin * c = (CPUPlugin *) p->priv;
+    CPUPlugin * c = PRIV(p);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     if (!plugin_widget(p))
@@ -333,7 +335,7 @@ static int cpu_constructor(Plugin * p, char ** fp)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
     CPUPlugin * c = g_new0(CPUPlugin, 1);
-    p->priv = c;
+    plugin_set_priv(p, c);
 
     c->update_interval = 1500;
 
@@ -392,7 +394,7 @@ static int cpu_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void cpu_destructor(Plugin * p)
 {
-    CPUPlugin * c = (CPUPlugin *) p->priv;
+    CPUPlugin * c = PRIV(p);
 
     /* Disconnect the timer. */
     g_source_remove(c->timer);
@@ -411,7 +413,7 @@ static void cpu_destructor(Plugin * p)
 /* Callback when the configuration dialog is to be shown. */
 static void cpu_configure(Plugin * p, GtkWindow * parent)
 {
-    CPUPlugin * c = (CPUPlugin *) p->priv;
+    CPUPlugin * c = PRIV(p);
 
     int update_interval_min = 50;
     int update_interval_max = 5000;
@@ -437,7 +439,7 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void cpu_save_configuration(Plugin * p, FILE * fp)
 {
-    CPUPlugin * c = (CPUPlugin *) p->priv;
+    CPUPlugin * c = PRIV(p);
     lxpanel_put_str(fp, "FgColorUser", c->fg_color_u);
     lxpanel_put_str(fp, "FgColorNice", c->fg_color_n);
     lxpanel_put_str(fp, "FgColorSystem", c->fg_color_s);

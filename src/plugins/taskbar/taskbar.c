@@ -39,6 +39,8 @@
 #include <gdk/gdk.h>
 #include <glib/gi18n.h>
 
+#define PLUGIN_PRIV_TYPE TaskbarPlugin
+
 #include "gtkcompat.h"
 #include "global.h"
 #include "panel.h"
@@ -4558,7 +4560,7 @@ static void taskbar_window_manager_changed(GdkScreen * screen, TaskbarPlugin * t
 /* Build graphic elements needed for the taskbar. */
 static void taskbar_build_gui(Plugin * p)
 {
-    TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
+    TaskbarPlugin * tb = PRIV(p);
 
     /* Set up style for taskbar. */
     gtk_rc_parse_string(taskbar_rc);
@@ -4705,7 +4707,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     /* Allocate plugin context and set into Plugin private data pointer. */
     TaskbarPlugin * tb = g_new0(TaskbarPlugin, 1);
     tb->plug = p;
-    p->priv = tb;
+    plugin_set_priv(p, tb);
 
     /* Initialize to defaults. */
     tb->icon_size         = panel_get_icon_size(plugin_panel(p));
@@ -4923,7 +4925,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void taskbar_destructor(Plugin * p)
 {
-    TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
+    TaskbarPlugin * tb = PRIV(p);
 
     if (tb->preview_panel_motion_timer != 0)
         g_source_remove(tb->preview_panel_motion_timer);
@@ -4970,7 +4972,7 @@ static void taskbar_destructor(Plugin * p)
 /* Callback from configuration dialog mechanism to apply the configuration. */
 static void taskbar_apply_configuration(Plugin * p)
 {
-    TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
+    TaskbarPlugin * tb = PRIV(p);
 
     taskbar_config_updated(tb);
 
@@ -5030,7 +5032,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     int max_spacing = 50;
     int max_group_separator_size = 50;
 
-    TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
+    TaskbarPlugin * tb = PRIV(p);
     GtkWidget* dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
@@ -5140,7 +5142,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 /* Save the configuration to the configuration file. */
 static void taskbar_save_configuration(Plugin * p, FILE * fp)
 {
-    TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
+    TaskbarPlugin * tb = PRIV(p);
     lxpanel_put_bool(fp, "tooltips", tb->tooltips);
     lxpanel_put_enum(fp, "ShowIconsTitles", tb->show_icons_titles, show_pair);
     lxpanel_put_str(fp, "FallbackIcon", tb->custom_fallback_icon);
@@ -5194,7 +5196,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
 /* Callback when panel configuration changes. */
 static void taskbar_panel_configuration_changed(Plugin * p)
 {
-    TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
+    TaskbarPlugin * tb = PRIV(p);
     taskbar_update_style(tb);
     taskbar_make_menu(tb);
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;

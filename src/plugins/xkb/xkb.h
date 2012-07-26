@@ -22,6 +22,8 @@
 #include <gtk/gtk.h>
 #include <glib.h>
 
+#define PLUGIN_PRIV_TYPE XkbPlugin
+
 #include "global.h"
 #include "plugin.h"
 #include "misc.h"

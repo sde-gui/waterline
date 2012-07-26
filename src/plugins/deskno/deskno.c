@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <glib/gi18n.h>
 
+#define PLUGIN_PRIV_TYPE DesknoPlugin
+
 #include "global.h"
 #include "panel.h"
 #include "misc.h"
@@ -122,7 +124,7 @@ static int deskno_constructor(Plugin * p, char ** fp)
     /* Allocate plugin context and set into Plugin private data pointer. */
     DesknoPlugin * dc = g_new0(DesknoPlugin, 1);
     g_return_val_if_fail(dc != NULL, 0);
-    p->priv = dc;
+    plugin_set_priv(p, dc);
     dc->panel = plugin_panel(p);
 
     /* Default parameters. */
@@ -181,7 +183,7 @@ static int deskno_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void deskno_destructor(Plugin * p)
 {
-    DesknoPlugin * dc = (DesknoPlugin *) p->priv;
+    DesknoPlugin * dc = PRIV(p);
 
     /* Disconnect signal from window manager event object. */
     g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), deskno_name_update, dc);
@@ -195,14 +197,14 @@ static void deskno_destructor(Plugin * p)
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void deskno_apply_configuration(Plugin * p)
 {
-    DesknoPlugin * dc = (DesknoPlugin *) p->priv;
+    DesknoPlugin * dc = PRIV(p);
     deskno_redraw(NULL, dc);
 }
 
 /* Callback when the configuration dialog is to be shown. */
 static void deskno_configure(Plugin * p, GtkWindow * parent)
 {
-    DesknoPlugin * dc = (DesknoPlugin *) p->priv;
+    DesknoPlugin * dc = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
@@ -220,7 +222,7 @@ static void deskno_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void deskno_save_configuration(Plugin * p, FILE * fp)
 {
-    DesknoPlugin * dc = (DesknoPlugin *) p->priv;
+    DesknoPlugin * dc = PRIV(p);
     lxpanel_put_int(fp, "BoldFont", dc->bold);
     lxpanel_put_int(fp, "WMLabels", dc->wm_labels);
 }
@@ -228,7 +230,7 @@ static void deskno_save_configuration(Plugin * p, FILE * fp)
 /* Callback when panel configuration changes. */
 static void deskno_panel_configuration_changed(Plugin * p)
 {
-    DesknoPlugin * dc = (DesknoPlugin *) p->priv;
+    DesknoPlugin * dc = PRIV(p);
     deskno_name_update(NULL, dc);
 }
 

@@ -26,6 +26,8 @@
 
 #include <string.h>
 
+#define PLUGIN_PRIV_TYPE thermal
+
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
@@ -185,7 +187,7 @@ thermal_constructor(Plugin *p, char** fp)
     ENTER;
     th = g_new0(thermal, 1);
     th->plugin = p;
-    p->priv = th;
+    plugin_set_priv(p, th);
 
     GtkWidget * pwid = gtk_event_box_new();
     plugin_set_widget(p, pwid);
@@ -274,7 +276,7 @@ error:
 static void applyConfig(Plugin* p)
 {
 
-    thermal *th = (thermal *)p->priv;
+    thermal *th = PRIV(p);
 
     ENTER;
 
@@ -296,7 +298,7 @@ static void config(Plugin *p, GtkWindow* parent) {
     ENTER;
 
     GtkWidget *dialog;
-    thermal *th = (thermal *) p->priv;
+    thermal *th = PRIV(p);
     dialog = create_generic_config_dlg(_(p->class->name),
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
@@ -318,10 +320,10 @@ static void config(Plugin *p, GtkWindow* parent) {
 static void
 thermal_destructor(Plugin *p)
 {
-  thermal *th = (thermal *)p->priv;
+  thermal *th = PRIV(p);
 
   ENTER;
-  th = (thermal *) p->priv;
+  th = (thermal *) PRIV(p);
   g_free(th->sensor);
   g_free(th->str_cl_normal);
   g_free(th->str_cl_warning1);
@@ -333,7 +335,7 @@ thermal_destructor(Plugin *p)
 
 static void save_config( Plugin* p, FILE* fp )
 {
-    thermal *th = (thermal *)p->priv;
+    thermal *th = (thermal *)PRIV(p);
 
     lxpanel_put_str( fp, "NormalColor", th->str_cl_normal );
     lxpanel_put_str( fp, "Warning1Color", th->str_cl_warning1 );

@@ -548,3 +548,13 @@ void plugin_set_widget(Plugin * plugin, GtkWidget * widget)
 {
     plugin->pwid = widget;
 }
+
+void * plugin_priv(Plugin * plugin)
+{
+    return plugin->priv;
+}
+
+void * plugin_set_priv(Plugin * plugin, void * priv)
+{
+    plugin->priv = priv;
+}

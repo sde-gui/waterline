@@ -24,6 +24,8 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
+#define PLUGIN_PRIV_TYPE DClockPlugin
+
 #include "paths.h"
 #include "panel.h"
 #include "misc.h"
@@ -248,7 +250,7 @@ static void dclock_hide_calendar(DClockPlugin * dc)
 /* Handler for "button-press-event" event from main widget. */
 static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * evt, Plugin * plugin)
 {
-    DClockPlugin * dc = (DClockPlugin *) plugin->priv;
+    DClockPlugin * dc = PRIV(plugin);
 
     /* Standard right-click handling. */
     if (evt->button == 3)
@@ -440,7 +442,7 @@ static int dclock_constructor(Plugin * p, char ** fp)
 {
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
     DClockPlugin * dc = g_new0(DClockPlugin, 1);
-    p->priv = dc;
+    plugin_set_priv(p, dc);
     dc->plugin = p;
 
     /* Load parameters from the configuration file. */
@@ -521,7 +523,7 @@ static int dclock_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void dclock_destructor(Plugin * p)
 {
-    DClockPlugin * dc = (DClockPlugin *) p->priv;
+    DClockPlugin * dc = PRIV(p);
 
     /* Remove the timer. */
     if (dc->timer != 0)
@@ -545,7 +547,7 @@ static void dclock_destructor(Plugin * p)
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void dclock_apply_configuration(Plugin * p)
 {
-    DClockPlugin * dc = (DClockPlugin *) p->priv;
+    DClockPlugin * dc = PRIV(p);
 
     /* Set up the icon or the label as the displayable widget. */
     if (dc->icon_only)
@@ -598,7 +600,7 @@ static void dclock_apply_configuration(Plugin * p)
 /* Callback when the configuration dialog is to be shown. */
 static void dclock_configure(Plugin * p, GtkWindow * parent)
 {
-    DClockPlugin * dc = (DClockPlugin *) p->priv;
+    DClockPlugin * dc = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
@@ -622,7 +624,7 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void dclock_save_configuration(Plugin * p, FILE * fp)
 {
-    DClockPlugin * dc = (DClockPlugin *) p->priv;
+    DClockPlugin * dc = PRIV(p);
     lxpanel_put_str(fp, "ClockFmt", dc->clock_format);
     lxpanel_put_str(fp, "TooltipFmt", dc->tooltip_format);
     lxpanel_put_str(fp, "Action", dc->action);
@@ -640,7 +642,7 @@ static void dclock_panel_configuration_changed(Plugin * p)
 
 static void dclock_run_command_calendar_visible(Plugin * p, char ** argv, int argc)
 {
-    DClockPlugin * dc = (DClockPlugin *) p->priv;
+    DClockPlugin * dc = PRIV(p);
 
     gboolean visible = dc->calendar_window != NULL;
     gboolean old_visible = visible;

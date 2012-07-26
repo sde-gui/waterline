@@ -43,6 +43,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define PLUGIN_PRIV_TYPE lx_battery
+
 #include "gtkcompat.h"
 #include "dbg.h"
 #include "batt_sys.h"
@@ -402,7 +404,7 @@ static int update_timout(lx_battery *lx_b) {
 static gint buttonPressEvent(GtkWidget *widget, GdkEventButton *event,
         Plugin* plugin) {
 
-    lx_battery *lx_b = (lx_battery*)plugin->priv;
+    lx_battery *lx_b = PRIV(plugin);
 
     update_display(lx_b);
 
@@ -476,7 +478,8 @@ constructor(Plugin *p, char **fp)
     ENTER;
 
     lx_battery *lx_b;
-    p->priv = lx_b = g_new0(lx_battery, 1);
+    lx_b = g_new0(lx_battery, 1);
+    plugin_set_priv(p, lx_b);
 
     /* get available battery */
     lx_b->b = battery_get ();
@@ -604,7 +607,7 @@ destructor(Plugin *p)
 {
     ENTER;
 
-    lx_battery *b = (lx_battery *) p->priv;
+    lx_battery *b = PRIV(p);
 
     if (b->pixmap)
         g_object_unref(b->pixmap);
@@ -631,7 +634,7 @@ static void batt_panel_configuration_changed(Plugin *p) {
 
     ENTER;
 
-    lx_battery *b = (lx_battery *) p->priv;
+    lx_battery *b = PRIV(p);
 
     b->orientation = panel_get_orientation(plugin_panel(p));
 
@@ -659,7 +662,7 @@ static void applyConfig(Plugin* p)
 {
     ENTER;
 
-    lx_battery *b = (lx_battery *) p->priv;
+    lx_battery *b = PRIV(p);
 
     /* Update colors */
     color_parse_d(b->backgroundColor, b->background_color);
@@ -681,7 +684,7 @@ static void config(Plugin *p, GtkWindow* parent) {
     ENTER;
 
     GtkWidget *dialog;
-    lx_battery *b = (lx_battery *) p->priv;
+    lx_battery *b = PRIV(p);
     dialog = create_generic_config_dlg(_(p->class->name),
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
@@ -708,7 +711,7 @@ static void config(Plugin *p, GtkWindow* parent) {
 
 
 static void save(Plugin* p, FILE* fp) {
-    lx_battery *lx_b = (lx_battery *) p->priv;
+    lx_battery *lx_b = PRIV(p);
 
     lxpanel_put_bool(fp, "HideIfNoBattery",lx_b->hide_if_no_battery);
     lxpanel_put_str(fp, "AlarmCommand", lx_b->alarmCommand);

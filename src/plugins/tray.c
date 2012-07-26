@@ -30,6 +30,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
+#define PLUGIN_PRIV_TYPE TrayPlugin
+
 #include "gtkcompat.h"
 #include "panel.h"
 #include "misc.h"
@@ -733,7 +735,7 @@ static int tray_constructor(Plugin * p, char ** fp)
 
     /* Allocate plugin context and set into Plugin private data pointer and static variable. */
     TrayPlugin * tr = g_new0(TrayPlugin, 1);
-    p->priv = tr;
+    plugin_set_priv(p, tr);
     tr->plugin = p;
 
     /* Get the screen and display. */
@@ -829,7 +831,7 @@ static int tray_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void tray_destructor(Plugin * p)
 {
-    TrayPlugin * tr = (TrayPlugin *) p->priv;
+    TrayPlugin * tr = PRIV(p);
 
     /* Remove GDK event filter. */
     gdk_window_remove_filter(NULL, (GdkFilterFunc) tray_event_filter, tr);
@@ -867,7 +869,7 @@ static void tray_destructor(Plugin * p)
 static void tray_panel_configuration_changed(Plugin * p)
 {
     /* Set orientation into the icon grid. */
-    TrayPlugin * tr = (TrayPlugin *) p->priv;
+    TrayPlugin * tr = PRIV(p);
     if (tr->icon_grid != NULL)
     {
         GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;

@@ -22,6 +22,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
+#define PLUGIN_PRIV_TYPE netstatus
+
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
@@ -43,7 +45,7 @@ typedef struct {
 static void
 netstatus_destructor(Plugin *p)
 {
-    netstatus *ns = (netstatus *)p->priv;
+    netstatus *ns = PRIV(p);
 
     ENTER;
     /* The widget is destroyed in plugin_stop().
@@ -77,7 +79,7 @@ static void on_response( GtkDialog* dlg, gint response, netstatus *ns )
 static gboolean on_button_press( GtkWidget* widget, GdkEventButton* evt, Plugin* p )
 {
     NetstatusIface* iface;
-    netstatus *ns = (netstatus*)p->priv;
+    netstatus *ns = PRIV(p);
 
     /* Standard right-click handling. */
     if (plugin_button_press_event(widget, evt, p))
@@ -113,7 +115,7 @@ netstatus_constructor(Plugin *p, char** fp)
     ENTER;
     ns = g_new0(netstatus, 1);
     g_return_val_if_fail(ns != NULL, 0);
-    p->priv = ns;
+    plugin_set_priv(p, ns);
     ns->plugin = p;
     if( fp )
     {
@@ -165,7 +167,7 @@ netstatus_constructor(Plugin *p, char** fp)
 
 static void apply_config(Plugin* p)
 {
-    netstatus *ns = (netstatus *)p->priv;
+    netstatus *ns = PRIV(p);
     NetstatusIface* iface;
 
     iface = netstatus_iface_new(ns->iface);
@@ -175,7 +177,7 @@ static void apply_config(Plugin* p)
 static void netstatus_config( Plugin* p, GtkWindow* parent  )
 {
     GtkWidget* dlg;
-    netstatus *ns = (netstatus*)p->priv;
+    netstatus *ns = PRIV(p);
     dlg = create_generic_config_dlg(
                 _(p->class->name),
                 GTK_WIDGET(parent),
@@ -189,7 +191,7 @@ static void netstatus_config( Plugin* p, GtkWindow* parent  )
 
 static void save_config( Plugin* p, FILE* fp )
 {
-    netstatus *ns = (netstatus*)p->priv;
+    netstatus *ns = PRIV(p);
     lxpanel_put_str( fp, "iface", ns->iface );
     lxpanel_put_str( fp, "configtool", ns->config_tool );
 }

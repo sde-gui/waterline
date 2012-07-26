@@ -29,6 +29,8 @@
 
 #include <X11/XKBlib.h>
 
+#define PLUGIN_PRIV_TYPE KeyboardLEDPlugin
+
 #include "dbg.h"
 #include "panel.h"
 #include "misc.h"
@@ -81,7 +83,7 @@ static void kbled_update_image(KeyboardLEDPlugin * kl, int i, unsigned int state
 /* Redraw after Xkb event or initialization. */
 static void kbled_update_display(Plugin * p, unsigned int new_state)
 {
-    KeyboardLEDPlugin * kl = (KeyboardLEDPlugin *) p->priv;
+    KeyboardLEDPlugin * kl = PRIV(p);
     int i;
     for (i = 0; i < 3; i++)
     {
@@ -119,7 +121,7 @@ static int kbled_constructor(Plugin * p, char ** fp)
     kl->visible[0] = FALSE;
     kl->visible[1] = TRUE;
     kl->visible[2] = TRUE;
-    p->priv = kl;
+    plugin_set_priv(p, kl);
 
     /* Load parameters from the configuration file. */
     line s;
@@ -201,7 +203,7 @@ static int kbled_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void kbled_destructor(Plugin * p)
 {
-    KeyboardLEDPlugin * kl = (KeyboardLEDPlugin *) p->priv;
+    KeyboardLEDPlugin * kl = PRIV(p);
 
     /* Remove GDK event filter. */
     gdk_window_remove_filter(NULL, (GdkFilterFunc) kbled_event_filter, p);
@@ -212,7 +214,7 @@ static void kbled_destructor(Plugin * p)
 /* Callback when the configuration dialog has recorded a configuration change. */
 static void kbled_apply_configuration(Plugin * p)
 {
-    KeyboardLEDPlugin * kl = (KeyboardLEDPlugin *) p->priv;
+    KeyboardLEDPlugin * kl = PRIV(p);
     int i;
     for (i = 0; i < 3; i++)
         icon_grid_set_visible(kl->icon_grid, kl->indicator_image[i], kl->visible[i]);
@@ -221,7 +223,7 @@ static void kbled_apply_configuration(Plugin * p)
 /* Callback when the configuration dialog is to be shown. */
 static void kbled_configure(Plugin * p, GtkWindow * parent)
 {
-    KeyboardLEDPlugin * kl = (KeyboardLEDPlugin *) p->priv;
+    KeyboardLEDPlugin * kl = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
         _(p->class->name),
         GTK_WIDGET(parent),
@@ -240,7 +242,7 @@ static void kbled_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void kbled_save_configuration(Plugin * p, FILE * fp)
 {
-    KeyboardLEDPlugin * kl = (KeyboardLEDPlugin *) p->priv;
+    KeyboardLEDPlugin * kl = PRIV(p);
     lxpanel_put_int(fp, "ShowCapsLock", kl->visible[0]);
     lxpanel_put_int(fp, "ShowNumLock", kl->visible[1]);
     lxpanel_put_int(fp, "ShowScrollLock", kl->visible[2]);
@@ -250,7 +252,7 @@ static void kbled_save_configuration(Plugin * p, FILE * fp)
 static void kbled_panel_configuration_changed(Plugin * p)
 {
     /* Set orientation into the icon grid. */
-    KeyboardLEDPlugin * kl = (KeyboardLEDPlugin *) p->priv;
+    KeyboardLEDPlugin * kl = PRIV(p);
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_geometry(kl->icon_grid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 

@@ -906,7 +906,7 @@ read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
     }
 
     sys_menu_insert_items( m, menu, -1 );
-    p->has_system_menu = TRUE;
+    plugin_set_has_system_menu(p, TRUE);
 }
 
 static void

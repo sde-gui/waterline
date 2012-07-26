@@ -22,7 +22,7 @@
 #endif
 
 #include "global.h"
-#include "plugin.h"
+#include "plugin_private.h"
 #include "panel.h"
 #include "panel_private.h"
 #include "misc.h"

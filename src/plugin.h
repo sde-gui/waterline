@@ -78,24 +78,6 @@ struct _PluginClass {
 };
 
 
-/* Representative of a loaded and active plugin attached to a panel. */
-struct _Plugin {
-    PluginClass * class;			/* Back pointer to PluginClass */
-    Panel * panel;				/* Back pointer to Panel */
-    GtkWidget * pwid;				/* Top level widget; plugin allocates, but plugin mechanism, not plugin itself, destroys this */
-    gpointer priv;				/* Private context for plugin; plugin frees this in its destructor */
-
-    int expand;					/* Expand ("stretch") setting for container */
-    int padding;				/* Padding setting for container */
-    int border;					/* Border setting for container */
-
-    gboolean has_system_menu;
-
-    GtkAllocation pwid_allocation;
-    gboolean background_update_scheduled;
-    int lock_visible;
-};
-
 
 extern Panel * plugin_panel(Plugin * plugin);
 
@@ -110,6 +92,8 @@ extern void plugin_set_priv(Plugin * plugin, void * priv);
 
 extern GtkWidget * plugin_widget(Plugin * plugin);;
 extern void plugin_set_widget(Plugin * plugin, GtkWidget * widget);
+
+extern void plugin_set_has_system_menu(Plugin * plugin, gboolean v);
 
 extern gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plugin *plugin);
                                                         /* Handler for "button_press_event" signal with Plugin as parameter */

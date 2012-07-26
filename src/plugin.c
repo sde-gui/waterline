@@ -563,3 +563,8 @@ void plugin_set_priv(Plugin * plugin, void * priv)
 {
     plugin->priv = priv;
 }
+
+void plugin_set_has_system_menu(Plugin * plugin, gboolean v)
+{
+    plugin->has_system_menu = v;
+}

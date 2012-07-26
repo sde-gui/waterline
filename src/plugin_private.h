@@ -23,6 +23,25 @@
 #include "plugin.h"
 
 
+/* Representative of a loaded and active plugin attached to a panel. */
+struct _Plugin {
+    PluginClass * class;			/* Back pointer to PluginClass */
+    Panel * panel;				/* Back pointer to Panel */
+    GtkWidget * pwid;				/* Top level widget; plugin allocates, but plugin mechanism, not plugin itself, destroys this */
+    gpointer priv;				/* Private context for plugin; plugin frees this in its destructor */
+
+    int expand;					/* Expand ("stretch") setting for container */
+    int padding;				/* Padding setting for container */
+    int border;					/* Border setting for container */
+
+    gboolean has_system_menu;
+
+    GtkAllocation pwid_allocation;
+    gboolean background_update_scheduled;
+    int lock_visible;
+};
+
+
 extern Plugin * plugin_load(char * type);		/* Create an instance of a plugin, loading it if necessary */
 extern int plugin_start(Plugin * this, char ** fp);	/* Configure and start a plugin by calling its constructor */
 extern void plugin_unload(Plugin * pl);			/* Delete an instance of a plugin if initialization fails */

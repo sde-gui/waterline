@@ -107,11 +107,11 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(defaults_applicationsdir)" \
-	"$(DESTDIR)$(lxpanelx_imagesdir)" \
+am__installdirs = "$(DESTDIR)$(lxpanelx_imagesdir)" \
+	"$(DESTDIR)$(template_applicationsdir)" \
 	"$(DESTDIR)$(template_configdir)" \
 	"$(DESTDIR)$(template_config_paneldir)" "$(DESTDIR)$(uidir)"
-DATA = $(defaults_applications_DATA) $(lxpanelx_images_DATA) \
+DATA = $(lxpanelx_images_DATA) $(template_applications_DATA) \
 	$(template_config_DATA) $(template_config_panel_DATA) \
 	$(ui_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -290,6 +290,12 @@ template_config_panel_DATA = \
 	template/panels/panel.panel
 
 template_config_paneldir = $(pkgdatadir)/profile/template/panels
+template_applications_DATA = \
+	template/applications/file-manager \
+	template/applications/terminal-emulator \
+	template/applications/volume-control
+
+template_applicationsdir = $(pkgdatadir)/profile/template/applications
 uidir = $(pkgdatadir)/ui
 ui_in_files = \
 	ui/panel-pref.glade \
@@ -336,19 +342,13 @@ lxpanelx_images_DATA = \
 	images/cpufreq-icon.png
 
 lxpanelx_imagesdir = $(pkgdatadir)/images
-defaults_applications_DATA = \
-	defaults/applications/file-manager \
-	defaults/applications/terminal-emulator \
-	defaults/applications/volume-control
-
-defaults_applicationsdir = $(pkgdatadir)/defaults/applications
 EXTRA_DIST = \
 	template/panels/panel.panel.in \
 	$(lxpanelx_DATA) \
 	$(lxpanelx_images_DATA) \
 	$(ui_DATA) \
 	$(template_config_DATA) \
-	$(defaults_DATA)
+	$(template_applications_DATA)
 
 all: all-am
 
@@ -389,27 +389,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-defaults_applicationsDATA: $(defaults_applications_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(defaults_applications_DATA)'; test -n "$(defaults_applicationsdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(defaults_applicationsdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(defaults_applicationsdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(defaults_applicationsdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(defaults_applicationsdir)" || exit $$?; \
-	done
-
-uninstall-defaults_applicationsDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(defaults_applications_DATA)'; test -n "$(defaults_applicationsdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(defaults_applicationsdir)'; $(am__uninstall_files_from_dir)
 install-lxpanelx_imagesDATA: $(lxpanelx_images_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(lxpanelx_images_DATA)'; test -n "$(lxpanelx_imagesdir)" || list=; \
@@ -431,6 +410,27 @@ uninstall-lxpanelx_imagesDATA:
 	@list='$(lxpanelx_images_DATA)'; test -n "$(lxpanelx_imagesdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(lxpanelx_imagesdir)'; $(am__uninstall_files_from_dir)
+install-template_applicationsDATA: $(template_applications_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(template_applications_DATA)'; test -n "$(template_applicationsdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(template_applicationsdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(template_applicationsdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(template_applicationsdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(template_applicationsdir)" || exit $$?; \
+	done
+
+uninstall-template_applicationsDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(template_applications_DATA)'; test -n "$(template_applicationsdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(template_applicationsdir)'; $(am__uninstall_files_from_dir)
 install-template_configDATA: $(template_config_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(template_config_DATA)'; test -n "$(template_configdir)" || list=; \
@@ -537,7 +537,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(defaults_applicationsdir)" "$(DESTDIR)$(lxpanelx_imagesdir)" "$(DESTDIR)$(template_configdir)" "$(DESTDIR)$(template_config_paneldir)" "$(DESTDIR)$(uidir)"; do \
+	for dir in "$(DESTDIR)$(lxpanelx_imagesdir)" "$(DESTDIR)$(template_applicationsdir)" "$(DESTDIR)$(template_configdir)" "$(DESTDIR)$(template_config_paneldir)" "$(DESTDIR)$(uidir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -591,8 +591,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-defaults_applicationsDATA \
-	install-lxpanelx_imagesDATA install-template_configDATA \
+install-data-am: install-lxpanelx_imagesDATA \
+	install-template_applicationsDATA install-template_configDATA \
 	install-template_config_panelDATA install-uiDATA
 
 install-dvi: install-dvi-am
@@ -637,8 +637,9 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-defaults_applicationsDATA \
-	uninstall-lxpanelx_imagesDATA uninstall-template_configDATA \
+uninstall-am: uninstall-lxpanelx_imagesDATA \
+	uninstall-template_applicationsDATA \
+	uninstall-template_configDATA \
 	uninstall-template_config_panelDATA uninstall-uiDATA
 
 .MAKE: install-am install-strip
@@ -646,17 +647,18 @@ uninstall-am: uninstall-defaults_applicationsDATA \
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
 	distclean distclean-generic distclean-libtool distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-defaults_applicationsDATA \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-lxpanelx_imagesDATA install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-lxpanelx_imagesDATA \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip install-template_applicationsDATA \
 	install-template_configDATA install-template_config_panelDATA \
 	install-uiDATA installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	uninstall uninstall-am uninstall-defaults_applicationsDATA \
-	uninstall-lxpanelx_imagesDATA uninstall-template_configDATA \
+	uninstall uninstall-am uninstall-lxpanelx_imagesDATA \
+	uninstall-template_applicationsDATA \
+	uninstall-template_configDATA \
 	uninstall-template_config_panelDATA uninstall-uiDATA
 
 

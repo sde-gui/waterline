@@ -6,6 +6,13 @@ template_config_panel_DATA = \
 	template/panels/panel.panel
 template_config_paneldir = $(pkgdatadir)/profile/template/panels
 
+template_applications_DATA = \
+	template/applications/file-manager \
+	template/applications/terminal-emulator \
+	template/applications/volume-control
+template_applicationsdir = $(pkgdatadir)/profile/template/applications
+
+
 uidir=$(pkgdatadir)/ui
 ui_in_files= \
 	ui/panel-pref.glade \
@@ -61,11 +68,6 @@ lxpanelx_images_DATA = \
 
 lxpanelx_imagesdir = $(pkgdatadir)/images
 
-defaults_applications_DATA = \
-	defaults/applications/file-manager \
-	defaults/applications/terminal-emulator \
-	defaults/applications/volume-control
-defaults_applicationsdir = $(pkgdatadir)/defaults/applications
 
 
 EXTRA_DIST = \
@@ -74,5 +76,5 @@ EXTRA_DIST = \
 	$(lxpanelx_images_DATA) \
 	$(ui_DATA) \
 	$(template_config_DATA) \
-	$(defaults_DATA)
+	$(template_applications_DATA)
 

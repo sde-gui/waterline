@@ -43,9 +43,14 @@ char * get_default_application(char * type)
     if (result)
         return result;
 
-    gchar * path = get_private_resource_path(RESOURCE_DATA, "defaults", "applications", type, 0);
+    gchar * file_name = g_build_filename("applications", type, NULL);
+    if (!file_name)
+        return NULL;
+
+    gchar * path = get_config_path(file_name, CONFIG_USER);
     if (!path)
         return NULL;
+    g_free(file_name);
 
     char * data;
     g_file_get_contents(path, &data, NULL, NULL);

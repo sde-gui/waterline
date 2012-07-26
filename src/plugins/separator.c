@@ -46,20 +46,21 @@ static int separator_constructor(Plugin * p, char ** fp)
     }
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    GTK_WIDGET_SET_FLAGS(p->pwid, GTK_NO_WINDOW);
-    gtk_widget_add_events(p->pwid, GDK_BUTTON_PRESS_MASK);
-    gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 1);
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    GTK_WIDGET_SET_FLAGS(pwid, GTK_NO_WINDOW);
+    gtk_widget_add_events(pwid, GDK_BUTTON_PRESS_MASK);
+    gtk_container_set_border_width(GTK_CONTAINER(pwid), 1);
 
     /* Allocate separator as a child of top level. */
     GtkWidget * sep = plugin_panel(p)->my_separator_new();
-    gtk_container_add(GTK_CONTAINER(p->pwid), sep);
+    gtk_container_add(GTK_CONTAINER(pwid), sep);
 
     /* Connect signals. */
-    g_signal_connect(p->pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
+    g_signal_connect(pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
 
     /* Show the widget and return. */
-    gtk_widget_show_all(p->pwid);
+    gtk_widget_show_all(pwid);
     return 1;
 }
 
@@ -72,7 +73,7 @@ static void separator_destructor(Plugin * p)
 static void separator_panel_configuration_changed(Plugin * p)
 {
     /* Determine if the orientation changed in a way that requires action. */
-    GtkWidget * sep = gtk_bin_get_child(GTK_BIN(p->pwid));
+    GtkWidget * sep = gtk_bin_get_child(GTK_BIN(plugin_widget(p)));
     if (GTK_IS_VSEPARATOR(sep))
     {
         if (plugin_panel(p)->orientation == GTK_ORIENTATION_HORIZONTAL)
@@ -88,7 +89,7 @@ static void separator_panel_configuration_changed(Plugin * p)
     gtk_widget_destroy(sep);
     sep = plugin_panel(p)->my_separator_new();
     gtk_widget_show(sep);
-    gtk_container_add(GTK_CONTAINER(p->pwid), sep);
+    gtk_container_add(GTK_CONTAINER(plugin_widget(p)), sep);
 }
 
 /* Plugin descriptor. */

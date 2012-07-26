@@ -155,7 +155,7 @@ netstatus_constructor(Plugin *p, char** fp)
 
     gtk_widget_show(ns->mainw);
 
-    p->pwid = ns->mainw;
+    plugin_set_widget(p, ns->mainw);
 
     RET(1);
 

@@ -350,7 +350,7 @@ static void lb_set_bgcolor(lb_t * lb, gchar * color_s)
 {
     if (strempty(color_s))
     {
-        _modify_bg_recursive(lb->plug->pwid, NULL);
+        _modify_bg_recursive(plugin_widget(lb->plug), NULL);
 
         if (lb->bg_color_s)
         {
@@ -386,7 +386,7 @@ static void lb_set_bgcolor(lb_t * lb, gchar * color_s)
 
     gdk_color_parse(color_s, &lb->bg_color_c);
     gdk_colormap_alloc_color(lb->color_map, &lb->bg_color_c, FALSE, TRUE);
-    _modify_bg_recursive(lb->plug->pwid, &lb->bg_color_c);
+    _modify_bg_recursive(plugin_widget(lb->plug), &lb->bg_color_c);
 }
 
 /*****************************************************************************/
@@ -542,20 +542,21 @@ static void lb_apply_configuration(Plugin * p)
 {
     lb_t * lb = (lb_t *) p->priv;
 
-    if (!p->pwid)
+    if (!plugin_widget(p))
     {
-        p->pwid = gtk_event_box_new();
-        gtk_widget_set_has_window(p->pwid, FALSE);
-        //p->pwid = gtk_toggle_button_new();
-        //GTK_WIDGET_UNSET_FLAGS (p->pwid, GTK_NO_WINDOW);
-        gtk_widget_show(p->pwid);
+        GtkWidget * pwid = gtk_event_box_new();
+	plugin_set_widget(p, pwid);
+        gtk_widget_set_has_window(pwid, FALSE);
+        //pwid = gtk_toggle_button_new();
+        //GTK_WIDGET_UNSET_FLAGS (pwid, GTK_NO_WINDOW);
+        gtk_widget_show(pwid);
     }
 
     if (!lb->button)
     {
         lb->button = fb_button_new_from_file_with_label(lb->icon_path,
                      panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), PANEL_ICON_HIGHLIGHT, TRUE, plugin_panel(p), lb->title);
-        gtk_container_add(GTK_CONTAINER(p->pwid), lb->button);
+        gtk_container_add(GTK_CONTAINER(plugin_widget(p)), lb->button);
         g_signal_connect(G_OBJECT(lb->button), "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
         g_signal_connect(G_OBJECT(lb->button), "button-release-event", G_CALLBACK(lb_release_event), (gpointer) lb);
         g_signal_connect(G_OBJECT(lb->button), "scroll-event", G_CALLBACK(lb_scroll_event), (gpointer) lb);

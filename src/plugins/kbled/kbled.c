@@ -152,15 +152,16 @@ static int kbled_constructor(Plugin * p, char ** fp)
     }
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    gtk_widget_set_has_window(p->pwid, FALSE);
-    gtk_widget_add_events(p->pwid, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect(p->pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    gtk_widget_set_has_window(pwid, FALSE);
+    gtk_widget_add_events(pwid, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect(pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
 
     /* Allocate an icon grid manager to manage the container.
      * Then allocate three images for the three indications, but make them visible only when the configuration requests. */
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;    
-    kl->icon_grid = icon_grid_new(plugin_panel(p), p->pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
+    kl->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
     int i;
     for (i = 0; i < 3; i++)
     {
@@ -193,7 +194,7 @@ static int kbled_constructor(Plugin * p, char ** fp)
     kbled_update_display(p, current_state);
 
     /* Show the widget. */
-    gtk_widget_show(p->pwid);
+    gtk_widget_show(pwid);
     return 1;
 }
 

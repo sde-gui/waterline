@@ -157,23 +157,24 @@ static int deskno_constructor(Plugin * p, char ** fp)
     }
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    gtk_widget_set_has_window(p->pwid, FALSE);
-    gtk_container_set_border_width(GTK_CONTAINER (p->pwid), 1);
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    gtk_widget_set_has_window(pwid, FALSE);
+    gtk_container_set_border_width(GTK_CONTAINER (pwid), 1);
 
     /* Allocate label widget and add to top level. */
     dc->label = gtk_label_new(NULL);
-    gtk_container_add(GTK_CONTAINER(p->pwid), dc->label);
+    gtk_container_add(GTK_CONTAINER(pwid), dc->label);
 
     /* Connect signals.  Note use of window manager event object. */
-    g_signal_connect(p->pwid, "button_press_event", G_CALLBACK(deskno_button_press_event), p);
+    g_signal_connect(pwid, "button_press_event", G_CALLBACK(deskno_button_press_event), p);
     g_signal_connect(G_OBJECT(fbev), "current_desktop", G_CALLBACK(deskno_name_update), (gpointer) dc);
     g_signal_connect(G_OBJECT(fbev), "desktop_names", G_CALLBACK(deskno_redraw), (gpointer) dc);
     g_signal_connect(G_OBJECT(fbev), "number_of_desktops", G_CALLBACK(deskno_redraw), (gpointer) dc);
 
     /* Initialize value and show the widget. */
     deskno_redraw(NULL, dc);
-    gtk_widget_show_all(p->pwid);
+    gtk_widget_show_all(pwid);
     return 1;
 }
 

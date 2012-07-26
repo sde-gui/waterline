@@ -285,7 +285,7 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
 
     /* Display current level in tooltip. */
     char * tooltip = g_strdup_printf("%s %d", _("Volume control"), level);
-    gtk_widget_set_tooltip_text(vol->plugin->pwid, tooltip);
+    gtk_widget_set_tooltip_text(plugin_widget(vol->plugin), tooltip);
     g_free(tooltip);
 }
 
@@ -511,25 +511,26 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
 
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    gtk_widget_set_has_window(p->pwid, FALSE);
-    gtk_widget_add_events(p->pwid, GDK_BUTTON_PRESS_MASK);
-    gtk_widget_set_tooltip_text(p->pwid, _("Volume control"));
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    gtk_widget_set_has_window(pwid, FALSE);
+    gtk_widget_add_events(pwid, GDK_BUTTON_PRESS_MASK);
+    gtk_widget_set_tooltip_text(pwid, _("Volume control"));
 
     /* Allocate icon as a child of top level. */
     vol->tray_icon = gtk_image_new();
-    gtk_container_add(GTK_CONTAINER(p->pwid), vol->tray_icon);
+    gtk_container_add(GTK_CONTAINER(pwid), vol->tray_icon);
 
     /* Initialize window to appear when icon clicked. */
     volumealsa_build_popup_window(p);
 
     /* Connect signals. */
-    g_signal_connect(G_OBJECT(p->pwid), "button-press-event", G_CALLBACK(volumealsa_button_press_event), vol);
-    g_signal_connect(G_OBJECT(p->pwid), "scroll-event", G_CALLBACK(volumealsa_popup_scale_scrolled), vol );
+    g_signal_connect(G_OBJECT(pwid), "button-press-event", G_CALLBACK(volumealsa_button_press_event), vol);
+    g_signal_connect(G_OBJECT(pwid), "scroll-event", G_CALLBACK(volumealsa_popup_scale_scrolled), vol );
 
     /* Update the display, show the widget, and return. */
     volumealsa_update_display(vol);
-    gtk_widget_show_all(p->pwid);
+    gtk_widget_show_all(pwid);
     return 1;
 }
 

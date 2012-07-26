@@ -400,13 +400,14 @@ static int launchbar_constructor(Plugin * p, char ** fp)
     p->priv = lb;
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    GTK_WIDGET_SET_FLAGS(p->pwid, GTK_NO_WINDOW);
-    gtk_widget_set_name(p->pwid, "launchbar");
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    GTK_WIDGET_SET_FLAGS(pwid, GTK_NO_WINDOW);
+    gtk_widget_set_name(pwid, "launchbar");
 
     /* Allocate an icon grid manager to manage the container. */
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    lb->icon_grid = icon_grid_new(plugin_panel(p), p->pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
+    lb->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* Read parameters from the configuration file. */
     if (fp != NULL)

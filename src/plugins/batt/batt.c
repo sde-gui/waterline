@@ -480,17 +480,18 @@ constructor(Plugin *p, char **fp)
 
     /* get available battery */
     lx_b->b = battery_get ();
-    
+
     /* no battery available */
 /*    if ( lx_b->b == NULL )
 	goto error;*/
-    
-    p->pwid = gtk_event_box_new();
-    gtk_widget_set_has_window(p->pwid, FALSE);
-    gtk_container_set_border_width( GTK_CONTAINER(p->pwid), 1 );
+
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    gtk_widget_set_has_window(pwid, FALSE);
+    gtk_container_set_border_width( GTK_CONTAINER(pwid), 1 );
 
     lx_b->vbox = gtk_vbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(p->pwid), lx_b->vbox);
+    gtk_container_add(GTK_CONTAINER(pwid), lx_b->vbox);
     gtk_widget_show(lx_b->vbox);
 
     lx_b->hbox = gtk_hbox_new(FALSE, 0);
@@ -503,7 +504,7 @@ constructor(Plugin *p, char **fp)
 
     gtk_widget_show(lx_b->drawingArea);
 
-    g_signal_connect (G_OBJECT (p->pwid), "button_press_event",
+    g_signal_connect (G_OBJECT (pwid), "button_press_event",
             G_CALLBACK(buttonPressEvent), (gpointer) p);
     g_signal_connect (G_OBJECT (lx_b->drawingArea),"configure_event",
           G_CALLBACK (configureEvent), (gpointer) lx_b);

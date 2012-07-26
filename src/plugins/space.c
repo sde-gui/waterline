@@ -76,17 +76,18 @@ static int space_constructor(Plugin * p, char ** fp)
         sp->size = 2;
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    GTK_WIDGET_SET_FLAGS(p->pwid, GTK_NO_WINDOW);
-    gtk_widget_add_events(p->pwid, GDK_BUTTON_PRESS_MASK);
-    gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    GTK_WIDGET_SET_FLAGS(pwid, GTK_NO_WINDOW);
+    gtk_widget_add_events(pwid, GDK_BUTTON_PRESS_MASK);
+    gtk_container_set_border_width(GTK_CONTAINER(pwid), 0);
 
     /* Connect signals. */
-    g_signal_connect(p->pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
+    g_signal_connect(pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
 
     /* Apply the configuration and show the widget. */
     space_apply_configuration(p);
-    gtk_widget_show(p->pwid);
+    gtk_widget_show(pwid);
     return 1;
 }
 
@@ -104,9 +105,9 @@ static void space_apply_configuration(Plugin * p)
 
     /* Apply settings. */
     if (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ)
-        gtk_widget_set_size_request(p->pwid, sp->size, 2);
+        gtk_widget_set_size_request(plugin_widget(p), sp->size, 2);
     else
-        gtk_widget_set_size_request(p->pwid, 2, sp->size);
+        gtk_widget_set_size_request(plugin_widget(p), 2, sp->size);
 }
 
 /* Callback when the configuration dialog is to be shown. */

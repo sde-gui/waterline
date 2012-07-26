@@ -187,16 +187,17 @@ thermal_constructor(Plugin *p, char** fp)
     th->plugin = p;
     p->priv = th;
 
-    p->pwid = gtk_event_box_new();
-    gtk_widget_set_has_window(p->pwid, FALSE);
-    gtk_container_set_border_width( GTK_CONTAINER(p->pwid), 2 );
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    gtk_widget_set_has_window(pwid, FALSE);
+    gtk_container_set_border_width( GTK_CONTAINER(pwid), 2 );
 
     th->namew = gtk_label_new("ww");
-    gtk_container_add(GTK_CONTAINER(p->pwid), th->namew);
+    gtk_container_add(GTK_CONTAINER(pwid), th->namew);
 
-    th->main = p->pwid;
+    th->main = pwid;
 
-    g_signal_connect (G_OBJECT (p->pwid), "button_press_event",
+    g_signal_connect (G_OBJECT (pwid), "button_press_event",
           G_CALLBACK (plugin_button_press_event), (gpointer) p);
 
     line s;

@@ -204,13 +204,14 @@ static int wincmd_constructor(Plugin * p, char ** fp)
         wc->image = g_strdup("window-manager");
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = fb_button_new_from_file(wc->image, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), PANEL_ICON_HIGHLIGHT, TRUE);
-    gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
-    g_signal_connect(G_OBJECT(p->pwid), "button_press_event", G_CALLBACK(wincmd_button_clicked), (gpointer) p);
-    gtk_widget_set_tooltip_text(p->pwid, _("Left click to iconify all windows.  Middle click to shade them."));
+    GtkWidget * pwid = fb_button_new_from_file(wc->image, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), PANEL_ICON_HIGHLIGHT, TRUE);
+    plugin_set_widget(p, pwid);
+    gtk_container_set_border_width(GTK_CONTAINER(pwid), 0);
+    g_signal_connect(G_OBJECT(pwid), "button_press_event", G_CALLBACK(wincmd_button_clicked), (gpointer) p);
+    gtk_widget_set_tooltip_text(pwid, _("Left click to iconify all windows.  Middle click to shade them."));
 
     /* Show the widget and return. */
-    gtk_widget_show(p->pwid);
+    gtk_widget_show(pwid);
     return 1;
 }
 
@@ -256,7 +257,7 @@ static void wincmd_save_configuration(Plugin * p, FILE * fp)
 static void wincmd_panel_configuration_changed(Plugin * p)
 {
     WinCmdPlugin * wc = (WinCmdPlugin *) p->priv;
-    fb_button_set_from_file(p->pwid, wc->image, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), TRUE);
+    fb_button_set_from_file(plugin_widget(p), wc->image, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), TRUE);
 }
 
 /* Plugin descriptor. */

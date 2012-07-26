@@ -293,11 +293,12 @@ static void cpu_apply_configuration(Plugin * p)
     CPUPlugin * c = (CPUPlugin *) p->priv;
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    if (!p->pwid)
+    if (!plugin_widget(p))
     {
-        p->pwid = gtk_event_box_new();
-        gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 1);
-        gtk_widget_set_has_window(p->pwid, FALSE);
+        GtkWidget * pwid = gtk_event_box_new();
+	plugin_set_widget(p, pwid);
+        gtk_container_set_border_width(GTK_CONTAINER(pwid), 1);
+        gtk_widget_set_has_window(pwid, FALSE);
     }
 
     /* Allocate drawing area as a child of top level widget.  Enable button press events. */
@@ -306,7 +307,7 @@ static void cpu_apply_configuration(Plugin * p)
         c->da = gtk_drawing_area_new();
         gtk_widget_set_size_request(c->da, 40, PANEL_HEIGHT_DEFAULT);
         gtk_widget_add_events(c->da, GDK_BUTTON_PRESS_MASK);
-        gtk_container_add(GTK_CONTAINER(p->pwid), c->da);
+        gtk_container_add(GTK_CONTAINER(plugin_widget(p)), c->da);
 
         /* Connect signals. */
         g_signal_connect(G_OBJECT(c->da), "configure_event", G_CALLBACK(configure_event), (gpointer) c);

@@ -227,7 +227,7 @@ static void balloon_message_display(TrayPlugin * tr, BalloonMessage * msg)
     /* Compute the desired position in screen coordinates near the tray plugin. */
     int x;
     int y;
-    plugin_popup_set_position_helper(tr->plugin, tr->plugin->pwid, tr->balloon_message_popup, &popup_req, &x, &y);
+    plugin_popup_set_position_helper(tr->plugin, plugin_widget(tr->plugin), tr->balloon_message_popup, &popup_req, &x, &y);
 
     /* Push onscreen. */
     int screen_width = gdk_screen_width();
@@ -470,7 +470,7 @@ static void trayclient_request_dock(TrayPlugin * tr, XClientMessageEvent * xeven
     int result;
     gboolean composited;
 
-    GdkScreen * screen = gtk_widget_get_screen(tr->plugin->pwid);
+    GdkScreen * screen = gtk_widget_get_screen(plugin_widget(tr->plugin));
 
     xdisplay = GDK_SCREEN_XDISPLAY (screen);
 
@@ -811,14 +811,15 @@ static int tray_constructor(Plugin * p, char ** fp)
     }
         
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    GTK_WIDGET_SET_FLAGS(p->pwid, GTK_NO_WINDOW);
-    gtk_widget_set_name(p->pwid, "tray");
-    gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 1);
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    GTK_WIDGET_SET_FLAGS(pwid, GTK_NO_WINDOW);
+    gtk_widget_set_name(pwid, "tray");
+    gtk_container_set_border_width(GTK_CONTAINER(pwid), 1);
 
     /* Create an icon grid to manage the container. */
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    tr->icon_grid = icon_grid_new(plugin_panel(p), p->pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
+    tr->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 #ifndef DISABLE_COMPOSITING
     g_signal_connect (tr->icon_grid->widget, "expose-event", G_CALLBACK (tray_expose_box), tr);
 #endif

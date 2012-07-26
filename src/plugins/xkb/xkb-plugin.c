@@ -79,7 +79,7 @@ void xkb_redraw(XkbPlugin * xkb)
                     gtk_widget_hide(xkb->label);
                     gtk_widget_show(xkb->image);
                     gtk_widget_set_tooltip_text(xkb->btn, xkb_get_current_group_name(xkb));
-                    gtk_widget_queue_draw(xkb->plugin->pwid);
+                    gtk_widget_queue_draw(plugin_widget(xkb->plugin));
                     valid_image = TRUE;
                 }
                 g_object_unref(unscaled_pixbuf);
@@ -190,13 +190,14 @@ static int xkb_constructor(Plugin * plugin, char ** fp)
     }
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    plugin->pwid = gtk_event_box_new();
-    gtk_widget_set_has_window(plugin->pwid, FALSE);
-    gtk_widget_add_events(plugin->pwid, GDK_BUTTON_PRESS_MASK);
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(plugin, pwid);
+    gtk_widget_set_has_window(pwid, FALSE);
+    gtk_widget_add_events(pwid, GDK_BUTTON_PRESS_MASK);
 
     /* Create a button as the child of the event box. */
     xkb->btn = gtk_button_new();
-    gtk_container_add(GTK_CONTAINER(plugin->pwid), xkb->btn);
+    gtk_container_add(GTK_CONTAINER(pwid), xkb->btn);
     gtk_button_set_relief(GTK_BUTTON(xkb->btn), GTK_RELIEF_NONE);
     gtk_widget_set_can_focus(xkb->btn, FALSE);
     gtk_widget_set_can_default(xkb->btn, FALSE);
@@ -226,7 +227,7 @@ static int xkb_constructor(Plugin * plugin, char ** fp)
 
     /* Show the widget and return. */
     xkb_redraw(xkb);
-    gtk_widget_show(plugin->pwid);
+    gtk_widget_show(pwid);
     return 1;
 }
 

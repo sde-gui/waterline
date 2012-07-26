@@ -718,13 +718,14 @@ static int pager_constructor(Plugin * plug, char ** fp)
     pg->aspect_ratio = (gfloat) gdk_screen_width() / (gfloat) gdk_screen_height();
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    plug->pwid = gtk_event_box_new();
-    GTK_WIDGET_SET_FLAGS(plug->pwid, GTK_NO_WINDOW);
-    gtk_container_set_border_width(GTK_CONTAINER(plug->pwid), 0);
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(plug, pwid);
+    GTK_WIDGET_SET_FLAGS(pwid, GTK_NO_WINDOW);
+    gtk_container_set_border_width(GTK_CONTAINER(pwid), 0);
 
     /* Create an icon grid manager to manage the drawing areas within the container. */
     GtkOrientation bo = (panel_get_orientation(plugin_panel(plug)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    pg->icon_grid = icon_grid_new(plugin_panel(plug), plug->pwid, bo,
+    pg->icon_grid = icon_grid_new(plugin_panel(plug), pwid, bo,
         (panel_get_icon_size(plugin_panel(plug)) - BORDER_WIDTH * 2) * pg->aspect_ratio,
         panel_get_icon_size(plugin_panel(plug)) - BORDER_WIDTH * 2,
         1, BORDER_WIDTH,

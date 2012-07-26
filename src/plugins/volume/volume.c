@@ -297,7 +297,7 @@ static int volume_constructor(Plugin *p, char **fp)
     /* FIXME: display current level in tooltip. ex: "Volume Control: 80%"  */
     gtk_tooltips_set_tip (vol->tooltips, vol->mainw, _("Volume control"), NULL);
 
-    p->pwid = vol->mainw;
+    plugin_set_widget(p, vol->mainw);
     RET(1);
 }
 

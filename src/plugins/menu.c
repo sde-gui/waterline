@@ -146,7 +146,7 @@ menu_pos(GtkWidget *menu, gint *px, gint *py, gboolean *push_in, Plugin * p)
     gtk_widget_size_request(menu, &popup_req);
 
     /* Determine the coordinates. */
-    plugin_popup_set_position_helper(p, p->pwid, menu, &popup_req, px, py);
+    plugin_popup_set_position_helper(p, plugin_widget(p), menu, &popup_req, px, py);
     *push_in = TRUE;
 }
 
@@ -1102,7 +1102,7 @@ menu_constructor(Plugin *p, char **fp)
 
     m->config_data = g_strndup( start, (m->config_end - start) );
 
-    p->pwid = m->box;
+    plugin_set_widget(p, m->box);
 
     RET(1);
 

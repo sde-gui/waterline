@@ -350,18 +350,19 @@ cpufreq_constructor(Plugin *p, char** fp)
     g_return_val_if_fail(cf != NULL, 0);
     p->priv = cf;
 
-    p->pwid = gtk_event_box_new();
-    gtk_widget_set_has_window(p->pwid, FALSE);
-    gtk_container_set_border_width( GTK_CONTAINER(p->pwid), 2 );
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    gtk_widget_set_has_window(pwid, FALSE);
+    gtk_container_set_border_width( GTK_CONTAINER(pwid), 2 );
 
     gchar * proc_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "cpufreq-icon.png", 0);
     cf->namew = gtk_image_new_from_file(proc_icon_path);
     g_free(proc_icon_path);
-    gtk_container_add(GTK_CONTAINER(p->pwid), cf->namew);
+    gtk_container_add(GTK_CONTAINER(pwid), cf->namew);
 
-    cf->main = p->pwid;
+    cf->main = pwid;
 
-    g_signal_connect (G_OBJECT (p->pwid), "button_press_event", G_CALLBACK (clicked), (gpointer) p);
+    g_signal_connect (G_OBJECT (pwid), "button_press_event", G_CALLBACK (clicked), (gpointer) p);
 
     cf->has_cpufreq = 0;
 

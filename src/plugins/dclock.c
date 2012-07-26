@@ -376,7 +376,7 @@ static gboolean dclock_update_display(DClockPlugin * dc)
     gchar * utf8 = g_locale_to_utf8(tooltip_value, -1, NULL, NULL, NULL);
     if (utf8 != NULL)
     {
-        gtk_widget_set_tooltip_text(dc->plugin->pwid, utf8);
+        gtk_widget_set_tooltip_text(plugin_widget(dc->plugin), utf8);
         g_free(utf8);
     }
 
@@ -482,12 +482,13 @@ static int dclock_constructor(Plugin * p, char ** fp)
     }
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    gtk_widget_set_has_window(p->pwid, FALSE);
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    gtk_widget_set_has_window(pwid, FALSE);
 
     /* Allocate a horizontal box as the child of the top level. */
     GtkWidget * hbox = gtk_hbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(p->pwid), hbox);
+    gtk_container_add(GTK_CONTAINER(pwid), hbox);
     gtk_widget_show(hbox);
 
     /* Create a label and an image as children of the horizontal box.
@@ -503,7 +504,7 @@ static int dclock_constructor(Plugin * p, char ** fp)
     gtk_container_add(GTK_CONTAINER(hbox), dc->clock_icon);
 
     /* Connect signals. */
-    g_signal_connect(G_OBJECT (p->pwid), "button_press_event", G_CALLBACK(dclock_button_press_event), (gpointer) p);
+    g_signal_connect(G_OBJECT (pwid), "button_press_event", G_CALLBACK(dclock_button_press_event), (gpointer) p);
 
     /* Initialize the clock display. */
     if (dc->clock_format == NULL)
@@ -513,7 +514,7 @@ static int dclock_constructor(Plugin * p, char ** fp)
     dclock_apply_configuration(p);
 
     /* Show the widget and return. */
-    gtk_widget_show(p->pwid);
+    gtk_widget_show(pwid);
     return 1;
 }
 

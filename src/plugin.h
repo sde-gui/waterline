@@ -100,7 +100,7 @@ struct _Plugin {
 extern Panel * plugin_panel(Plugin * plugin);
 
 extern void * plugin_priv(Plugin * plugin);
-extern void * plugin_set_priv(Plugin * plugin, void * priv);
+extern void plugin_set_priv(Plugin * plugin, void * priv);
 
 #ifdef PLUGIN_PRIV_TYPE
 #define PRIV(p) ( (PLUGIN_PRIV_TYPE * ) plugin_priv(p))

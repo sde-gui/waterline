@@ -5034,7 +5034,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 
     TaskbarPlugin * tb = PRIV(p);
     GtkWidget* dlg = create_generic_config_dlg(
-        _(p->class->name),
+        _(plugin_class(p)->name),
         GTK_WIDGET(parent),
     	    (GSourceFunc) taskbar_apply_configuration, (gpointer) p,
         _("Appearance"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,

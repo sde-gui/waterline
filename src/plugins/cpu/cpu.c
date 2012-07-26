@@ -419,7 +419,7 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
     int update_interval_max = 5000;
 
     GtkWidget * dlg = create_generic_config_dlg(
-        _(p->class->name),
+        _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) cpu_apply_configuration, (gpointer) p,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,

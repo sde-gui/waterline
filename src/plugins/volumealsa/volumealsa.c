@@ -567,7 +567,7 @@ static void volumealsa_configure(Plugin * p, GtkWindow * parent)
 {
     VolumeALSAPlugin * vol = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
-        _(p->class->name),
+        _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) volumealsa_apply_configuration, (gpointer) p,
         _("Double click action"), &vol->double_click_action , (GType)CONF_TYPE_STR,

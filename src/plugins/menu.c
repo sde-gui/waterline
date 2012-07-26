@@ -249,9 +249,9 @@ static Plugin * get_launchbar_plugin(void)
         for (pl = panel_get_plugins(panel); pl; pl = pl->next)
         {
             Plugin* plugin = (Plugin *) pl->data;
-            if (plugin->class->add_launch_item && plugin->class->get_priority_of_launch_item_adding)
+            if (plugin_class(plugin)->add_launch_item && plugin_class(plugin)->get_priority_of_launch_item_adding)
             {
-                int n = plugin->class->get_priority_of_launch_item_adding(plugin);
+                int n = plugin_class(plugin)->get_priority_of_launch_item_adding(plugin);
                 if( n > prio )
                 {
                     lb = plugin;
@@ -274,7 +274,7 @@ static void on_add_menu_item_to_panel(GtkMenuItem* item, MenuCacheApp* app)
     Plugin * lb = get_launchbar_plugin();
     if (lb)
     {
-        lb->class->add_launch_item(lb, menu_cache_item_get_file_basename(MENU_CACHE_ITEM(app)));
+        plugin_class(lb)->add_launch_item(lb, menu_cache_item_get_file_basename(MENU_CACHE_ITEM(app)));
     }
 }
 
@@ -1154,7 +1154,7 @@ static void menu_config( Plugin *p, GtkWindow* parent )
 {
     GtkWidget* dlg;
     menup* menu = PRIV(p);
-    dlg = create_generic_config_dlg( _(p->class->name),
+    dlg = create_generic_config_dlg( _(plugin_class(p)->name),
                                      GTK_WIDGET(parent),
                                     (GSourceFunc) apply_config, (gpointer) p,
                                      _("Icon"), &menu->fname, (GType)CONF_TYPE_FILE_ENTRY,

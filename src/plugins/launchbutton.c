@@ -838,7 +838,7 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
     int max_input_restart_interval = 100000;
     
     GtkWidget * dlg = create_generic_config_dlg(
-        _(p->class->name),
+        _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) lb_apply_configuration, (gpointer) p,
 

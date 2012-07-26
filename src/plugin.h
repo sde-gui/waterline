@@ -99,6 +99,8 @@ struct _Plugin {
 
 extern Panel * plugin_panel(Plugin * plugin);
 
+extern PluginClass * plugin_class(Plugin * plugin);
+
 extern void * plugin_priv(Plugin * plugin);
 extern void plugin_set_priv(Plugin * plugin, void * priv);
 

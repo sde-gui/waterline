@@ -117,7 +117,7 @@ static void space_configure(Plugin * p, GtkWindow * parent)
 {
     SpacePlugin * sp = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
-        _(p->class->name),
+        _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) space_apply_configuration, (gpointer) p,
         _("Size"), &sp->size, (GType)CONF_TYPE_INT,  NULL);

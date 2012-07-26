@@ -235,7 +235,7 @@ static void wincmd_configure(Plugin * p, GtkWindow * parent)
 {
     WinCmdPlugin * wc = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
-        _(p->class->name),
+        _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) wincmd_apply_configuration, (gpointer) p,
         _("Alternately iconify/shade and raise"), &wc->toggle_preference, (GType)CONF_TYPE_BOOL,

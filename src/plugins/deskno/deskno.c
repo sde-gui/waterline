@@ -206,7 +206,7 @@ static void deskno_configure(Plugin * p, GtkWindow * parent)
 {
     DesknoPlugin * dc = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
-        _(p->class->name),
+        _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) deskno_apply_configuration, (gpointer) p,
         _("Bold font"), &dc->bold, CONF_TYPE_BOOL,

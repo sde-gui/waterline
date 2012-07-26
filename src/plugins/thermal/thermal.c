@@ -299,7 +299,7 @@ static void config(Plugin *p, GtkWindow* parent) {
 
     GtkWidget *dialog;
     thermal *th = PRIV(p);
-    dialog = create_generic_config_dlg(_(p->class->name),
+    dialog = create_generic_config_dlg(_(plugin_class(p)->name),
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
             _("Normal"), &th->str_cl_normal, (GType)CONF_TYPE_STR,

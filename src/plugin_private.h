@@ -22,6 +22,7 @@
 
 #include "plugin.h"
 
+
 extern Plugin * plugin_load(char * type);		/* Create an instance of a plugin, loading it if necessary */
 extern int plugin_start(Plugin * this, char ** fp);	/* Configure and start a plugin by calling its constructor */
 extern void plugin_unload(Plugin * pl);			/* Delete an instance of a plugin if initialization fails */

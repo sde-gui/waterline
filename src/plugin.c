@@ -539,6 +539,11 @@ Panel * plugin_panel(Plugin * plugin)
     return plugin->panel;
 }
 
+PluginClass * plugin_class(Plugin * plugin)
+{
+    return plugin->class;
+}
+
 GtkWidget * plugin_widget(Plugin * plugin)
 {
     return plugin->pwid;

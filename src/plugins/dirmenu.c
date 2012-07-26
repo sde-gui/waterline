@@ -931,7 +931,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
 
     DirMenuPlugin * dm = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
-        _(p->class->name),
+        _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) dirmenu_apply_configuration, (gpointer) p,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,

@@ -685,7 +685,7 @@ static void config(Plugin *p, GtkWindow* parent) {
 
     GtkWidget *dialog;
     lx_battery *b = PRIV(p);
-    dialog = create_generic_config_dlg(_(p->class->name),
+    dialog = create_generic_config_dlg(_(plugin_class(p)->name),
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
 #if 0

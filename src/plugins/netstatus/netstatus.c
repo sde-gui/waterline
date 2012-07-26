@@ -179,7 +179,7 @@ static void netstatus_config( Plugin* p, GtkWindow* parent  )
     GtkWidget* dlg;
     netstatus *ns = PRIV(p);
     dlg = create_generic_config_dlg(
-                _(p->class->name),
+                _(plugin_class(p)->name),
                 GTK_WIDGET(parent),
                 (GSourceFunc) apply_config, p,
                 _("Interface to monitor"), &ns->iface, (GType)CONF_TYPE_STR,

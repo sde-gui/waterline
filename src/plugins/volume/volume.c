@@ -307,9 +307,9 @@ PluginClass volume_plugin_class = {
     PLUGINCLASS_VERSIONING,
 
     type : "volume",
-    name : N_("Volume Control"),
+    name : N_("Volume Control (OSS)"),
     version: "1.0",
-    description : "Display and control volume",
+    description : "Display and control volume for Open Sound System",
 
     constructor : volume_constructor,
     destructor  : volume_destructor,

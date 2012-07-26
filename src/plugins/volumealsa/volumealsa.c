@@ -593,7 +593,7 @@ PluginClass volumealsa_plugin_class = {
     PLUGINCLASS_VERSIONING,
 
     type : "volumealsa",
-    name : N_("Volume Control"),
+    name : N_("Volume Control (ALSA)"),
     version: "1.0",
     description : "Display and control volume for ALSA",
 

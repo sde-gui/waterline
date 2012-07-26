@@ -222,14 +222,30 @@ static void task_update_pixmap(PagerTask * tk, PagerDesk * d)
             {
                 /* Draw the window representation and a border. */
                 GtkWidget * widget = GTK_WIDGET(d->da);
-                gdk_draw_rectangle(d->pixmap,
-                    (d->pg->focused_task == tk) ? widget->style->bg_gc[GTK_STATE_SELECTED] : widget->style->bg_gc[GTK_STATE_NORMAL],
-                    TRUE,
-                    x + 1, y + 1, w - 1, h - 1);
-                gdk_draw_rectangle(d->pixmap,
-                    (d->pg->focused_task == tk) ? widget->style->fg_gc[GTK_STATE_SELECTED] : widget->style->fg_gc[GTK_STATE_NORMAL],
-                    FALSE,
-                    x, y, w, h);
+
+                cairo_t * cr = gdk_cairo_create(d->pixmap);
+
+                cairo_set_line_width (cr, 1.0);
+                cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
+
+                if (d->pg->focused_task == tk)
+                    gdk_cairo_set_source_color(cr, &widget->style->bg[GTK_STATE_SELECTED]);
+                else
+                    gdk_cairo_set_source_color(cr, &widget->style->bg[GTK_STATE_NORMAL]);
+
+                cairo_rectangle(cr, x + 0.5, y + 0.5, w, h);
+                cairo_fill(cr);
+
+                if (d->pg->focused_task == tk)
+                    gdk_cairo_set_source_color(cr, &widget->style->fg[GTK_STATE_SELECTED]);
+                else
+                    gdk_cairo_set_source_color(cr, &widget->style->fg[GTK_STATE_NORMAL]);
+
+                cairo_rectangle(cr, x + 0.5, y + 0.5, w, h);
+                cairo_stroke(cr);
+
+                cairo_destroy(cr);
+
             }
         }
     }
@@ -307,13 +323,18 @@ static gboolean desk_expose_event(GtkWidget * widget, GdkEventExpose * event, Pa
             if (d->pixmap != NULL)
             {
                 GtkWidget * widget = GTK_WIDGET(d->da);
-                gdk_draw_rectangle(
-                    d->pixmap,
-                    ((d->desktop_number == d->pg->current_desktop)
-                        ? widget->style->dark_gc[GTK_STATE_SELECTED]
-                        : widget->style->dark_gc[GTK_STATE_NORMAL]),
-                    TRUE,
-                    0, 0, widget->allocation.width, widget->allocation.height);
+
+                cairo_t * cr = gdk_cairo_create(d->pixmap);
+
+                if (d->desktop_number == d->pg->current_desktop)
+                    gdk_cairo_set_source_color(cr, &widget->style->dark[GTK_STATE_SELECTED]);
+                else
+                    gdk_cairo_set_source_color(cr, &widget->style->dark[GTK_STATE_NORMAL]);
+
+                cairo_rectangle(cr, 0, 0, widget->allocation.width, widget->allocation.height);
+                cairo_fill(cr);
+
+                cairo_destroy(cr);
             }
 
             /* Draw tasks onto the pixmap. */

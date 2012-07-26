@@ -1321,7 +1321,7 @@ void panel_config_save( Panel* p )
 
     FILE * fp = NULL;
 
-    gchar * dir = get_config_file( cprofile, "panels", FALSE );
+    gchar * dir = get_config_path("panels", CONFIG_USER_W);
 
     gchar * file_name = g_strdup_printf("%s.panel", p->name);
     gchar * file_path = g_build_filename( dir, file_name, NULL );
@@ -1376,48 +1376,16 @@ err:
     RET();
 }
 
-char* get_config_file( const char* profile, const char* file_name, gboolean is_global )
-{
-    char* path;
-    if( is_global )
-    {
-        path = get_private_resource_path(RESOURCE_DATA, "profile", profile, file_name, 0);
-    }
-    else
-    {
-        char* dir = g_build_filename( g_get_user_config_dir(), "lxpanelx" , profile, NULL);
-        /* make sure the private profile dir exists */
-        /* FIXME: Should we do this everytime this func gets called?
-         *        Maybe simply doing this before saving config files is enough. */
-        g_mkdir_with_parents( dir, 0700 );
-        path = g_build_filename( dir,file_name, NULL);
-        g_free( dir );
-    }
-    return path;
-}
-
 const char general_group[] = "General";
 const char command_group[] = "Command";
 void load_global_config()
 {
     GKeyFile* kf = g_key_file_new();
-    char* file = get_config_file( cprofile, "config", FALSE );
+    gchar * file = get_config_path("config", CONFIG_USER);
     gboolean loaded = g_key_file_load_from_file( kf, file, 0, NULL );
-    if( ! loaded )
-    {
-        g_free( file );
-        file = get_config_file( cprofile, "config", TRUE ); /* get the system-wide config file */
-        loaded = g_key_file_load_from_file( kf, file, 0, NULL );
-    }
+    g_free(file);
 
-    if( ! loaded )
-    {
-        g_free( file );
-        file = get_config_file( "default", "config", TRUE ); /* get the system-wide config file */
-        loaded = g_key_file_load_from_file( kf, file, 0, NULL );
-    }
-
-    if( loaded )
+    if (loaded)
     {
         if (g_key_file_has_key(kf, general_group, "KioskMode", NULL))
             kiosk_mode = g_key_file_get_boolean( kf, general_group, "KioskMode", NULL );
@@ -1436,9 +1404,10 @@ static void save_global_config()
     if (lxpanel_is_in_kiosk_mode())
         return;
 
-    char* file = get_config_file( cprofile, "config", FALSE );
-    FILE* f = fopen( file, "w" );
-    if( f )
+    gchar * file = get_config_path("config", CONFIG_USER_W);
+
+    FILE * f = fopen( file, "w" );
+    if (f)
     {
         fprintf( f, "[%s]\n", general_group );
         fprintf( f, "KioskMode=%s\n", kiosk_mode ? "true" : "false" );
@@ -1452,6 +1421,8 @@ static void save_global_config()
             fprintf( f, "Logout=%s\n", logout_cmd );
         fclose( f );
     }
+
+    g_free(file);
 }
 
 void free_global_config()

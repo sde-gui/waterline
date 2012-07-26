@@ -1,10 +1,10 @@
 default_config_DATA = \
 	default/config
-default_configdir = $(pkgdatadir)/profile/default
+default_configdir = $(pkgdatadir)/profile/template
 
 default_config_panel_DATA = \
 	default/panels/panel.panel
-default_config_paneldir = $(pkgdatadir)/profile/default/panels
+default_config_paneldir = $(pkgdatadir)/profile/template/panels
 
 uidir=$(pkgdatadir)/ui
 ui_in_files= \

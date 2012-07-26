@@ -1441,7 +1441,7 @@ static char* gen_panel_name( int edge )
 {
     const char* edge_str = num2str( edge_pair, edge, "" );
     char* name = NULL;
-    char* dir = get_config_file( cprofile, "panels", FALSE );
+    char* dir = get_config_path("panels", CONFIG_USER_W);
     int i;
     for( i = 0; i < G_MAXINT; ++i )
     {
@@ -1515,7 +1515,7 @@ static void panel_popupmenu_delete_panel( GtkMenuItem* item, Panel* panel )
         all_panels = g_slist_remove( all_panels, panel );
 
         /* delete the config file of this panel */
-        gchar * dir = get_config_file( cprofile, "panels", FALSE );
+        gchar * dir = get_config_path("panels", CONFIG_USER_W);
         gchar * file_name = g_strdup_printf("%s.panel", panel->name);
         gchar * file_path = g_build_filename( dir, file_name, NULL );
 
@@ -2307,51 +2307,41 @@ Panel* panel_new( const char* config_file, const char* config_name )
 
 static gboolean start_all_panels(void)
 {
-    /*
-        is_global == 0 -- user profile configuration
-        is_global == 1 -- global profile configuration
-        is_global == 2 -- global configuration of default profile
-    */
-    int is_global;
-    for (is_global = 0; ! all_panels && is_global < 3; ++is_global)
+    gchar * panel_dir = get_config_path("panels", CONFIG_USER);
+
+    GDir* dir = g_dir_open(panel_dir, 0, NULL);
+
+    if (!dir)
     {
-        char* panel_dir = (is_global == 2) ?
-             get_config_file("default", "panels", TRUE) :
-             get_config_file(cprofile , "panels", is_global);
-
-        GDir* dir = g_dir_open(panel_dir, 0, NULL);
-
-        if (!dir)
-        {
-            g_free(panel_dir);
-            continue;
-        }
-
-        const gchar* file_name;
-        while ((file_name = g_dir_read_name(dir)) != NULL)
-        {
-            if (strchr(file_name, '~') == NULL && /* Skip editor backup files in case user has hand edited in this directory. */
-                file_name[0] != '.' && /* Skip hidden files. */
-                g_str_has_suffix(file_name, ".panel"))
-            {
-                char* name = g_strdup(file_name);
-                name[strlen(name) - strlen(".panel")] = 0;
-
-                DBG("panel %s\n", name);
-
-                char* panel_config = g_build_filename( panel_dir, file_name, NULL );
-
-                Panel* panel = panel_new( panel_config, name );
-                if( panel )
-                    all_panels = g_slist_prepend( all_panels, panel );
-
-                g_free( panel_config );
-                g_free( name );
-            }
-        }
-        g_dir_close( dir );
-        g_free( panel_dir );
+        return all_panels != NULL;
     }
+
+    const gchar* file_name;
+    while ((file_name = g_dir_read_name(dir)) != NULL)
+    {
+        if (strchr(file_name, '~') == NULL && /* Skip editor backup files in case user has hand edited in this directory. */
+            file_name[0] != '.' && /* Skip hidden files. */
+            g_str_has_suffix(file_name, ".panel"))
+        {
+            char* name = g_strdup(file_name);
+            name[strlen(name) - strlen(".panel")] = 0;
+
+            DBG("panel %s\n", name);
+
+            char* panel_config = g_build_filename( panel_dir, file_name, NULL );
+
+            Panel* panel = panel_new( panel_config, name );
+            if( panel )
+                all_panels = g_slist_prepend( all_panels, panel );
+
+            g_free( panel_config );
+            g_free( name );
+        }
+    }
+
+    g_dir_close( dir );
+    g_free( panel_dir );
+
     return all_panels != NULL;
 }
 

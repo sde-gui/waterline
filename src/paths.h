@@ -26,12 +26,20 @@ typedef enum _RESOURCE_TYPE
     RESOURCE_LIB,
     RESOURCE_LIBEXEC,
     RESOURCE_DATA,
-    RESOURCE_LOCALE,
+    RESOURCE_LOCALE
 } RESOURCE_TYPE;
 
 gchar * get_resource_path(RESOURCE_TYPE restype, ...);
 gchar * get_private_resource_path(RESOURCE_TYPE restype, ...);
 
 
+typedef enum _CONFIG_TYPE
+{
+    CONFIG_SYSTEM,
+    CONFIG_USER,
+    CONFIG_USER_W
+} CONFIG_TYPE;
+
+gchar * get_config_path(const char* file_name, CONFIG_TYPE config_type);
 
 #endif

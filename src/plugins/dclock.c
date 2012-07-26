@@ -24,6 +24,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
+#include "paths.h"
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"

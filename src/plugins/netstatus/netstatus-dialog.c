@@ -25,6 +25,7 @@
 #  include <config.h>
 #endif
 
+#include "paths.h"
 #include "misc.h"
 
 #include <gtk/gtk.h>

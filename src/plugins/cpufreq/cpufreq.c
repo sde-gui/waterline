@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "panel.h"
+#include "paths.h"
 #include "misc.h"
 #include "plugin.h"
 #include "gtkcompat.h"

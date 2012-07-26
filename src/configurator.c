@@ -27,6 +27,7 @@
 #include "plugin.h"
 #include "panel.h"
 #include "panel_private.h"
+#include "paths.h"
 #include "misc.h"
 #include "defaultapplications.h"
 #include "bg.h"

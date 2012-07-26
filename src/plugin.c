@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "paths.h"
 #include "misc.h"
 #include "bg.h"
 #include "panel_private.h"

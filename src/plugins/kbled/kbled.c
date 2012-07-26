@@ -32,6 +32,7 @@
 #include "dbg.h"
 #include "panel.h"
 #include "misc.h"
+#include "paths.h"
 #include "plugin.h"
 #include "icon-grid.h"
 

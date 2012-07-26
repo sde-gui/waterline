@@ -23,7 +23,7 @@
 #define _LXPANEL_INTERNALS
 
 #include "defaultapplications.h"
-#include "misc.h"
+#include "paths.h"
 #include "dbg.h"
 
 /********************************************************************/

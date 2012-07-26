@@ -36,6 +36,7 @@
 
 #include "global.h"
 #include "plugin.h"
+#include "paths.h"
 #include "panel.h"
 #include "panel_private.h"
 #include "misc.h"

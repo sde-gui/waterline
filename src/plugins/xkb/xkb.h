@@ -25,6 +25,7 @@
 #include "global.h"
 #include "plugin.h"
 #include "misc.h"
+#include "paths.h"
 #include "panel.h"
 #include "ev.h"
 

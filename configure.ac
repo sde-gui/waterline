@@ -360,7 +360,7 @@ AC_CONFIG_FILES([
     src/plugins/indicator/Makefile
     po/Makefile.in
     data/Makefile
-    data/default/panels/panel.panel
+    data/template/panels/panel.panel
     man/Makefile
 ])
 AC_OUTPUT

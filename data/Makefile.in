@@ -107,12 +107,12 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(default_configdir)" \
-	"$(DESTDIR)$(default_config_paneldir)" \
-	"$(DESTDIR)$(defaults_applicationsdir)" \
-	"$(DESTDIR)$(lxpanelx_imagesdir)" "$(DESTDIR)$(uidir)"
-DATA = $(default_config_DATA) $(default_config_panel_DATA) \
-	$(defaults_applications_DATA) $(lxpanelx_images_DATA) \
+am__installdirs = "$(DESTDIR)$(defaults_applicationsdir)" \
+	"$(DESTDIR)$(lxpanelx_imagesdir)" \
+	"$(DESTDIR)$(template_configdir)" \
+	"$(DESTDIR)$(template_config_paneldir)" "$(DESTDIR)$(uidir)"
+DATA = $(defaults_applications_DATA) $(lxpanelx_images_DATA) \
+	$(template_config_DATA) $(template_config_panel_DATA) \
 	$(ui_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
@@ -282,14 +282,14 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-default_config_DATA = \
-	default/config
+template_config_DATA = \
+	template/config
 
-default_configdir = $(pkgdatadir)/profile/template
-default_config_panel_DATA = \
-	default/panels/panel.panel
+template_configdir = $(pkgdatadir)/profile/template
+template_config_panel_DATA = \
+	template/panels/panel.panel
 
-default_config_paneldir = $(pkgdatadir)/profile/template/panels
+template_config_paneldir = $(pkgdatadir)/profile/template/panels
 uidir = $(pkgdatadir)/ui
 ui_in_files = \
 	ui/panel-pref.glade \
@@ -343,11 +343,11 @@ defaults_applications_DATA = \
 
 defaults_applicationsdir = $(pkgdatadir)/defaults/applications
 EXTRA_DIST = \
-	default/panels/panel.panel.in \
+	template/panels/panel.panel.in \
 	$(lxpanelx_DATA) \
 	$(lxpanelx_images_DATA) \
 	$(ui_DATA) \
-	$(default_config_DATA) \
+	$(template_config_DATA) \
 	$(defaults_DATA)
 
 all: all-am
@@ -389,48 +389,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-default_configDATA: $(default_config_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(default_config_DATA)'; test -n "$(default_configdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(default_configdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(default_configdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(default_configdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(default_configdir)" || exit $$?; \
-	done
-
-uninstall-default_configDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(default_config_DATA)'; test -n "$(default_configdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(default_configdir)'; $(am__uninstall_files_from_dir)
-install-default_config_panelDATA: $(default_config_panel_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(default_config_panel_DATA)'; test -n "$(default_config_paneldir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(default_config_paneldir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(default_config_paneldir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(default_config_paneldir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(default_config_paneldir)" || exit $$?; \
-	done
-
-uninstall-default_config_panelDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(default_config_panel_DATA)'; test -n "$(default_config_paneldir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(default_config_paneldir)'; $(am__uninstall_files_from_dir)
 install-defaults_applicationsDATA: $(defaults_applications_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(defaults_applications_DATA)'; test -n "$(defaults_applicationsdir)" || list=; \
@@ -473,6 +431,48 @@ uninstall-lxpanelx_imagesDATA:
 	@list='$(lxpanelx_images_DATA)'; test -n "$(lxpanelx_imagesdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(lxpanelx_imagesdir)'; $(am__uninstall_files_from_dir)
+install-template_configDATA: $(template_config_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(template_config_DATA)'; test -n "$(template_configdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(template_configdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(template_configdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(template_configdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(template_configdir)" || exit $$?; \
+	done
+
+uninstall-template_configDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(template_config_DATA)'; test -n "$(template_configdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(template_configdir)'; $(am__uninstall_files_from_dir)
+install-template_config_panelDATA: $(template_config_panel_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(template_config_panel_DATA)'; test -n "$(template_config_paneldir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(template_config_paneldir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(template_config_paneldir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(template_config_paneldir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(template_config_paneldir)" || exit $$?; \
+	done
+
+uninstall-template_config_panelDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(template_config_panel_DATA)'; test -n "$(template_config_paneldir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(template_config_paneldir)'; $(am__uninstall_files_from_dir)
 install-uiDATA: $(ui_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(ui_DATA)'; test -n "$(uidir)" || list=; \
@@ -537,7 +537,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(default_configdir)" "$(DESTDIR)$(default_config_paneldir)" "$(DESTDIR)$(defaults_applicationsdir)" "$(DESTDIR)$(lxpanelx_imagesdir)" "$(DESTDIR)$(uidir)"; do \
+	for dir in "$(DESTDIR)$(defaults_applicationsdir)" "$(DESTDIR)$(lxpanelx_imagesdir)" "$(DESTDIR)$(template_configdir)" "$(DESTDIR)$(template_config_paneldir)" "$(DESTDIR)$(uidir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -591,10 +591,9 @@ info: info-am
 
 info-am:
 
-install-data-am: install-default_configDATA \
-	install-default_config_panelDATA \
-	install-defaults_applicationsDATA install-lxpanelx_imagesDATA \
-	install-uiDATA
+install-data-am: install-defaults_applicationsDATA \
+	install-lxpanelx_imagesDATA install-template_configDATA \
+	install-template_config_panelDATA install-uiDATA
 
 install-dvi: install-dvi-am
 
@@ -638,30 +637,27 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-default_configDATA \
-	uninstall-default_config_panelDATA \
-	uninstall-defaults_applicationsDATA \
-	uninstall-lxpanelx_imagesDATA uninstall-uiDATA
+uninstall-am: uninstall-defaults_applicationsDATA \
+	uninstall-lxpanelx_imagesDATA uninstall-template_configDATA \
+	uninstall-template_config_panelDATA uninstall-uiDATA
 
 .MAKE: install-am install-strip
 
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
 	distclean distclean-generic distclean-libtool distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-default_configDATA \
-	install-default_config_panelDATA \
-	install-defaults_applicationsDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-lxpanelx_imagesDATA \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip install-uiDATA installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am uninstall uninstall-am \
-	uninstall-default_configDATA \
-	uninstall-default_config_panelDATA \
-	uninstall-defaults_applicationsDATA \
-	uninstall-lxpanelx_imagesDATA uninstall-uiDATA
+	install-data install-data-am install-defaults_applicationsDATA \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-lxpanelx_imagesDATA install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	install-template_configDATA install-template_config_panelDATA \
+	install-uiDATA installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	uninstall uninstall-am uninstall-defaults_applicationsDATA \
+	uninstall-lxpanelx_imagesDATA uninstall-template_configDATA \
+	uninstall-template_config_panelDATA uninstall-uiDATA
 
 
 # Generate GtkBuilder UI files from Glade files

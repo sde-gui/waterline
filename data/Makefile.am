@@ -1,10 +1,10 @@
-default_config_DATA = \
-	default/config
-default_configdir = $(pkgdatadir)/profile/template
+template_config_DATA = \
+	template/config
+template_configdir = $(pkgdatadir)/profile/template
 
-default_config_panel_DATA = \
-	default/panels/panel.panel
-default_config_paneldir = $(pkgdatadir)/profile/template/panels
+template_config_panel_DATA = \
+	template/panels/panel.panel
+template_config_paneldir = $(pkgdatadir)/profile/template/panels
 
 uidir=$(pkgdatadir)/ui
 ui_in_files= \
@@ -69,10 +69,10 @@ defaults_applicationsdir = $(pkgdatadir)/defaults/applications
 
 
 EXTRA_DIST = \
-	default/panels/panel.panel.in \
+	template/panels/panel.panel.in \
 	$(lxpanelx_DATA) \
 	$(lxpanelx_images_DATA) \
 	$(ui_DATA) \
-	$(default_config_DATA) \
+	$(template_config_DATA) \
 	$(defaults_DATA)
 

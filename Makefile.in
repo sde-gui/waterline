@@ -54,7 +54,7 @@ subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/lxpanelx.pc.in $(top_srcdir)/configure \
-	$(top_srcdir)/data/default/panels/panel.panel.in ABOUT-NLS \
+	$(top_srcdir)/data/template/panels/panel.panel.in ABOUT-NLS \
 	AUTHORS COPYING ChangeLog INSTALL NEWS compile config.guess \
 	config.sub depcomp install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -66,7 +66,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = lxpanelx.pc data/default/panels/panel.panel
+CONFIG_CLEAN_FILES = lxpanelx.pc data/template/panels/panel.panel
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -407,7 +407,7 @@ distclean-hdr:
 	-rm -f config.h stamp-h1
 lxpanelx.pc: $(top_builddir)/config.status $(srcdir)/lxpanelx.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-data/default/panels/panel.panel: $(top_builddir)/config.status $(top_srcdir)/data/default/panels/panel.panel.in
+data/template/panels/panel.panel: $(top_builddir)/config.status $(top_srcdir)/data/template/panels/panel.panel.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:

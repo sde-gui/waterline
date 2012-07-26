@@ -525,3 +525,11 @@ void plugin_run_command(Plugin * plugin, char ** argv, int argc)
     if (plugin && plugin->class->run_command)
         plugin->class->run_command(plugin, argv, argc);
 }
+
+gchar * plugin_get_config_path(Plugin * plugin, const char * file_name, CONFIG_TYPE config_type)
+{
+    gchar * path = g_build_filename("plugins", plugin->class->type, file_name, NULL);
+    gchar * result = get_config_path(path, config_type);
+    g_free(path);
+    return result;
+}

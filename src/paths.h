@@ -29,8 +29,8 @@ typedef enum _RESOURCE_TYPE
     RESOURCE_LOCALE
 } RESOURCE_TYPE;
 
-gchar * get_resource_path(RESOURCE_TYPE restype, ...);
-gchar * get_private_resource_path(RESOURCE_TYPE restype, ...);
+extern gchar * get_resource_path(RESOURCE_TYPE restype, ...);
+extern gchar * get_private_resource_path(RESOURCE_TYPE restype, ...);
 
 
 typedef enum _CONFIG_TYPE
@@ -40,6 +40,13 @@ typedef enum _CONFIG_TYPE
     CONFIG_USER_W
 } CONFIG_TYPE;
 
-gchar * get_config_path(const char* file_name, CONFIG_TYPE config_type);
+extern gchar * get_config_path(const char * file_name, CONFIG_TYPE config_type);
+
+struct _Plugin;
+typedef struct _Plugin Plugin;
+
+/* Placed here to minimize dependencies between headers. */
+extern gchar * plugin_get_config_path(Plugin * plugin, const char * file_name, CONFIG_TYPE config_type);
+
 
 #endif

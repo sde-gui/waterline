@@ -12,6 +12,10 @@ template_applications_DATA = \
 	template/applications/volume-control
 template_applicationsdir = $(pkgdatadir)/profile/template/applications
 
+template_plugins_dclock_DATA = \
+	template/plugins/dclock/formats
+template_plugins_dclockdir = $(pkgdatadir)/profile/template/plugins/dclock/
+
 
 uidir=$(pkgdatadir)/ui
 ui_in_files= \
@@ -76,5 +80,6 @@ EXTRA_DIST = \
 	$(lxpanelx_images_DATA) \
 	$(ui_DATA) \
 	$(template_config_DATA) \
-	$(template_applications_DATA)
+	$(template_applications_DATA) \
+	$(template_plugins_dclock_DATA)
 

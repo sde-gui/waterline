@@ -73,6 +73,89 @@ static void dclock_save_configuration(Plugin * p, FILE * fp);
 static void dclock_panel_configuration_changed(Plugin * p);
 
 
+static gchar ** dclock_get_format_strings(Plugin * plugin)
+{
+    gchar ** result = NULL;
+    gchar * filename = NULL;
+    gchar * contents = NULL;
+
+    filename = plugin_get_config_path(plugin, "formats", CONFIG_USER);
+    if (!filename)
+        goto ret;
+
+    gboolean ok = g_file_get_contents(filename, &contents, NULL, NULL);
+    if (!ok || !contents)
+        goto ret;
+
+    result = g_strsplit_set(contents, "\n\r", 0);
+
+ret:
+   g_free(contents); 
+   g_free(filename); 
+   return result;
+}
+
+static void dclock_copy_to_clipboard_menu_item_activate(GtkMenuItem *item)
+{
+    char * atom = gdk_atom_name((GdkAtom)"CLIPBOARD");
+    GtkClipboard* buf = gtk_clipboard_get((GdkAtom)atom);
+    gtk_clipboard_set_text(buf, gtk_menu_item_get_label(item), -1);
+}
+
+static void dclock_generate_copy_to_clipboard_menu(GtkMenu* lxpanelx_menu, Plugin * plugin)
+{
+    time_t now;
+    time(&now);
+
+    struct tm * current_time;
+    current_time = localtime(&now);
+
+    gchar ** formats = dclock_get_format_strings(plugin);
+    if(!formats)
+        return;
+
+    GtkWidget * menu = gtk_menu_new();
+    gboolean empty = TRUE;
+
+    int i;
+    for (i = 0; formats[i]; i++)
+    {
+        gchar * format = g_strstrip(formats[i]);
+        if (format[0] == 0 || format[0] == '#')
+            continue;
+
+        if (strcmp(format, "-") == 0)
+        {
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+            continue;
+        }
+
+        char buf[128];
+        strftime(buf, 128, format, current_time);
+        GtkWidget* item = gtk_menu_item_new_with_label(buf);
+        g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dclock_copy_to_clipboard_menu_item_activate), NULL);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+
+        empty = FALSE;
+    }
+
+    g_strfreev(formats);
+
+    if (empty)
+    {
+        g_object_ref_sink(G_OBJECT(menu));
+        g_object_unref(G_OBJECT(menu));
+    }
+    else
+    {
+        GtkWidget * copy_to_clipboard = gtk_menu_item_new_with_label("Copy to Clipboard...");
+        gtk_menu_shell_prepend(GTK_MENU_SHELL(lxpanelx_menu), copy_to_clipboard);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(copy_to_clipboard), menu);
+    }
+}
+
+
+
 static char * dclock_get_timezones(DClockPlugin * dc)
 {
     if (!dc->timezones)
@@ -168,8 +251,14 @@ static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * e
     DClockPlugin * dc = (DClockPlugin *) plugin->priv;
 
     /* Standard right-click handling. */
-    if (plugin_button_press_event(widget, evt, plugin))
+    if (evt->button == 3)
+    {
+        GtkMenu* context_menu = lxpanel_get_panel_menu(plugin->panel, plugin, FALSE);
+        dclock_generate_copy_to_clipboard_menu(context_menu, plugin);
+        gtk_widget_show_all(GTK_WIDGET(context_menu));
+        gtk_menu_popup(context_menu, NULL, NULL, NULL, NULL, evt->button, evt->time);
         return TRUE;
+    }
 
     /* If an action is set, execute it. */
     if (dc->action != NULL)

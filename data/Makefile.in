@@ -110,10 +110,11 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(lxpanelx_imagesdir)" \
 	"$(DESTDIR)$(template_applicationsdir)" \
 	"$(DESTDIR)$(template_configdir)" \
-	"$(DESTDIR)$(template_config_paneldir)" "$(DESTDIR)$(uidir)"
+	"$(DESTDIR)$(template_config_paneldir)" \
+	"$(DESTDIR)$(template_plugins_dclockdir)" "$(DESTDIR)$(uidir)"
 DATA = $(lxpanelx_images_DATA) $(template_applications_DATA) \
 	$(template_config_DATA) $(template_config_panel_DATA) \
-	$(ui_DATA)
+	$(template_plugins_dclock_DATA) $(ui_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
@@ -296,6 +297,10 @@ template_applications_DATA = \
 	template/applications/volume-control
 
 template_applicationsdir = $(pkgdatadir)/profile/template/applications
+template_plugins_dclock_DATA = \
+	template/plugins/dclock/formats
+
+template_plugins_dclockdir = $(pkgdatadir)/profile/template/plugins/dclock/
 uidir = $(pkgdatadir)/ui
 ui_in_files = \
 	ui/panel-pref.glade \
@@ -348,7 +353,8 @@ EXTRA_DIST = \
 	$(lxpanelx_images_DATA) \
 	$(ui_DATA) \
 	$(template_config_DATA) \
-	$(template_applications_DATA)
+	$(template_applications_DATA) \
+	$(template_plugins_dclock_DATA)
 
 all: all-am
 
@@ -473,6 +479,27 @@ uninstall-template_config_panelDATA:
 	@list='$(template_config_panel_DATA)'; test -n "$(template_config_paneldir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(template_config_paneldir)'; $(am__uninstall_files_from_dir)
+install-template_plugins_dclockDATA: $(template_plugins_dclock_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(template_plugins_dclock_DATA)'; test -n "$(template_plugins_dclockdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(template_plugins_dclockdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(template_plugins_dclockdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(template_plugins_dclockdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(template_plugins_dclockdir)" || exit $$?; \
+	done
+
+uninstall-template_plugins_dclockDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(template_plugins_dclock_DATA)'; test -n "$(template_plugins_dclockdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(template_plugins_dclockdir)'; $(am__uninstall_files_from_dir)
 install-uiDATA: $(ui_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(ui_DATA)'; test -n "$(uidir)" || list=; \
@@ -537,7 +564,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(lxpanelx_imagesdir)" "$(DESTDIR)$(template_applicationsdir)" "$(DESTDIR)$(template_configdir)" "$(DESTDIR)$(template_config_paneldir)" "$(DESTDIR)$(uidir)"; do \
+	for dir in "$(DESTDIR)$(lxpanelx_imagesdir)" "$(DESTDIR)$(template_applicationsdir)" "$(DESTDIR)$(template_configdir)" "$(DESTDIR)$(template_config_paneldir)" "$(DESTDIR)$(template_plugins_dclockdir)" "$(DESTDIR)$(uidir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -593,7 +620,8 @@ info-am:
 
 install-data-am: install-lxpanelx_imagesDATA \
 	install-template_applicationsDATA install-template_configDATA \
-	install-template_config_panelDATA install-uiDATA
+	install-template_config_panelDATA \
+	install-template_plugins_dclockDATA install-uiDATA
 
 install-dvi: install-dvi-am
 
@@ -640,7 +668,8 @@ ps-am:
 uninstall-am: uninstall-lxpanelx_imagesDATA \
 	uninstall-template_applicationsDATA \
 	uninstall-template_configDATA \
-	uninstall-template_config_panelDATA uninstall-uiDATA
+	uninstall-template_config_panelDATA \
+	uninstall-template_plugins_dclockDATA uninstall-uiDATA
 
 .MAKE: install-am install-strip
 
@@ -653,13 +682,15 @@ uninstall-am: uninstall-lxpanelx_imagesDATA \
 	install-man install-pdf install-pdf-am install-ps \
 	install-ps-am install-strip install-template_applicationsDATA \
 	install-template_configDATA install-template_config_panelDATA \
-	install-uiDATA installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	uninstall uninstall-am uninstall-lxpanelx_imagesDATA \
+	install-template_plugins_dclockDATA install-uiDATA \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am uninstall uninstall-am \
+	uninstall-lxpanelx_imagesDATA \
 	uninstall-template_applicationsDATA \
 	uninstall-template_configDATA \
-	uninstall-template_config_panelDATA uninstall-uiDATA
+	uninstall-template_config_panelDATA \
+	uninstall-template_plugins_dclockDATA uninstall-uiDATA
 
 
 # Generate GtkBuilder UI files from Glade files

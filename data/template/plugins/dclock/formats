@@ -1,0 +1,13 @@
+%R
+%X
+-
+%A %d %B %Y
+%a %d %B %Y %R
+%a %d %B %Y %T
+-
+%d.%m.%y
+%Y-%m-%d
+-
+%d.%m.%y %R
+%d.%m.%y %X
+%Y-%m-%d %X

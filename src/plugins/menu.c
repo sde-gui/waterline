@@ -33,6 +33,7 @@
 
 #define PLUGIN_PRIV_TYPE menup
 
+#include "gtkcompat.h"
 #include "global.h"
 #include "panel.h"
 #include "misc.h"
@@ -446,7 +447,7 @@ static void unload_old_icons(GtkMenu* menu, GtkIconTheme* theme)
             {
 	        img = GTK_IMAGE(gtk_image_menu_item_get_image(GTK_IMAGE_MENU_ITEM(item)));
                 gtk_image_clear(img);
-                if( GTK_WIDGET_MAPPED(img) )
+                if( gtk_widget_get_mapped(GTK_WIDGET(img)) )
 		    on_menu_item_map(GTK_WIDGET(item),
 			(MenuCacheItem*)g_object_get_qdata(G_OBJECT(item), SYS_MENU_ITEM_ID) );
             }

@@ -48,7 +48,7 @@ static int separator_constructor(Plugin * p, char ** fp)
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
     plugin_set_widget(p, pwid);
-    GTK_WIDGET_SET_FLAGS(pwid, GTK_NO_WINDOW);
+    gtk_widget_set_has_window(pwid, FALSE);
     gtk_widget_add_events(pwid, GDK_BUTTON_PRESS_MASK);
     gtk_container_set_border_width(GTK_CONTAINER(pwid), 1);
 

@@ -179,11 +179,11 @@ static void task_get_geometry(PagerTask * tk)
     XErrorHandler previous_error_handler = XSetErrorHandler(panel_handle_x_error_swallow_BadWindow_BadDrawable);
 
     XWindowAttributes win_attributes;
-    if (XGetWindowAttributes(GDK_DISPLAY(), tk->win, &win_attributes))
+    if (XGetWindowAttributes(gdk_x11_get_default_xdisplay(), tk->win, &win_attributes))
     {
         Window unused_win;
         int rx, ry;
-        XTranslateCoordinates(GDK_DISPLAY(), tk->win, win_attributes.root,
+        XTranslateCoordinates(gdk_x11_get_default_xdisplay(), tk->win, win_attributes.root,
               - win_attributes.border_width,
               - win_attributes.border_width,
               &rx, &ry, &unused_win);
@@ -196,7 +196,7 @@ static void task_get_geometry(PagerTask * tk)
     {
         Window unused_win;
         guint unused;
-        if ( ! XGetGeometry(GDK_DISPLAY(), tk->win,
+        if ( ! XGetGeometry(gdk_x11_get_default_xdisplay(), tk->win,
             &unused_win, &tk->x, &tk->y, &tk->w, &tk->h, &unused, &unused))
         {
             tk->x = tk->y = tk->w = tk->h = 2;
@@ -666,7 +666,7 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
                 get_net_wm_window_type(tk->win, &tk->nwwt);
                 task_get_geometry(tk);
                 if (!is_my_own_window(tk->win))
-                    XSelectInput(GDK_DISPLAY(), tk->win, PropertyChangeMask | StructureNotifyMask);
+                    XSelectInput(gdk_x11_get_default_xdisplay(), tk->win, PropertyChangeMask | StructureNotifyMask);
                 desk_set_dirty_by_win(pg, tk);
 
                 /* Link the task structure into the task list. */

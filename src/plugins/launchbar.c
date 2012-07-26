@@ -215,7 +215,7 @@ static void launchbutton_build_bootstrap(Plugin * p)
         /* Create an event box. */
         GtkWidget * event_box = gtk_event_box_new();
         gtk_container_set_border_width(GTK_CONTAINER(event_box), 0);
-        GTK_WIDGET_UNSET_FLAGS(event_box, GTK_CAN_FOCUS);
+	gtk_widget_set_can_focus(event_box, FALSE);
         lb->bootstrap_button->widget = event_box;
         g_signal_connect(event_box, "button-press-event", G_CALLBACK(launchbutton_press_event), lb->bootstrap_button);
 
@@ -295,7 +295,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
     /* Create a button with the specified icon. */
     GtkWidget * button = fb_button_new_from_file(btn->image, plugin_get_icon_size(p), plugin_get_icon_size(p), PANEL_ICON_HIGHLIGHT, TRUE);
     btn->widget = button;
-    GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
+    gtk_widget_set_can_focus(button, FALSE);
     if (btn->tooltip != NULL)
         gtk_widget_set_tooltip_text(button, btn->tooltip);
 
@@ -404,7 +404,7 @@ static int launchbar_constructor(Plugin * p, char ** fp)
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
     plugin_set_widget(p, pwid);
-    GTK_WIDGET_SET_FLAGS(pwid, GTK_NO_WINDOW);
+    gtk_widget_set_has_window(pwid, FALSE);
     gtk_widget_set_name(pwid, "launchbar");
 
     /* Allocate an icon grid manager to manage the container. */

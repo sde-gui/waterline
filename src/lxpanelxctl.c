@@ -56,7 +56,7 @@ static int get_cmd( const char* cmd )
 int main( int argc, char** argv )
 {
     char *display_name = (char *)getenv("DISPLAY");
-    XEvent ev;
+//    XEvent ev;
     Window root;
     Atom cmd_atom;
 //    int cmd = -1;

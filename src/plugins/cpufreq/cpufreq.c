@@ -312,7 +312,7 @@ clicked( GtkWidget *widget, GdkEventButton* evt, Plugin* plugin)
       return TRUE;
     }else if ( evt->button == 3 )
     {
-        lxpanel_show_panel_menu( plugin->panel, plugin, evt );
+        lxpanel_show_panel_menu( plugin_panel(plugin), plugin, evt );
         return TRUE;
       return TRUE;
     }

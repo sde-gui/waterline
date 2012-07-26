@@ -253,7 +253,7 @@ static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * e
     /* Standard right-click handling. */
     if (evt->button == 3)
     {
-        GtkMenu* context_menu = lxpanel_get_panel_menu(plugin->panel, plugin, FALSE);
+        GtkMenu* context_menu = lxpanel_get_panel_menu(plugin_panel(plugin), plugin, FALSE);
         dclock_generate_copy_to_clipboard_menu(context_menu, plugin);
         gtk_widget_show_all(GTK_WIDGET(context_menu));
         gtk_menu_popup(context_menu, NULL, NULL, NULL, NULL, evt->button, evt->time);
@@ -366,7 +366,7 @@ static gboolean dclock_update_display(DClockPlugin * dc)
         gchar * utf8 = g_locale_to_utf8(((newlines_converted != NULL) ? newlines_converted : clock_value), -1, NULL, NULL, NULL);
         if (utf8 != NULL)
         {
-            panel_draw_label_text(dc->plugin->panel, dc->clock_label, utf8, dc->bold, TRUE);
+            panel_draw_label_text(plugin_panel(dc->plugin), dc->clock_label, utf8, dc->bold, TRUE);
             g_free(utf8);
         }
         g_free(newlines_converted);
@@ -494,7 +494,7 @@ static int dclock_constructor(Plugin * p, char ** fp)
      * Only one of these is visible at a time, controlled by user preference. */
     dc->clock_label = gtk_label_new(NULL);
     gtk_misc_set_alignment(GTK_MISC(dc->clock_label), 0.5, 0.5);
-    if (panel_get_orientation(dc->plugin->panel) == ORIENT_HORIZ)
+    if (panel_get_orientation(plugin_panel(dc->plugin)) == ORIENT_HORIZ)
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
     else
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 0, 4);
@@ -550,7 +550,7 @@ static void dclock_apply_configuration(Plugin * p)
     if (dc->icon_only)
     {
         gchar * clock_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "clock.png", 0);
-        panel_image_set_from_file(p->panel, dc->clock_icon, clock_icon_path);
+        panel_image_set_from_file(plugin_panel(p), dc->clock_icon, clock_icon_path);
         g_free(clock_icon_path);
         gtk_widget_show(dc->clock_icon);
         gtk_widget_hide(dc->clock_label);
@@ -561,7 +561,7 @@ static void dclock_apply_configuration(Plugin * p)
         gtk_widget_hide(dc->clock_icon);
     }
 
-    if (panel_get_orientation(dc->plugin->panel) == ORIENT_HORIZ)
+    if (panel_get_orientation(plugin_panel(dc->plugin)) == ORIENT_HORIZ)
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
     else
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 0, 4);

@@ -135,7 +135,7 @@ update_display(thermal *th)
 
     ENTER;
     if(temp == -1)
-        panel_draw_label_text(th->plugin->panel, th->namew, "NA", TRUE, TRUE);
+        panel_draw_label_text(plugin_panel(th->plugin), th->namew, "NA", TRUE, TRUE);
     else
     {
         gchar * buffer = g_strdup_printf("<span color=\"#%06x\"><b>%02d</b></span>", gcolor2rgb24(&color), temp);

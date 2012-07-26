@@ -737,7 +737,7 @@ static int tray_constructor(Plugin * p, char ** fp)
     tr->plugin = p;
 
     /* Get the screen and display. */
-    GdkScreen * screen = gtk_widget_get_screen(GTK_WIDGET(panel_get_toplevel_widget(p->panel)));
+    GdkScreen * screen = gtk_widget_get_screen(GTK_WIDGET(panel_get_toplevel_widget(plugin_panel(p))));
     Screen * xscreen = GDK_SCREEN_XSCREEN(screen);
     GdkDisplay * display = gdk_screen_get_display(screen);
 
@@ -817,8 +817,8 @@ static int tray_constructor(Plugin * p, char ** fp)
     gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 1);
 
     /* Create an icon grid to manage the container. */
-    GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    tr->icon_grid = icon_grid_new(p->panel, p->pwid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 3, 0, panel_get_oriented_height_pixels(p->panel));
+    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    tr->icon_grid = icon_grid_new(plugin_panel(p), p->pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 #ifndef DISABLE_COMPOSITING
     g_signal_connect (tr->icon_grid->widget, "expose-event", G_CALLBACK (tray_expose_box), tr);
 #endif
@@ -869,8 +869,8 @@ static void tray_panel_configuration_changed(Plugin * p)
     TrayPlugin * tr = (TrayPlugin *) p->priv;
     if (tr->icon_grid != NULL)
     {
-        GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-        icon_grid_set_geometry(tr->icon_grid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 3, 0, panel_get_oriented_height_pixels(p->panel));
+        GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+        icon_grid_set_geometry(tr->icon_grid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
     }
 }
 

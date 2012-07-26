@@ -78,22 +78,22 @@ static void update_icon (Plugin* p)
 	theme = gtk_icon_theme_get_default();
 
 	if (curr_volume <= 0) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-mute", panel_get_icon_size(p->panel), 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-mute", panel_get_icon_size(plugin_panel(p)), 0 );
 	}
 	else if (curr_volume > 0 && curr_volume <= 50) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-min", panel_get_icon_size(p->panel), 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-min", panel_get_icon_size(plugin_panel(p)), 0 );
 	}
 	else if (curr_volume > 50 && curr_volume <= 75) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-med", panel_get_icon_size(p->panel), 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-med", panel_get_icon_size(plugin_panel(p)), 0 );
 	}
 	else if (curr_volume > 75) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-max", panel_get_icon_size(p->panel), 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-max", panel_get_icon_size(plugin_panel(p)), 0 );
 	}
 
 	if (info ) {
 		icon = gdk_pixbuf_new_from_file_at_size(
 				gtk_icon_info_get_filename( info ),
-				panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), NULL );
+				panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), NULL );
 		gtk_icon_info_free( info );
 	}
 	else {
@@ -181,7 +181,7 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 			vol->dlg = create_volume_window();
 
 			/* setting background to default */
-			gtk_widget_set_style(vol->dlg, panel_get_default_style(p->panel));
+			gtk_widget_set_style(vol->dlg, panel_get_default_style(plugin_panel(p)));
 
 			g_signal_connect( vol->dlg, "focus-out-event",
 					G_CALLBACK(on_volume_focus), p );
@@ -204,7 +204,7 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 	}
 
 	case 3:	{	/* right button */
-                lxpanel_show_panel_menu( p->panel, p, evt );
+                lxpanel_show_panel_menu( plugin_panel(p), p, evt );
 		return TRUE;
 	}
 
@@ -277,7 +277,7 @@ static int volume_constructor(Plugin *p, char **fp)
             
     g_signal_connect( vol->mainw, "scroll-event",
             G_CALLBACK(on_mouse_scroll), p );
-    gtk_widget_set_size_request( vol->mainw, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel) );
+    gtk_widget_set_size_request( vol->mainw, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)) );
 
     /* obtain current volume */
     vol->dlg = create_volume_window();

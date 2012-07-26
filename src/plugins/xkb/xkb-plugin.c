@@ -54,7 +54,7 @@ void xkb_redraw(XkbPlugin * xkb)
     gboolean valid_image = FALSE;
     if (xkb->display_type == IMAGE)
     {
-        int size = panel_get_icon_size(xkb->plugin->panel);
+        int size = panel_get_icon_size(plugin_panel(xkb->plugin));
         char * group_name = (char *) xkb_get_current_symbol_name_lowercase(xkb);
         if (group_name != NULL)
         {
@@ -93,7 +93,7 @@ void xkb_redraw(XkbPlugin * xkb)
         char * group_name = (char *) xkb_get_current_symbol_name(xkb);
         if (group_name != NULL)
         {
-            panel_draw_label_text(xkb->plugin->panel, xkb->label, (char *) group_name, TRUE, TRUE);
+            panel_draw_label_text(plugin_panel(xkb->plugin), xkb->label, (char *) group_name, TRUE, TRUE);
             gtk_widget_hide(xkb->image);
             gtk_widget_show(xkb->label);
             gtk_widget_set_tooltip_text(xkb->btn, xkb_get_current_group_name(xkb));
@@ -284,7 +284,7 @@ static void xkb_configuration_response(GtkDialog * dialog, int response, gpointe
     XkbPlugin * xkb = (XkbPlugin *) data;
 
     /* Save the new configuration and redraw the plugin. */
-    panel_config_save(xkb->plugin->panel);
+    panel_config_save(plugin_panel(xkb->plugin));
     xkb_redraw(xkb);
 
     /* Destroy the dialog. */

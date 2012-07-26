@@ -219,7 +219,7 @@ static void launchbutton_build_bootstrap(Plugin * p)
 
         /* Create an image containing the stock "Add" icon as a child of the event box. */
         lb->bootstrap_button->image_widget = gtk_image_new_from_pixbuf(
-            lxpanel_load_icon(GTK_STOCK_ADD, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), FALSE));
+            lxpanel_load_icon(GTK_STOCK_ADD, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), FALSE));
         gtk_misc_set_padding(GTK_MISC(lb->bootstrap_button->image_widget), 0, 0);
         gtk_misc_set_alignment(GTK_MISC(lb->bootstrap_button->image_widget), 0, 0);
         gtk_container_add(GTK_CONTAINER(event_box), lb->bootstrap_button->image_widget);
@@ -291,7 +291,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
     }
 
     /* Create a button with the specified icon. */
-    GtkWidget * button = fb_button_new_from_file(btn->image, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), PANEL_ICON_HIGHLIGHT, TRUE);
+    GtkWidget * button = fb_button_new_from_file(btn->image, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), PANEL_ICON_HIGHLIGHT, TRUE);
     btn->widget = button;
     GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
     if (btn->tooltip != NULL)
@@ -319,7 +319,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
 
     /* Show the widget and return. */
     gtk_widget_show(button);
-    //plugin_widget_set_background(button, p->panel);
+    //plugin_widget_set_background(button, plugin_panel(p));
 }
 
 /* Read the configuration file entry for a launchbar button and create it. */
@@ -405,8 +405,8 @@ static int launchbar_constructor(Plugin * p, char ** fp)
     gtk_widget_set_name(p->pwid, "launchbar");
 
     /* Allocate an icon grid manager to manage the container. */
-    GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    lb->icon_grid = icon_grid_new(p->panel, p->pwid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 3, 0, panel_get_oriented_height_pixels(p->panel));
+    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    lb->icon_grid = icon_grid_new(plugin_panel(p), p->pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* Read parameters from the configuration file. */
     if (fp != NULL)
@@ -836,7 +836,7 @@ static void launchbar_configure(Plugin * p, GtkWindow * parent)
         lb->config_dlg = dlg;
 
         /* Establish a callback when the dialog completes. */
-        g_object_weak_ref(G_OBJECT(dlg), (GWeakNotify) panel_config_save, p->panel);
+        g_object_weak_ref(G_OBJECT(dlg), (GWeakNotify) panel_config_save, plugin_panel(p));
 
         /* Initialize the tree view contents. */
         launchbar_configure_initialize_list(p, dlg, GTK_TREE_VIEW(defined_view), FALSE);
@@ -875,21 +875,21 @@ static void launchbar_panel_configuration_changed(Plugin * p)
 {
     /* Set orientation into the icon grid. */
     LaunchbarPlugin * lb = (LaunchbarPlugin *) p->priv;
-    GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    icon_grid_set_geometry(lb->icon_grid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 3, 0, panel_get_oriented_height_pixels(p->panel));
+    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    icon_grid_set_geometry(lb->icon_grid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* Reset all the images to resize them. */
     GSList * l;
     for (l = lb->buttons; l != NULL; l = l->next)
     {
         LaunchButton * btn = (LaunchButton *) l->data;
-        fb_button_set_from_file(btn->widget, btn->image, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), TRUE);
+        fb_button_set_from_file(btn->widget, btn->image, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), TRUE);
     }
 
     /* Reset the bootstrap button. */
     if (lb->bootstrap_button != NULL)
         gtk_image_set_from_pixbuf(GTK_IMAGE(lb->bootstrap_button->image_widget),
-            lxpanel_load_icon(GTK_STOCK_ADD, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), FALSE));
+            lxpanel_load_icon(GTK_STOCK_ADD, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), FALSE));
 }
 
 static void launchbar_add_launch_item(struct _Plugin * plugin, const char * name)

@@ -14,6 +14,8 @@
 
 @SET_MAKE@
 
+#if BUILD_OSS_PLUGINS
+
 VPATH = @srcdir@
 am__make_dryrun = \
   { \
@@ -92,12 +94,8 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(moduledir)"
 LTLIBRARIES = $(module_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-@BUILD_OSS_PLUGINS_TRUE@volume_la_DEPENDENCIES =  \
-@BUILD_OSS_PLUGINS_TRUE@	$(am__DEPENDENCIES_1)
-am__volume_la_SOURCES_DIST = volume_xpm.h volume-impl.h volume-impl.c \
-	volume.c
-@BUILD_OSS_PLUGINS_TRUE@am_volume_la_OBJECTS = volume-impl.lo \
-@BUILD_OSS_PLUGINS_TRUE@	volume.lo
+volume_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_volume_la_OBJECTS = volume-impl.lo volume.lo
 volume_la_OBJECTS = $(am_volume_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -106,7 +104,6 @@ am__v_lt_1 =
 volume_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(volume_la_LDFLAGS) $(LDFLAGS) -o $@
-@BUILD_OSS_PLUGINS_TRUE@am_volume_la_rpath = -rpath $(moduledir)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -142,7 +139,7 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(volume_la_SOURCES)
-DIST_SOURCES = $(am__volume_la_SOURCES_DIST)
+DIST_SOURCES = $(volume_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -318,26 +315,26 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-@BUILD_OSS_PLUGINS_TRUE@INCLUDES = \
-@BUILD_OSS_PLUGINS_TRUE@	-I. \
-@BUILD_OSS_PLUGINS_TRUE@	-I$(top_srcdir)/src \
-@BUILD_OSS_PLUGINS_TRUE@	$(PACKAGE_CFLAGS) \
-@BUILD_OSS_PLUGINS_TRUE@	$(G_CAST_CHECKS)
+INCLUDES = \
+	-I. \
+	-I$(top_srcdir)/src \
+	$(PACKAGE_CFLAGS) \
+	$(G_CAST_CHECKS)
 
-@BUILD_OSS_PLUGINS_TRUE@module_LTLIBRARIES = volume.la
-@BUILD_OSS_PLUGINS_TRUE@moduledir = $(pkglibdir)/plugins
-@BUILD_OSS_PLUGINS_TRUE@volume_la_SOURCES = \
-@BUILD_OSS_PLUGINS_TRUE@	volume_xpm.h \
-@BUILD_OSS_PLUGINS_TRUE@	volume-impl.h \
-@BUILD_OSS_PLUGINS_TRUE@	volume-impl.c \
-@BUILD_OSS_PLUGINS_TRUE@	volume.c
+module_LTLIBRARIES = volume.la
+moduledir = $(pkglibdir)/plugins
+volume_la_SOURCES = \
+	volume_xpm.h \
+	volume-impl.h \
+	volume-impl.c \
+	volume.c
 
-@BUILD_OSS_PLUGINS_TRUE@volume_la_LIBADD = \
-@BUILD_OSS_PLUGINS_TRUE@	$(PACKAGE_LIBS)
+volume_la_LIBADD = \
+	$(PACKAGE_LIBS)
 
-@BUILD_OSS_PLUGINS_TRUE@volume_la_LDFLAGS = \
-@BUILD_OSS_PLUGINS_TRUE@	-module \
-@BUILD_OSS_PLUGINS_TRUE@	@LXPANELX_MODULE@
+volume_la_LDFLAGS = \
+	-module \
+	@LXPANELX_MODULE@
 
 all: all-am
 
@@ -408,7 +405,7 @@ clean-moduleLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 volume.la: $(volume_la_OBJECTS) $(volume_la_DEPENDENCIES) $(EXTRA_volume_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(volume_la_LINK) $(am_volume_la_rpath) $(volume_la_OBJECTS) $(volume_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(volume_la_LINK) -rpath $(moduledir) $(volume_la_OBJECTS) $(volume_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -667,6 +664,8 @@ uninstall-am: uninstall-moduleLTLIBRARIES
 	pdf pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-moduleLTLIBRARIES
 
+
+#endif
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -658,8 +658,6 @@ PLUGINS_LIST
 ALL_PLUGINS_LIST
 BUILD_PLUGIN_LOADER_FALSE
 BUILD_PLUGIN_LOADER_TRUE
-BUILD_OSS_PLUGINS_FALSE
-BUILD_OSS_PLUGINS_TRUE
 BUILD_ALSA_PLUGINS_FALSE
 BUILD_ALSA_PLUGINS_TRUE
 LXPANELX_MODULE
@@ -13025,14 +13023,7 @@ else
   BUILD_ALSA_PLUGINS_FALSE=
 fi
 
- if test x$compile_alsa = xno; then
-  BUILD_OSS_PLUGINS_TRUE=
-  BUILD_OSS_PLUGINS_FALSE='#'
-else
-  BUILD_OSS_PLUGINS_TRUE='#'
-  BUILD_OSS_PLUGINS_FALSE=
-fi
-
+#AM_CONDITIONAL(BUILD_OSS_PLUGINS, test x$compile_alsa = xno)
 
 # Check whether --enable-plugins-loading was given.
 if test "${enable_plugins_loading+set}" = set; then :
@@ -13113,15 +13104,15 @@ $as_echo "$plugins" >&6; }
     fi
 fi
 
-if test x"$compile_alsa" = "xno"; then
-    if test ! -z $plugin_volumealsa; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no ALSA headers/libraries found!" >&5
-$as_echo "no ALSA headers/libraries found!" >&6; }
-        plugin_volumealsa=
-    fi
-else
-        plugin_volume=
-fi
+#if test x"$compile_alsa" = "xno"; then
+#    if test ! -z $plugin_volumealsa; then
+#        AC_MSG_RESULT([no ALSA headers/libraries found!])
+#        plugin_volumealsa=
+#    fi
+#else
+#    dnl force OSS plugin to <null>
+#    plugin_volume=
+#fi
 
 
 if test x"$indicator_support" = "xno"; then
@@ -15038,10 +15029,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_ALSA_PLUGINS_TRUE}" && test -z "${BUILD_ALSA_PLUGINS_FALSE}"; then
   as_fn_error $? "conditional \"BUILD_ALSA_PLUGINS\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${BUILD_OSS_PLUGINS_TRUE}" && test -z "${BUILD_OSS_PLUGINS_FALSE}"; then
-  as_fn_error $? "conditional \"BUILD_OSS_PLUGINS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_PLUGIN_LOADER_TRUE}" && test -z "${BUILD_PLUGIN_LOADER_FALSE}"; then

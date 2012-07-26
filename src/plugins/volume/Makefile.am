@@ -1,4 +1,4 @@
-if BUILD_OSS_PLUGINS
+#if BUILD_OSS_PLUGINS
 
 INCLUDES = \
 	-I. \
@@ -23,4 +23,4 @@ volume_la_LDFLAGS = \
 	-module \
 	@LXPANELX_MODULE@
 
-endif
+#endif

@@ -202,7 +202,7 @@ if test x"$compile_alsa" = "xyes"; then
 fi
 AM_CONDITIONAL(BUILD_ALSA_PLUGINS, test x$compile_alsa = xyes)
 dnl FIXME: check OSS existence
-AM_CONDITIONAL(BUILD_OSS_PLUGINS, test x$compile_alsa = xno)
+#AM_CONDITIONAL(BUILD_OSS_PLUGINS, test x$compile_alsa = xno)
 
 AC_ARG_ENABLE([plugins-loading],
     AS_HELP_STRING([--disable-plugins-loading],
@@ -270,15 +270,15 @@ else
 fi
 
 dnl FIXME: OSS/ALSA checking
-if test x"$compile_alsa" = "xno"; then
-    if test ! -z $plugin_volumealsa; then
-        AC_MSG_RESULT([no ALSA headers/libraries found!])
-        plugin_volumealsa=
-    fi
-else
-    dnl force OSS plugin to <null>
-    plugin_volume=
-fi
+#if test x"$compile_alsa" = "xno"; then
+#    if test ! -z $plugin_volumealsa; then
+#        AC_MSG_RESULT([no ALSA headers/libraries found!])
+#        plugin_volumealsa=
+#    fi
+#else
+#    dnl force OSS plugin to <null>
+#    plugin_volume=
+#fi
 
 
 dnl Exclude indicator support when there is no support.

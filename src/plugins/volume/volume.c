@@ -190,10 +190,10 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 		}
 		else {
 			/* update icon */
-			if (! vol_spin) return;
+			if (! vol_spin) return TRUE;
 			GtkAdjustment *vol_adjustment =
 				gtk_spin_button_get_adjustment (vol_spin);
-			if (! vol_adjustment) return;
+			if (! vol_adjustment) return TRUE;
 			curr_volume = gtk_adjustment_get_value (vol_adjustment);
 			update_icon(p);
 
@@ -213,10 +213,10 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 			vol->dlg = create_volume_window();
 		}
 
-		if (! vol_spin) return;
+		if (! vol_spin) return TRUE;
 		GtkAdjustment *vol_adjustment =
 			gtk_spin_button_get_adjustment (vol_spin);
-		if (! vol_adjustment) return;
+		if (! vol_adjustment) return TRUE;
 
 		curr_volume = gtk_adjustment_get_value (vol_adjustment);
 
@@ -247,11 +247,11 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 static int volume_constructor(Plugin *p, char **fp)
 {
     volume_t *vol;
-    line s;
-    GdkPixbuf *icon;
-    GtkWidget *image;
-    GtkIconTheme* theme;
-    GtkIconInfo* info;
+//    line s;
+//    GdkPixbuf *icon;
+//    GtkWidget *image;
+//    GtkIconTheme* theme;
+//    GtkIconInfo* info;
     
     vol_before_mute = 1;
     curr_volume = 0;
@@ -281,10 +281,10 @@ static int volume_constructor(Plugin *p, char **fp)
 
     /* obtain current volume */
     vol->dlg = create_volume_window();
-    if (! vol_spin) return;
+    if (! vol_spin) return 0;
 	GtkAdjustment *vol_adjustment =
 		gtk_spin_button_get_adjustment (vol_spin);
-    if (! vol_adjustment) return;
+    if (! vol_adjustment) return 0;
     curr_volume = gtk_adjustment_get_value (vol_adjustment);
     
     update_icon(p);

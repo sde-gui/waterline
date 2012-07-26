@@ -283,6 +283,18 @@ void update_display(lx_battery *lx_b) {
     if( b == NULL ) 
     {
 	gtk_widget_set_tooltip_text( lx_b->vbox, _("No batteries found") );
+
+        if (!lx_b->label)
+        {
+            lx_b->label = gtk_label_new("");
+            gtk_box_pack_start(GTK_BOX(lx_b->hbox), lx_b->label, TRUE, FALSE, 0);
+        }
+
+        gtk_widget_show(lx_b->label);
+        gtk_widget_hide(lx_b->drawingArea);
+
+        gtk_label_set_text(GTK_LABEL(lx_b->label), _("N/A"));
+
 	return;
     }
     

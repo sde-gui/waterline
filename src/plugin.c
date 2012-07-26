@@ -568,3 +568,9 @@ void plugin_set_has_system_menu(Plugin * plugin, gboolean v)
 {
     plugin->has_system_menu = v;
 }
+
+int plugin_get_icon_size(Plugin * plugin)
+{
+    return panel_get_icon_size(plugin_panel(plugin));
+}
+

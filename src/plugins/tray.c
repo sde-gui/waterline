@@ -821,7 +821,7 @@ static int tray_constructor(Plugin * p, char ** fp)
 
     /* Create an icon grid to manage the container. */
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    tr->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
+    tr->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 #ifndef DISABLE_COMPOSITING
     g_signal_connect (tr->icon_grid->widget, "expose-event", G_CALLBACK (tray_expose_box), tr);
 #endif
@@ -873,7 +873,7 @@ static void tray_panel_configuration_changed(Plugin * p)
     if (tr->icon_grid != NULL)
     {
         GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-        icon_grid_set_geometry(tr->icon_grid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
+        icon_grid_set_geometry(tr->icon_grid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
     }
 }
 

@@ -54,7 +54,7 @@ void xkb_redraw(XkbPlugin * xkb)
     gboolean valid_image = FALSE;
     if (xkb->display_type == IMAGE)
     {
-        int size = panel_get_icon_size(plugin_panel(xkb->plugin));
+        int size = plugin_get_icon_size(xkb->plugin);
         char * group_name = (char *) xkb_get_current_symbol_name_lowercase(xkb);
         if (group_name != NULL)
         {

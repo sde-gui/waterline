@@ -4710,7 +4710,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     plugin_set_priv(p, tb);
 
     /* Initialize to defaults. */
-    tb->icon_size         = panel_get_icon_size(plugin_panel(p));
+    tb->icon_size         = plugin_get_icon_size(p);
     tb->tooltips          = TRUE;
     tb->show_icons_titles = SHOW_BOTH;
     tb->custom_fallback_icon = "xorg";
@@ -5202,13 +5202,13 @@ static void taskbar_panel_configuration_changed(Plugin * p)
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
-        taskbar_get_task_button_max_width(tb), panel_get_icon_size(plugin_panel(p)) + BUTTON_HEIGHT_EXTRA,
+        taskbar_get_task_button_max_width(tb), plugin_get_icon_size(p) + BUTTON_HEIGHT_EXTRA,
         tb->spacing, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* If the icon size changed, refetch all the icons. */
-    if (panel_get_icon_size(plugin_panel(p)) != tb->icon_size)
+    if (plugin_get_icon_size(p) != tb->icon_size)
     {
-        tb->icon_size = panel_get_icon_size(plugin_panel(p));
+        tb->icon_size = plugin_get_icon_size(p);
         Task * tk;
         for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         {

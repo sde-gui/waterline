@@ -80,7 +80,6 @@ struct _PluginClass {
 
 
 extern Panel * plugin_panel(Plugin * plugin);
-
 extern PluginClass * plugin_class(Plugin * plugin);
 
 extern void * plugin_priv(Plugin * plugin);
@@ -94,6 +93,10 @@ extern GtkWidget * plugin_widget(Plugin * plugin);;
 extern void plugin_set_widget(Plugin * plugin, GtkWidget * widget);
 
 extern void plugin_set_has_system_menu(Plugin * plugin, gboolean v);
+
+
+extern int plugin_get_icon_size(Plugin * plugin);
+
 
 extern gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plugin *plugin);
                                                         /* Handler for "button_press_event" signal with Plugin as parameter */

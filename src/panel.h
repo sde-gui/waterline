@@ -58,8 +58,6 @@ extern int panel_get_edge(Panel * p);
 extern int panel_get_orientation(Panel * p);
 extern int panel_get_oriented_height_pixels(Panel * p);
 
-extern int panel_get_icon_size(Panel * p);
-
 extern gboolean panel_is_composited(Panel * p);
 extern gboolean panel_is_composite_available(Panel * p);
 
@@ -86,6 +84,8 @@ extern void panel_autohide_conditions_changed(Panel* p);
 extern void panel_require_update_background(Panel* p);
 
 extern Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name);
+
+extern int panel_get_icon_size(Panel * p);
 
 #endif
 

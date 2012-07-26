@@ -640,14 +640,14 @@ static void batt_panel_configuration_changed(Plugin *p) {
 
     if (b->orientation == ORIENT_HORIZ)
     {
-        b->bar_preferred_height = panel_get_icon_size(plugin_panel(p));;
+        b->bar_preferred_height = plugin_get_icon_size(p);;
         b->bar_preferred_width = b->bar_preferred_height / 3;
         if (b->bar_preferred_width < 5)
             b->bar_preferred_width = 5;
     }
     else
     {
-        b->bar_preferred_width = panel_get_icon_size(plugin_panel(p));;
+        b->bar_preferred_width = plugin_get_icon_size(p);;
         b->bar_preferred_height = b->bar_preferred_width / 3;
         if (b->bar_preferred_height < 5)
             b->bar_preferred_height = 5;

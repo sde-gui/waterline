@@ -163,7 +163,7 @@ static int kbled_constructor(Plugin * p, char ** fp)
     /* Allocate an icon grid manager to manage the container.
      * Then allocate three images for the three indications, but make them visible only when the configuration requests. */
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;    
-    kl->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
+    kl->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
     int i;
     for (i = 0; i < 3; i++)
     {
@@ -254,7 +254,7 @@ static void kbled_panel_configuration_changed(Plugin * p)
     /* Set orientation into the icon grid. */
     KeyboardLEDPlugin * kl = PRIV(p);
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    icon_grid_set_geometry(kl->icon_grid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
+    icon_grid_set_geometry(kl->icon_grid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* Do a full redraw. */
     int current_state = kl->current_state;

@@ -287,8 +287,8 @@ static gboolean desk_configure_event(GtkWidget * widget, GdkEventConfigure * eve
 
     /* Resize to optimal size. */
     gtk_widget_set_size_request(widget,
-        (panel_get_icon_size(plugin_panel(d->pg->plugin)) - BORDER_WIDTH * 2) * d->pg->aspect_ratio,
-        panel_get_icon_size(plugin_panel(d->pg->plugin)) - BORDER_WIDTH * 2);
+        (plugin_get_icon_size(d->pg->plugin) - BORDER_WIDTH * 2) * d->pg->aspect_ratio,
+        plugin_get_icon_size(d->pg->plugin) - BORDER_WIDTH * 2);
     return FALSE;
 }
 
@@ -728,8 +728,8 @@ static int pager_constructor(Plugin * plug, char ** fp)
     /* Create an icon grid manager to manage the drawing areas within the container. */
     GtkOrientation bo = (panel_get_orientation(plugin_panel(plug)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     pg->icon_grid = icon_grid_new(plugin_panel(plug), pwid, bo,
-        (panel_get_icon_size(plugin_panel(plug)) - BORDER_WIDTH * 2) * pg->aspect_ratio,
-        panel_get_icon_size(plugin_panel(plug)) - BORDER_WIDTH * 2,
+        (plugin_get_icon_size(plug) - BORDER_WIDTH * 2) * pg->aspect_ratio,
+        plugin_get_icon_size(plug) - BORDER_WIDTH * 2,
         1, BORDER_WIDTH,
         panel_get_oriented_height_pixels(plugin_panel(plug)));
 
@@ -789,8 +789,8 @@ static void pager_panel_configuration_changed(Plugin * p)
     PagerPlugin * pg = PRIV(p);
     GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_geometry(pg->icon_grid, bo,
-        (panel_get_icon_size(plugin_panel(p)) - BORDER_WIDTH * 2) * pg->aspect_ratio,
-        panel_get_icon_size(plugin_panel(p)) - BORDER_WIDTH * 2,
+        (plugin_get_icon_size(p) - BORDER_WIDTH * 2) * pg->aspect_ratio,
+        plugin_get_icon_size(p) - BORDER_WIDTH * 2,
         1, BORDER_WIDTH,
         panel_get_oriented_height_pixels(plugin_panel(p)));
 }

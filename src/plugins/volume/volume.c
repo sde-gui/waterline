@@ -80,22 +80,22 @@ static void update_icon (Plugin* p)
 	theme = gtk_icon_theme_get_default();
 
 	if (curr_volume <= 0) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-mute", panel_get_icon_size(plugin_panel(p)), 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-mute", plugin_get_icon_size(p), 0 );
 	}
 	else if (curr_volume > 0 && curr_volume <= 50) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-min", panel_get_icon_size(plugin_panel(p)), 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-min", plugin_get_icon_size(p), 0 );
 	}
 	else if (curr_volume > 50 && curr_volume <= 75) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-med", panel_get_icon_size(plugin_panel(p)), 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-med", plugin_get_icon_size(p), 0 );
 	}
 	else if (curr_volume > 75) {
-		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-max", panel_get_icon_size(plugin_panel(p)), 0 );
+		info = gtk_icon_theme_lookup_icon( theme, "stock_volume-max", plugin_get_icon_size(p), 0 );
 	}
 
 	if (info ) {
 		icon = gdk_pixbuf_new_from_file_at_size(
 				gtk_icon_info_get_filename( info ),
-				panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), NULL );
+				plugin_get_icon_size(p), plugin_get_icon_size(p), NULL );
 		gtk_icon_info_free( info );
 	}
 	else {
@@ -279,7 +279,7 @@ static int volume_constructor(Plugin *p, char **fp)
             
     g_signal_connect( vol->mainw, "scroll-event",
             G_CALLBACK(on_mouse_scroll), p );
-    gtk_widget_set_size_request( vol->mainw, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)) );
+    gtk_widget_set_size_request( vol->mainw, plugin_get_icon_size(p), plugin_get_icon_size(p) );
 
     /* obtain current volume */
     vol->dlg = create_volume_window();

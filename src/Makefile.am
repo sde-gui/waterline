@@ -40,7 +40,7 @@ lxpanelx_SOURCES = \
 	ev.c ev.h \
 	icon-grid.h icon-grid.c \
 	panel.c panel.h panel_private.h \
-	plugin.c plugin.h \
+	plugin.c plugin.h plugin_private.h \
 	paths.c paths.h \
 	$(MENU_SOURCES)
 

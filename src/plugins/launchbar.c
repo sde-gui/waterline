@@ -319,7 +319,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
 
     /* Show the widget and return. */
     gtk_widget_show(button);
-    plugin_widget_set_background(button, p->panel);
+    //plugin_widget_set_background(button, p->panel);
 }
 
 /* Read the configuration file entry for a launchbar button and create it. */

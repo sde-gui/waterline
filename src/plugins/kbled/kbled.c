@@ -74,7 +74,7 @@ static void kbled_panel_configuration_changed(Plugin * p);
 static void kbled_update_image(KeyboardLEDPlugin * kl, int i, unsigned int state)
 {
     gchar * file = get_private_resource_path(RESOURCE_DATA, "images", ((state) ? on_icons[i] : off_icons[i]), 0);
-    panel_image_set_from_file(kl->plugin->panel, kl->indicator_image[i], file);
+    panel_image_set_from_file(plugin_panel(kl->plugin), kl->indicator_image[i], file);
     g_free(file);
 }
 
@@ -159,8 +159,8 @@ static int kbled_constructor(Plugin * p, char ** fp)
 
     /* Allocate an icon grid manager to manage the container.
      * Then allocate three images for the three indications, but make them visible only when the configuration requests. */
-    GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;    
-    kl->icon_grid = icon_grid_new(p->panel, p->pwid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 0, 0, panel_get_oriented_height_pixels(p->panel));
+    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;    
+    kl->icon_grid = icon_grid_new(plugin_panel(p), p->pwid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
     int i;
     for (i = 0; i < 3; i++)
     {
@@ -250,8 +250,8 @@ static void kbled_panel_configuration_changed(Plugin * p)
 {
     /* Set orientation into the icon grid. */
     KeyboardLEDPlugin * kl = (KeyboardLEDPlugin *) p->priv;
-    GtkOrientation bo = (panel_get_orientation(p->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    icon_grid_set_geometry(kl->icon_grid, bo, panel_get_icon_size(p->panel), panel_get_icon_size(p->panel), 0, 0, panel_get_oriented_height_pixels(p->panel));
+    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    icon_grid_set_geometry(kl->icon_grid, bo, panel_get_icon_size(plugin_panel(p)), panel_get_icon_size(plugin_panel(p)), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* Do a full redraw. */
     int current_state = kl->current_state;

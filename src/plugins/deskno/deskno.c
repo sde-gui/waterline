@@ -123,7 +123,7 @@ static int deskno_constructor(Plugin * p, char ** fp)
     DesknoPlugin * dc = g_new0(DesknoPlugin, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
-    dc->panel = p->panel;
+    dc->panel = plugin_panel(p);
 
     /* Default parameters. */
     dc->wm_labels = TRUE;

@@ -944,7 +944,7 @@ static void task_draw_label(Task * tk)
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
         gtk_widget_set_tooltip_text(tk->button, label);
         if (tk->label)
-            panel_draw_label_text(tk->tb->plug->panel, tk->label, label, bold_style, task_button_is_really_flat(tk));
+            panel_draw_label_text(plugin_panel(tk->tb->plug), tk->label, label, bold_style, task_button_is_really_flat(tk));
         g_free(label);
     }
     else
@@ -953,7 +953,7 @@ static void task_draw_label(Task * tk)
         if (tk->tb->tooltips)
             gtk_widget_set_tooltip_text(tk->button, name);
         if (tk->label)
-            panel_draw_label_text(tk->tb->plug->panel, tk->label, name, bold_style, task_button_is_really_flat(tk));
+            panel_draw_label_text(plugin_panel(tk->tb->plug), tk->label, name, bold_style, task_button_is_really_flat(tk));
     }
 }
 
@@ -1662,7 +1662,7 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
         _gdk_pixbuf_get_color_sample(pixbuf, &tk->bgcolor1, &tk->bgcolor2);
 
         if (!tb->color_map)
-            tb->color_map = panel_get_color_map(tb->plug->panel);
+            tb->color_map = panel_get_color_map(plugin_panel(tb->plug));
 
         if (tk->bgcolor1.pixel)
         {
@@ -2255,7 +2255,7 @@ static void task_raise_window(Task * tk, guint32 time)
     {
         TaskbarPlugin * tb = tk->tb;
         GdkAtom net_active_atom = gdk_x11_xatom_to_atom(a_NET_ACTIVE_WINDOW);
-        tb->use_net_active = gdk_x11_screen_supports_net_wm_hint(gtk_widget_get_screen(tb->plug->pwid), net_active_atom);
+        tb->use_net_active = gdk_x11_screen_supports_net_wm_hint(gtk_widget_get_screen(plugin_widget(tb->plug)), net_active_atom);
         tb->net_active_checked = TRUE;
     }
 
@@ -2331,7 +2331,7 @@ static gboolean preview_panel_press_event(GtkWidget * widget, GdkEventButton * e
 
 static void preview_panel_calculate_speed(TaskbarPlugin * tb, int window_left, int window_right)
 {
-    gboolean h = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ);
+    gboolean h = (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ);
 
     int right_border = h ? gdk_screen_width() : gdk_screen_height();
 
@@ -2376,7 +2376,7 @@ static gboolean preview_panel_motion_timer(TaskbarPlugin * tb)
         return FALSE;
     }
 
-    gboolean h = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ);
+    gboolean h = (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ);
 
     gint x = 0;
     gint y = 0;
@@ -2410,7 +2410,7 @@ static gboolean preview_panel_motion_timer(TaskbarPlugin * tb)
 
 static gboolean preview_panel_motion_event(GtkWidget * widget, GdkEventMotion * event, TaskbarPlugin * tb)
 {
-    gboolean h = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ);
+    gboolean h = (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ);
 
     int window_left;
     int window_right;
@@ -2510,7 +2510,7 @@ static void task_show_preview_panel(Task * tk)
     }
 */
     GtkWidget * box = 
-        (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ) ?
+        (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ) ?
         gtk_hbox_new(TRUE, 5):
         gtk_vbox_new(TRUE, 5);
     gtk_container_set_border_width(GTK_CONTAINER(box), 5);
@@ -2942,7 +2942,7 @@ static gboolean taskbar_button_press_event(GtkWidget * widget, GdkEventButton * 
 
     if (event->state & GDK_CONTROL_MASK && event->button == 3) {
         Plugin* p = tk->tb->plug;
-        lxpanel_show_panel_menu( p->panel, p, event );
+        lxpanel_show_panel_menu( plugin_panel(p), p, event );
         return TRUE;
     }
 
@@ -3120,11 +3120,11 @@ static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, 
 /* Update style on the taskbar when created or after a configuration change. */
 static void taskbar_update_style(TaskbarPlugin * tb)
 {
-    GtkOrientation bo = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
         taskbar_get_task_button_max_width(tb), tb->icon_size + BUTTON_HEIGHT_EXTRA,
-        tb->spacing, 0, panel_get_oriented_height_pixels(tb->plug->panel));
+        tb->spacing, 0, panel_get_oriented_height_pixels(plugin_panel(tb->plug)));
 }
 
 /* Update style on a task button when created or after a configuration change. */
@@ -3680,7 +3680,7 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
     Task * ntk = NULL;
 
     /* Get the window that has focus. */
-    if (f == panel_get_toplevel_xwindow(tb->plug->panel))
+    if (f == panel_get_toplevel_xwindow(plugin_panel(tb->plug)))
     {
         /* Taskbar window gained focus (this isn't supposed to be able to happen).  Remember current focus. */
         if (ctk != NULL)
@@ -4521,7 +4521,7 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     if (close2)
     {
         mi = gtk_menu_item_new_with_mnemonic (_("_Close Window"));
-        if (panel_get_edge(tb->plug->panel) != EDGE_BOTTOM)
+        if (panel_get_edge(plugin_panel(tb->plug)) != EDGE_BOTTOM)
         {
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
@@ -4564,14 +4564,17 @@ static void taskbar_build_gui(Plugin * p)
     gtk_rc_parse_string(taskbar_rc);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
-    gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
-    gtk_widget_set_has_window(p->pwid, FALSE);
-    gtk_widget_set_name(p->pwid, "taskbar");
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
+    gtk_container_set_border_width(GTK_CONTAINER(pwid), 0);
+    gtk_widget_set_has_window(pwid, FALSE);
+    gtk_widget_set_name(pwid, "taskbar");
 
     /* Make container for task buttons as a child of top level widget. */
-    GtkOrientation bo = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    tb->icon_grid = icon_grid_new(p->panel, p->pwid, bo, tb->task_width_max, tb->icon_size, tb->spacing, 0, panel_get_oriented_height_pixels(p->panel));
+    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    tb->icon_grid = icon_grid_new(
+         plugin_panel(p), plugin_widget(p), bo,
+         tb->task_width_max, tb->icon_size, tb->spacing, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_use_separators(tb->icon_grid, tb->use_group_separators);
     icon_grid_set_separator_size(tb->icon_grid, tb->group_separator_size);
@@ -4581,7 +4584,7 @@ static void taskbar_build_gui(Plugin * p)
     gdk_window_add_filter(NULL, (GdkFilterFunc) taskbar_event_filter, tb);
 
     /* Connect signal to receive mouse events on the unused portion of the taskbar. */
-    g_signal_connect(p->pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
+    g_signal_connect(pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
 
     /* Connect signals to receive root window events and initialize root window properties. */
     tb->number_of_desktops = get_net_number_of_desktops();
@@ -4598,7 +4601,7 @@ static void taskbar_build_gui(Plugin * p)
     taskbar_make_menu(tb);
 
     /* Connect a signal to be notified when the window manager changes.  This causes re-evaluation of the "use_net_active" status. */
-    g_signal_connect(gtk_widget_get_screen(p->pwid), "window-manager-changed", G_CALLBACK(taskbar_window_manager_changed), tb);
+    g_signal_connect(gtk_widget_get_screen(plugin_widget(p)), "window-manager-changed", G_CALLBACK(taskbar_window_manager_changed), tb);
 }
 
 static void taskbar_config_updated(TaskbarPlugin * tb)
@@ -4665,7 +4668,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     recompute_visibility |= tb->_show_single_group != show_single_group;
     recompute_visibility |= tb->use_group_separators_prev != tb->use_group_separators;
 
-    tb->thumbnails = (tb->thumbnails_preview || tb->use_thumbnails_as_icons) && panel_is_composited(tb->plug->panel);
+    tb->thumbnails = (tb->thumbnails_preview || tb->use_thumbnails_as_icons) && panel_is_composited(plugin_panel(tb->plug));
 
     if (tb->dimm_iconified_prev != tb->dimm_iconified)
     {
@@ -4705,7 +4708,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     p->priv = tb;
 
     /* Initialize to defaults. */
-    tb->icon_size         = panel_get_icon_size(p->panel);
+    tb->icon_size         = panel_get_icon_size(plugin_panel(p));
     tb->tooltips          = TRUE;
     tb->show_icons_titles = SHOW_BOTH;
     tb->custom_fallback_icon = "xorg";
@@ -4938,7 +4941,7 @@ static void taskbar_destructor(Plugin * p)
     g_signal_handlers_disconnect_by_func(fbev, taskbar_net_client_list, tb);
 
     /* Remove "window-manager-changed" handler. */
-    g_signal_handlers_disconnect_by_func(gtk_widget_get_screen(p->pwid), taskbar_window_manager_changed, tb);
+    g_signal_handlers_disconnect_by_func(gtk_widget_get_screen(plugin_widget(p)), taskbar_window_manager_changed, tb);
 
     if (tb->desktop_names != NULL)
         g_strfreev(tb->desktop_names);
@@ -5194,16 +5197,16 @@ static void taskbar_panel_configuration_changed(Plugin * p)
     TaskbarPlugin * tb = (TaskbarPlugin *) p->priv;
     taskbar_update_style(tb);
     taskbar_make_menu(tb);
-    GtkOrientation bo = (panel_get_orientation(tb->plug->panel) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
-        taskbar_get_task_button_max_width(tb), panel_get_icon_size(tb->plug->panel) + BUTTON_HEIGHT_EXTRA,
-        tb->spacing, 0, panel_get_oriented_height_pixels(tb->plug->panel));
+        taskbar_get_task_button_max_width(tb), panel_get_icon_size(plugin_panel(p)) + BUTTON_HEIGHT_EXTRA,
+        tb->spacing, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* If the icon size changed, refetch all the icons. */
-    if (panel_get_icon_size(tb->plug->panel) != tb->icon_size)
+    if (panel_get_icon_size(plugin_panel(p)) != tb->icon_size)
     {
-        tb->icon_size = panel_get_icon_size(tb->plug->panel);
+        tb->icon_size = panel_get_icon_size(plugin_panel(p));
         Task * tk;
         for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         {

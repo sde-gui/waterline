@@ -75,8 +75,8 @@ am__lxpanelx_SOURCES_DIST = global.h misc.c misc.h \
 	generic_config_dlg.c Xsupport.c Xsupport.h pixbuf-stuff.c \
 	pixbuf-stuff.h configurator.c dbg.c dbg.h ev.c ev.h \
 	icon-grid.h icon-grid.c panel.c panel.h panel_private.h \
-	plugin.c plugin.h paths.c paths.h gtk-run.c menu-policy.h \
-	menu-policy.c
+	plugin.c plugin.h plugin_private.h paths.c paths.h gtk-run.c \
+	menu-policy.h menu-policy.c
 @ENABLE_MENU_CACHE_TRUE@am__objects_1 = gtk-run.$(OBJEXT) \
 @ENABLE_MENU_CACHE_TRUE@	menu-policy.$(OBJEXT)
 am_lxpanelx_OBJECTS = misc.$(OBJEXT) defaultapplications.$(OBJEXT) \
@@ -421,7 +421,7 @@ lxpanelx_SOURCES = \
 	ev.c ev.h \
 	icon-grid.h icon-grid.c \
 	panel.c panel.h panel_private.h \
-	plugin.c plugin.h \
+	plugin.c plugin.h plugin_private.h \
 	paths.c paths.h \
 	$(MENU_SOURCES)
 

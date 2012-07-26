@@ -408,7 +408,7 @@ static gint buttonPressEvent(GtkWidget *widget, GdkEventButton *event,
 
     if( event->button == 3 )  /* right button */
     {
-        lxpanel_show_panel_menu( plugin->panel, plugin, event );
+        lxpanel_show_panel_menu( plugin_panel(plugin), plugin, event );
         return TRUE;
     }
     return FALSE;
@@ -632,24 +632,24 @@ static void batt_panel_configuration_changed(Plugin *p) {
 
     lx_battery *b = (lx_battery *) p->priv;
 
-    b->orientation = panel_get_orientation(p->panel);
-    
+    b->orientation = panel_get_orientation(plugin_panel(p));
+
     if (b->orientation == ORIENT_HORIZ)
     {
-        b->bar_preferred_height = panel_get_icon_size(p->panel);;
+        b->bar_preferred_height = panel_get_icon_size(plugin_panel(p));;
         b->bar_preferred_width = b->bar_preferred_height / 3;
         if (b->bar_preferred_width < 5)
             b->bar_preferred_width = 5;
     }
     else
     {
-        b->bar_preferred_width = panel_get_icon_size(p->panel);;
+        b->bar_preferred_width = panel_get_icon_size(plugin_panel(p));;
         b->bar_preferred_height = b->bar_preferred_width / 3;
         if (b->bar_preferred_height < 5)
             b->bar_preferred_height = 5;
     }
     gtk_widget_queue_resize(b->drawingArea);
-    
+
     RET();
 }
 
@@ -723,7 +723,7 @@ static void save(Plugin* p, FILE* fp) {
 
 
 PluginClass batt_plugin_class = {
-    
+
     PLUGINCLASS_VERSIONING,
 
     type        : "batt",

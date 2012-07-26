@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2011-2012 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -76,6 +77,7 @@ struct _PluginClass {
     int  (*get_priority_of_launch_item_adding)(struct _Plugin * plugin);
 };
 
+
 /* Representative of a loaded and active plugin attached to a panel. */
 struct _Plugin {
     PluginClass * class;			/* Back pointer to PluginClass */
@@ -93,14 +95,12 @@ struct _Plugin {
     int lock_visible;
 };
 
-extern Plugin * plugin_load(char * type);		/* Create an instance of a plugin, loading it if necessary */
-extern int plugin_start(Plugin * this, char ** fp);	/* Configure and start a plugin by calling its constructor */
-extern void plugin_unload(Plugin * pl);			/* Delete an instance of a plugin if initialization fails */
-extern void plugin_delete(Plugin * pl);			/* Delete an instance of a plugin */
-extern GList * plugin_get_available_classes(void);	/* Get a list of all plugin classes; free with plugin_class_list_free */
-extern void plugin_class_list_free(GList * list);	/* Free the list allocated by plugin_get_available_classes */
-extern void plugin_widget_set_background(GtkWidget * w, Panel * p);
-							/* Recursively set the background of all widgets on a panel background configuration change */
+
+extern Panel * plugin_panel(Plugin * plugin);
+
+extern GtkWidget * plugin_widget(Plugin * plugin);;
+extern void plugin_set_widget(Plugin * plugin, GtkWidget * widget);
+
 extern gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plugin *plugin);
                                                         /* Handler for "button_press_event" signal with Plugin as parameter */
 
@@ -115,18 +115,5 @@ extern void plugin_lock_visible(Plugin * plugin);
 extern void plugin_unlock_visible(Plugin * plugin);
 
 extern void plugin_run_command(Plugin * plugin, char ** argv, int argc);
-
-/* FIXME: optional definitions */
-#define STATIC_SEPARATOR
-#define STATIC_LAUNCHBAR
-#define STATIC_LAUNCHBUTTON
-#define STATIC_DCLOCK
-#define STATIC_WINCMD
-#define STATIC_DIRMENU
-#define STATIC_PAGER
-#define STATIC_TRAY
-#define STATIC_MENU
-#define STATIC_SPACE
-#define STATIC_ICONS
 
 #endif

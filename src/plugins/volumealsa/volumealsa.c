@@ -238,11 +238,11 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
 
     if (mute)
     {
-         icon_updated = panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, "audio-volume-muted");
+         icon_updated = panel_image_set_icon_theme(plugin_panel(vol->plugin), vol->tray_icon, "audio-volume-muted");
          if (!icon_updated)
          {
              gchar * mute_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "mute.png", 0);
-             panel_image_set_from_file(vol->plugin->panel, vol->tray_icon, mute_icon_path);
+             panel_image_set_from_file(plugin_panel(vol->plugin), vol->tray_icon, mute_icon_path);
              g_free(mute_icon_path);
          }
          icon_updated = TRUE;
@@ -250,23 +250,23 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
     
     if (!icon_updated && level < 30)
     {
-        icon_updated = panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, "audio-volume-low");
+        icon_updated = panel_image_set_icon_theme(plugin_panel(vol->plugin), vol->tray_icon, "audio-volume-low");
     }
 
     if (!icon_updated && level < 70)
     {
-        icon_updated = panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, "audio-volume-medium");
+        icon_updated = panel_image_set_icon_theme(plugin_panel(vol->plugin), vol->tray_icon, "audio-volume-medium");
     }
 
     if (!icon_updated)
     {
-        icon_updated = panel_image_set_icon_theme(vol->plugin->panel, vol->tray_icon, "audio-volume-high");
+        icon_updated = panel_image_set_icon_theme(plugin_panel(vol->plugin), vol->tray_icon, "audio-volume-high");
     }
 
     if (!icon_updated)
     {
         gchar * volume_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "volume.png", 0);
-        panel_image_set_from_file(vol->plugin->panel, vol->tray_icon, volume_icon_path);
+        panel_image_set_from_file(plugin_panel(vol->plugin), vol->tray_icon, volume_icon_path);
         g_free(volume_icon_path);
     }
 
@@ -456,7 +456,7 @@ static void volumealsa_build_popup_window(Plugin * p)
     vol->mute_check_handler = g_signal_connect(vol->mute_check, "toggled", G_CALLBACK(volumealsa_popup_mute_toggled), vol);
 
     /* Set background to default. */
-    gtk_widget_set_style(viewport, panel_get_default_style(p->panel));
+    gtk_widget_set_style(viewport, panel_get_default_style(plugin_panel(p)));
 }
 
 /* Plugin constructor. */

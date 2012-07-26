@@ -48,7 +48,7 @@ enum {
 static gboolean icon_grid_placement(IconGrid * ig)
 {
     ENTER;
-    
+
     ig->placement_idle_cb = 0;
 
     //g_print("[0x%x] icon_grid_placement\n", (int)ig);
@@ -149,7 +149,7 @@ static gboolean icon_grid_placement(IconGrid * ig)
     /* Reposition each visible child. */
     int x = x_initial;
     int y = centering_offset_y;
-    gboolean contains_sockets = FALSE;
+    //gboolean contains_sockets = FALSE;
     gboolean first = TRUE;
     int children_count = 0;
 
@@ -209,8 +209,8 @@ static gboolean icon_grid_placement(IconGrid * ig)
         DPRINT("#%d: x = %d, y = %d\n", children_count, x, y);
 
         /* Note if a socket is placed. */
-        if (GTK_IS_SOCKET(ige->widget))
-            contains_sockets = TRUE;
+/*        if (GTK_IS_SOCKET(ige->widget))
+            contains_sockets = TRUE;*/
 
         prev_is_separator = ige->separator && ig->use_separators;
 
@@ -224,8 +224,8 @@ static gboolean icon_grid_placement(IconGrid * ig)
 //    gtk_widget_queue_draw(ig->container);
 
     /* If the icon grid contains sockets, do special handling to get the background erased. */
-    if (contains_sockets)
-        plugin_widget_set_background(ig->widget, ig->panel);
+/*    if (contains_sockets)
+        plugin_widget_set_background(ig->widget, ig->panel);*/
 
     RET(FALSE);
 }

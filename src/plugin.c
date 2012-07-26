@@ -22,7 +22,7 @@
 
 #define _LXPANEL_INTERNALS
 
-#include "plugin.h"
+#include "plugin_private.h"
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
@@ -532,4 +532,19 @@ gchar * plugin_get_config_path(Plugin * plugin, const char * file_name, CONFIG_T
     gchar * result = get_config_path(path, config_type);
     g_free(path);
     return result;
+}
+
+Panel * plugin_panel(Plugin * plugin)
+{
+    return plugin->panel;
+}
+
+GtkWidget * plugin_widget(Plugin * plugin)
+{
+    return plugin->pwid;
+}
+
+void plugin_set_widget(Plugin * plugin, GtkWidget * widget)
+{
+    plugin->pwid = widget;
 }

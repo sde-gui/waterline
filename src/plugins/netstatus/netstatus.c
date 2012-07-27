@@ -28,6 +28,8 @@
 #include "misc.h"
 #include "plugin.h"
 
+#include "gtkcompat.h"
+
 #include "dbg.h"
 
 #include "netstatus-icon.h"

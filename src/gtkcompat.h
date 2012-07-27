@@ -249,6 +249,12 @@ void gtk_widget_set_has_window(GtkWidget *widget, gboolean has_window)
 }
 
 static inline
+gboolean gtk_widget_get_has_window (GtkWidget *widget)
+{
+    return GTK_WIDGET_NO_WINDOW(widget) ? FALSE : TRUE;
+}
+
+static inline
 void gtk_widget_set_can_focus(GtkWidget *widget, gboolean can_focus)
 {
     if (can_focus) {
@@ -287,7 +293,7 @@ void gtk_widget_set_realized(GtkWidget *widget, gboolean realized)
 static inline
 gboolean gtk_widget_get_realized(GtkWidget *widget)
 {
-    return GTK_WIDGET_REALIZED(widget)
+    return GTK_WIDGET_REALIZED(widget);
 }
 
 static inline
@@ -358,6 +364,18 @@ void gdk_visual_get_blue_pixel_details (GdkVisual *visual, guint32 *mask, gint *
 
 
 #if !GTK_CHECK_VERSION(2,24,0)
+
+static inline
+GdkWindow * gdk_x11_window_foreign_new_for_display(GdkDisplay *display, Window window)
+{
+    return gdk_window_foreign_new_for_display(display, window);
+}
+
+static inline
+GdkWindow * gdk_x11_window_lookup_for_display(GdkDisplay *display, Window window)
+{
+    return gdk_window_lookup_for_display(display, window);
+}
 
 static inline
 void gdk_pixmap_get_size(GdkPixmap *pixmap, gint *width, gint *height)

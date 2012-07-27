@@ -89,7 +89,7 @@ if test "x$with_libfm" != "xno"; then
 	PKG_CHECK_MODULES(LIBFM, [$pkg_modules],
 			  enable_libfm=yes, enable_libfm=no)
 	if test x"$enable_libfm" = "xno"; then
-		AC_WARN([No libfm found.  All menu related routines are not built.])
+		AC_WARN([No libfm found.  All libfm related routines are not built.])
 		AC_DEFINE(DISABLE_LIBFM, [1], [Disable libfm related routines])
 	fi
 	AC_SUBST(LIBFM_CFLAGS)

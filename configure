@@ -12824,8 +12824,8 @@ $as_echo "yes" >&6; }
 	enable_libfm=yes
 fi
 	if test x"$enable_libfm" = "xno"; then
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No libfm found.  All menu related routines are not built." >&5
-$as_echo "$as_me: WARNING: No libfm found.  All menu related routines are not built." >&2;}
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No libfm found.  All libfm related routines are not built." >&5
+$as_echo "$as_me: WARNING: No libfm found.  All libfm related routines are not built." >&2;}
 
 $as_echo "#define DISABLE_LIBFM 1" >>confdefs.h
 

@@ -26,6 +26,8 @@
 
 #include "config.h"
 
+#include "typedef.h"
+
 enum { ALIGN_NONE, ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT  };
 enum { EDGE_NONE, EDGE_LEFT, EDGE_RIGHT, EDGE_TOP, EDGE_BOTTOM };
 enum { WIDTH_NONE, WIDTH_REQUEST, WIDTH_PIXEL, WIDTH_PERCENT };
@@ -42,10 +44,6 @@ enum { POS_NONE, POS_START, POS_END };
 #define PANEL_HEIGHT_MAX              200	/* Maximum height of panel */
 #define PANEL_HEIGHT_MIN              16	/* Minimum height of panel */
 #define PANEL_ICON_HIGHLIGHT          0x202020	/* Constant to pass to icon loader */
-
-struct _Panel;
-typedef struct _Panel Panel;
-
 
 extern GtkStyle * panel_get_default_style(Panel * p);
 
@@ -69,8 +67,6 @@ extern GList * panel_get_plugins(Panel * p);
 
 
 #ifdef _LXPANEL_INTERNALS
-
-#include "plugin.h"
 
 extern void panel_calculate_position(Panel *p);
 extern void update_panel_geometry(Panel* p);

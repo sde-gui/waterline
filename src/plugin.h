@@ -26,13 +26,7 @@
 #include <gdk/gdk.h>
 #include <stdio.h>
 
-struct _Plugin;
-typedef struct _Plugin Plugin;
-
-struct _PluginClass;
-typedef struct _PluginClass PluginClass;
-
-#include "panel.h"
+#include "typedef.h"
 
 /* Support for external plugin versioning.
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */

@@ -69,7 +69,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(lxpanelx_includedir)"
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
-am__lxpanelx_SOURCES_DIST = global.h misc.c misc.h \
+am__lxpanelx_SOURCES_DIST = global.h typedefs.h misc.c misc.h \
 	defaultapplications.c defaultapplications.h libfm.c libfm.h \
 	bg.c bg.h commands.c commands.h configparser.c configparser.h \
 	generic_config_dlg.c Xsupport.c Xsupport.h pixbuf-stuff.c \
@@ -407,6 +407,7 @@ BUILTIN_PLUGINS = $(top_builddir)/src/plugins/libbuiltin_plugins.a
 
 lxpanelx_SOURCES = \
 	global.h \
+	typedefs.h \
 	misc.c misc.h \
 	defaultapplications.c defaultapplications.h \
 	libfm.c libfm.h \

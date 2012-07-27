@@ -21,8 +21,6 @@
 #include "misc.h"
 #include "plugin.h"
 
-#include "panel_private.h" /* FIXME! */
-
 #include <glib/gi18n.h>
 
 #include "dbg.h"
@@ -55,7 +53,9 @@ static int separator_constructor(Plugin * p, char ** fp)
     gtk_container_set_border_width(GTK_CONTAINER(pwid), 1);
 
     /* Allocate separator as a child of top level. */
-    GtkWidget * sep = plugin_panel(p)->my_separator_new();
+    GtkWidget * sep = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ?
+        gtk_vseparator_new():
+        gtk_hseparator_new();
     gtk_container_add(GTK_CONTAINER(pwid), sep);
 
     /* Connect signals. */
@@ -78,18 +78,20 @@ static void separator_panel_configuration_changed(Plugin * p)
     GtkWidget * sep = gtk_bin_get_child(GTK_BIN(plugin_widget(p)));
     if (GTK_IS_VSEPARATOR(sep))
     {
-        if (plugin_panel(p)->orientation == GTK_ORIENTATION_HORIZONTAL)
+        if (panel_get_orientation(plugin_panel(p)) == GTK_ORIENTATION_HORIZONTAL)
             return;
     }
     else
     {
-        if (plugin_panel(p)->orientation == GTK_ORIENTATION_VERTICAL)
+        if (panel_get_orientation(plugin_panel(p)) == GTK_ORIENTATION_VERTICAL)
             return;
     }
 
     /* If the orientation changed, recreate the separator. */
     gtk_widget_destroy(sep);
-    sep = plugin_panel(p)->my_separator_new();
+    sep = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ?
+        gtk_vseparator_new():
+        gtk_hseparator_new();
     gtk_widget_show(sep);
     gtk_container_add(GTK_CONTAINER(plugin_widget(p)), sep);
 }

@@ -46,6 +46,8 @@
 #include "lxpanelxctl.h"
 #include "dbg.h"
 
+#include "gtkcompat.h"
+
 /******************************************************************************/
 
 /* defined in gtk-run.c */
@@ -1552,7 +1554,7 @@ static void panel_popupmenu_about( GtkMenuItem* item, Panel* panel )
     about = gtk_about_dialog_new();
     panel_apply_icon(GTK_WINDOW(about));
     gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(about), VERSION);
-    gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(about), _("LXPanelX"));
+    gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(about), _("LXPanelX"));
     gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(about), gdk_pixbuf_new_from_file(logo_path, NULL));
     gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(about), _("Copyright (C) 2008-2011"));
     gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(about), _( "General purpose desktop panel. (Originally forked from LXDE LXPanel 0.5.6.)"));

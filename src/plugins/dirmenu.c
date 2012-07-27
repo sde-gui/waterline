@@ -40,6 +40,8 @@
 #include "libfm.h"
 #include "dbg.h"
 
+#include "gtkcompat.h"
+
 enum {
     SORT_BY_NAME,
     SORT_BY_MTIME,

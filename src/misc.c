@@ -57,6 +57,8 @@
 #include "Xsupport.h"
 #include "dbg.h"
 
+#include "gtkcompat.h"
+
 /********************************************************************/
 
 int strempty(const char* s) {

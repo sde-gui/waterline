@@ -46,6 +46,8 @@
 
 #include "dbg.h"
 
+#include "gtkcompat.h"
+
 /* Drag and drop target info. */
 enum {
   TARGET_URILIST,

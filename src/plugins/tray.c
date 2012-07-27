@@ -40,6 +40,8 @@
 #include "bg.h"
 #include "icon-grid.h"
 
+#include "gtkcompat.h"
+
 /* Standards reference:  http://standards.freedesktop.org/systemtray-spec/ */
 
 /* Protocol constants. */
@@ -646,6 +648,8 @@ static void tray_unmanage_selection(TrayPlugin * tr)
     }
 }
 
+#ifndef DISABLE_COMPOSITING
+
 static void tray_expose_icon(GtkWidget * widget, gpointer data)
 {
     cairo_t * cr = data;
@@ -654,7 +658,7 @@ static void tray_expose_icon(GtkWidget * widget, gpointer data)
         return;
 
     GdkWindow * window = gtk_widget_get_window (widget);
-#ifndef DISABLE_COMPOSITING
+
     if (gdk_window_get_composited (window))
     {
       GtkAllocation allocation;
@@ -666,7 +670,6 @@ static void tray_expose_icon(GtkWidget * widget, gpointer data)
 				   allocation.y);
       cairo_paint (cr);
     }
-#endif
 }
 
 static void tray_expose_box(GtkWidget * box, GdkEventExpose * event, gpointer data)
@@ -717,7 +720,7 @@ static void tray_choose_visual(TrayPlugin * tr)
                     PropModeReplace,
                     (guchar *) &data, 1);
 }
-
+#endif
 
 /* Plugin constructor. */
 static int tray_constructor(Plugin * p, char ** fp)

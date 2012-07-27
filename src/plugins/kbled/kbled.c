@@ -38,6 +38,8 @@
 #include "plugin.h"
 #include "icon-grid.h"
 
+#include "gtkcompat.h"
+
 static const char * on_icons[] = {
     "capslock-on.png",
     "numlock-on.png",

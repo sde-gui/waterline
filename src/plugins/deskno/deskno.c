@@ -35,6 +35,8 @@
 #include "plugin.h"
 #include "Xsupport.h"
 
+#include "gtkcompat.h"
+
 #include "dbg.h"
 
 /* Private context for desktop number plugin. */

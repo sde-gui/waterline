@@ -27,6 +27,8 @@
 
 #include "dbg.h"
 
+#include "gtkcompat.h"
+
 static int separator_constructor(Plugin * p, char ** fp);
 static void separator_destructor(Plugin * p);
 static void separator_panel_configuration_changed(Plugin * p);

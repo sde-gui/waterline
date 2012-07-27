@@ -33,6 +33,8 @@
 
 #include "dbg.h"
 
+#include "gtkcompat.h"
+
 #define DEFAULT_TIP_FORMAT    "%A %x"
 #define DEFAULT_CLOCK_FORMAT  "%R"
 
@@ -74,6 +76,7 @@ static void dclock_configure(Plugin * p, GtkWindow * parent);
 static void dclock_save_configuration(Plugin * p, FILE * fp);
 static void dclock_panel_configuration_changed(Plugin * p);
 
+#if GTK_CHECK_VERSION(2,16,0)
 
 static gchar ** dclock_get_format_strings(Plugin * plugin)
 {
@@ -156,7 +159,7 @@ static void dclock_generate_copy_to_clipboard_menu(GtkMenu* lxpanelx_menu, Plugi
     }
 }
 
-
+#endif
 
 static char * dclock_get_timezones(DClockPlugin * dc)
 {
@@ -256,8 +259,10 @@ static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * e
     if (evt->button == 3)
     {
         GtkMenu* context_menu = lxpanel_get_panel_menu(plugin_panel(plugin), plugin, FALSE);
+#if GTK_CHECK_VERSION(2,16,0)
         dclock_generate_copy_to_clipboard_menu(context_menu, plugin);
         gtk_widget_show_all(GTK_WIDGET(context_menu));
+#endif
         gtk_menu_popup(context_menu, NULL, NULL, NULL, NULL, evt->button, evt->time);
         return TRUE;
     }

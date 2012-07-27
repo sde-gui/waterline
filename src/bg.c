@@ -309,12 +309,22 @@ fb_bg_get_pix_from_file(GtkWidget *widget, const char *filename)
         RET(widget->style->bg_pixmap[0]);
     }
     pixmap = gdk_pixmap_new(widget->window, gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf), -1);
-    gdk_pixbuf_render_to_drawable(pixbuf,pixmap,
+/*    gdk_pixbuf_render_to_drawable(pixbuf,pixmap,
             widget->style->fg_gc[GTK_STATE_NORMAL],
             0,0,0,0,
             gdk_pixbuf_get_width(pixbuf),
             gdk_pixbuf_get_height(pixbuf),
             GDK_RGB_DITHER_NORMAL,0,0);
+*/
+
+    gdk_draw_pixbuf(
+        pixmap,
+        widget->style->fg_gc[GTK_STATE_NORMAL],
+        pixbuf,
+        0,0,0,0,
+        gdk_pixbuf_get_width(pixbuf),
+        gdk_pixbuf_get_height(pixbuf),
+        GDK_RGB_DITHER_NORMAL,0,0);
 
     g_object_unref( pixbuf );
     RET(pixmap);

@@ -221,6 +221,12 @@ gtk_rgb_to_hsv (gdouble  r,
     *v = b;
 }
 
+static inline
+GdkWindow * gtk_widget_get_window(GtkWidget *widget)
+{
+    return widget->window;
+}
+
 #endif // !GTK_CHECK_VERSION(2,14,0)
 
 
@@ -364,6 +370,8 @@ void gdk_visual_get_blue_pixel_details (GdkVisual *visual, guint32 *mask, gint *
 
 
 #if !GTK_CHECK_VERSION(2,24,0)
+
+#include <X11/X.h>
 
 static inline
 GdkWindow * gdk_x11_window_foreign_new_for_display(GdkDisplay *display, Window window)

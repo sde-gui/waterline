@@ -44,6 +44,8 @@
 //#include "bg.h"
 //#include "menu-policy.h"
 
+#include "gtkcompat.h"
+
 #include "dbg.h"
 
 struct _lb_t;

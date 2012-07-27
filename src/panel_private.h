@@ -33,7 +33,6 @@ struct _Panel {
 
     GtkRequisition requisition;
     GtkWidget *(*my_box_new) (gboolean, gint);
-    GtkWidget *(*my_separator_new) ();
 
     FbBg *bg;
     int alpha;

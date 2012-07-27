@@ -1988,10 +1988,8 @@ void panel_set_panel_configuration_changed(Panel *p)
 
     if (p->orientation == ORIENT_HORIZ) {
         p->my_box_new = gtk_hbox_new;
-        p->my_separator_new = gtk_vseparator_new;
     } else {
         p->my_box_new = gtk_vbox_new;
-        p->my_separator_new = gtk_hseparator_new;
     }
 
     /* recreate the main layout box */

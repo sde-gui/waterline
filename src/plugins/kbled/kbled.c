@@ -31,14 +31,14 @@
 
 #define PLUGIN_PRIV_TYPE KeyboardLEDPlugin
 
-#include "dbg.h"
-#include "panel.h"
-#include "misc.h"
-#include "paths.h"
-#include "plugin.h"
-#include "icon-grid.h"
+#include <lxpanelx/dbg.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/paths.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/icon-grid.h>
 
-#include "gtkcompat.h"
+#include <lxpanelx/gtkcompat.h>
 
 static const char * on_icons[] = {
     "capslock-on.png",

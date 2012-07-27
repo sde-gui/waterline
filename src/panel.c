@@ -32,21 +32,21 @@
 #include <string.h>
 #include <gdk/gdkx.h>
 
-#include "global.h"
+#include <lxpanelx/global.h>
 #include "plugin_internal.h"
 #include "plugin_private.h"
-#include "paths.h"
-#include "panel.h"
+#include <lxpanelx/paths.h>
+#include <lxpanelx/panel.h>
 #include "panel_internal.h"
 #include "panel_private.h"
-#include "misc.h"
+#include <lxpanelx/misc.h>
 #include "bg.h"
-#include "Xsupport.h"
+#include <lxpanelx/Xsupport.h>
 
 #include "lxpanelxctl.h"
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
-#include "gtkcompat.h"
+#include <lxpanelx/gtkcompat.h>
 
 /******************************************************************************/
 

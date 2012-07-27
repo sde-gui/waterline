@@ -23,12 +23,12 @@
 
 #define PLUGIN_PRIV_TYPE WinCmdPlugin
 
-#include "panel.h"
-#include "misc.h"
-#include "plugin.h"
-#include "Xsupport.h"
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/Xsupport.h>
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 /* Commands that can be issued. */
 typedef enum {

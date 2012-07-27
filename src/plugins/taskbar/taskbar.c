@@ -41,18 +41,18 @@
 
 #define PLUGIN_PRIV_TYPE TaskbarPlugin
 
-#include "gtkcompat.h"
-#include "global.h"
-#include "panel.h"
-#include "misc.h"
-#include "plugin.h"
-#include "Xsupport.h"
+#include <lxpanelx/gtkcompat.h>
+#include <lxpanelx/global.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/Xsupport.h>
 #include "icon.xpm"
-#include "icon-grid.h"
+#include <lxpanelx/icon-grid.h>
 
 //#define DEBUG
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 /******************************************************************************/
 

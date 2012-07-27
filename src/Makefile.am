@@ -25,30 +25,43 @@ MENU_SOURCES = \
 endif
 
 lxpanelx_SOURCES = \
-	global.h \
-	typedefs.h \
-	misc.c misc.h \
-	defaultapplications.c defaultapplications.h \
-	libfm.c libfm.h \
+	misc.c \
+	defaultapplications.c \
+	libfm.c \
 	bg.c bg.h  \
 	commands.c commands.h \
-	configparser.c configparser.h \
+	configparser.c \
 	generic_config_dlg.c \
-	Xsupport.c Xsupport.h \
-	pixbuf-stuff.c pixbuf-stuff.h \
+	Xsupport.c \
+	pixbuf-stuff.c \
 	configurator.c \
-	dbg.c dbg.h \
-	ev.c ev.h \
-	icon-grid.h icon-grid.c \
-	panel.c panel.h panel_internal.h panel_private.h \
-	plugin.c plugin.h plugin_internal.h plugin_private.h \
-	paths.c paths.h \
+	dbg.c \
+	ev.c \
+	icon-grid.c \
+	panel.c panel_internal.h panel_private.h \
+	plugin.c plugin_internal.h plugin_private.h \
+	paths.c \
 	$(MENU_SOURCES)
 
 if BUILD_PLUGIN_LOADER
 DYNAMIC_FLAGS = -export-dynamic
-lxpanelx_includedir = $(pkgincludedir)
-lxpanelx_include_HEADERS = $(top_srcdir)/include/lxpanelx/plugin.h
+lxpanelx_includedir = $(pkgincludedir)/lxpanelx
+lxpanelx_include_HEADERS = \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/configparser.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/dbg.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/defaultapplications.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/ev.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/global.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/gtkcompat.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/icon-grid.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/libfm.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/misc.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/panel.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/paths.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/pixbuf-stuff.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/plugin.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/typedef.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/Xsupport.h
 endif
 lxpanelx_LDFLAGS = $(DYNAMIC_FLAGS)
 

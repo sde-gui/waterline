@@ -33,16 +33,16 @@
 
 #define PLUGIN_PRIV_TYPE menup
 
-#include "gtkcompat.h"
-#include "global.h"
-#include "panel.h"
-#include "misc.h"
-#include "plugin.h"
+#include <lxpanelx/gtkcompat.h>
+#include <lxpanelx/global.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
 #include "bg.h"
 #include "menu-policy.h"
 #include "commands.h"
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 //#define DEFAULT_MENU_ICON PACKAGE_DATA_DIR "/lxpanelx/images/my-computer.png"
 #define DEFAULT_MENU_ICON "start-here"

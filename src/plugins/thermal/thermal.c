@@ -28,11 +28,11 @@
 
 #define PLUGIN_PRIV_TYPE thermal
 
-#include "panel.h"
-#include "misc.h"
-#include "plugin.h"
-#include "gtkcompat.h"
-#include "dbg.h"
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/gtkcompat.h>
+#include <lxpanelx/dbg.h>
 
 #define THERMAL_DIRECTORY "/proc/acpi/thermal_zone/" /* must be slash-terminated */
 #define THERMAL_TEMPF  "temperature"

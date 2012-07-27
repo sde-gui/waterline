@@ -23,8 +23,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "Xsupport.h"
-#include "misc.h"
+#include <lxpanelx/Xsupport.h>
+#include <lxpanelx/misc.h>
 #include <menu-cache.h>
 
 static GtkWidget* win = NULL; /* the run dialog */

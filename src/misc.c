@@ -38,14 +38,14 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include "global.h"
-#include "misc.h"
-#include "panel.h"
+#include <lxpanelx/global.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/panel.h>
 #include "panel_internal.h"
-#include "Xsupport.h"
-#include "dbg.h"
+#include <lxpanelx/Xsupport.h>
+#include <lxpanelx/dbg.h>
 
-#include "gtkcompat.h"
+#include <lxpanelx/gtkcompat.h>
 
 /********************************************************************/
 

@@ -23,9 +23,9 @@
 #include <gdk/gdkx.h>
 #include <string.h>
 
-#include "Xsupport.h"
-#include "pixbuf-stuff.h"
-#include "dbg.h"
+#include <lxpanelx/Xsupport.h>
+#include <lxpanelx/pixbuf-stuff.h>
+#include <lxpanelx/dbg.h>
 
 
 /* X11 data types */

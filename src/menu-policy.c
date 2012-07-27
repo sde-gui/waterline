@@ -19,9 +19,9 @@
 #include <menu-cache.h>
 #include <glib.h>
 
-#include "global.h"
+#include <lxpanelx/global.h>
 #include "menu-policy.h"
-#include "panel.h"
+#include <lxpanelx/panel.h>
 
 guint32 visibility_flags = 0;
 

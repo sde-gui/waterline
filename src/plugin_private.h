@@ -20,7 +20,7 @@
 #ifndef _LXPANELX_PLUGIN_PRIVATE_H
 #define _LXPANELX_PLUGIN_PRIVATE_H
 
-#include "plugin.h"
+#include <lxpanelx/plugin.h>
 
 /* Representative of a loaded and active plugin attached to a panel. */
 struct _Plugin {

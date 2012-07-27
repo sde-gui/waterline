@@ -16,16 +16,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "global.h"
-#include "panel.h"
-#include "misc.h"
-#include "plugin.h"
+#include <lxpanelx/global.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
 
 #include <glib/gi18n.h>
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
-#include "gtkcompat.h"
+#include <lxpanelx/gtkcompat.h>
 
 static int separator_constructor(Plugin * p, char ** fp);
 static void separator_destructor(Plugin * p);

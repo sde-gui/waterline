@@ -38,15 +38,15 @@
 
 #define PLUGIN_PRIV_TYPE lb_t
 
-#include "panel.h"
-#include "misc.h"
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
 //#include "plugin.h"
 //#include "bg.h"
 //#include "menu-policy.h"
 
-#include "gtkcompat.h"
+#include <lxpanelx/gtkcompat.h>
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 struct _lb_t;
 

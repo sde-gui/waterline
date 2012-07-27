@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "typedef.h"
+#include <lxpanelx/typedef.h>
 
 #pragma GCC visibility push(hidden)
 

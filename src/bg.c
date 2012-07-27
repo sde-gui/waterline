@@ -34,7 +34,7 @@
 #include "bg.h"
 
 //#define DEBUG
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 
 enum {

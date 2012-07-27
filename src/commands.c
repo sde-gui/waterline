@@ -23,10 +23,10 @@
 #endif
 
 #include "commands.h"
-#include "global.h"
-#include "panel.h"
-#include "plugin.h"
-#include "misc.h"
+#include <lxpanelx/global.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/misc.h>
 #include "bg.h"
 #include <stdlib.h>
 #include <sys/types.h>
@@ -35,7 +35,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 void restart(void);
 void gtk_run(void);

@@ -22,8 +22,8 @@
 
 #include <string.h>
 
-#include "paths.h"
-#include "dbg.h"
+#include <lxpanelx/paths.h>
+#include <lxpanelx/dbg.h>
 
 /********************************************************************/
 

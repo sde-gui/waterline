@@ -36,17 +36,17 @@
 
 #define PLUGIN_PRIV_TYPE LaunchbarPlugin
 
-#include "global.h"
-#include "panel.h"
-#include "paths.h"
-#include "misc.h"
-#include "plugin.h"
-#include "icon-grid.h"
+#include <lxpanelx/global.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/paths.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/icon-grid.h>
 #include "menu-policy.h"
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
-#include "gtkcompat.h"
+#include <lxpanelx/gtkcompat.h>
 
 /* Drag and drop target info. */
 enum {

@@ -27,11 +27,11 @@
 
 #define PLUGIN_PRIV_TYPE volume_t
 
-#include "panel.h"
-#include "misc.h"
-#include "plugin.h"
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 #include "volume-impl.h"
 

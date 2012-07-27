@@ -22,8 +22,8 @@
 
 #include <config.h>
 
-#include "misc.h"
-#include "gtkcompat.h"
+#include <lxpanelx/misc.h>
+#include <lxpanelx/gtkcompat.h>
 #include "netstatus-icon.h"
 
 #include <gtk/gtk.h>

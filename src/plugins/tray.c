@@ -32,15 +32,15 @@
 
 #define PLUGIN_PRIV_TYPE TrayPlugin
 
-#include "gtkcompat.h"
-#include "panel.h"
-#include "misc.h"
-#include "plugin.h"
-#include "Xsupport.h"
+#include <lxpanelx/gtkcompat.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/Xsupport.h>
 #include "bg.h"
-#include "icon-grid.h"
+#include <lxpanelx/icon-grid.h>
 
-#include "gtkcompat.h"
+#include <lxpanelx/gtkcompat.h>
 
 /* Standards reference:  http://standards.freedesktop.org/systemtray-spec/ */
 
@@ -53,7 +53,7 @@
 #define SYSTEM_TRAY_ORIENTATION_VERT 1
 
 //#define DEBUG
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 struct _balloon_message;
 struct _tray_client;

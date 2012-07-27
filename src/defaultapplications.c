@@ -20,9 +20,9 @@
 #include <config.h>
 #endif
 
-#include "defaultapplications.h"
-#include "paths.h"
-#include "dbg.h"
+#include <lxpanelx/defaultapplications.h>
+#include <lxpanelx/paths.h>
+#include <lxpanelx/dbg.h>
 
 /********************************************************************/
 

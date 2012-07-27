@@ -45,12 +45,12 @@
 
 #define PLUGIN_PRIV_TYPE lx_battery
 
-#include "gtkcompat.h"
-#include "dbg.h"
+#include <lxpanelx/gtkcompat.h>
+#include <lxpanelx/dbg.h>
 #include "batt_sys.h"
-#include "misc.h" /* used for the line struct */
-#include "panel.h" /* used to determine panel orientation */
-#include "plugin.h"
+#include <lxpanelx/misc.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/plugin.h>
 
 /* The last MAX_SAMPLES samples are averaged when charge rates are evaluated.
    This helps prevent spikes in the "time left" values the user sees. */

@@ -20,13 +20,13 @@
 #include <gtk/gtkprivate.h>
 #include <string.h>
 
-#include "icon-grid.h"
-#include "panel.h"
-#include "plugin.h"
+#include <lxpanelx/icon-grid.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/plugin.h>
 
 //#define DEBUG
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 static gboolean icon_grid_placement(IconGrid * ig);
 static void icon_grid_geometry(IconGrid * ig, gboolean layout);

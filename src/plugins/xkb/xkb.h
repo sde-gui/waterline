@@ -24,14 +24,14 @@
 
 #define PLUGIN_PRIV_TYPE XkbPlugin
 
-#include "global.h"
-#include "plugin.h"
-#include "misc.h"
-#include "paths.h"
-#include "panel.h"
-#include "ev.h"
+#include <lxpanelx/global.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/paths.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/ev.h>
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 typedef enum {
     IMAGE = 0,

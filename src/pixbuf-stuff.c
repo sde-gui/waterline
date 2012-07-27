@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "pixbuf-stuff.h"
-#include "gtkcompat.h"
+#include <lxpanelx/pixbuf-stuff.h>
+#include <lxpanelx/gtkcompat.h>
 #include <gdk/gdkx.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 

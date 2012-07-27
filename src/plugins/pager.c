@@ -30,14 +30,14 @@
 
 #define PLUGIN_PRIV_TYPE PagerPlugin
 
-#include "global.h"
-#include "panel.h"
-#include "misc.h"
-#include "plugin.h"
-#include "Xsupport.h"
-#include "icon-grid.h"
+#include <lxpanelx/global.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/Xsupport.h>
+#include <lxpanelx/icon-grid.h>
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 struct _task;
 struct _desk;

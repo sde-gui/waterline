@@ -25,8 +25,8 @@
 #  include <config.h>
 #endif
 
-#include "paths.h"
-#include "misc.h"
+#include <lxpanelx/paths.h>
+#include <lxpanelx/misc.h>
 
 #include <gtk/gtk.h>
 

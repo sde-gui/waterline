@@ -23,11 +23,11 @@
 
 #define PLUGIN_PRIV_TYPE SpacePlugin
 
-#include "panel.h"
-#include "misc.h"
-#include "plugin.h"
+#include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 /* Private context for space plugin. */
 typedef struct {

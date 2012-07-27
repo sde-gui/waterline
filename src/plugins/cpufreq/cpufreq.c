@@ -29,12 +29,12 @@
 
 #define PLUGIN_PRIV_TYPE cpufreq
 
-#include "panel.h"
-#include "paths.h"
-#include "misc.h"
-#include "plugin.h"
-#include "gtkcompat.h"
-#include "dbg.h"
+#include <lxpanelx/panel.h>
+#include <lxpanelx/paths.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/gtkcompat.h>
+#include <lxpanelx/dbg.h>
 
 #define SYSFS_CPU_DIRECTORY "/sys/devices/system/cpu"
 #define SCALING_GOV         "scaling_governor"

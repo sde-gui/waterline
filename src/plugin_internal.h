@@ -20,7 +20,7 @@
 #ifndef _LXPANELX_PLUGIN_INTERNAL_H
 #define _LXPANELX_PLUGIN_INTERNAL_H
 
-#include "plugin.h"
+#include <lxpanelx/plugin.h>
 
 #pragma GCC visibility push(hidden)
 

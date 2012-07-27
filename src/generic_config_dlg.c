@@ -21,11 +21,11 @@
 #include "config.h"
 #endif
 
-#include "global.h"
+#include <lxpanelx/global.h>
 #include "plugin_private.h"
-#include "panel.h"
+#include <lxpanelx/panel.h>
 #include "panel_private.h"
-#include "misc.h"
+#include <lxpanelx/misc.h>
 #include "bg.h"
 #include <stdlib.h>
 #include <sys/types.h>
@@ -34,7 +34,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
 
 void panel_config_save(Panel* panel);
 

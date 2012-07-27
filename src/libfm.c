@@ -20,7 +20,8 @@
 #include <config.h>
 #endif
 
-#include "dbg.h"
+#include <lxpanelx/dbg.h>
+#include <lxpanelx/libfm.h>
 
 #include <gtk/gtk.h>
 

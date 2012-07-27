@@ -28,13 +28,13 @@
 
 #define PLUGIN_PRIV_TYPE VolumeALSAPlugin
 
-#include "defaultapplications.h"
-#include "panel.h"
-#include "gtkcompat.h"
-#include "misc.h"
-#include "paths.h"
-#include "plugin.h"
-#include "dbg.h"
+#include <lxpanelx/defaultapplications.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/gtkcompat.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/paths.h>
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/dbg.h>
 
 typedef struct {
 

@@ -17,9 +17,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "configparser.h"
-#include "panel.h"
-#include "dbg.h"
+#include <lxpanelx/configparser.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/dbg.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>

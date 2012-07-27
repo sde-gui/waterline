@@ -78,7 +78,7 @@ else
 fi
 AM_CONDITIONAL(ENABLE_MENU_CACHE, test x"$enable_menu_cache" = x"yes")
 
-PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"
+PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"' -I$(top_srcdir)/include/lxpanelx/'
 PACKAGE_LIBS="$PACKAGE_LIBS $MENU_CACHE_LIBS -lutil"
 
 # libfm

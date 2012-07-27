@@ -68,6 +68,8 @@ extern GList * panel_get_plugins(Panel * p);
 
 #ifdef _LXPANEL_INTERNALS
 
+#pragma GCC visibility push(hidden)
+
 extern void panel_calculate_position(Panel *p);
 extern void update_panel_geometry(Panel* p);
 extern void panel_adjust_geometry_terminology(Panel *p);
@@ -85,6 +87,8 @@ extern int panel_get_icon_size(Panel * p);
 
 extern GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_menu);
 extern void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event);
+
+#pragma GCC visibility pop
 
 #endif
 

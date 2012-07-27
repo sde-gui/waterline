@@ -133,8 +133,8 @@ create_volume_window (void)
 			  G_CALLBACK (on_spinbutton1_button_release_event),
 			  NULL);
 	g_object_set_data_full(G_OBJECT (volume_window), "spinbutton1", 
-			       gtk_widget_ref (spinbutton1),
-			       (GDestroyNotify) gtk_widget_unref);
+			       g_object_ref (spinbutton1),
+			       (GDestroyNotify) g_object_unref);
 
 	hbox3 = gtk_hbox_new (FALSE, 0);
 	gtk_widget_show (hbox3);
@@ -149,8 +149,8 @@ create_volume_window (void)
 			  G_CALLBACK (on_vscale1_button_release_event),
 			  vol_adjustment);
 	g_object_set_data_full(G_OBJECT (volume_window), "vscale1",
-			       gtk_widget_ref (vscale1),
-			       (GDestroyNotify) gtk_widget_unref);
+			       g_object_ref (vscale1),
+			       (GDestroyNotify) g_object_unref);
 
 	hbox4 = gtk_hbox_new (FALSE, 0);
 	gtk_widget_show (hbox4);
@@ -162,20 +162,20 @@ create_volume_window (void)
 
 	g_object_set_data (G_OBJECT (volume_window), "volume_window", volume_window);
 	g_object_set_data_full (G_OBJECT (volume_window), "frame",
-			        gtk_widget_ref (frame), 
-				(GDestroyNotify) gtk_widget_unref);
+			        g_object_ref (frame), 
+				(GDestroyNotify) g_object_unref);
 	g_object_set_data_full (G_OBJECT (volume_window), "vbox1",
-			        gtk_widget_ref (vbox1), 
-				(GDestroyNotify) gtk_widget_unref);
+			        g_object_ref (vbox1), 
+				(GDestroyNotify) g_object_unref);
 	g_object_set_data_full (G_OBJECT (volume_window), "hbox1",
-			        gtk_widget_ref (hbox1), 
-				(GDestroyNotify) gtk_widget_unref);
+			        g_object_ref (hbox1), 
+				(GDestroyNotify) g_object_unref);
 	g_object_set_data_full (G_OBJECT (volume_window), "hbox3",
-			        gtk_widget_ref (hbox3), 
-				(GDestroyNotify) gtk_widget_unref);
+			        g_object_ref (hbox3), 
+				(GDestroyNotify) g_object_unref);
 	g_object_set_data_full (G_OBJECT (volume_window), "hbox4",
-			        gtk_widget_ref (hbox4), 
-				(GDestroyNotify) gtk_widget_unref);
+			        g_object_ref (hbox4), 
+				(GDestroyNotify) g_object_unref);
 
 	gtk_window_add_accel_group (GTK_WINDOW (volume_window), accel_group);
 

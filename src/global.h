@@ -45,12 +45,4 @@ extern const char* lxpanel_get_terminal();
 
 int lxpanel_is_in_kiosk_mode(void);
 
-#ifdef _LXPANEL_INTERNALS
-
-extern gboolean is_in_lxde;
-
-extern gchar *cprofile;
-
-#endif
-
 #endif

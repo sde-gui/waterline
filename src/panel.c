@@ -86,7 +86,7 @@ extern void update_panel_geometry(Panel* p);
 /* Globals */
 
 static gchar version[] = VERSION;
-gchar *cprofile = "default";
+gchar *cprofile = "default"; /* used in path.c */
 gchar *force_colormap = "rgba";
 
 static gboolean quit_in_menu = FALSE;
@@ -97,8 +97,6 @@ FbEv *fbev = NULL;
 GSList* all_panels = NULL;  /* a single-linked list storing all panels */
 
 gboolean is_restarting = FALSE;
-
-gboolean is_in_lxde = FALSE;
 
 /******************************************************************************/
 
@@ -2464,7 +2462,6 @@ static void usage(void)
 int main(int argc, char *argv[], char *env[])
 {
     int i;
-    const char* desktop_name;
 
     setlocale(LC_CTYPE, "");
 
@@ -2486,10 +2483,6 @@ int main(int argc, char *argv[], char *env[])
 
     resolve_atoms();
     update_net_supported();
-
-    desktop_name = g_getenv("XDG_CURRENT_DESKTOP");
-    /* FIXME: Do we really need this? */
-    is_in_lxde = desktop_name && (0 == strcmp(desktop_name, "LXDE"));
 
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {

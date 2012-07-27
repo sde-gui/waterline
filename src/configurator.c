@@ -58,7 +58,6 @@ static int kiosk_mode = 0;
 
 static int arg_kiosk_mode = 0;
 
-extern gchar *cprofile;
 extern int config;
 
 void panel_global_config_save( Panel* p, FILE *fp);

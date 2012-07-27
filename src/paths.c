@@ -24,9 +24,12 @@
 
 #define _LXPANEL_INTERNALS
 
-#include "global.h"
 #include "paths.h"
 #include "dbg.h"
+
+/********************************************************************/
+
+extern gchar *cprofile;
 
 /********************************************************************/
 

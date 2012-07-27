@@ -1401,9 +1401,9 @@ static gboolean panel_button_press_event_with_panel(GtkWidget *widget, GdkEventB
 {
     if (event->button == 3)	 /* right button */
     {
-        lxpanel_show_panel_menu(panel, NULL, event);
+        panel_show_panel_menu(panel, NULL, event);
         return TRUE;
-    }    
+    }
     return FALSE;
 }
 
@@ -1580,11 +1580,11 @@ void panel_apply_icon( GtkWindow *w )
     g_free(icon_path);
 }
 
-GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_menu )
+GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_menu)
 {
     GtkWidget  *menu_item, *img;
     GtkMenu *ret,*menu;
-    
+
     char* tmp;
     ret = menu = GTK_MENU(gtk_menu_new());
 
@@ -1708,10 +1708,10 @@ GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_
     return ret;
 }
 
-void lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * event )
+void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event)
 {
-    GtkMenu* popup = lxpanel_get_panel_menu( panel, plugin, FALSE );
-    gtk_menu_popup( popup, NULL, NULL, NULL, NULL, event->button, event->time );
+    GtkMenu* popup = panel_get_panel_menu(panel, plugin, FALSE);
+    gtk_menu_popup(popup, NULL, NULL, NULL, NULL, event->button, event->time);
 }
 
 /******************************************************************************/

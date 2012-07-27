@@ -2944,7 +2944,7 @@ static gboolean taskbar_button_press_event(GtkWidget * widget, GdkEventButton * 
 
     if (event->state & GDK_CONTROL_MASK && event->button == 3) {
         Plugin* p = tk->tb->plug;
-        lxpanel_show_panel_menu( plugin_panel(p), p, event );
+        plugin_show_menu( p, event );
         return TRUE;
     }
 

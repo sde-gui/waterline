@@ -86,9 +86,6 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                       const char* name, ... );
 
 
-extern GtkMenu* lxpanel_get_panel_menu( Panel* panel, Plugin* plugin, gboolean use_sub_menu );
-extern void     lxpanel_show_panel_menu( Panel* panel, Plugin* plugin, GdkEventButton * event );
-
 extern GdkPixbuf* lxpanel_load_icon( const char* name, int width, int height, gboolean use_fallback );
 
 gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal);

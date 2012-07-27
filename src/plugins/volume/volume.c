@@ -204,7 +204,7 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 	}
 
 	case 3:	{	/* right button */
-                lxpanel_show_panel_menu( plugin_panel(p), p, evt );
+                plugin_show_menu( p, evt );
 		return TRUE;
 	}
 

@@ -410,7 +410,7 @@ static gint buttonPressEvent(GtkWidget *widget, GdkEventButton *event,
 
     if( event->button == 3 )  /* right button */
     {
-        lxpanel_show_panel_menu( plugin_panel(plugin), plugin, event );
+        plugin_show_menu( plugin, event );
         return TRUE;
     }
     return FALSE;

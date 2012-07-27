@@ -92,6 +92,10 @@ extern void plugin_set_has_system_menu(Plugin * plugin, gboolean v);
 extern int plugin_get_icon_size(Plugin * plugin);
 
 
+extern GtkMenu * plugin_get_menu(Plugin * plugin, gboolean use_sub_menu);
+extern void plugin_show_menu(Plugin * plugin, GdkEventButton * event);
+
+
 extern gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plugin *plugin);
                                                         /* Handler for "button_press_event" signal with Plugin as parameter */
 

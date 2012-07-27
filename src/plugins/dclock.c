@@ -258,7 +258,7 @@ static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * e
     /* Standard right-click handling. */
     if (evt->button == 3)
     {
-        GtkMenu* context_menu = lxpanel_get_panel_menu(plugin_panel(plugin), plugin, FALSE);
+        GtkMenu* context_menu = plugin_get_menu(plugin, FALSE);
 #if GTK_CHECK_VERSION(2,16,0)
         dclock_generate_copy_to_clipboard_menu(context_menu, plugin);
         gtk_widget_show_all(GTK_WIDGET(context_menu));

@@ -503,7 +503,7 @@ static gboolean lb_release_event(GtkWidget * widget, GdkEventButton * event, lb_
     }
     else
     {
-        lxpanel_show_panel_menu( plugin_panel(lb->plug), lb->plug, event );
+        plugin_show_menu( lb->plug, event );
     }
 
     return TRUE;

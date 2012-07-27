@@ -409,9 +409,9 @@ gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plu
 {
     if (event->button == 3)	 /* right button */
     {
-        lxpanel_show_panel_menu(plugin->panel, plugin, event);
+        plugin_show_menu(plugin, event);
         return TRUE;
-    }    
+    }
     return FALSE;
 }
 
@@ -574,3 +574,12 @@ int plugin_get_icon_size(Plugin * plugin)
     return panel_get_icon_size(plugin_panel(plugin));
 }
 
+GtkMenu * plugin_get_menu(Plugin * plugin, gboolean use_sub_menu)
+{
+    return panel_get_panel_menu(plugin_panel(plugin), plugin, use_sub_menu);
+}
+
+void plugin_show_menu(Plugin * plugin, GdkEventButton * event)
+{
+    panel_show_panel_menu(plugin_panel(plugin), plugin, event);
+}

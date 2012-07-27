@@ -21,8 +21,6 @@
 #include <config.h>
 #endif
 
-#define _LXPANEL_INTERNALS
-
 #include <glib/gi18n.h>
 #include <stdlib.h>
 #include <glib/gstdio.h>
@@ -35,9 +33,11 @@
 #include <gdk/gdkx.h>
 
 #include "global.h"
+#include "plugin_internal.h"
 #include "plugin_private.h"
 #include "paths.h"
 #include "panel.h"
+#include "panel_internal.h"
 #include "panel_private.h"
 #include "misc.h"
 #include "bg.h"

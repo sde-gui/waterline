@@ -20,8 +20,6 @@
 #include <config.h>
 #endif
 
-#define _LXPANEL_INTERNALS
-
 #include "defaultapplications.h"
 #include "paths.h"
 #include "dbg.h"

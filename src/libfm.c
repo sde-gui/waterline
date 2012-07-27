@@ -20,8 +20,6 @@
 #include <config.h>
 #endif
 
-#define _LXPANEL_INTERNALS
-
 #include "dbg.h"
 
 #include <gtk/gtk.h>

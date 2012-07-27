@@ -20,8 +20,7 @@
 #include "config.h"
 #endif
 
-#define _LXPANEL_INTERNALS
-
+#include "plugin_internal.h"
 #include "plugin_private.h"
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -33,6 +32,7 @@
 #include "paths.h"
 #include "misc.h"
 #include "bg.h"
+#include "panel_internal.h"
 #include "panel_private.h"
 
 #include <glib-object.h>

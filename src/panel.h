@@ -66,30 +66,4 @@ extern gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const g
 extern GList * panel_get_plugins(Panel * p);
 
 
-#ifdef _LXPANEL_INTERNALS
-
-#pragma GCC visibility push(hidden)
-
-extern void panel_calculate_position(Panel *p);
-extern void update_panel_geometry(Panel* p);
-extern void panel_adjust_geometry_terminology(Panel *p);
-extern void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow * window);
-extern void panel_establish_autohide(Panel *p);
-extern void panel_set_dock_type(Panel *p);
-extern void panel_set_panel_configuration_changed(Panel *p);
-extern void panel_update_background(Panel* p);
-extern void panel_autohide_conditions_changed(Panel* p);
-extern void panel_require_update_background(Panel* p);
-
-extern Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name);
-
-extern int panel_get_icon_size(Panel * p);
-
-extern GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_menu);
-extern void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event);
-
-#pragma GCC visibility pop
-
-#endif
-
 #endif

@@ -22,8 +22,6 @@
 
 #include <string.h>
 
-#define _LXPANEL_INTERNALS
-
 #include "paths.h"
 #include "dbg.h"
 

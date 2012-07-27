@@ -22,7 +22,6 @@
 
 #include "plugin.h"
 
-
 /* Representative of a loaded and active plugin attached to a panel. */
 struct _Plugin {
     PluginClass * class;			/* Back pointer to PluginClass */
@@ -40,19 +39,6 @@ struct _Plugin {
     gboolean background_update_scheduled;
     int lock_visible;
 };
-
-#pragma GCC visibility push(hidden)
-
-extern Plugin * plugin_load(char * type);		/* Create an instance of a plugin, loading it if necessary */
-extern int plugin_start(Plugin * this, char ** fp);	/* Configure and start a plugin by calling its constructor */
-extern void plugin_unload(Plugin * pl);			/* Delete an instance of a plugin if initialization fails */
-extern void plugin_delete(Plugin * pl);			/* Delete an instance of a plugin */
-extern GList * plugin_get_available_classes(void);	/* Get a list of all plugin classes; free with plugin_class_list_free */
-extern void plugin_class_list_free(GList * list);	/* Free the list allocated by plugin_get_available_classes */
-extern void plugin_widget_set_background(GtkWidget * w, Panel * p);
-							/* Recursively set the background of all widgets on a panel background configuration change */
-
-#pragma GCC visibility pop
 
 /* FIXME: optional definitions */
 #define STATIC_SEPARATOR

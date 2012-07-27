@@ -22,8 +22,6 @@
 #include <config.h>
 #endif
 
-#define _LXPANEL_INTERNALS
-
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
@@ -43,6 +41,7 @@
 #include "global.h"
 #include "misc.h"
 #include "panel.h"
+#include "panel_internal.h"
 #include "Xsupport.h"
 #include "dbg.h"
 

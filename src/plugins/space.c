@@ -106,7 +106,7 @@ static void space_apply_configuration(Plugin * p)
     SpacePlugin * sp = PRIV(p);
 
     /* Apply settings. */
-    if (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ)
+    if (plugin_get_orientation(p) == ORIENT_HORIZ)
         gtk_widget_set_size_request(plugin_widget(p), sp->size, 2);
     else
         gtk_widget_set_size_request(plugin_widget(p), 2, sp->size);

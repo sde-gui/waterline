@@ -410,7 +410,7 @@ static int launchbar_constructor(Plugin * p, char ** fp)
     gtk_widget_set_name(pwid, "launchbar");
 
     /* Allocate an icon grid manager to manage the container. */
-    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (plugin_get_orientation(p) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     lb->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* Read parameters from the configuration file. */
@@ -880,7 +880,7 @@ static void launchbar_panel_configuration_changed(Plugin * p)
 {
     /* Set orientation into the icon grid. */
     LaunchbarPlugin * lb = PRIV(p);
-    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (plugin_get_orientation(p) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_geometry(lb->icon_grid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* Reset all the images to resize them. */

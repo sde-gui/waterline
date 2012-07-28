@@ -919,7 +919,7 @@ static void dirmenu_apply_configuration(Plugin * p)
         ((dm->image != NULL) ? -1 : plugin_get_icon_size(p)), plugin_get_icon_size(p), TRUE);
     fb_button_set_label(plugin_widget(p), plugin_panel(p), dm->name);
     gtk_widget_set_tooltip_text(plugin_widget(p), ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()));
-    fb_button_set_orientation(plugin_widget(p), panel_get_orientation(plugin_panel(p)));
+    fb_button_set_orientation(plugin_widget(p), plugin_get_orientation(p));
 
     g_free(icon_name);
 }

@@ -574,6 +574,11 @@ int plugin_get_icon_size(Plugin * plugin)
     return panel_get_icon_size(plugin_panel(plugin));
 }
 
+int plugin_get_orientation(Plugin * plugin)
+{
+    return panel_get_orientation(plugin_panel(plugin));
+}
+
 GtkMenu * plugin_get_menu(Plugin * plugin, gboolean use_sub_menu)
 {
     return panel_get_panel_menu(plugin_panel(plugin), plugin, use_sub_menu);

@@ -584,7 +584,7 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
         m->img = fb_button_new_from_file(fname, -1, plugin_get_icon_size(p), gcolor2rgb24(tint), TRUE);
     }
 
-    fb_button_set_orientation(m->img, panel_get_orientation(plugin_panel(p)));
+    fb_button_set_orientation(m->img, plugin_get_orientation(p));
 
     gtk_widget_show(m->img);
     gtk_box_pack_start(GTK_BOX(m->box), m->img, TRUE, TRUE, 0);
@@ -1148,7 +1148,7 @@ static void apply_config(Plugin* p)
     if( m->fname )
         fb_button_set_from_file( m->img, m->fname, -1, plugin_get_icon_size(p), TRUE );
     fb_button_set_label( m->img, plugin_panel(p), m->caption);
-    fb_button_set_orientation(m->img, panel_get_orientation(plugin_panel(p)));
+    fb_button_set_orientation(m->img, plugin_get_orientation(p));
 }
 
 static void menu_config( Plugin *p, GtkWindow* parent )

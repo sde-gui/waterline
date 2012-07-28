@@ -53,7 +53,7 @@ static int separator_constructor(Plugin * p, char ** fp)
     gtk_container_set_border_width(GTK_CONTAINER(pwid), 1);
 
     /* Allocate separator as a child of top level. */
-    GtkWidget * sep = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ?
+    GtkWidget * sep = (plugin_get_orientation(p) == ORIENT_HORIZ) ?
         gtk_vseparator_new():
         gtk_hseparator_new();
     gtk_container_add(GTK_CONTAINER(pwid), sep);
@@ -78,18 +78,18 @@ static void separator_panel_configuration_changed(Plugin * p)
     GtkWidget * sep = gtk_bin_get_child(GTK_BIN(plugin_widget(p)));
     if (GTK_IS_VSEPARATOR(sep))
     {
-        if (panel_get_orientation(plugin_panel(p)) == GTK_ORIENTATION_HORIZONTAL)
+        if (plugin_get_orientation(p) == GTK_ORIENTATION_HORIZONTAL)
             return;
     }
     else
     {
-        if (panel_get_orientation(plugin_panel(p)) == GTK_ORIENTATION_VERTICAL)
+        if (plugin_get_orientation(p) == GTK_ORIENTATION_VERTICAL)
             return;
     }
 
     /* If the orientation changed, recreate the separator. */
     gtk_widget_destroy(sep);
-    sep = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ?
+    sep = (plugin_get_orientation(p) == ORIENT_HORIZ) ?
         gtk_vseparator_new():
         gtk_hseparator_new();
     gtk_widget_show(sep);

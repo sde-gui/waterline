@@ -43,6 +43,7 @@ extern void panel_require_update_background(Panel* p);
 extern Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name);
 
 extern int panel_get_icon_size(Panel * p);
+extern int panel_get_orientation(Panel * p);
 
 extern GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_menu);
 extern void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event);

@@ -53,7 +53,6 @@ extern Window      panel_get_toplevel_xwindow(Panel * p);
 extern GdkColormap * panel_get_color_map(Panel * p);
 
 extern int panel_get_edge(Panel * p);
-extern int panel_get_orientation(Panel * p);
 extern int panel_get_oriented_height_pixels(Panel * p);
 
 extern gboolean panel_is_composited(Panel * p);

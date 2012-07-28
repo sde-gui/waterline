@@ -572,7 +572,7 @@ static void lb_apply_configuration(Plugin * p)
         fb_button_set_from_file(lb->button, lb->icon_path, plugin_get_icon_size(p), plugin_get_icon_size(p), TRUE);
     }
 
-    fb_button_set_orientation(lb->button, panel_get_orientation(plugin_panel(p)));
+    fb_button_set_orientation(lb->button, plugin_get_orientation(p));
 
     if (!strempty(lb->tooltip)) {
         gtk_widget_set_tooltip_text(lb->button, lb->tooltip);

@@ -90,6 +90,7 @@ extern void plugin_set_has_system_menu(Plugin * plugin, gboolean v);
 
 
 extern int plugin_get_icon_size(Plugin * plugin);
+extern int plugin_get_orientation(Plugin * plugin);
 
 
 extern GtkMenu * plugin_get_menu(Plugin * plugin, gboolean use_sub_menu);

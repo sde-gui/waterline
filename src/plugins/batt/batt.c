@@ -636,7 +636,7 @@ static void batt_panel_configuration_changed(Plugin *p) {
 
     lx_battery *b = PRIV(p);
 
-    b->orientation = panel_get_orientation(plugin_panel(p));
+    b->orientation = plugin_get_orientation(p);
 
     if (b->orientation == ORIENT_HORIZ)
     {

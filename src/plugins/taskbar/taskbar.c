@@ -2333,7 +2333,7 @@ static gboolean preview_panel_press_event(GtkWidget * widget, GdkEventButton * e
 
 static void preview_panel_calculate_speed(TaskbarPlugin * tb, int window_left, int window_right)
 {
-    gboolean h = (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ);
+    gboolean h = (plugin_get_orientation(tb->plug) == ORIENT_HORIZ);
 
     int right_border = h ? gdk_screen_width() : gdk_screen_height();
 
@@ -2378,7 +2378,7 @@ static gboolean preview_panel_motion_timer(TaskbarPlugin * tb)
         return FALSE;
     }
 
-    gboolean h = (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ);
+    gboolean h = (plugin_get_orientation(tb->plug) == ORIENT_HORIZ);
 
     gint x = 0;
     gint y = 0;
@@ -2412,7 +2412,7 @@ static gboolean preview_panel_motion_timer(TaskbarPlugin * tb)
 
 static gboolean preview_panel_motion_event(GtkWidget * widget, GdkEventMotion * event, TaskbarPlugin * tb)
 {
-    gboolean h = (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ);
+    gboolean h = (plugin_get_orientation(tb->plug) == ORIENT_HORIZ);
 
     int window_left;
     int window_right;
@@ -2512,7 +2512,7 @@ static void task_show_preview_panel(Task * tk)
     }
 */
     GtkWidget * box = 
-        (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ) ?
+        (plugin_get_orientation(tb->plug) == ORIENT_HORIZ) ?
         gtk_hbox_new(TRUE, 5):
         gtk_vbox_new(TRUE, 5);
     gtk_container_set_border_width(GTK_CONTAINER(box), 5);
@@ -3122,7 +3122,7 @@ static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, 
 /* Update style on the taskbar when created or after a configuration change. */
 static void taskbar_update_style(TaskbarPlugin * tb)
 {
-    GtkOrientation bo = (panel_get_orientation(plugin_panel(tb->plug)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (plugin_get_orientation(tb->plug) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
         taskbar_get_task_button_max_width(tb), tb->icon_size + BUTTON_HEIGHT_EXTRA,
@@ -4573,7 +4573,7 @@ static void taskbar_build_gui(Plugin * p)
     gtk_widget_set_name(pwid, "taskbar");
 
     /* Make container for task buttons as a child of top level widget. */
-    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (plugin_get_orientation(p) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     tb->icon_grid = icon_grid_new(
          plugin_panel(p), plugin_widget(p), bo,
          tb->task_width_max, tb->icon_size, tb->spacing, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
@@ -5199,7 +5199,7 @@ static void taskbar_panel_configuration_changed(Plugin * p)
     TaskbarPlugin * tb = PRIV(p);
     taskbar_update_style(tb);
     taskbar_make_menu(tb);
-    GtkOrientation bo = (panel_get_orientation(plugin_panel(p)) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    GtkOrientation bo = (plugin_get_orientation(p) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_set_geometry(tb->icon_grid, bo,
         taskbar_get_task_button_max_width(tb), plugin_get_icon_size(p) + BUTTON_HEIGHT_EXTRA,

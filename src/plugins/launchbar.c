@@ -297,7 +297,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
     }
 
     /* Create a button with the specified icon. */
-    GtkWidget * button = fb_button_new_from_file(btn->image, plugin_get_icon_size(p), plugin_get_icon_size(p), PANEL_ICON_HIGHLIGHT, TRUE);
+    GtkWidget * button = fb_button_new_from_file(btn->image, plugin_get_icon_size(p), plugin_get_icon_size(p), TRUE, TRUE);
     btn->widget = button;
     gtk_widget_set_can_focus(button, FALSE);
     if (btn->tooltip != NULL)

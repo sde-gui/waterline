@@ -39,8 +39,6 @@ enum {
 };
 enum { POS_NONE, POS_START, POS_END };
 
-#define PANEL_ICON_HIGHLIGHT          0x202020	/* Constant to pass to icon loader */
-
 extern GtkStyle * panel_get_default_style(Panel * p);
 
 extern GtkWidget * panel_get_toplevel_widget(Panel * p);

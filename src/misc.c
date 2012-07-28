@@ -699,14 +699,16 @@ static gboolean fb_button_leave(GtkImage * widget, GdkEventCrossing * event, gpo
 
 
 GtkWidget * fb_button_new_from_file(
-    gchar * image_file, int width, int height, gulong highlight_color, gboolean keep_ratio)
+    gchar * image_file, int width, int height, gboolean highlighted, gboolean keep_ratio)
 {
-    return fb_button_new_from_file_with_label(image_file, width, height, highlight_color, keep_ratio, NULL, NULL);
+    return fb_button_new_from_file_with_label(image_file, width, height, highlighted, keep_ratio, NULL, NULL);
 }
 
 GtkWidget * fb_button_new_from_file_with_label(
-    gchar * image_file, int width, int height, gulong highlight_color, gboolean keep_ratio, Panel * panel, gchar * label)
+    gchar * image_file, int width, int height, gboolean highlighted, gboolean keep_ratio, Panel * panel, gchar * label)
 {
+    gulong highlight_color = highlighted ? PANEL_ICON_HIGHLIGHT : 0;
+
     GtkWidget * event_box = gtk_event_box_new();
     gtk_container_set_border_width(GTK_CONTAINER(event_box), 0);
     gtk_widget_set_has_window(event_box, FALSE);

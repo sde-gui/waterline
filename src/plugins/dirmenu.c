@@ -856,7 +856,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
      * unless this strategy of initializing it with a non-empty value first is followed. */
     GtkWidget * pwid = fb_button_new_from_file_with_label(
         ((dm->image != NULL) ? dm->image : "file-manager"),
-        plugin_get_icon_size(p), plugin_get_icon_size(p), PANEL_ICON_HIGHLIGHT, TRUE, plugin_panel(p), "Temp");
+        plugin_get_icon_size(p), plugin_get_icon_size(p), TRUE, TRUE, plugin_panel(p), "Temp");
     plugin_set_widget(p, pwid);
     gtk_container_set_border_width(GTK_CONTAINER(pwid), 0);
     g_signal_connect(pwid, "button_press_event", G_CALLBACK(dirmenu_button_press_event), p);

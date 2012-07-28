@@ -29,6 +29,7 @@
 
 #define PANEL_HEIGHT_MAX              200	/* Maximum height of panel */
 #define PANEL_HEIGHT_MIN              16	/* Minimum height of panel */
+#define PANEL_ICON_HIGHLIGHT          0x202020	/* Constant to pass to icon loader */
 
 #pragma GCC visibility push(hidden)
 

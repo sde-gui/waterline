@@ -307,7 +307,7 @@ static void cpu_apply_configuration(Plugin * p)
     if (!c->da)
     {
         c->da = gtk_drawing_area_new();
-        gtk_widget_set_size_request(c->da, 40, PANEL_HEIGHT_DEFAULT);
+        gtk_widget_set_size_request(c->da, 40, plugin_get_icon_size(p));
         gtk_widget_add_events(c->da, GDK_BUTTON_PRESS_MASK);
         gtk_container_add(GTK_CONTAINER(plugin_widget(p)), c->da);
 

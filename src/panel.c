@@ -51,6 +51,7 @@
 /******************************************************************************/
 
 #define PANEL_ICON_SIZE               24	/* Default size of panel icons */
+#define PANEL_HEIGHT_DEFAULT          26	/* Default height of horizontal panel */
 
 /******************************************************************************/
 

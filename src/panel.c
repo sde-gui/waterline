@@ -182,7 +182,8 @@ int panel_get_oriented_height_pixels(Panel * p)
 
 int panel_get_icon_size(Panel * p)
 {
-    return p->icon_size;
+    int max_icon_size = p->oriented_height;
+    return (p->preferred_icon_size < max_icon_size) ? p->preferred_icon_size : max_icon_size;
 }
 
 /******************************************************************************/
@@ -1734,7 +1735,7 @@ GList * panel_get_plugins(Panel * p)
 /* Set an image from a file with scaling to the panel icon size. */
 void panel_image_set_from_file(Panel * p, GtkWidget * image, char * file)
 {
-    GdkPixbuf * pixbuf = gdk_pixbuf_new_from_file_at_scale(file, p->icon_size, p->icon_size, TRUE, NULL);
+    GdkPixbuf * pixbuf = gdk_pixbuf_new_from_file_at_scale(file, panel_get_icon_size(p), panel_get_icon_size(p), TRUE, NULL);
     if (pixbuf != NULL)
     {
         gtk_image_set_from_pixbuf(GTK_IMAGE(image), pixbuf);
@@ -1747,7 +1748,7 @@ gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const gchar * 
 {
     if (gtk_icon_theme_has_icon(gtk_icon_theme_get_default(), icon))
     {
-        GdkPixbuf * pixbuf = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), icon, p->icon_size, 0, NULL);
+        GdkPixbuf * pixbuf = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), icon, panel_get_icon_size(p), 0, NULL);
         gtk_image_set_from_pixbuf(GTK_IMAGE(image), pixbuf);
         g_object_unref(pixbuf);
         return TRUE;
@@ -1915,9 +1916,9 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean b
             font_desc = p->fontsize;
             if (p->fontsize == 0)
             {
-                if (p->icon_size < 20)
+                if (panel_get_icon_size(p) < 20)
                    font_desc = 9;
-                else if (p->icon_size >= 20 && p->icon_size < 36)
+                else if (panel_get_icon_size(p) >= 20 && panel_get_icon_size(p) < 36)
                    font_desc = 10;
                 else
                    font_desc = 12;
@@ -1985,9 +1986,6 @@ void panel_set_panel_configuration_changed(Panel *p)
         }
 
     }
-
-    int max_icon_size = p->oriented_height;
-    p->icon_size = (p->preferred_icon_size < max_icon_size) ? p->preferred_icon_size : max_icon_size;
 
     if (p->orientation == ORIENT_HORIZ) {
         p->my_box_new = gtk_hbox_new;

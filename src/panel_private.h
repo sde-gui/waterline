@@ -68,7 +68,6 @@ struct _Panel {
     guint autohide_visible : 1;         /* whether panel is in full-size state. Always true if autohide is false */
     int height_when_hidden;
     guint hide_timeout;
-    int icon_size;			/* Icon size */
 
     int desknum;
     int curdesk;

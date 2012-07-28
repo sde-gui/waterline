@@ -472,7 +472,7 @@ static void trayclient_request_dock(TrayPlugin * tr, XClientMessageEvent * xeven
     gboolean new_colormap;
     int red_prec, green_prec, blue_prec, depth;
     int result;
-    gboolean composited;
+    gboolean composited =  FALSE;
 
     GdkScreen * screen = gtk_widget_get_screen(plugin_widget(tr->plugin));
 

@@ -280,6 +280,11 @@ void gtk_widget_set_can_default(GtkWidget *widget, gboolean can_default)
     }
 }
 
+static inline
+GtkStateType gtk_widget_get_state(GtkWidget *widget)
+{
+    return GTK_WIDGET_STATE(widget);
+}
 
 #endif // !GTK_CHECK_VERSION(2,18,0)
 

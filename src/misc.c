@@ -1299,7 +1299,7 @@ void restore_grabs(GtkWidget *w, gpointer data)
 
         while (tmp)
         {
-            if (!GTK_WIDGET_MAPPED (tmp))
+            if (!gtk_widget_get_mapped(tmp))
             {
                 viewable = FALSE;
                 break;

@@ -352,7 +352,7 @@ static gboolean panel_set_wm_strut_real(Panel *p)
 
     /* If strut value changed, set the property value on the panel window.
      * This avoids property change traffic when the panel layout is recalculated but strut geometry hasn't changed. */
-    if ((GTK_WIDGET_MAPPED(p->topgwin))
+    if ((gtk_widget_get_mapped(p->topgwin))
     && ((p->strut_size != strut_size) || (p->strut_lower != strut_lower) || (p->strut_upper != strut_upper) || (p->strut_edge != p->edge)))
     {
         p->strut_size = strut_size;
@@ -1125,11 +1125,11 @@ static gboolean delay_update_background( Panel* p )
     p->update_background_idle_cb = 0;
 
     /* Panel could be destroyed while background update scheduled */
-    if ( p->topgwin && GTK_WIDGET_REALIZED ( p->topgwin ) ) {
+    if ( p->topgwin && gtk_widget_get_realized( p->topgwin ) ) {
 	gdk_display_sync( gtk_widget_get_display(p->topgwin) );
 	panel_update_background( p );
     }
-    
+
     return FALSE;
 }
 
@@ -1150,7 +1150,7 @@ static void panel_realize(GtkWidget *widget, Panel *p)
 static void panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
 {
     /* FIXME: This dirty hack is used to fix the background of systray... */
-    if( GTK_WIDGET_REALIZED( widget ) )
+    if( gtk_widget_get_realized( widget ) )
         panel_require_update_background(p);
 }
 

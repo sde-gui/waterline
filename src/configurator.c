@@ -1286,7 +1286,6 @@ int copyfile(char *src, char *dest)
     out = fopen(dest,"w");
     if (!out)
         goto ret;
-    
 
     result = 1;
 

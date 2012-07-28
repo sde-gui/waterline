@@ -27,6 +27,9 @@
 
 #include <lxpanelx/typedef.h>
 
+#define PANEL_HEIGHT_MAX              200	/* Maximum height of panel */
+#define PANEL_HEIGHT_MIN              16	/* Minimum height of panel */
+
 #pragma GCC visibility push(hidden)
 
 extern void panel_calculate_position(Panel *p);

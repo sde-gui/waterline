@@ -39,8 +39,6 @@ enum {
 };
 enum { POS_NONE, POS_START, POS_END };
 
-#define PANEL_HEIGHT_MAX              200	/* Maximum height of panel */
-#define PANEL_HEIGHT_MIN              16	/* Minimum height of panel */
 #define PANEL_ICON_HIGHLIGHT          0x202020	/* Constant to pass to icon loader */
 
 extern GtkStyle * panel_get_default_style(Panel * p);

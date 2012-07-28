@@ -48,6 +48,8 @@
 
 #include <lxpanelx/gtkcompat.h>
 
+#define PANEL_ICON_SIZE 24 /* icons size in configuration dialog. FIXME: read icon size from gtk */
+
 /* Drag and drop target info. */
 enum {
   TARGET_URILIST,

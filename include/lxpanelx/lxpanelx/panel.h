@@ -39,7 +39,6 @@ enum {
 };
 enum { POS_NONE, POS_START, POS_END };
 
-#define PANEL_ICON_SIZE               24	/* Default size of panel icons */
 #define PANEL_HEIGHT_DEFAULT          26	/* Default height of horizontal panel */
 #define PANEL_HEIGHT_MAX              200	/* Maximum height of panel */
 #define PANEL_HEIGHT_MIN              16	/* Minimum height of panel */

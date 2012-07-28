@@ -891,7 +891,7 @@ static void dirmenu_apply_configuration(Plugin * p)
     DirMenuPlugin * dm = PRIV(p);
 
     gchar * icon_name = NULL;
-    
+
 #if GLIB_CHECK_VERSION(2,20,0)
     if (!dm->image)
     {

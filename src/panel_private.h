@@ -41,16 +41,22 @@ struct _Panel {
     GdkColor gtintcolor;
     GdkColor gfontcolor;
 
+    int round_corners_radius;
+
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) */
     int align, edge, margin;
     int orientation;
     int oriented_width_type, oriented_width;
     int oriented_height_type, oriented_height;
+
+    int preferred_icon_size;
+
     gulong strut_size;			/* Values for WM_STRUT_PARTIAL */
     gulong strut_lower;
     gulong strut_upper;
     int strut_edge;
+    int set_wm_strut_idle;
 
     guint config_changed : 1;
     guint self_destroy : 1;
@@ -66,6 +72,7 @@ struct _Panel {
 
     guint autohide : 1;                 /* Autohide mode */
     guint autohide_visible : 1;         /* whether panel is in full-size state. Always true if autohide is false */
+    guint visible : 1;                  /* whether panel is actually visible */
     int height_when_hidden;
     guint hide_timeout;
 
@@ -75,6 +82,15 @@ struct _Panel {
     int wa_len;
 
     char* background_file;
+
+    guint expose_event_connected : 1;
+    guint alpha_channel_support : 1;
+    guint rgba_transparency : 1;
+    guint stretch_background : 1;
+
+    GdkPixmap * background_pixmap;
+
+    int update_background_idle_cb;
 
     GList * plugins;			/* List of all plugins */
 
@@ -87,25 +103,6 @@ struct _Panel {
     GtkWidget* alignment_right_label;	/* Label of alignment: right control */
     GtkWidget* height_control;		/* Height control in preference dialog */
     GtkWidget* width_control;		/* Width control in preference dialog */
-
-    /* ^^^ lxpanel compat */
-
-    guint expose_event_connected : 1;
-    guint alpha_channel_support : 1;
-    guint rgba_transparency : 1;
-    guint stretch_background : 1;
-
-    guint visible : 1;                  /* whether panel is actually visible */
-
-    GdkPixmap * background_pixmap;
-
-    int round_corners_radius;
-
-    int preferred_icon_size;
-
-    int update_background_idle_cb;
-
-    int set_wm_strut_idle;
 };
 
 #endif

@@ -44,6 +44,8 @@
 
 #include <lxpanelx/dbg.h>
 
+extern void gtk_run(void); /* FIXME! */
+
 //#define DEFAULT_MENU_ICON PACKAGE_DATA_DIR "/lxpanelx/images/my-computer.png"
 #define DEFAULT_MENU_ICON "start-here"
 
@@ -85,6 +87,8 @@ typedef struct {
     MenuCache* menu_cache;
     guint visibility_flags;
     gpointer reload_notify;
+
+    gboolean has_run_command;
 } menup;
 
 static guint idle_loader = 0;
@@ -544,14 +548,24 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, Plugin* plugin)
 {
     ENTER;
 
+    menup *m = PRIV(plugin);
+
     /* Standard right-click handling. */
     if (plugin_button_press_event(widget, event, plugin))
         return TRUE;
 
     if ((event->type == GDK_BUTTON_PRESS)
           && (event->x >=0 && event->x < widget->allocation.width)
-          && (event->y >=0 && event->y < widget->allocation.height)) {
-        show_menu( widget, plugin, event->button, event->time );
+          && (event->y >=0 && event->y < widget->allocation.height))
+    {
+        if (m->has_run_command && event->button == 2)
+        {
+            gtk_run();
+        }
+        else
+        {
+            show_menu( widget, plugin, event->button, event->time );
+        }
     }
     RET(TRUE);
 }
@@ -600,13 +614,15 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
 static GtkWidget *
 read_item(Plugin *p, char** fp)
 {
+    ENTER;
+
+    menup* m = PRIV(p);
+
     line s;
     gchar *name, *fname, *action;
     GtkWidget *item;
-    menup *m = PRIV(p);
     Command *cmd_entry = NULL;
 
-    ENTER;
     name = fname = action = NULL;
 
     if( fp )
@@ -620,6 +636,12 @@ read_item(Plugin *p, char** fp)
                 else if (!g_ascii_strcasecmp(s.t[0], "action"))
                     action = g_strdup(s.t[1]);
                 else if (!g_ascii_strcasecmp(s.t[0], "command")) {
+
+                    if (!g_ascii_strcasecmp(s.t[1], "run"))
+                    {
+                        m->has_run_command = TRUE;
+                    }
+
                     Command *tmp;
 
                     for (tmp = commands; tmp->name; tmp++) {

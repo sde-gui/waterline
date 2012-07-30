@@ -1177,12 +1177,15 @@ static void menu_config( Plugin *p, GtkWindow* parent )
 {
     GtkWidget* dlg;
     menup* menu = PRIV(p);
-    dlg = create_generic_config_dlg( _(plugin_class(p)->name),
-                                     GTK_WIDGET(parent),
-                                    (GSourceFunc) apply_config, (gpointer) p,
-                                     _("Icon"), &menu->fname, (GType)CONF_TYPE_FILE_ENTRY,
-                                     _("Caption"), &menu->caption, (GType)CONF_TYPE_STR,
-                                     NULL );
+    dlg = create_generic_config_dlg(
+        _(plugin_class(p)->name),
+        GTK_WIDGET(parent),
+        (GSourceFunc) apply_config, (gpointer) p,
+        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+        _("Icon"), &menu->fname, (GType)CONF_TYPE_FILE_ENTRY,
+        _("Caption"), &menu->caption, (GType)CONF_TYPE_STR,
+        NULL);
+
     if (dlg)
         gtk_window_present( GTK_WINDOW(dlg) );
 }

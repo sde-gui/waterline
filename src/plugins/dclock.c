@@ -204,18 +204,19 @@ static void dclock_popup_map(GtkWidget * widget, DClockPlugin * dc)
 static GtkWidget * dclock_create_calendar(DClockPlugin * dc)
 {
     /* Create a new window. */
-    GtkWidget * win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(win), 180, 180);
-    gtk_window_set_decorated(GTK_WINDOW(win), FALSE);
-    gtk_window_set_resizable(GTK_WINDOW(win), FALSE);
-    gtk_container_set_border_width(GTK_CONTAINER(win), 5);
-    gtk_window_set_skip_taskbar_hint(GTK_WINDOW(win), TRUE);
-    gtk_window_set_skip_pager_hint(GTK_WINDOW(win), TRUE);
-    gtk_window_stick(GTK_WINDOW(win));
+    GtkWindow * window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    gtk_window_set_skip_taskbar_hint(window, TRUE);
+    gtk_window_set_skip_pager_hint(window, TRUE);
+    //gtk_window_set_type_hint (window, GDK_WINDOW_TYPE_HINT_DOCK);
+    gtk_window_set_default_size(window, 180, 180);
+    gtk_window_set_decorated(window, FALSE);
+    gtk_window_set_resizable(window, FALSE);
+    gtk_window_stick(window);
+    gtk_container_set_border_width(GTK_CONTAINER(window), 5);
 
     /* Create a vertical box as a child of the window. */
     GtkWidget * box = gtk_vbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(box));
+    gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(box));
 
     /* Create a standard calendar widget as a child of the vertical box. */
     GtkWidget * calendar = gtk_calendar_new();
@@ -225,10 +226,10 @@ static GtkWidget * dclock_create_calendar(DClockPlugin * dc)
     gtk_box_pack_start(GTK_BOX(box), calendar, TRUE, TRUE, 0);
 
     /* Connect signals. */
-    g_signal_connect(G_OBJECT(win), "map", G_CALLBACK(dclock_popup_map), dc);
+    g_signal_connect(G_OBJECT(window), "map", G_CALLBACK(dclock_popup_map), dc);
 
     /* Return the widget. */
-    return win;
+    return GTK_WIDGET(window);
 }
 
 static void dclock_show_calendar(DClockPlugin * dc)

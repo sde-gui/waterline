@@ -287,14 +287,14 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                      {
                          GtkEntryCompletion *completion;
                          GtkTreeModel *completion_model;
-  
+
                          /* Create the completion object */
                          completion = gtk_entry_completion_new ();
 
                          /* Assign the completion to the entry */
                          gtk_entry_set_completion (GTK_ENTRY (prev_entry), completion);
                          g_object_unref (completion);
-    
+
                          /* Create a tree model and use it as the completion model */
                          GtkListStore *store;
                          GtkTreeIter iter;
@@ -333,7 +333,7 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                 frame = gtk_vbox_new( FALSE, 4 );
                 GtkWidget* b = gtk_hbox_new( FALSE, 4 );
                 gtk_box_pack_start( GTK_BOX(b), frame, FALSE, FALSE, 4 );
-                                    
+
                 GtkWidget* label = gtk_label_new(name);
                 gtk_notebook_append_page( GTK_NOTEBOOK(notebook), b, label );
                 table = NULL;

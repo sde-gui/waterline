@@ -610,15 +610,20 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) dclock_apply_configuration, (gpointer) p,
+
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Clock Format")  , &dc->clock_format  , (GType)CONF_TYPE_STR,
+        "tooltip-text", _("Format codes: man 3 strftime; \\n for line break"), (GType)CONF_TYPE_SET_PROPERTY,
         _("Tooltip Format"), &dc->tooltip_format, (GType)CONF_TYPE_STR,
+        "tooltip-text", _("Format codes: man 3 strftime; \\n for line break"), (GType)CONF_TYPE_SET_PROPERTY,
+        _("Action when clicked"), &dc->action, (GType)CONF_TYPE_STR,
+        "tooltip-text", _("Default action: display calendar"), (GType)CONF_TYPE_SET_PROPERTY,
         "", 0, (GType)CONF_TYPE_END_TABLE,
-        _("Format codes: man 3 strftime; \\n for line break"), NULL, (GType)CONF_TYPE_TRIM,
-        _("Action when clicked (default: display calendar)"), &dc->action, (GType)CONF_TYPE_STR,
+
         _("Bold font"), &dc->bold, (GType)CONF_TYPE_BOOL,
         _("Tooltip only"), &dc->icon_only, (GType)CONF_TYPE_BOOL,
         _("Center text"), &dc->center_text, CONF_TYPE_BOOL,
+
         _("Timezone")  , &dc->timezone , (GType)CONF_TYPE_STR,
         "completion-list", (gpointer)dclock_get_timezones(dc), (GType)CONF_TYPE_SET_PROPERTY,
         NULL);

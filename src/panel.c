@@ -1592,6 +1592,8 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
     char* tmp;
     ret = menu = GTK_MENU(gtk_menu_new());
 
+    GtkMenu * panel_submenu;
+
     gboolean display_icons = FALSE;
 
     if (!lxpanel_is_in_kiosk_mode())
@@ -1655,16 +1657,25 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
             gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
             g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_remove_item), plugin );
         }
-
+/*
         menu_item = gtk_separator_menu_item_new();
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+*/
+
+        panel_submenu = GTK_MENU(gtk_menu_new());
+
+        menu_item = gtk_menu_item_new_with_mnemonic(_("Pa_nel"));
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(panel_submenu) );
+
 
         if (display_icons)
             img = gtk_image_new_from_stock( GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU );
         menu_item = gtk_image_menu_item_new_with_mnemonic(_("Panel _Settings..."));
         if (display_icons)
             gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        gtk_menu_shell_append(GTK_MENU_SHELL(panel_submenu), menu_item);
         g_signal_connect(G_OBJECT(menu_item), "activate", G_CALLBACK(panel_popupmenu_configure), panel );
 
         if (display_icons)
@@ -1672,7 +1683,7 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
         menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Create New Panel"));
         if (display_icons)
             gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        gtk_menu_shell_append(GTK_MENU_SHELL(panel_submenu), menu_item);
         g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_create_panel), panel );
         /* FIXME: Potentially we can support multiple panels at the same edge,
          * but currently this cannot be done due to some positioning problems. */
@@ -1685,13 +1696,13 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
         menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Delete This Panel"));
         if (display_icons)
             gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        gtk_menu_shell_append(GTK_MENU_SHELL(panel_submenu), menu_item);
         g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_delete_panel), panel );
         if( ! all_panels->next )    /* if this is the only panel */
             gtk_widget_set_sensitive( menu_item, FALSE );
 
         menu_item = gtk_separator_menu_item_new();
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+        gtk_menu_shell_append(GTK_MENU_SHELL(panel_submenu), menu_item);
 
     }
 
@@ -1700,7 +1711,7 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
     menu_item = gtk_image_menu_item_new_with_mnemonic(_("A_bout"));
     if (display_icons)
         gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(panel_submenu), menu_item);
     g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_about), panel );
 
     if (quit_in_menu)
@@ -1713,10 +1724,10 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
 	menu_item = gtk_image_menu_item_new_with_label(_("Quit"));
 	if (display_icons)
 	    gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+	gtk_menu_shell_append(GTK_MENU_SHELL(panel_submenu), menu_item);
 	g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_quit), panel );
     }
-
+/*
     if( use_sub_menu )
     {
         ret = GTK_MENU(gtk_menu_new());
@@ -1724,7 +1735,7 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
         gtk_menu_shell_append(GTK_MENU_SHELL(ret), menu_item);
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(menu) );
     }
-
+*/
     gtk_widget_show_all(GTK_WIDGET(ret));
 
     g_signal_connect( ret, "selection-done", G_CALLBACK(gtk_widget_destroy), NULL );

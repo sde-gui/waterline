@@ -28,17 +28,19 @@ TODO : vertical support (r354)
 
 */
 
-#include "plugin.h"
-
-#include "misc.h"
-#include "panel.h"
-#include "dbg.h"
-
 #include <stdlib.h>
 #include <glib/gi18n.h>
 
 #include <gtk/gtk.h>
 #include <libindicator/indicator-object.h>
+
+#define PLUGIN_PRIV_TYPE IndicatorPlugin
+
+#include <lxpanelx/plugin.h>
+#include <lxpanelx/misc.h>
+#include <lxpanelx/panel.h>
+#include <lxpanelx/dbg.h>
+
 
 static gchar * indicator_order[][2] = {
   {"libappmenu.so", NULL},
@@ -281,6 +283,8 @@ entry_secondary_activated (GtkWidget * widget, GdkEvent * event, gpointer user_d
               entry, event->button.time);
         }
       }
+      break;
+    default:
       break;
   }
 
@@ -638,14 +642,14 @@ menubar_on_expose (GtkWidget * widget,
 	return FALSE;
 }
 
-static gint indicator_load_modules(Plugin * p)
+static void indicator_load_modules(Plugin * p)
 {
 
     gint indicators_loaded = 0;
-    IndicatorPlugin * indicator = (IndicatorPlugin *) p->priv;
-    
-    gtk_widget_hide_all(p->pwid);
-    
+    IndicatorPlugin * indicator = PRIV(p);
+
+    gtk_widget_hide_all(plugin_widget(p));
+
     GList *l = NULL;
     for (l = gtk_container_get_children(GTK_CONTAINER(indicator->menubar)); l; l = l->next)
     {
@@ -705,25 +709,25 @@ static gint indicator_load_modules(Plugin * p)
         }
         g_dir_close (dir);
     }
-    
+
     if (indicators_loaded == 0)
     {
         /* A label to allow for click through */
         GtkWidget * item = gtk_label_new(_("No Indicators"));
-        gtk_container_add(GTK_CONTAINER(p->pwid), item);
+        gtk_container_add(GTK_CONTAINER(plugin_widget(p)), item);
         gtk_widget_show(item);
     }
     else
     {
-        gtk_container_add(GTK_CONTAINER(p->pwid), indicator->menubar);
+        gtk_container_add(GTK_CONTAINER(plugin_widget(p)), indicator->menubar);
 
         /* Set background to default. */
-        gtk_widget_set_style(indicator->menubar, panel_get_default_style(p->panel));
+        gtk_widget_set_style(indicator->menubar, panel_get_default_style(plugin_panel(p)));
         gtk_widget_show(indicator->menubar);
     }
 
     /* Update the display, show the widget, and return. */
-    gtk_widget_show_all(p->pwid);
+    gtk_widget_show_all(plugin_widget(p));
 
 }
 
@@ -733,8 +737,8 @@ static int indicator_constructor(Plugin * p, char ** fp)
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
     IndicatorPlugin * indicator = g_new0(IndicatorPlugin, 1);
     indicator->plugin = p;
-    p->priv = indicator;
-    
+    plugin_set_priv(p, indicator);
+
     /* Default support for indicators */
     indicator->applications = TRUE;
     indicator->datetime     = FALSE;
@@ -785,7 +789,8 @@ static int indicator_constructor(Plugin * p, char ** fp)
     }
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    p->pwid = gtk_event_box_new();
+    GtkWidget * pwid = gtk_event_box_new();
+    plugin_set_widget(p, pwid);
 
     gtk_rc_parse_string (
         "style \"indicator-applet-style\"\n"
@@ -813,15 +818,15 @@ static int indicator_constructor(Plugin * p, char ** fp)
         "widget \"*.fast-user-switch-menuitem\" style \"indicator-applet-menuitem-style\""
         "widget \"*.fast-user-switch-menubar\" style \"indicator-applet-menubar-style\"");
 
-    gtk_widget_set_name(GTK_WIDGET (p->pwid), "fast-user-switch-applet");
-    
+    gtk_widget_set_name(pwid, "fast-user-switch-applet");
+
     /* Connect signals for container */
-    g_signal_connect(p->pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
+    g_signal_connect(pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
 
     g_log_set_default_handler(log_to_file, NULL);
 
     g_object_set(
-        G_OBJECT(panel_get_toplevel_widget(p->panel)),
+        G_OBJECT(panel_get_toplevel_widget(plugin_panel(p))),
         "ubuntu-no-proxy", TRUE,
         NULL);
 
@@ -843,7 +848,7 @@ static int indicator_constructor(Plugin * p, char ** fp)
     gtk_widget_set_name(GTK_WIDGET (indicator->menubar), "fast-user-switch-menubar");
 
     /* Connect signals. */
-    g_signal_connect(p->pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
+    g_signal_connect(pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
     g_signal_connect(indicator->menubar, "button-press-event", G_CALLBACK(menubar_press), NULL);
     g_signal_connect(indicator->menubar, "scroll-event", G_CALLBACK (menubar_scroll), NULL);
     g_signal_connect_after(indicator->menubar, "expose-event", G_CALLBACK(menubar_on_expose), indicator->menubar);
@@ -860,7 +865,7 @@ static int indicator_constructor(Plugin * p, char ** fp)
 /* Plugin destructor. */
 static void indicator_destructor(Plugin * p)
 {
-    IndicatorPlugin * indicator = (IndicatorPlugin *) p->priv;
+    IndicatorPlugin * indicator = PRIV(p);
 
     /* Deallocate all memory. */
     g_free(indicator);
@@ -897,7 +902,7 @@ static void indicator_apply_configuration(Plugin * p)
 {
 
     /* IndicatorPlugin * indicator = (IndicatorPlugin *) p->priv;*/
-    
+
     /* load 'em */
 	indicator_load_modules(p);
 
@@ -913,9 +918,9 @@ static void indicator_apply_configuration(Plugin * p)
 /* Callback when the configuration dialog is to be shown. */
 static void indicator_configure(Plugin * p, GtkWindow * parent)
 {
-    IndicatorPlugin * indicator = (IndicatorPlugin *) p->priv;
+    IndicatorPlugin * indicator = PRIV(p);
     GtkWidget * dlg = create_generic_config_dlg(
-        _(p->class->name),
+        _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) indicator_apply_configuration, (gpointer) p,
         _("Indicator Applications"), &indicator->applications, CONF_TYPE_BOOL,
@@ -933,7 +938,7 @@ static void indicator_configure(Plugin * p, GtkWindow * parent)
 /* Callback when the configuration is to be saved. */
 static void indicator_save_configuration(Plugin * p, FILE * fp)
 {
-    IndicatorPlugin * indicator= (IndicatorPlugin *) p->priv;
+    IndicatorPlugin * indicator= PRIV(p);
     lxpanel_put_int(fp, "applications", indicator->applications);
     lxpanel_put_int(fp, "datetime", indicator->datetime);
     lxpanel_put_int(fp, "messages", indicator->messages);

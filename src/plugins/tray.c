@@ -55,6 +55,8 @@
 //#define DEBUG
 #include <lxpanelx/dbg.h>
 
+#define SPACING 3
+
 struct _balloon_message;
 struct _tray_client;
 struct _tray_plugin;
@@ -90,6 +92,8 @@ typedef struct _tray_plugin {
     GtkWidget * invisible;			/* Invisible window that holds manager selection */
     Window invisible_window;			/* X window ID of invisible window */
     GdkAtom selection_atom;			/* Atom for _NET_SYSTEM_TRAY_S%d */
+
+    int spacing;
 } TrayPlugin;
 
 static TrayClient * client_lookup(TrayPlugin * tr, Window win);
@@ -725,21 +729,44 @@ static void tray_choose_visual(TrayPlugin * tr)
 /* Plugin constructor. */
 static int tray_constructor(Plugin * p, char ** fp)
 {
+    /* Allocate plugin context and set into Plugin private data pointer and static variable. */
+    TrayPlugin * tr = g_new0(TrayPlugin, 1);
+    plugin_set_priv(p, tr);
+    tr->plugin = p;
+
+    tr->spacing = SPACING;
+
     /* Read configuration from file. */
     line s;
     if (fp != NULL)
     {
         while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
         {
-            ERR("tray: illegal in this context %s\n", s.str);
-            return 0;
+            if (s.type == LINE_NONE)
+            {
+                ERR( "tray: illegal token %s\n", s.str);
+                return 0;
+            }
+            if (s.type == LINE_VAR)
+            {
+                if (g_ascii_strcasecmp(s.t[0], "Spacing") == 0)
+                    tr->spacing = atoi(s.t[1]);
+                else
+                    ERR( "tray: unknown var %s\n", s.t[0]);
+            }
+            else
+            {
+                ERR( "tray: illegal in this context %s\n", s.str);
+                return 0;
+            }
         }
     }
 
-    /* Allocate plugin context and set into Plugin private data pointer and static variable. */
-    TrayPlugin * tr = g_new0(TrayPlugin, 1);
-    plugin_set_priv(p, tr);
-    tr->plugin = p;
+    if (tr->spacing < 0)
+        tr->spacing = 0;
+    else if (tr->spacing > 100)
+        tr->spacing = 100;
+
 
     /* Get the screen and display. */
     GdkScreen * screen = gtk_widget_get_screen(GTK_WIDGET(panel_get_toplevel_widget(plugin_panel(p))));
@@ -792,7 +819,7 @@ static int tray_constructor(Plugin * p, char ** fp)
         xev.data.l[3] = 0;    /* manager specific data */
         xev.data.l[4] = 0;    /* manager specific data */
         XSendEvent(GDK_DISPLAY_XDISPLAY(display), RootWindowOfScreen(xscreen), False, StructureNotifyMask, (XEvent *) &xev);
-        
+
         /* Set the orientation property.
          * We always set "horizontal" since even vertical panels are designed to use a lot of width. */
         gulong data = SYSTEM_TRAY_ORIENTATION_HORZ;
@@ -814,7 +841,7 @@ static int tray_constructor(Plugin * p, char ** fp)
         g_printerr("tray: System tray didn't get the system tray manager selection\n");
         return 0;
     }
-        
+
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
     plugin_set_widget(p, pwid);
@@ -824,7 +851,7 @@ static int tray_constructor(Plugin * p, char ** fp)
 
     /* Create an icon grid to manage the container. */
     GtkOrientation bo = (plugin_get_orientation(p) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    tr->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
+    tr->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), tr->spacing, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 #ifndef DISABLE_COMPOSITING
     g_signal_connect (tr->icon_grid->widget, "expose-event", G_CALLBACK (tray_expose_box), tr);
 #endif
@@ -868,6 +895,12 @@ static void tray_destructor(Plugin * p)
     g_free(tr);
 }
 
+/* Callback when the configuration is to be saved. */
+static void tray_save_configuration(Plugin * p, FILE * fp)
+{
+    TrayPlugin * tr = PRIV(p);
+    lxpanel_put_int(fp, "Spacing", tr->spacing);
+}
 /* Callback when panel configuration changes. */
 static void tray_panel_configuration_changed(Plugin * p)
 {
@@ -876,9 +909,31 @@ static void tray_panel_configuration_changed(Plugin * p)
     if (tr->icon_grid != NULL)
     {
         GtkOrientation bo = (plugin_get_orientation(p) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-        icon_grid_set_geometry(tr->icon_grid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
+        icon_grid_set_geometry(tr->icon_grid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), tr->spacing, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
     }
 }
+
+/* Callback when the configuration dialog has recorded a configuration change. */
+static void tray_apply_configuration(Plugin * p)
+{
+    tray_panel_configuration_changed(p);
+}
+
+/* Callback when the configuration dialog is to be shown. */
+static void tray_configure(Plugin * p, GtkWindow * parent)
+{
+    TrayPlugin * tr = PRIV(p);
+    GtkWidget * dlg = create_generic_config_dlg(
+        _(plugin_class(p)->name),
+        GTK_WIDGET(parent),
+        (GSourceFunc) tray_apply_configuration, (gpointer) p,
+        _("Spacing"), &tr->spacing, (GType)CONF_TYPE_INT,  NULL);
+    if (dlg)
+    {
+        gtk_window_present(GTK_WINDOW(dlg));
+    }
+}
+
 
 /* Plugin descriptor. */
 PluginClass tray_plugin_class = {
@@ -895,8 +950,8 @@ PluginClass tray_plugin_class = {
 
     constructor : tray_constructor,
     destructor  : tray_destructor,
-    config : NULL,
-    save : NULL,
+    config : tray_configure,
+    save : tray_save_configuration,
     panel_configuration_changed : tray_panel_configuration_changed
 
 };

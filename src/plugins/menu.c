@@ -371,7 +371,66 @@ static GtkWidget* create_item( MenuCacheItem* item )
         gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(mi), img );
         if( menu_cache_item_get_type(item) == MENU_CACHE_TYPE_APP )
         {
-            gtk_widget_set_tooltip_text( mi, menu_cache_item_get_comment(item) );
+            const gchar * tooltip = menu_cache_item_get_comment(item);
+/*
+            FIXME: to be implemented in menu-cache
+            if (strempty(tooltip))
+                tooltip = menu_cache_item_get_generic_name(item);
+*/
+            gchar * additional_tooltip = NULL;
+
+            const gchar * commandline = menu_cache_app_get_exec(MENU_CACHE_APP(item));
+
+            gchar ** commandline_list = NULL;
+            if (commandline)
+                commandline_list = g_strsplit_set(commandline, " \t", 0);
+
+            const gchar * executable = NULL;
+
+            if (commandline_list && *commandline_list)
+            {
+                executable = *commandline_list;
+                gchar ** p;
+                for (p = commandline_list + 1; *p; p++)
+                {
+                     if (**p != '%')
+                     {
+                         executable = NULL;
+                         break;
+                     }
+                }
+            }
+
+            if (executable)
+            {
+                if (strempty(tooltip))
+                {
+                    additional_tooltip = g_strdup(executable);
+                }
+                else
+                {
+                    gchar * s0 = g_ascii_strdown(executable, -1);
+                    gchar * s1 = g_ascii_strdown(tooltip, -1);
+                    gchar * s2 = g_ascii_strdown(menu_cache_item_get_name(item), -1);
+                    if (!strstr(s1, s0) && !strstr(s2, s0))
+                    {
+                        additional_tooltip = g_strdup_printf(_("%s\n[%s]"), tooltip, executable);
+                    }
+                }
+            }
+
+            g_strfreev(commandline_list);
+
+            if (additional_tooltip)
+            {
+                gtk_widget_set_tooltip_text(mi, additional_tooltip);
+                g_free(additional_tooltip);
+            }
+            else
+            {
+               gtk_widget_set_tooltip_text(mi, tooltip);
+            }
+
             g_signal_connect( mi, "activate", G_CALLBACK(on_menu_item), item );
         }
         g_signal_connect(mi, "map", G_CALLBACK(on_menu_item_map), item);

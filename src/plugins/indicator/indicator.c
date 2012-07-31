@@ -339,15 +339,15 @@ entry_added (IndicatorObject * io, IndicatorObjectEntry * entry, GtkWidget * men
         if (gtk_widget_get_visible(GTK_WIDGET(entry->image))) {
                 something_visible = TRUE;
         }
-        
+
         if (gtk_widget_get_sensitive(GTK_WIDGET(entry->image))) {
             something_sensitive = TRUE;
         }
-        
+
         g_signal_connect(G_OBJECT(entry->image), "show", G_CALLBACK(something_shown), menuitem);
         g_signal_connect(G_OBJECT(entry->image), "hide", G_CALLBACK(something_hidden), menuitem);
         g_signal_connect(G_OBJECT(entry->image), "notify::sensitive", G_CALLBACK(sensitive_cb), menuitem);
-        
+
     }
     if (entry->label != NULL)
     {
@@ -515,7 +515,7 @@ load_module (const gchar * name, GtkWidget * menubar)
 
     /* Set the environment it's in */
     indicator_object_set_environment(io, (const GStrv)indicator_env);
-    
+
     /* Attach the 'name' to the object */
     g_object_set_data_full(G_OBJECT(io), IO_DATA_NAME, g_strdup(name), g_free);
     g_object_set_data(G_OBJECT(io), IO_DATA_ORDER_NUMBER, GINT_TO_POINTER(name2order(name, NULL)));
@@ -584,7 +584,7 @@ log_to_file (const gchar * domain G_GNUC_UNUSED,
 
         log_file = g_io_stream_get_output_stream(G_IO_STREAM(io));
     }
-        
+
     gchar * outputstring = g_strdup_printf("%s\n", message);
     g_output_stream_write_async(log_file,
                                 outputstring, /* data */
@@ -593,7 +593,7 @@ log_to_file (const gchar * domain G_GNUC_UNUSED,
                                 NULL, /* cancelable */
                                 log_to_file_cb, /* callback */
                                 outputstring); /* data */
- 
+
     return;
 }
 
@@ -923,13 +923,13 @@ static void indicator_configure(Plugin * p, GtkWindow * parent)
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) indicator_apply_configuration, (gpointer) p,
-        _("Indicator Applications"), &indicator->applications, CONF_TYPE_BOOL,
-        _("Clock Indicator"), &indicator->datetime, CONF_TYPE_BOOL,
-        _("Messaging Menu"), &indicator->messages, CONF_TYPE_BOOL,
-        _("Network Menu"), &indicator->network, CONF_TYPE_BOOL,
-        _("Session Menu"), &indicator->session, CONF_TYPE_BOOL,
-        _("Sound Menu"), &indicator->sound, CONF_TYPE_BOOL,
-        _("Applications menus"), &indicator->appmenu, CONF_TYPE_BOOL,
+        _("Indicator Applications"), &indicator->applications, (GType)CONF_TYPE_BOOL,
+        _("Clock Indicator"), &indicator->datetime, (GType)CONF_TYPE_BOOL,
+        _("Messaging Menu"), &indicator->messages, (GType)CONF_TYPE_BOOL,
+        _("Network Menu"), &indicator->network, (GType)CONF_TYPE_BOOL,
+        _("Session Menu"), &indicator->session, (GType)CONF_TYPE_BOOL,
+        _("Sound Menu"), &indicator->sound, (GType)CONF_TYPE_BOOL,
+        _("Applications menus"), &indicator->appmenu, (GType)CONF_TYPE_BOOL,
         NULL);
     gtk_widget_set_size_request(GTK_WIDGET(dlg), 300, -1);
     gtk_window_present(GTK_WINDOW(dlg));

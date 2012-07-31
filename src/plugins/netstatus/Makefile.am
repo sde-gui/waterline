@@ -31,5 +31,5 @@ netstatus_la_LDFLAGS = \
 	-module \
 	$(LXPANELX_MODULE)
 
-install-exec-hook:
-	rm -f "$(moduledir)\*.la" *.a
+#install-exec-hook:
+#	rm -f "$(moduledir)\*.la" *.a

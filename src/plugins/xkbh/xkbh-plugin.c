@@ -73,7 +73,6 @@ static void  xkb_configure(Plugin * p, GtkWindow * parent);
 static void  xkb_save_configuration(Plugin * p, FILE * fp);
 static void  xkb_panel_configuration_changed(Plugin * p);
 static void  xkb_settings_fill_layout_tree_model_with_config(XkbPlugin *p_xkb);
-static void  xkb_setxkbmap(XkbPlugin *p_xkb);
 static void  xkb_update_layouts_n_variants(XkbPlugin *p_xkb);
 static void  xkb_add_layout(XkbPlugin *p_xkb, gchar *layout, gchar*variant);
 
@@ -82,6 +81,8 @@ static gboolean  on_xkb_button_press_event(GtkWidget * widget,  GdkEventButton *
 static void      on_xkb_radiobutton_disp_type_image_clicked(GtkButton *p_radiobutton, gpointer p_data);
 static void      on_xkb_dialog_config_response(GtkDialog *p_dialog, gint response, gpointer p_data);
 
+static void xkb_read_xkb_configuration(XkbPlugin *p_xkb);
+static void xkb_setxkbmap(XkbPlugin *p_xkb);
 
 static unsigned char  user_active = FALSE;
 
@@ -228,68 +229,11 @@ static int xkb_constructor(Plugin * plugin, char ** fp)
             }
         }
     }
-    
+
     if( (p_xkb->kbd_model == NULL) || (p_xkb->kbd_layouts == NULL) ||
         (p_xkb->kbd_variants == NULL) || (p_xkb->kbd_change_option == NULL) )
     {
-        if(p_xkb->kbd_model != NULL) g_free(p_xkb->kbd_model);
-        if(p_xkb->kbd_layouts != NULL) g_free(p_xkb->kbd_layouts);
-        if(p_xkb->kbd_variants != NULL) g_free(p_xkb->kbd_variants);
-        if(p_xkb->kbd_change_option != NULL) g_free(p_xkb->kbd_change_option);
-        
-        FILE *fp;
-        char  buf[MAX_ROW_LEN];
-        fp = popen("setxkbmap -query", "r");
-        if(fp != NULL)
-        {
-            GRegex *p_regex_model = g_regex_new("(?<=model:).*", 0, 0, NULL);
-            GRegex *p_regex_layouts = g_regex_new("(?<=layout:).*", 0, 0, NULL);
-            GRegex *p_regex_variants = g_regex_new("(?<=variant:).*", 0, 0, NULL);
-            GMatchInfo *p_match_info;
-            while(fgets(buf, MAX_ROW_LEN, fp) != NULL)
-            {
-                // model
-                g_regex_match(p_regex_model, buf, 0, &p_match_info);
-                if(g_match_info_matches(p_match_info))
-                {
-                    p_xkb->kbd_model = g_strchug(g_match_info_fetch(p_match_info, 0));
-                    g_match_info_free(p_match_info);
-                    continue;
-                }
-                g_match_info_free(p_match_info);
-                
-                // layouts
-                g_regex_match(p_regex_layouts, buf, 0, &p_match_info);
-                if(g_match_info_matches(p_match_info))
-                {
-                    p_xkb->kbd_layouts = g_strchug(g_match_info_fetch(p_match_info, 0));
-                    g_match_info_free(p_match_info);
-                    continue;
-                }
-                g_match_info_free(p_match_info);
-                
-                // variants
-                g_regex_match(p_regex_variants, buf, 0, &p_match_info);
-                if(g_match_info_matches(p_match_info))
-                {
-                    p_xkb->kbd_variants = g_strchug(g_match_info_fetch(p_match_info, 0));
-                    g_match_info_free(p_match_info);
-                    continue;
-                }
-                g_match_info_free(p_match_info);
-            }
-            
-            g_regex_unref(p_regex_model);
-            g_regex_unref(p_regex_layouts);
-            g_regex_unref(p_regex_variants);
-            
-            /* close */
-            pclose(fp);
-        }
-        if(p_xkb->kbd_model == NULL) p_xkb->kbd_model = g_strdup("pc105");
-        if(p_xkb->kbd_layouts == NULL) p_xkb->kbd_layouts = g_strdup("us");
-        if(p_xkb->kbd_variants == NULL) p_xkb->kbd_variants = g_strdup(",");
-        if(p_xkb->kbd_change_option == NULL) p_xkb->kbd_change_option = g_strdup("shift_caps_toggle");
+        xkb_read_xkb_configuration(p_xkb);
     }
     else
         xkb_setxkbmap(p_xkb);
@@ -355,6 +299,83 @@ static void xkb_destructor(Plugin * plugin)
     g_free(p_xkb);
 }
 
+/****************************************************************************/
+
+static void xkb_read_xkb_configuration(XkbPlugin *p_xkb)
+{
+        if(p_xkb->kbd_model != NULL) g_free(p_xkb->kbd_model);
+        if(p_xkb->kbd_layouts != NULL) g_free(p_xkb->kbd_layouts);
+        if(p_xkb->kbd_variants != NULL) g_free(p_xkb->kbd_variants);
+        if(p_xkb->kbd_change_option != NULL) g_free(p_xkb->kbd_change_option);
+
+        FILE *fp;
+        char  buf[MAX_ROW_LEN];
+        fp = popen("setxkbmap -query", "r");
+        if(fp != NULL)
+        {
+            GRegex *p_regex_model = g_regex_new("(?<=model:).*", 0, 0, NULL);
+            GRegex *p_regex_layouts = g_regex_new("(?<=layout:).*", 0, 0, NULL);
+            GRegex *p_regex_variants = g_regex_new("(?<=variant:).*", 0, 0, NULL);
+            GMatchInfo *p_match_info;
+            while(fgets(buf, MAX_ROW_LEN, fp) != NULL)
+            {
+                // model
+                g_regex_match(p_regex_model, buf, 0, &p_match_info);
+                if(g_match_info_matches(p_match_info))
+                {
+                    p_xkb->kbd_model = g_strchug(g_match_info_fetch(p_match_info, 0));
+                    g_match_info_free(p_match_info);
+                    continue;
+                }
+                g_match_info_free(p_match_info);
+
+                // layouts
+                g_regex_match(p_regex_layouts, buf, 0, &p_match_info);
+                if(g_match_info_matches(p_match_info))
+                {
+                    p_xkb->kbd_layouts = g_strchug(g_match_info_fetch(p_match_info, 0));
+                    g_match_info_free(p_match_info);
+                    continue;
+                }
+                g_match_info_free(p_match_info);
+
+                // variants
+                g_regex_match(p_regex_variants, buf, 0, &p_match_info);
+                if(g_match_info_matches(p_match_info))
+                {
+                    p_xkb->kbd_variants = g_strchug(g_match_info_fetch(p_match_info, 0));
+                    g_match_info_free(p_match_info);
+                    continue;
+                }
+                g_match_info_free(p_match_info);
+            }
+
+            g_regex_unref(p_regex_model);
+            g_regex_unref(p_regex_layouts);
+            g_regex_unref(p_regex_variants);
+
+            /* close */
+            pclose(fp);
+        }
+        if(p_xkb->kbd_model == NULL) p_xkb->kbd_model = g_strdup("pc105");
+        if(p_xkb->kbd_layouts == NULL) p_xkb->kbd_layouts = g_strdup("us");
+        if(p_xkb->kbd_variants == NULL) p_xkb->kbd_variants = g_strdup(",");
+        if(p_xkb->kbd_change_option == NULL) p_xkb->kbd_change_option = g_strdup("shift_caps_toggle");
+}
+
+static void xkb_setxkbmap(XkbPlugin *p_xkb)
+{
+    GString *p_gstring_syscmd = g_string_new("");
+    g_string_printf(p_gstring_syscmd,
+                    "setxkbmap -model %s -layout %s -variant %s -option grp:%s",
+                    p_xkb->kbd_model, p_xkb->kbd_layouts, p_xkb->kbd_variants, p_xkb->kbd_change_option);
+    if(system(p_gstring_syscmd->str)) {};
+    g_printf("\n%s\n", p_gstring_syscmd->str);
+    g_string_free(p_gstring_syscmd, TRUE/*free also gstring->str*/);
+}
+
+/****************************************************************************/
+
 /* Handler for "clicked" event on display type image radiobutton of configuration dialog. */
 static void on_xkb_radiobutton_disp_type_image_clicked(GtkButton *p_button, gpointer p_data)
 {
@@ -384,7 +405,7 @@ static void on_xkb_dialog_config_response(GtkDialog *p_dialog, gint response, gp
 static void on_button_kbd_model_clicked(GtkButton *p_button, gpointer *p_data)
 {
     XkbPlugin *p_xkb = (XkbPlugin *)p_data;
-    
+
     // dialog
     GtkWidget *p_dialog = gtk_dialog_new_with_buttons(_("Select Keyboard Model"),
                             GTK_WINDOW(p_xkb->p_dialog_config),
@@ -392,13 +413,13 @@ static void on_button_kbd_model_clicked(GtkButton *p_button, gpointer *p_data)
                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                             GTK_STOCK_OK, GTK_RESPONSE_OK,
                             NULL);
-    
+
     // scrolledwindow
     GtkWidget * p_scrolledwindow_kbd_model = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(p_scrolledwindow_kbd_model),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(p_dialog)->vbox), p_scrolledwindow_kbd_model, TRUE, TRUE, 2);
-    
+
     // liststore
     GtkListStore *p_liststore_kbd_model = gtk_list_store_new(NUM_MODEL_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
     GtkWidget *p_treeview_kbd_model = gtk_tree_view_new_with_model(GTK_TREE_MODEL(p_liststore_kbd_model));
@@ -441,7 +462,7 @@ static void on_button_kbd_model_clicked(GtkButton *p_button, gpointer *p_data)
         g_key_file_free(p_keyfile);
     }
     g_free(xkbcfg_filepath);
-    
+
     // callback for double click
     gboolean  on_treeview_kbd_model_button_press_event(GtkWidget *p_widget,
                                                        GdkEventButton *p_event,
@@ -487,7 +508,7 @@ static void on_button_kbd_model_clicked(GtkButton *p_button, gpointer *p_data)
 static void on_button_kbd_change_layout_clicked(GtkButton *p_button, gpointer *p_data)
 {
     XkbPlugin *p_xkb = (XkbPlugin *)p_data;
-    
+
     // dialog
     GtkWidget *p_dialog = gtk_dialog_new_with_buttons(_("Select Layout Change Type"),
                             GTK_WINDOW(p_xkb->p_dialog_config),
@@ -495,13 +516,13 @@ static void on_button_kbd_change_layout_clicked(GtkButton *p_button, gpointer *p
                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                             GTK_STOCK_OK, GTK_RESPONSE_OK,
                             NULL);
-    
+
     // scrolledwindow
     GtkWidget * p_scrolledwindow_kbd_change = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(p_scrolledwindow_kbd_change),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(p_dialog)->vbox), p_scrolledwindow_kbd_change, TRUE, TRUE, 2);
-    
+
     // liststore
     GtkListStore *p_liststore_kbd_change = gtk_list_store_new(NUM_CHANGE_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
     GtkWidget *p_treeview_kbd_change = gtk_tree_view_new_with_model(GTK_TREE_MODEL(p_liststore_kbd_change));
@@ -544,7 +565,7 @@ static void on_button_kbd_change_layout_clicked(GtkButton *p_button, gpointer *p
         g_key_file_free(p_keyfile);
     }
     g_free(xkbcfg_filepath);
-    
+
     // callback for double click
     gboolean  on_treeview_kbd_change_button_press_event(GtkWidget *p_widget,
                                                         GdkEventButton *p_event,
@@ -646,7 +667,7 @@ static void on_button_rm_layout_clicked(GtkButton *p_button, gpointer *p_data)
 static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
 {
     XkbPlugin *p_xkb = (XkbPlugin *)p_data;
-    
+
     // dialog
     GtkWidget *p_dialog = gtk_dialog_new_with_buttons(_("Add Keyboard Layout"),
                             GTK_WINDOW(p_xkb->p_dialog_config),
@@ -654,13 +675,13 @@ static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                             GTK_STOCK_OK, GTK_RESPONSE_OK,
                             NULL);
-    
+
     // scrolledwindow
     GtkWidget * p_scrolledwindow_add_layout = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(p_scrolledwindow_add_layout),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(p_dialog)->vbox), p_scrolledwindow_add_layout, TRUE, TRUE, 2);
-    
+
     // treestore
     GtkTreeStore *p_treestore_add_layout = gtk_tree_store_new(NUM_ADD_COLUMNS, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING);
     GtkWidget *p_treeview_add_layout = gtk_tree_view_new_with_model(GTK_TREE_MODEL(p_treestore_add_layout));
@@ -721,7 +742,7 @@ static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
             }
             else
             {
-                
+
                 gtk_tree_store_append(p_treestore_add_layout, &tree_child, &tree_top);
                 gtk_tree_store_set(p_treestore_add_layout, &tree_child,
                                     COLUMN_ADD_LAYOUT, keys_layouts[layout_idx],
@@ -735,7 +756,7 @@ static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
         g_key_file_free(p_keyfile);
     }
     g_free(xkbcfg_filepath);
-    
+
     // callback for double click
     gboolean  on_treeview_add_layout_button_press_event(GtkWidget *p_widget,
                                                         GdkEventButton *p_event,
@@ -769,7 +790,7 @@ static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
             GString *p_gstring_new_variant = g_string_new("");
             gtk_tree_model_get(GTK_TREE_MODEL(p_treestore_add_layout),
                                &tree_iter_sel, COLUMN_ADD_LAYOUT, &layout_add, -1);
-            
+
             if(strchr(layout_add, '(') == NULL)
             {
                 g_string_append(p_gstring_new_layout, layout_add);
@@ -798,26 +819,15 @@ static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
             }
             xkb_add_layout(p_xkb, p_gstring_new_layout->str, p_gstring_new_variant->str);
             xkb_update_layouts_n_variants(p_xkb);
-            
+
             gtk_widget_set_sensitive(p_xkb->p_button_rm_layout, p_xkb->num_layouts > 1);
-            
+
             g_free(layout_add);
             g_string_free(p_gstring_new_layout, TRUE/*free also gstring->str*/);
             g_string_free(p_gstring_new_variant, TRUE/*free also gstring->str*/);
         }
     }
     gtk_widget_destroy(p_dialog);
-}
-
-static void xkb_setxkbmap(XkbPlugin *p_xkb)
-{
-    GString *p_gstring_syscmd = g_string_new("");
-    g_string_printf(p_gstring_syscmd,
-                    "setxkbmap -model %s -layout %s -variant %s -option grp:%s",
-                    p_xkb->kbd_model, p_xkb->kbd_layouts, p_xkb->kbd_variants, p_xkb->kbd_change_option);
-    if(system(p_gstring_syscmd->str)) {};
-    g_printf("\n%s\n", p_gstring_syscmd->str);
-    g_string_free(p_gstring_syscmd, TRUE/*free also gstring->str*/);
 }
 
 static gboolean layouts_tree_model_foreach(GtkTreeModel *p_model,
@@ -828,10 +838,10 @@ static gboolean layouts_tree_model_foreach(GtkTreeModel *p_model,
     XkbPlugin *p_xkb = (XkbPlugin *)p_data;
     gchar *layout_val;
     gchar *variant_val;
-    
+
     gtk_tree_model_get(p_model, p_iter, COLUMN_LAYOUT, &layout_val,  -1);
     gtk_tree_model_get(p_model, p_iter, COLUMN_VARIANT, &variant_val,  -1);
-    
+
     if(strlen(p_xkb->p_gstring_layouts_partial->str))
     {
         g_string_append_c(p_xkb->p_gstring_layouts_partial, ',');
@@ -839,10 +849,10 @@ static gboolean layouts_tree_model_foreach(GtkTreeModel *p_model,
     }
     g_string_append(p_xkb->p_gstring_layouts_partial, layout_val);
     g_string_append(p_xkb->p_gstring_variants_partial, variant_val);
-    
+
     //printf("\npartial layouts = '%s'\n", p_xkb->p_gstring_layouts_partial->str);
     //printf("partial variants = '%s'\n", p_xkb->p_gstring_variants_partial->str);
-    
+
     g_free(layout_val);
     g_free(variant_val);
     p_xkb->num_layouts++;
@@ -1000,7 +1010,7 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
     gtk_box_pack_start(GTK_BOX(p_vbox_kbd_layouts), p_button_up_layout, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(p_vbox_kbd_layouts), p_button_down_layout, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(p_vbox_kbd_layouts), p_xkb->p_button_rm_layout, TRUE, TRUE, 0);
-    
+
     // liststore
     p_xkb->p_liststore_layout = gtk_list_store_new(NUM_COLUMNS, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING);
     p_xkb->p_treeview_layout = gtk_tree_view_new_with_model(GTK_TREE_MODEL(p_xkb->p_liststore_layout));
@@ -1107,7 +1117,7 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
     gtk_widget_set_size_request(p_xkb->p_dialog_config, 350, -1);
     gtk_widget_show_all(p_xkb->p_dialog_config);
     gtk_window_present(GTK_WINDOW(p_xkb->p_dialog_config));
-    
+
     user_active = TRUE;
 }
 

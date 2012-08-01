@@ -85,6 +85,15 @@ static void      on_xkb_dialog_config_response(GtkDialog *p_dialog, gint respons
 
 static unsigned char  user_active = FALSE;
 
+static gchar * get_flag_path_for_layout(const gchar * layout)
+{
+    gchar * filename = g_strdup_printf("%s.svg", layout);
+    gchar * path = get_private_resource_path(RESOURCE_DATA, "images", "xkbh-flags", filename, NULL);
+    g_free(filename);
+    return path;
+}
+
+
 /* Redraw the graphics. */
 void xkb_redraw(XkbPlugin * xkb) 
 {
@@ -96,12 +105,9 @@ void xkb_redraw(XkbPlugin * xkb)
         char * group_name = (char *) xkb_get_current_symbol_name_lowercase(xkb);
         if (group_name != NULL)
         {
-            gchar * fname = g_strdup_printf("%s.svg", group_name);
-            gchar * filename = get_private_resource_path(RESOURCE_DATA, "images", "xkbh-flags", fname, NULL);
-g_print("%s\n", filename);
+            gchar * filename = get_flag_path_for_layout(group_name);
             GdkPixbuf * unscaled_pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
             g_free(filename);
-            g_free(fname);
             g_free(group_name);
 
 
@@ -691,9 +697,7 @@ static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
             p_layout_desc = g_key_file_get_string(p_keyfile, "LAYOUTS", keys_layouts[layout_idx], NULL);
             if(strchr(keys_layouts[layout_idx], '(') == NULL)
             {
-                gchar * fname = g_strdup_printf("%s.svg", keys_layouts[layout_idx]);
-                gchar *flag_filepath = get_private_resource_path(RESOURCE_DATA, "images", "xkbh-flags", fname, NULL);
-                g_free(fname);
+                gchar *flag_filepath = get_flag_path_for_layout(keys_layouts[layout_idx]);
 
                 GdkPixbuf *p_pixbuf = gdk_pixbuf_new_from_file_at_size(flag_filepath, -1, 22, NULL);
                 gtk_tree_store_append(p_treestore_add_layout, &tree_top, NULL);
@@ -874,9 +878,7 @@ static void xkb_add_layout(XkbPlugin *p_xkb, gchar *layout, gchar*variant)
     GtkTreeIter  tree_iter;
     gtk_list_store_append(p_xkb->p_liststore_layout, &tree_iter);
 
-    gchar * fname = g_strdup_printf("%s.svg", layout);
-    gchar *flag_filepath = get_private_resource_path(RESOURCE_DATA, "images", "xkbh-flags", fname, NULL);
-    g_free(fname);
+    gchar *flag_filepath = get_flag_path_for_layout(layout);
 
     GdkPixbuf *p_pixbuf = gdk_pixbuf_new_from_file_at_size(flag_filepath, -1, 22, NULL);
     if(p_pixbuf != NULL)
@@ -1065,9 +1067,7 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
     GtkWidget * p_image_disp_type_image = gtk_image_new();
     char * symbol_name_lowercase = (char *)xkb_get_current_symbol_name_lowercase(p_xkb);
 
-    gchar * fname = g_strdup_printf("%s.svg", symbol_name_lowercase);
-    gchar *flag_filepath = get_private_resource_path(RESOURCE_DATA, "images", "xkbh-flags", fname, NULL);
-    g_free(fname);
+    gchar *flag_filepath = get_flag_path_for_layout(symbol_name_lowercase);
 
     GdkPixbuf * unscaled_pixbuf = gdk_pixbuf_new_from_file(flag_filepath, NULL);
     g_free(flag_filepath);

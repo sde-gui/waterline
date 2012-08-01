@@ -316,6 +316,7 @@ static void xkb_read_xkb_configuration(XkbPlugin *p_xkb)
             GRegex *p_regex_model = g_regex_new("(?<=model:).*", 0, 0, NULL);
             GRegex *p_regex_layouts = g_regex_new("(?<=layout:).*", 0, 0, NULL);
             GRegex *p_regex_variants = g_regex_new("(?<=variant:).*", 0, 0, NULL);
+            GRegex *p_regex_grp = g_regex_new("(?<=grp:)[^,]*", 0, 0, NULL);
             GMatchInfo *p_match_info;
             while(fgets(buf, MAX_ROW_LEN, fp) != NULL)
             {
@@ -344,6 +345,16 @@ static void xkb_read_xkb_configuration(XkbPlugin *p_xkb)
                 if(g_match_info_matches(p_match_info))
                 {
                     p_xkb->kbd_variants = g_strchug(g_match_info_fetch(p_match_info, 0));
+                    g_match_info_free(p_match_info);
+                    continue;
+                }
+                g_match_info_free(p_match_info);
+
+                // grp
+                g_regex_match(p_regex_grp, buf, 0, &p_match_info);
+                if(g_match_info_matches(p_match_info))
+                {
+                    p_xkb->kbd_change_option = g_strchug(g_match_info_fetch(p_match_info, 0));
                     g_match_info_free(p_match_info);
                     continue;
                 }

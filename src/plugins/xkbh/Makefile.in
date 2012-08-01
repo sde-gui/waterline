@@ -320,8 +320,6 @@ xkbh_la_CFLAGS = \
 	-I. \
 	-I$(top_srcdir)/src \
 	$(PACKAGE_CFLAGS) \
-	-DFLAGSDIR=\"$(datadir)/lxpanelx/images/xkbh-flags\" \
-	-DXKBCONFDIR=\"$(datadir)/lxpanelx/xkeyboardconfig\" \
 	$(G_CAST_CHECKS)
 
 module_LTLIBRARIES = xkbh.la
@@ -338,12 +336,12 @@ xkbh_la_LDFLAGS = \
 	-module \
 	@LXPANELX_MODULE@
 
-xkeyboardconfigdir = $(datadir)/lxpanelx/xkeyboardconfig
+xkeyboardconfigdir = $(pkgdatadir)/xkeyboardconfig
 xkeyboardconfig_DATA = xkeyboardconfig/models.cfg \
 	xkeyboardconfig/layouts.cfg \
 	xkeyboardconfig/toggle.cfg
 
-flagsdir = $(datadir)/lxpanelx/images/xkbh-flags
+flagsdir = $(pkgdatadir)/images/xkbh-flags
 flags_DATA = \
 	flags/ad.svg \
 	flags/ae.svg \

@@ -96,10 +96,14 @@ void xkb_redraw(XkbPlugin * xkb)
         char * group_name = (char *) xkb_get_current_symbol_name_lowercase(xkb);
         if (group_name != NULL)
         {
-            char * filename = g_strdup_printf("%s/%s.svg", FLAGSDIR, group_name);
+            gchar * fname = g_strdup_printf("%s.svg", group_name);
+            gchar * filename = get_private_resource_path(RESOURCE_DATA, "images", "xkbh-flags", fname, NULL);
+g_print("%s\n", filename);
             GdkPixbuf * unscaled_pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
             g_free(filename);
+            g_free(fname);
             g_free(group_name);
+
 
             if (unscaled_pixbuf != NULL)
             {
@@ -405,10 +409,11 @@ static void on_button_kbd_model_clicked(GtkButton *p_button, gpointer *p_data)
     p_renderer = gtk_cell_renderer_text_new();
     p_column = gtk_tree_view_column_new_with_attributes(_("Description"), p_renderer, "text", COLUMN_CHANGE_DESC, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(p_treeview_kbd_model), p_column);
-    
+
     // populate model
     GKeyFile *p_keyfile = g_key_file_new();
-    gchar *xkbcfg_filepath = g_strdup_printf("%s/models.cfg", XKBCONFDIR);
+    gchar *xkbcfg_filepath = get_private_resource_path(RESOURCE_DATA, "xkeyboardconfig", "models.cfg", NULL);
+
     if(g_key_file_load_from_file(p_keyfile, xkbcfg_filepath, 0, NULL))
     {
         gchar **keys_models = g_key_file_get_keys(p_keyfile, "MODELS", NULL, NULL);
@@ -507,10 +512,11 @@ static void on_button_kbd_change_layout_clicked(GtkButton *p_button, gpointer *p
     p_renderer = gtk_cell_renderer_text_new();
     p_column = gtk_tree_view_column_new_with_attributes(_("Description"), p_renderer, "text", COLUMN_CHANGE_DESC, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(p_treeview_kbd_change), p_column);
-    
+
     // populate model
     GKeyFile *p_keyfile = g_key_file_new();
-    gchar *xkbcfg_filepath = g_strdup_printf("%s/toggle.cfg", XKBCONFDIR);
+    gchar *xkbcfg_filepath = get_private_resource_path(RESOURCE_DATA, "xkeyboardconfig", "toggle.cfg", NULL);
+
     if(g_key_file_load_from_file(p_keyfile, xkbcfg_filepath, 0, NULL))
     {
         gchar **keys_changes = g_key_file_get_keys(p_keyfile, "TOGGLE", NULL, NULL);
@@ -669,10 +675,11 @@ static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
     p_renderer = gtk_cell_renderer_text_new();
     p_column = gtk_tree_view_column_new_with_attributes(_("Description"), p_renderer, "text", COLUMN_VARIANT, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(p_treeview_add_layout), p_column);
-    
+
     // populate model
     GKeyFile *p_keyfile = g_key_file_new();
-    gchar *xkbcfg_filepath = g_strdup_printf("%s/layouts.cfg", XKBCONFDIR);
+    gchar *xkbcfg_filepath = get_private_resource_path(RESOURCE_DATA, "xkeyboardconfig", "layouts.cfg", NULL);
+
     if(g_key_file_load_from_file(p_keyfile, xkbcfg_filepath, 0, NULL))
     {
         gchar **keys_layouts = g_key_file_get_keys(p_keyfile, "LAYOUTS", NULL, NULL);
@@ -684,7 +691,10 @@ static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
             p_layout_desc = g_key_file_get_string(p_keyfile, "LAYOUTS", keys_layouts[layout_idx], NULL);
             if(strchr(keys_layouts[layout_idx], '(') == NULL)
             {
-                gchar *flag_filepath = g_strdup_printf("%s/%s.svg", FLAGSDIR, keys_layouts[layout_idx]);
+                gchar * fname = g_strdup_printf("%s.svg", keys_layouts[layout_idx]);
+                gchar *flag_filepath = get_private_resource_path(RESOURCE_DATA, "images", "xkbh-flags", fname, NULL);
+                g_free(fname);
+
                 GdkPixbuf *p_pixbuf = gdk_pixbuf_new_from_file_at_size(flag_filepath, -1, 22, NULL);
                 gtk_tree_store_append(p_treestore_add_layout, &tree_top, NULL);
                 if(p_pixbuf != NULL)
@@ -863,7 +873,11 @@ static void xkb_add_layout(XkbPlugin *p_xkb, gchar *layout, gchar*variant)
 {
     GtkTreeIter  tree_iter;
     gtk_list_store_append(p_xkb->p_liststore_layout, &tree_iter);
-    gchar *flag_filepath = g_strdup_printf("%s/%s.svg", FLAGSDIR, layout);
+
+    gchar * fname = g_strdup_printf("%s.svg", layout);
+    gchar *flag_filepath = get_private_resource_path(RESOURCE_DATA, "images", "xkbh-flags", fname, NULL);
+    g_free(fname);
+
     GdkPixbuf *p_pixbuf = gdk_pixbuf_new_from_file_at_size(flag_filepath, -1, 22, NULL);
     if(p_pixbuf != NULL)
     {
@@ -1043,14 +1057,18 @@ static void xkb_configure(Plugin * p, GtkWindow * parent)
     gtk_alignment_set_padding(GTK_ALIGNMENT(p_alignment_display_type), 4, 4, 10, 10);
     GtkWidget * p_hbox_disp_type = gtk_hbox_new(TRUE, 10);
     gtk_container_add(GTK_CONTAINER(p_alignment_display_type), p_hbox_disp_type);
-    
+
     // radiobuttons
     #define FLAG_ICON_SIZE  32
     GtkWidget * p_hbox_disp_type_image = gtk_hbox_new(FALSE, 3);
     GtkWidget * p_hbox_disp_type_text = gtk_hbox_new(FALSE, 3);
     GtkWidget * p_image_disp_type_image = gtk_image_new();
     char * symbol_name_lowercase = (char *)xkb_get_current_symbol_name_lowercase(p_xkb);
-    char * flag_filepath = g_strdup_printf("%s/%s.svg", FLAGSDIR, symbol_name_lowercase);
+
+    gchar * fname = g_strdup_printf("%s.svg", symbol_name_lowercase);
+    gchar *flag_filepath = get_private_resource_path(RESOURCE_DATA, "images", "xkbh-flags", fname, NULL);
+    g_free(fname);
+
     GdkPixbuf * unscaled_pixbuf = gdk_pixbuf_new_from_file(flag_filepath, NULL);
     g_free(flag_filepath);
     g_free(symbol_name_lowercase);

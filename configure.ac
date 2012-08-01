@@ -216,7 +216,7 @@ if test x"$plugins_loading" = "xno"; then
 fi
 
 dnl Here are plugin listing.
-ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq indicator"
+ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb xkbh thermal cpufreq indicator"
 AC_SUBST(ALL_PLUGINS_LIST)
 
 AC_MSG_CHECKING([which plugins should be built dynamically])
@@ -355,6 +355,7 @@ AC_CONFIG_FILES([
     src/plugins/batt/Makefile
     src/plugins/kbled/Makefile
     src/plugins/xkb/Makefile
+    src/plugins/xkbh/Makefile
     src/plugins/thermal/Makefile
     src/plugins/cpufreq/Makefile
     src/plugins/indicator/Makefile
@@ -397,6 +398,9 @@ echo Building dynamic plugins:
     fi
     if test x"$plugin_xkb" != x; then
         AC_MSG_RESULT([    xkb - Keyboard layout switcher])
+    fi
+    if test x"$plugin_xkb" != x; then
+        AC_MSG_RESULT([    xkbh - Keyboard layout handler])
     fi
     if test x"$plugin_thermal" != x; then
         AC_MSG_RESULT([    thermal - Temperature monitor])

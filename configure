@@ -13048,7 +13048,7 @@ $as_echo "#define DISABLE_PLUGINS_LOADING 1" >>confdefs.h
 
 fi
 
-ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq indicator"
+ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb xkbh thermal cpufreq indicator"
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking which plugins should be built dynamically" >&5
@@ -14876,7 +14876,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files lxpanelx.pc Makefile src/Makefile src/libexec/Makefile src/plugins/Makefile src/plugins/taskbar/Makefile src/plugins/netstatus/Makefile src/plugins/volume/Makefile src/plugins/volumealsa/Makefile src/plugins/cpu/Makefile src/plugins/deskno/Makefile src/plugins/batt/Makefile src/plugins/kbled/Makefile src/plugins/xkb/Makefile src/plugins/thermal/Makefile src/plugins/cpufreq/Makefile src/plugins/indicator/Makefile po/Makefile.in data/Makefile data/template/panels/panel.panel man/Makefile"
+ac_config_files="$ac_config_files lxpanelx.pc Makefile src/Makefile src/libexec/Makefile src/plugins/Makefile src/plugins/taskbar/Makefile src/plugins/netstatus/Makefile src/plugins/volume/Makefile src/plugins/volumealsa/Makefile src/plugins/cpu/Makefile src/plugins/deskno/Makefile src/plugins/batt/Makefile src/plugins/kbled/Makefile src/plugins/xkb/Makefile src/plugins/xkbh/Makefile src/plugins/thermal/Makefile src/plugins/cpufreq/Makefile src/plugins/indicator/Makefile po/Makefile.in data/Makefile data/template/panels/panel.panel man/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -15927,6 +15927,7 @@ do
     "src/plugins/batt/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/batt/Makefile" ;;
     "src/plugins/kbled/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/kbled/Makefile" ;;
     "src/plugins/xkb/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/xkb/Makefile" ;;
+    "src/plugins/xkbh/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/xkbh/Makefile" ;;
     "src/plugins/thermal/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/thermal/Makefile" ;;
     "src/plugins/cpufreq/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/cpufreq/Makefile" ;;
     "src/plugins/indicator/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/indicator/Makefile" ;;
@@ -17356,6 +17357,10 @@ $as_echo "    kbled - Indicator for CapsLock, NumLock, and ScrLock" >&6; }
     if test x"$plugin_xkb" != x; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: result:     xkb - Keyboard layout switcher" >&5
 $as_echo "    xkb - Keyboard layout switcher" >&6; }
+    fi
+    if test x"$plugin_xkb" != x; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result:     xkbh - Keyboard layout handler" >&5
+$as_echo "    xkbh - Keyboard layout handler" >&6; }
     fi
     if test x"$plugin_thermal" != x; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: result:     thermal - Temperature monitor" >&5

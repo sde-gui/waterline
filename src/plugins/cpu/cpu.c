@@ -413,16 +413,22 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) cpu_apply_configuration, (gpointer) p,
+
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
-        _("Foreground color (iowait)"), &c->fg_color_io, (GType)CONF_TYPE_COLOR,
-        _("Foreground color (nice)"), &c->fg_color_n, (GType)CONF_TYPE_COLOR,
-        _("Foreground color (user)"), &c->fg_color_u, (GType)CONF_TYPE_COLOR,
-        _("Foreground color (system)"), &c->fg_color_s, (GType)CONF_TYPE_COLOR,
-        _("Background color"), &c->bg_color, (GType)CONF_TYPE_COLOR,
+
+        _("Colors"), 0, (GType)CONF_TYPE_TITLE,
+        _("IOWait"), &c->fg_color_io, (GType)CONF_TYPE_COLOR,
+        _("Nice"), &c->fg_color_n, (GType)CONF_TYPE_COLOR,
+        _("User"), &c->fg_color_u, (GType)CONF_TYPE_COLOR,
+        _("System"), &c->fg_color_s, (GType)CONF_TYPE_COLOR,
+        _("Idle"), &c->bg_color, (GType)CONF_TYPE_COLOR,
+
+        _("Options"), 0, (GType)CONF_TYPE_TITLE,
         _("Update interval" ), &c->update_interval, (GType)CONF_TYPE_INT,
         "int-min-value", (gpointer)&update_interval_min, (GType)CONF_TYPE_SET_PROPERTY,
         "int-max-value", (gpointer)&update_interval_max, (GType)CONF_TYPE_SET_PROPERTY,
         NULL);
+
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
 }

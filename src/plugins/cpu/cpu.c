@@ -42,11 +42,11 @@
 typedef unsigned long CPUTick;			/* Value from /proc/stat */
 
 typedef struct {
-    float u, n, s;
+    float u, n, s, io;
 } CPUSample;
 
 struct cpu_stat {
-    CPUTick u, n, s, i;				/* User, nice, system, idle */
+    CPUTick u, n, s, i, io;				/* User, nice, system, idle, io wait */
 };
 
 /* Private context for CPU plugin. */
@@ -80,6 +80,8 @@ static gboolean expose_event(GtkWidget * widget, GdkEventExpose * event, CPUPlug
 static int cpu_constructor(Plugin * p, char ** fp);
 static void cpu_destructor(Plugin * p);
 static void cpu_save_configuration(Plugin * p, FILE * fp);
+
+
 
 /* Redraw after timer callback or resize. */
 static void redraw_pixmap(CPUPlugin * c)
@@ -169,11 +171,11 @@ static gboolean cpu_update(CPUPlugin * c)
         FILE * stat = fopen("/proc/stat", "r");
         if (stat == NULL)
             return TRUE;
-        int fscanf_result = fscanf(stat, "cpu %lu %lu %lu %lu", &cpu.u, &cpu.n, &cpu.s, &cpu.i);
+        int fscanf_result = fscanf(stat, "cpu %lu %lu %lu %lu %lu", &cpu.u, &cpu.n, &cpu.s, &cpu.i, &cpu.io);
         fclose(stat);
 
         /* Ensure that fscanf succeeded. */
-        if (fscanf_result == 4)
+        if (fscanf_result == 5)
         {
             /* Compute delta from previous statistics. */
             struct cpu_stat cpu_delta;
@@ -181,21 +183,24 @@ static gboolean cpu_update(CPUPlugin * c)
             cpu_delta.n = cpu.n - c->previous_cpu_stat.n;
             cpu_delta.s = cpu.s - c->previous_cpu_stat.s;
             cpu_delta.i = cpu.i - c->previous_cpu_stat.i;
+            cpu_delta.io = cpu.io - c->previous_cpu_stat.io;
+
 
             /* Copy current to previous. */
             memcpy(&c->previous_cpu_stat, &cpu, sizeof(struct cpu_stat));
 
-            /* Compute user+nice+system as a fraction of total.
-             * Introduce this sample to ring buffer, increment and wrap ring buffer cursor. */
-            float cpu_uns = cpu_delta.u + cpu_delta.n + cpu_delta.s;
-            float cpu_load = cpu_uns / (cpu_uns + cpu_delta.i);
-            float cpu_load_u = cpu_delta.u / (cpu_uns + cpu_delta.i);
-            float cpu_load_n = cpu_delta.n / (cpu_uns + cpu_delta.i);
-            float cpu_load_s = cpu_delta.s / (cpu_uns + cpu_delta.i);
+            float cpu_notidle = cpu_delta.u + cpu_delta.n + cpu_delta.s + cpu_delta.io;
+            float cpu_total = cpu_notidle + cpu_delta.i;
+            float cpu_load = cpu_notidle / cpu_total;
+            float cpu_load_u = cpu_delta.u / cpu_total;
+            float cpu_load_n = cpu_delta.n / cpu_total;
+            float cpu_load_s = cpu_delta.s / cpu_total;
+            float cpu_load_io = cpu_delta.io / cpu_total;
 
             c->stats_cpu[c->ring_cursor].u = cpu_load_u;
             c->stats_cpu[c->ring_cursor].n = cpu_load_n;
             c->stats_cpu[c->ring_cursor].s = cpu_load_s;
+            c->stats_cpu[c->ring_cursor].io = cpu_load_io;
 
             c->ring_cursor += 1;
             if (c->ring_cursor >= c->pixmap_width)
@@ -205,8 +210,8 @@ static gboolean cpu_update(CPUPlugin * c)
             redraw_pixmap(c);
 
             gchar * tooltip = g_strdup_printf(
-                "Total: %.1f\nUser: %.1f\nNice: %.1f\nSystem: %.1f",
-                cpu_load * 100, cpu_load_u * 100, cpu_load_n * 100, cpu_load_s * 100);
+                "Total: %.1f\nUser: %.1f\nNice: %.1f\nSystem: %.1f,\nIOWait %.1f",
+                cpu_load * 100, cpu_load_u * 100, cpu_load_n * 100, cpu_load_s * 100, cpu_load_io * 100);
             gtk_widget_set_tooltip_text(c->da, tooltip);
             g_free(tooltip);
         }

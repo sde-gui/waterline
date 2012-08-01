@@ -303,10 +303,16 @@ static void xkb_destructor(Plugin * plugin)
 
 static void xkb_read_xkb_configuration(XkbPlugin *p_xkb)
 {
-        if(p_xkb->kbd_model != NULL) g_free(p_xkb->kbd_model);
-        if(p_xkb->kbd_layouts != NULL) g_free(p_xkb->kbd_layouts);
-        if(p_xkb->kbd_variants != NULL) g_free(p_xkb->kbd_variants);
-        if(p_xkb->kbd_change_option != NULL) g_free(p_xkb->kbd_change_option);
+        g_free(p_xkb->kbd_model);
+        g_free(p_xkb->kbd_layouts);
+        g_free(p_xkb->kbd_variants);
+        g_free(p_xkb->kbd_change_option);
+
+        p_xkb->kbd_model = NULL;
+        p_xkb->kbd_layouts = NULL;
+        p_xkb->kbd_variants = NULL;
+        p_xkb->kbd_change_option = NULL;
+
 
         FILE *fp;
         char  buf[MAX_ROW_LEN];
@@ -378,7 +384,7 @@ static void xkb_setxkbmap(XkbPlugin *p_xkb)
 {
     GString *p_gstring_syscmd = g_string_new("");
     g_string_printf(p_gstring_syscmd,
-                    "setxkbmap -model %s -layout %s -variant %s -option grp:%s",
+                    "setxkbmap -model \"%s\" -layout \"%s\" -variant \"%s\" -option grp:\"%s\"",
                     p_xkb->kbd_model, p_xkb->kbd_layouts, p_xkb->kbd_variants, p_xkb->kbd_change_option);
     if(system(p_gstring_syscmd->str)) {};
     g_printf("\n%s\n", p_gstring_syscmd->str);

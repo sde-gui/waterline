@@ -2400,7 +2400,7 @@ int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent 
 
 /*= Lightweight lock related functions - X clipboard hacks =*/
 
-#define CLIPBOARD_NAME "LXPANEL_SELECTION"
+#define CLIPBOARD_NAME "LXPANELX_SELECTION"
 
 /*
  * clipboard_get_func - dummy get_func for gtk_clipboard_set_with_data ()
@@ -2428,7 +2428,7 @@ static void clipboard_clear_func(
  *
  * Returns TRUE if successfully retrieved and FALSE otherwise.
  */
-static gboolean check_main_lock()
+static gboolean check_main_lock(void)
 {
     static const GtkTargetEntry targets[] = { { CLIPBOARD_NAME, 0, 0 } };
     gboolean retval = FALSE;
@@ -2568,7 +2568,7 @@ int main(int argc, char *argv[], char *env[])
 
     /* Check for duplicated lxpanel instances */
     if (!check_main_lock()) {
-        printf("There is already an instance of LXPanel.  Now to exit\n");
+        printf("There is already an instance of LXPanelX.  Now to exit\n");
         exit(1);
     }
 

@@ -93,7 +93,7 @@ if test "x$with_libfm" != "xno"; then
 		AC_DEFINE(DISABLE_LIBFM, [1], [Disable libfm related routines])
 	fi
 	AC_SUBST(LIBFM_CFLAGS)
-	AC_SUBST(LIBFM_CACHE_LIBS)
+	AC_SUBST(LIBFM_LIBS)
 else
 	enable_libfm=no
 	AC_WARN([libfm disabled.  All libfm related routines are not built.])

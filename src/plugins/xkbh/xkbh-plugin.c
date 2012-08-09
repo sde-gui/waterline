@@ -378,6 +378,80 @@ static void xkb_read_xkb_configuration(XkbPlugin *p_xkb)
         if(p_xkb->kbd_layouts == NULL) p_xkb->kbd_layouts = g_strdup("us");
         if(p_xkb->kbd_variants == NULL) p_xkb->kbd_variants = g_strdup(",");
         if(p_xkb->kbd_change_option == NULL) p_xkb->kbd_change_option = g_strdup("shift_caps_toggle");
+
+#if 1
+        /* extract variants from layouts */
+
+        gchar ** layout_list = g_strsplit_set(p_xkb->kbd_layouts, ",", 0);
+        gchar ** variant_list = g_strsplit_set(p_xkb->kbd_variants, ",", 0);
+        gchar * new_variants = NULL;
+
+        gchar ** layout;
+        gchar ** old_variant = variant_list;
+        for (layout = layout_list; *layout; layout++)
+        {
+            gchar * s = *layout;
+
+            int len = strlen(s);
+            if (len < 3)
+                continue;
+
+            /* fix layout:n notation */
+            if (isdigit(s[len - 1]) && s[len - 2] == ':')
+            {
+                len -= 2;
+                s[len] = 0;
+            }
+
+            if (len < 3)
+                continue;
+
+            /* search for layout(variant) notation */
+            gchar * v = NULL;
+
+            if (s[len - 1] == ')')
+            {
+                char * i = strrchr(s, '(');
+                if (i && i != s && i != s + len - 2)
+                {
+                    s[len - 1] = 0;
+                    *i = 0;
+                    v = i + 1;
+                }
+            }
+
+            /* if layout(variant) notation not found, use valus from variant list */
+            if (!v && *old_variant)
+                v = *old_variant;
+            if (!v)
+                v = "";
+g_print("v = '%s'\n", v);
+            /* concat new_variants */
+            if (new_variants)
+            {
+                v = g_strdup_printf("%s,%s", new_variants, v);
+                g_free(new_variants);
+                new_variants = v;
+            }
+            else
+            {
+                new_variants = g_strdup(v);
+            }
+g_print("new_variants = '%s'\n", new_variants);
+
+            if (*old_variant)
+               old_variant++;
+        }
+
+        g_free(p_xkb->kbd_layouts);
+        g_free(p_xkb->kbd_variants);
+
+        p_xkb->kbd_layouts = g_strjoinv(",", layout_list);
+        p_xkb->kbd_variants = new_variants;
+
+        g_strfreev(layout_list);
+        g_strfreev(variant_list);
+#endif
 }
 
 static void xkb_setxkbmap(XkbPlugin *p_xkb)

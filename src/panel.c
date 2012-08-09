@@ -1438,7 +1438,7 @@ static void panel_popupmenu_remove_item( GtkMenuItem* item, Plugin* plugin )
 
     panel->plugins = g_list_remove( panel->plugins, plugin );
     plugin_delete(plugin);
-    panel_config_save( plugin->panel );
+    panel_config_save(panel);
 }
 
 /* FIXME: Potentially we can support multiple panels at the same edge,

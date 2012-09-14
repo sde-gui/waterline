@@ -78,6 +78,7 @@ struct _PluginClass {
     void (*open_system_menu)(struct _Plugin * plugin);
     void (*add_launch_item)(struct _Plugin * plugin, const char * name);
     int  (*get_priority_of_launch_item_adding)(struct _Plugin * plugin);
+    void (*popup_menu_hook)(struct _Plugin * plugin, GtkMenu * menu);
 };
 
 

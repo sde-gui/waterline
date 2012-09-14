@@ -230,6 +230,15 @@ static void asound_set_volume(VolumeALSAPlugin * vol, int volume)
 
 /*** Graphics ***/
 
+/* Handler for "button-press-event" signal on main widget. */
+static gchar * volumealsa_get_volume_control_command(VolumeALSAPlugin * vol)
+{
+    if (strempty(vol->volume_control_command))
+        return get_default_application("volume-control");
+    else
+        return vol->volume_control_command;
+}
+
 /* Do a full redraw of the display. */
 static void volumealsa_update_display(VolumeALSAPlugin * vol)
 {
@@ -309,14 +318,7 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
                 gtk_widget_hide(vol->popup_window);
                 vol->show_popup = FALSE;
             }
-            if (strempty(vol->volume_control_command))
-            {
-                lxpanel_launch(get_default_application("volume-control"), NULL);
-            }
-            else
-            {
-                lxpanel_launch(vol->volume_control_command, NULL);
-            }
+            lxpanel_launch(volumealsa_get_volume_control_command(vol), NULL);
         }
         else
         {
@@ -605,6 +607,27 @@ static void volumealsa_panel_configuration_changed(Plugin * p)
     volumealsa_update_display(PRIV(p));
 }
 
+static void volumealsa_on_volume_control_activate(GtkMenuItem * item, VolumeALSAPlugin * vol)
+{
+    lxpanel_launch(volumealsa_get_volume_control_command(vol), NULL);
+}
+
+static void volumealsa_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
+{
+    VolumeALSAPlugin * vol = PRIV(plugin);
+    gchar * command = volumealsa_get_volume_control_command(vol);
+    if (command)
+    {
+        GtkWidget * mi = gtk_menu_item_new_with_label(_("Volume Control..."));
+        gchar * tooltip = g_strdup_printf(_("Run %s"), command);
+        gtk_widget_set_tooltip_text(mi, tooltip);
+        g_free(tooltip);
+        g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(volumealsa_on_volume_control_activate), vol);
+        gtk_widget_show(mi);
+        gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
+    }
+}
+
 /* Plugin descriptor. */
 PluginClass volumealsa_plugin_class = {
 
@@ -619,6 +642,6 @@ PluginClass volumealsa_plugin_class = {
     destructor  : volumealsa_destructor,
     config : volumealsa_configure,
     save : volumealsa_save_configuration,
-    panel_configuration_changed : volumealsa_panel_configuration_changed
-
+    panel_configuration_changed : volumealsa_panel_configuration_changed,
+    popup_menu_hook : volumealsa_popup_menu_hook
 };

@@ -168,6 +168,9 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 {
 	volume_t *vol = PRIV(p);
 
+	if (plugin_button_press_event(widget, evt, p))
+		return TRUE;
+
 	/* for scroll correction */
 	if (skip_botton1_event) {
 		gtk_widget_destroy(vol->dlg);
@@ -201,11 +204,6 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 			vol->dlg = NULL;
 		}
 		break;
-	}
-
-	case 3:	{	/* right button */
-                plugin_show_menu( p, evt );
-		return TRUE;
 	}
 
 	case 2:	{	/* middle mouse button */

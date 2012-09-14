@@ -305,21 +305,18 @@ cpufreq_menu(cpufreq *cf){
 static  gboolean
 clicked( GtkWidget *widget, GdkEventButton* evt, Plugin* plugin)
 {
-    ENTER;
+    if (plugin_button_press_event(widget, evt, plugin))
+        return TRUE;
+
     if( evt->button == 1 )
     {
 // Setting governor can't work without root privilege
 //      gtk_menu_popup( cpufreq_menu(PRIV(plugin)), NULL, NULL, NULL, NULL, 
 //                      evt->button, evt->time );
       return TRUE;
-    }else if ( evt->button == 3 )
-    {
-        plugin_show_menu( plugin, evt );
-        return TRUE;
-      return TRUE;
     }
 
-    RET(TRUE);
+    return TRUE;
 }
 
 static gint

@@ -484,7 +484,7 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
         {
             if (s.type == LINE_NONE)
             {
-                ERR( "launchbutton: illegal token %s\n", s.str);
+                ERR( "volumealsa: illegal token %s\n", s.str);
                 return 0;
             }
             if (s.type == LINE_VAR)
@@ -494,11 +494,11 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
                 else if (g_ascii_strcasecmp(s.t[0], "DoubleClickAction") == 0)
                     vol->volume_control_command = g_strdup(s.t[1]);
                 else
-                    ERR( "dclock: unknown var %s\n", s.t[0]);
+                    ERR( "volumealsa: unknown var %s\n", s.t[0]);
             }
             else
             {
-                ERR( "dclock: illegal in this context %s\n", s.str);
+                ERR( "volumealsa: illegal in this context %s\n", s.str);
                 return 0;
             }
         }

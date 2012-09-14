@@ -102,9 +102,8 @@ ret:
 
 static void dclock_copy_to_clipboard_menu_item_activate(GtkMenuItem *item)
 {
-    char * atom = gdk_atom_name((GdkAtom)"CLIPBOARD");
-    GtkClipboard* buf = gtk_clipboard_get((GdkAtom)atom);
-    gtk_clipboard_set_text(buf, gtk_menu_item_get_label(item), -1);
+    GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+    gtk_clipboard_set_text(clipboard, gtk_menu_item_get_label(item), -1);
 }
 
 static void dclock_generate_copy_to_clipboard_menu(GtkMenu* lxpanelx_menu, Plugin * plugin)

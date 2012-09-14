@@ -402,9 +402,23 @@ netstatus_update_tooltip (NetstatusIface *iface __attribute__((unused)),
      }
 
      NetstatusState state = netstatus_iface_get_state (icon->priv->iface);
-     char * s = g_strdup_printf ("%s\n%s", tip, netstatus_get_state_string (state));
-     g_free(tip);
-     tip = s;
+
+     const GError * error = NULL;
+     if (state == NETSTATUS_STATE_ERROR &&
+         (error = netstatus_iface_get_error(icon->priv->iface)) != NULL &&
+         error->message)
+     {
+         char * s = g_strdup_printf ("%s\n%s", tip, error->message);
+         g_free(tip);
+         tip = s;
+     }
+     else
+     {
+         char * s = g_strdup_printf ("%s\n%s", tip, netstatus_get_state_string (state));
+         g_free(tip);
+         tip = s;
+     }
+
 
      if (state != NETSTATUS_STATE_DISCONNECTED)
      {

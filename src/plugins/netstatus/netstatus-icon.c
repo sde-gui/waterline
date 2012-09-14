@@ -64,6 +64,7 @@ struct _NetstatusIconPrivate
   int             size;
 
   gulong          state_changed_id;
+  gulong          stats_changed_id;
   gulong          name_changed_id;
   gulong          wireless_changed_id;
   gulong          signal_changed_id;
@@ -476,6 +477,16 @@ netstatus_icon_state_changed (NetstatusIface *iface,
 }
 
 static void
+netstatus_icon_stats_changed (NetstatusIface *iface,
+			      GParamSpec     *pspec,
+			      NetstatusIcon  *icon)
+{
+  g_return_if_fail (NETSTATUS_IS_ICON (icon));
+
+  netstatus_update_tooltip(iface, pspec, icon);
+}
+
+static void
 netstatus_icon_is_wireless_changed (NetstatusIface *iface,
 				    GParamSpec     *pspec __attribute__((unused)),
 				    NetstatusIcon  *icon)
@@ -529,6 +540,8 @@ netstatus_icon_destroy (GtkObject *widget)
       g_signal_handler_disconnect (icon->priv->iface,
 				   icon->priv->state_changed_id);
       g_signal_handler_disconnect (icon->priv->iface,
+				   icon->priv->stats_changed_id);
+      g_signal_handler_disconnect (icon->priv->iface,
 				   icon->priv->name_changed_id);
       g_signal_handler_disconnect (icon->priv->iface,
 				   icon->priv->wireless_changed_id);
@@ -536,6 +549,7 @@ netstatus_icon_destroy (GtkObject *widget)
 				   icon->priv->signal_changed_id);
     }
   icon->priv->state_changed_id    = 0;
+  icon->priv->stats_changed_id    = 0;
   icon->priv->name_changed_id     = 0;
   icon->priv->wireless_changed_id = 0;
   icon->priv->signal_changed_id   = 0;
@@ -1158,6 +1172,8 @@ netstatus_icon_set_iface (NetstatusIcon  *icon,
 
       icon->priv->state_changed_id     = g_signal_connect (icon->priv->iface, "notify::state",
 							   G_CALLBACK (netstatus_icon_state_changed), icon);
+      icon->priv->stats_changed_id     = g_signal_connect (icon->priv->iface, "notify::stats",
+							   G_CALLBACK (netstatus_icon_stats_changed), icon);
       icon->priv->name_changed_id      = g_signal_connect (icon->priv->iface, "notify::name",
 							   G_CALLBACK (netstatus_icon_name_changed), icon);
       icon->priv->wireless_changed_id  = g_signal_connect (icon->priv->iface, "notify::wireless",
@@ -1166,6 +1182,7 @@ netstatus_icon_set_iface (NetstatusIcon  *icon,
 							   G_CALLBACK (netstatus_icon_signal_changed), icon);
 
       netstatus_icon_state_changed       (icon->priv->iface, NULL, icon);
+      netstatus_icon_stats_changed       (icon->priv->iface, NULL, icon);
       netstatus_icon_name_changed        (icon->priv->iface, NULL, icon);
       netstatus_icon_is_wireless_changed (icon->priv->iface, NULL, icon);
       netstatus_icon_signal_changed      (icon->priv->iface, NULL, icon);

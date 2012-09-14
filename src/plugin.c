@@ -42,7 +42,7 @@
 
 static GList * pcl = NULL;			/* List of PluginClass structures */
 
-static void register_plugin_class(PluginClass * pc, gboolean dynamic);
+static PluginClass * register_plugin_class(PluginClass * pc, gboolean dynamic);
 static void init_plugin_class_list(void);
 static PluginClass * plugin_find_class(const char * type);
 static PluginClass * plugin_load_dynamic(const char * type, const gchar * path);
@@ -56,10 +56,21 @@ do {\
 } while (0)
 
 /* Register a PluginClass. */
-static void register_plugin_class(PluginClass * pc, gboolean dynamic)
+static PluginClass * register_plugin_class(PluginClass * pc, gboolean dynamic)
 {
+    size_t structure_size = sizeof(PluginClass);
+    if (structure_size < pc->structure_actual_size)
+        structure_size = pc->structure_actual_size;
+
+    PluginClass * pc1 = (PluginClass *) g_malloc0(structure_size);
+    memcpy(pc1, pc, pc->structure_actual_size);
+    pc = pc1;
+
     pcl = g_list_append(pcl, pc);
     pc->dynamic = dynamic;
+    pc->internal = g_new0(PluginClassInternal, 1);
+
+    return pc;
 }
 
 /* Initialize the static plugins. */
@@ -128,37 +139,98 @@ static PluginClass * plugin_load_dynamic(const char * type, const gchar * path)
 {
     PluginClass * pc = NULL;
 
+    GModule * m = NULL;
+    gchar * class_name = NULL;
+
     /* Load the external module. */
-    GModule * m = g_module_open(path, 0);
-    if (m != NULL)
-    {
-        /* Formulate the name of the expected external variable of type PluginClass. */
-        char class_name[128];
-        g_snprintf(class_name, sizeof(class_name), "%s_plugin_class", type);
+    m = g_module_open(path, 0);
 
-        /* Validate that the external variable is of type PluginClass. */
-        gpointer tmpsym;
-        if (( ! g_module_symbol(m, class_name, &tmpsym))	/* Ensure symbol is present */
-        || ((pc = tmpsym) == NULL)
-        || (pc->structure_size != sizeof(PluginClass))		/* Then check versioning information */
-        || (pc->structure_version != PLUGINCLASS_VERSION)
-        || (strcmp(type, pc->type) != 0))			/* Then and only then access other fields; check name */
-        {
-            g_module_close(m);
-            ERR("%s.so is not a lxpanelx plugin\n", type);
-            return NULL;
-        }
-
-        /* Register the newly loaded and valid plugin. */
-        pc->gmodule = m;
-        register_plugin_class(pc, TRUE);
-    }
-    else
+    if (m == NULL)
     {
         ERR("%s: %s\n", path, g_module_error());
+        goto err;
     }
+
+    /* Formulate the name of the expected external variable of type PluginClass. */
+    class_name = g_strdup_printf("%s_plugin_class", type);
+
+    gpointer tmpsym;
+    if (( ! g_module_symbol(m, class_name, &tmpsym))
+    || ((pc = tmpsym) == NULL))
+    {
+        ERR("%s.so is not a lxpanelx plugin: symbol %s not found\n", type, class_name);
+        goto err;
+    }
+
+    if (pc->structure_magic != PLUGINCLASS_MAGIC)
+    {
+        ERR("%s.so is not a lxpanelx plugin: invalid magic value 0x%x (should be 0x%x)\n", type, pc->structure_magic, PLUGINCLASS_MAGIC);
+        goto err;
+    }
+
+    if (pc->structure_version != PLUGINCLASS_VERSION)
+    {
+        ERR("%s.so: invalid plugin class version: %d\n", type, pc->structure_version);
+        goto err;
+    }
+
+    if (pc->structure_subversion != 0)
+    {
+        ERR("%s.so: unknown plugin class subversion: %d\n", type, pc->structure_subversion);
+        /* not fatal error */
+    }
+
+    if (pc->structure_base_size != PLUGINCLASS_BASE_SIZE)
+    {
+        ERR("%s.so: invalid plugin class base size: %d (should be %d)\n", type, pc->structure_base_size, PLUGINCLASS_BASE_SIZE);
+        goto err;
+    }
+
+    if (pc->structure_actual_size < pc->structure_base_size)
+    {
+        ERR("%s.so: invalid plugin class actual size: %d (should be not less than %d)\n", type, pc->structure_actual_size, pc->structure_base_size);
+        goto err;
+    }
+
+    if (strcmp(type, pc->type) != 0)
+    {
+        ERR("%s.so: invalid plugin class type: %s\n", type, pc->type);
+        goto err;
+    }
+
+    /* Register the newly loaded and valid plugin. */
+    pc = register_plugin_class(pc, TRUE);
+    pc->internal->gmodule = m;
+
+    g_free(class_name);
+
     return pc;
+
+err:
+    if (m)
+        g_module_close(m);
+    g_free(class_name);
+    return NULL;
 }
+
+/* Unreference a dynamic plugin. */
+static void plugin_class_unref(PluginClass * pc)
+{
+    pc->internal->count -= 1;
+
+    /* If the reference count drops to zero, unload the plugin if it is dynamic and has declared itself unloadable. */
+    if ((pc->internal->count == 0)
+    && (pc->dynamic)
+    && ( ! pc->not_unloadable))
+    {
+        pcl = g_list_remove(pcl, pc);
+        PluginClassInternal * internal = pc->internal;
+        g_module_close(internal->gmodule);
+        g_free(internal);
+        g_free(pc);
+    }
+}
+
 
 /* Create an instance of a plugin with a specified name, loading it if external. */
 Plugin * plugin_load(char * type)
@@ -189,7 +261,7 @@ Plugin * plugin_load(char * type)
     /* Instantiate the plugin */
     Plugin * plug = g_new0(Plugin, 1);
     plug->class = pc;
-    pc->count += 1;
+    pc->internal->count += 1;
     return plug;
 }
 
@@ -276,21 +348,6 @@ void plugin_delete(Plugin * pl)
     g_free(pl);
 }
 
-/* Unreference a dynamic plugin. */
-static void plugin_class_unref(PluginClass * pc)
-{
-    pc->count -= 1;
-
-    /* If the reference count drops to zero, unload the plugin if it is dynamic and has declared itself unloadable. */
-    if ((pc->count == 0)
-    && (pc->dynamic)
-    && ( ! pc->not_unloadable))
-    {
-        pcl = g_list_remove(pcl, pc);
-        g_module_close(pc->gmodule);
-    }
-}
-
 /* Get a list of all available plugin classes.
  * Returns a newly allocated GList which should be freed with plugin_class_list_free(list). */
 GList * plugin_get_available_classes(void)
@@ -307,7 +364,7 @@ GList * plugin_get_available_classes(void)
     {
         PluginClass * pc = (PluginClass *) l->data;
         classes = g_list_prepend(classes, pc);
-        pc->count += 1;
+        pc->internal->count += 1;
     }
 
 #ifndef DISABLE_PLUGINS_LOADING
@@ -330,7 +387,7 @@ GList * plugin_get_available_classes(void)
                     PluginClass * pc = plugin_load_dynamic(type, path);
                     if (pc != NULL)
                     {
-                        pc->count += 1;
+                        pc->internal->count += 1;
                         classes = g_list_prepend(classes, pc);
                     }
                     g_free(path);

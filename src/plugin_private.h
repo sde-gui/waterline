@@ -22,9 +22,15 @@
 
 #include <lxpanelx/plugin.h>
 
+struct _PluginClassInternal {
+    char * fname;				/* Plugin file pathname */
+    int count;					/* Reference count */
+    GModule * gmodule;				/* Associated GModule structure */
+};
+
 /* Representative of a loaded and active plugin attached to a panel. */
 struct _Plugin {
-    PluginClass * class;			/* Back pointer to PluginClass */
+    PluginClass * class;			/* Back pointer to plugin class */
     Panel * panel;				/* Back pointer to Panel */
     GtkWidget * pwid;				/* Top level widget; plugin allocates, but plugin mechanism, not plugin itself, destroys this */
     gpointer priv;				/* Private context for plugin; plugin frees this in its destructor */

@@ -30,21 +30,27 @@
 
 /* Support for external plugin versioning.
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */
-#define PLUGINCLASS_VERSION 2
+#define PLUGINCLASS_MAGIC 0x7bd4370f
+#define PLUGINCLASS_VERSION 1
+#define PLUGINCLASS_BASE_SIZE ((unsigned short) (unsigned) & ((PluginClass*)0)->__end_of_required_part)
 #define PLUGINCLASS_VERSIONING \
-    structure_size : sizeof(PluginClass), \
-    structure_version : PLUGINCLASS_VERSION
+    structure_magic : PLUGINCLASS_MAGIC, \
+    structure_version : PLUGINCLASS_VERSION, \
+    structure_subversion : 0, \
+    structure_base_size : PLUGINCLASS_BASE_SIZE, \
+    structure_actual_size : sizeof(PluginClass)
 
 /* Representative of an available plugin. */
 struct _PluginClass {
 
     /* Keep these first.  Do not make unnecessary changes in structure layout. */
-    unsigned short structure_size;		/* Structure size, for versioning support */
-    unsigned short structure_version;		/* Structure version, for versioning support */
+    unsigned long  structure_magic;
+    unsigned short structure_version;		/* Structure version. To distinguish backward-incompatible versions of structure. */
+    unsigned short structure_subversion;	/* Structure subversion. Reserved. */
+    unsigned short structure_base_size;		/* Size of required part. */
+    unsigned short structure_actual_size;	/* Actual size of structure.  */
 
-    char * fname;				/* Plugin file pathname */
-    int count;					/* Reference count */
-    GModule * gmodule;				/* Associated GModule structure */
+    PluginClassInternal * internal;
 
     int dynamic : 1;				/* True if dynamically loaded */
     int unused_invisible : 1;			/* Unused; reserved bit */
@@ -62,6 +68,9 @@ struct _PluginClass {
 
     int  (*constructor)(struct _Plugin * plugin, char ** fp);		/* Create an instance of the plugin */
     void (*destructor)(struct _Plugin * plugin);			/* Destroy an instance of the plugin */
+
+    void * __end_of_required_part;
+
     void (*config)(struct _Plugin * plugin, GtkWindow * parent);	/* Request the plugin to display its configuration dialog */
     void (*save)(struct _Plugin * plugin, FILE * fp);			/* Request the plugin to save its configuration to a file */
     void (*panel_configuration_changed)(struct _Plugin * plugin);	/* Request the plugin to do a full redraw after a panel configuration change */

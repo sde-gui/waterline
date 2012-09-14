@@ -25,6 +25,9 @@ typedef struct _Plugin Plugin;
 struct _PluginClass;
 typedef struct _PluginClass PluginClass;
 
+struct _PluginClassInternal;
+typedef struct _PluginClassInternal PluginClassInternal;
+
 struct _Panel;
 typedef struct _Panel Panel;
 

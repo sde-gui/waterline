@@ -156,6 +156,8 @@ static void dclock_generate_copy_to_clipboard_menu(GtkMenu* lxpanelx_menu, Plugi
         GtkWidget * copy_to_clipboard = gtk_menu_item_new_with_label("Copy to Clipboard...");
         gtk_menu_shell_prepend(GTK_MENU_SHELL(lxpanelx_menu), copy_to_clipboard);
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(copy_to_clipboard), menu);
+        gtk_widget_show(copy_to_clipboard);
+        gtk_widget_show_all(menu);
     }
 }
 
@@ -256,17 +258,8 @@ static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * e
 {
     DClockPlugin * dc = PRIV(plugin);
 
-    /* Standard right-click handling. */
-    if (evt->button == 3)
-    {
-        GtkMenu* context_menu = plugin_get_menu(plugin, FALSE);
-#if GTK_CHECK_VERSION(2,16,0)
-        dclock_generate_copy_to_clipboard_menu(context_menu, plugin);
-        gtk_widget_show_all(GTK_WIDGET(context_menu));
-#endif
-        gtk_menu_popup(context_menu, NULL, NULL, NULL, NULL, evt->button, evt->time);
+    if (plugin_button_press_event(widget, evt, plugin))
         return TRUE;
-    }
 
     /* If an action is set, execute it. */
     if (dc->action != NULL)
@@ -698,6 +691,14 @@ static void dclock_run_command(Plugin * p, char ** argv, int argc)
     }
 }
 
+static void dclock_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
+{
+    DClockPlugin * dc = PRIV(plugin);
+
+#if GTK_CHECK_VERSION(2,16,0)
+    dclock_generate_copy_to_clipboard_menu(menu, plugin);
+#endif
+}
 
 /* Plugin descriptor. */
 PluginClass dclock_plugin_class = {
@@ -714,5 +715,6 @@ PluginClass dclock_plugin_class = {
     config : dclock_configure,
     save : dclock_save_configuration,
     panel_configuration_changed : dclock_panel_configuration_changed,
-    run_command : dclock_run_command
+    run_command : dclock_run_command,
+    popup_menu_hook : dclock_popup_menu_hook
 };

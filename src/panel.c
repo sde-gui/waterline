@@ -1740,7 +1740,7 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
 
     g_signal_connect( ret, "selection-done", G_CALLBACK(gtk_widget_destroy), NULL );
 
-    if (plugin_class(plugin)->popup_menu_hook)
+    if (plugin && plugin_class(plugin)->popup_menu_hook)
         plugin_class(plugin)->popup_menu_hook(plugin, ret);
 
     return ret;

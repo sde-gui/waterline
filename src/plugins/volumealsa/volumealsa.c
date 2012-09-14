@@ -55,7 +55,7 @@ typedef struct {
     guint mixer_evt_idle;			/* Timer to handle restarting poll */
 
     /* Settings. */
-    gchar * double_click_action;
+    gchar * volume_control_command;
 } VolumeALSAPlugin;
 
 static gboolean asound_find_element(VolumeALSAPlugin * vol, const char * ename);
@@ -309,13 +309,13 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
                 gtk_widget_hide(vol->popup_window);
                 vol->show_popup = FALSE;
             }
-            if (strempty(vol->double_click_action))
+            if (strempty(vol->volume_control_command))
             {
                 lxpanel_launch(get_default_application("volume-control"), NULL);
             }
             else
             {
-                lxpanel_launch(vol->double_click_action, NULL);
+                lxpanel_launch(vol->volume_control_command, NULL);
             }
         }
         else
@@ -474,7 +474,7 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
     if ( ! asound_initialize(vol))
         return 1;
 
-    vol->double_click_action = NULL;
+    vol->volume_control_command = NULL;
 
     /* Load parameters from the configuration file. */
     line s;
@@ -489,8 +489,10 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
             }
             if (s.type == LINE_VAR)
             {
-                if (g_ascii_strcasecmp(s.t[0], "DoubleClickAction") == 0)
-                    vol->double_click_action = g_strdup(s.t[1]);
+                if (g_ascii_strcasecmp(s.t[0], "VolumeControlCommand") == 0)
+                    vol->volume_control_command = g_strdup(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "DoubleClickAction") == 0)
+                    vol->volume_control_command = g_strdup(s.t[1]);
                 else
                     ERR( "dclock: unknown var %s\n", s.t[0]);
             }
@@ -507,7 +509,7 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
       if (vol->f == NULL) \
           vol->f = g_strdup(v);
 
-    DEFAULT_STRING(double_click_action, "pavucontrol");
+    DEFAULT_STRING(volume_control_command, "pavucontrol");
 
     #undef DEFAULT_STRING
 */
@@ -550,7 +552,7 @@ static void volumealsa_destructor(Plugin * p)
     if (vol->popup_window != NULL)
         gtk_widget_destroy(vol->popup_window);
 
-    g_free(vol->double_click_action);
+    g_free(vol->volume_control_command);
 
     /* Deallocate all memory. */
     g_free(vol);
@@ -566,12 +568,24 @@ static void volumealsa_apply_configuration(Plugin * p)
 static void volumealsa_configure(Plugin * p, GtkWindow * parent)
 {
     VolumeALSAPlugin * vol = PRIV(p);
+
+    gchar * volume_control_application = get_default_application("volume-control");
+    gchar * tooltip = NULL;
+    if (volume_control_application)
+        tooltip = g_strdup_printf(_("Application to run by double click. \"%s\" by default."), volume_control_application);
+    else
+        tooltip = g_strdup(_("Application to run by double click"));
+
     GtkWidget * dlg = create_generic_config_dlg(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) volumealsa_apply_configuration, (gpointer) p,
-        _("Double click action"), &vol->double_click_action , (GType)CONF_TYPE_STR,
+        _("Volume Control application"), &vol->volume_control_command, (GType)CONF_TYPE_STR,
+        "tooltip-text", tooltip, (GType)CONF_TYPE_SET_PROPERTY,
         NULL);
+
+    g_free(tooltip);
+
     if (dlg)
         gtk_window_present(GTK_WINDOW(dlg));
 }
@@ -580,7 +594,7 @@ static void volumealsa_configure(Plugin * p, GtkWindow * parent)
 static void volumealsa_save_configuration(Plugin * p, FILE * fp)
 {
     VolumeALSAPlugin * vol = PRIV(p);
-    lxpanel_put_str(fp, "DoubleClickAction", vol->double_click_action);
+    lxpanel_put_str(fp, "VolumeControlCommand", vol->volume_control_command);
 }
 
 

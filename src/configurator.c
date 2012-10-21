@@ -93,11 +93,6 @@ response_event(GtkDialog *widget, gint arg1, Panel* panel )
     return;
 }
 
-static gboolean edge_selector(Panel* p, int edge)
-{
-    return (p->edge == edge);
-}
-
 /* If there is a panel on this edge and it is not the panel being configured, set the edge unavailable. */
 gboolean panel_edge_available(Panel* p, int edge)
 {
@@ -113,33 +108,26 @@ gboolean panel_edge_available(Panel* p, int edge)
 
 static void set_edge(Panel* p, int edge)
 {
+    if (p->edge == edge)
+        return;
     p->edge = edge;
     update_panel_geometry(p);
     panel_set_panel_configuration_changed(p);
 }
 
-static void edge_bottom_toggle(GtkToggleButton *widget, Panel *p)
+static void edge_changed(GtkWidget *widget, Panel *p)
 {
-    if (gtk_toggle_button_get_active(widget))
-        set_edge(p, EDGE_BOTTOM);
-}
-
-static void edge_top_toggle(GtkToggleButton *widget, Panel *p)
-{
-    if (gtk_toggle_button_get_active(widget))
-        set_edge(p, EDGE_TOP);
-}
-
-static void edge_left_toggle(GtkToggleButton *widget, Panel *p)
-{
-    if (gtk_toggle_button_get_active(widget))
-        set_edge(p, EDGE_LEFT);
-}
-
-static void edge_right_toggle(GtkToggleButton *widget, Panel *p)
-{
-    if (gtk_toggle_button_get_active(widget))
-        set_edge(p, EDGE_RIGHT);
+    int edge = -1;
+    int i = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+    switch (i)
+    {
+        case 0: edge = EDGE_TOP; break;
+        case 1: edge = EDGE_BOTTOM; break;
+        case 2: edge = EDGE_LEFT; break;
+        case 3: edge = EDGE_RIGHT; break;
+    }
+    if (edge != -1)
+        set_edge(p, edge);
 }
 
 static void set_alignment(Panel* p, int align)
@@ -929,26 +917,21 @@ void panel_configure( Panel* p, int sel_page )
     panel_apply_icon(GTK_WINDOW(p->pref_dialog));
 
     /* position */
-    w = (GtkWidget*)gtk_builder_get_object( builder, "edge_bottom" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), edge_selector(p, EDGE_BOTTOM));
-    //gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_BOTTOM));
+
+    /* edge */
+
+    w = (GtkWidget*)gtk_builder_get_object( builder, "edge" );
     gtk_widget_set_sensitive(w, TRUE);
-    g_signal_connect(w, "toggled", G_CALLBACK(edge_bottom_toggle), p);
-    w = (GtkWidget*)gtk_builder_get_object( builder, "edge_top" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), edge_selector(p, EDGE_TOP));
-    //gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_TOP));
-    gtk_widget_set_sensitive(w, TRUE);
-    g_signal_connect(w, "toggled", G_CALLBACK(edge_top_toggle), p);
-    w = (GtkWidget*)gtk_builder_get_object( builder, "edge_left" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), edge_selector(p, EDGE_LEFT));
-    //gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_LEFT));
-    gtk_widget_set_sensitive(w, TRUE);
-    g_signal_connect(w, "toggled", G_CALLBACK(edge_left_toggle), p);
-    w = (GtkWidget*)gtk_builder_get_object( builder, "edge_right" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), edge_selector(p, EDGE_RIGHT));
-    //gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_RIGHT));
-    gtk_widget_set_sensitive(w, TRUE);
-    g_signal_connect(w, "toggled", G_CALLBACK(edge_right_toggle), p);
+    int edge_index = 0;
+    switch (p->edge)
+    {
+        case EDGE_TOP   : edge_index = 0; break;
+        case EDGE_BOTTOM: edge_index = 1; break;
+        case EDGE_LEFT  : edge_index = 2; break;
+        case EDGE_RIGHT : edge_index = 3; break;
+    }
+    gtk_combo_box_set_active(GTK_COMBO_BOX(w), edge_index);
+    g_signal_connect( w, "changed", G_CALLBACK(edge_changed), p);
 
     /* alignment */
     p->alignment_left_label = w = (GtkWidget*)gtk_builder_get_object( builder, "alignment_left" );

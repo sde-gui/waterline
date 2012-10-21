@@ -152,7 +152,7 @@ static void dclock_generate_copy_to_clipboard_menu(GtkMenu* lxpanelx_menu, Plugi
     }
     else
     {
-        GtkWidget * copy_to_clipboard = gtk_menu_item_new_with_label("Copy to Clipboard...");
+        GtkWidget * copy_to_clipboard = gtk_menu_item_new_with_label(_("Copy to Clipboard..."));
         gtk_menu_shell_prepend(GTK_MENU_SHELL(lxpanelx_menu), copy_to_clipboard);
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(copy_to_clipboard), menu);
         gtk_widget_show(copy_to_clipboard);

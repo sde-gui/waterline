@@ -121,6 +121,8 @@ extern void load_global_config(void);
 extern void free_global_config(void);
 extern void enable_kiosk_mode(void);
 extern void panel_config_save(Panel* panel);
+extern int panel_parse_global(Panel *p, char **fp);
+
 
 /* configurator.c */
 

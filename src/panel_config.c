@@ -47,6 +47,95 @@ void panel_plugin_config_save( Panel* p, FILE *fp);
 
 /******************************************************************************/
 
+int
+panel_parse_global(Panel *p, char **fp)
+{
+    line s;
+
+    if (!fp)
+        return 1;
+
+    while (lxpanel_get_line(fp, &s) != LINE_NONE) {
+        if (s.type == LINE_VAR) {
+            if (!g_ascii_strcasecmp(s.t[0], "edge")) {
+                p->edge = str2num(edge_pair, s.t[1], EDGE_NONE);
+            } else if (!g_ascii_strcasecmp(s.t[0], "align")) {
+                p->align = str2num(align_pair, s.t[1], ALIGN_NONE);
+            } else if (!g_ascii_strcasecmp(s.t[0], "margin")) {
+                p->margin = atoi(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "widthtype")) {
+                p->oriented_width_type = str2num(width_pair, s.t[1], WIDTH_NONE);
+            } else if (!g_ascii_strcasecmp(s.t[0], "width")) {
+                p->oriented_width = atoi(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "heighttype")) {
+                p->oriented_height_type = str2num(height_pair, s.t[1], HEIGHT_NONE);
+            } else if (!g_ascii_strcasecmp(s.t[0], "height")) {
+                p->oriented_height = atoi(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "spacing")) {
+                p->spacing = atoi(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "SetDockType")) {
+                p->setdocktype = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "SetPartialStrut")) {
+                p->setstrut = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "RoundCorners")) {
+                p->round_corners = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "RoundCornersRadius")) {
+                p->round_corners_radius = atoi(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "Transparent")) {
+                p->transparent = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "Alpha")) {
+                p->alpha = atoi(s.t[1]);
+                if (p->alpha > 255)
+                    p->alpha = 255;
+            } else if (!g_ascii_strcasecmp(s.t[0], "AutoHide")) {
+                p->autohide = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "HeightWhenHidden")) {
+                p->height_when_hidden = atoi(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "TintColor")) {
+                if (!gdk_color_parse (s.t[1], &p->gtintcolor))
+                    gdk_color_parse ("white", &p->gtintcolor);
+                p->tintcolor = gcolor2rgb24(&p->gtintcolor);
+                DBG("tintcolor=%x\n", p->tintcolor);
+            } else if (!g_ascii_strcasecmp(s.t[0], "UseFontColor")) {
+                p->usefontcolor = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "FontColor")) {
+                if (!gdk_color_parse (s.t[1], &p->gfontcolor))
+                    gdk_color_parse ("black", &p->gfontcolor);
+                p->fontcolor = gcolor2rgb24(&p->gfontcolor);
+                DBG("fontcolor=%x\n", p->fontcolor);
+            } else if (!g_ascii_strcasecmp(s.t[0], "UseFontSize")) {
+                p->usefontsize = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "FontSize")) {
+                p->fontsize = atoi(s.t[1]);   
+            } else if (!g_ascii_strcasecmp(s.t[0], "Background")) {
+                p->background = str2num(bool_pair, s.t[1], 0);
+            } else if( !g_ascii_strcasecmp(s.t[0], "BackgroundFile") ) {
+                p->background_file = g_strdup( s.t[1] );
+            } else if (!g_ascii_strcasecmp(s.t[0], "RGBATransparency")) {
+                p->rgba_transparency = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "StretchBackground")) {
+                p->stretch_background = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "IconSize")) {
+                p->preferred_icon_size = atoi(s.t[1]);
+            } else if( !g_ascii_strcasecmp(s.t[0], "GtkWidgetName") ) {
+                g_free(p->widget_name);
+                p->widget_name = g_strdup( s.t[1] );
+            } else {
+                ERR( "lxpanel: %s - unknown var in Global section\n", s.t[0]);
+            }
+        } else if (s.type == LINE_BLOCK_END) {
+            break;
+        } else {
+            ERR( "lxpanel: illegal in this context %s\n", s.str);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/******************************************************************************/
+
 void
 panel_global_config_save(Panel* p, FILE *fp)
 {

@@ -82,15 +82,6 @@
       </row>
     </data>
   </object>
-  <object class="GtkRadioButton" id="radiobutton1">
-    <property name="label" translatable="yes">radiobutton</property>
-    <property name="use_action_appearance">False</property>
-    <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="receives_default">False</property>
-    <property name="active">True</property>
-    <property name="draw_indicator">True</property>
-  </object>
   <object class="GtkDialog" id="panel_pref">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -232,7 +223,6 @@
                                     <property name="receives_default">False</property>
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
-                                    <property name="group">radiobutton1</property>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>
@@ -249,7 +239,7 @@
                                     <property name="receives_default">False</property>
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
-                                    <property name="group">radiobutton1</property>
+                                    <property name="group">alignment_left</property>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>
@@ -266,7 +256,7 @@
                                     <property name="receives_default">False</property>
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
-                                    <property name="group">radiobutton1</property>
+                                    <property name="group">alignment_left</property>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>

@@ -59,20 +59,13 @@
 
 extern void gtk_run(void);
 
-/* defined in configurator.c */
-
-extern void restart(void);
-extern void panel_configure(Panel* p, int sel_page);
-extern gboolean panel_edge_available(Panel* p, int edge);
-extern void load_global_config(void);
-extern void free_global_config(void);
-extern void enable_kiosk_mode(void);
-extern void panel_config_save(Panel* panel);
-extern void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);
-
 /* defined in misc.c */
 
 extern void lxpanel_fm_init(void);
+
+/* defined in commands.c */
+
+extern void restart(void);
 
 /******************************************************************************/
 

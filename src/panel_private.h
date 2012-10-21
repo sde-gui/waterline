@@ -107,9 +107,26 @@ struct _Panel {
     GtkWidget* width_control;		/* Width control in preference dialog */
 };
 
-char * file_manager_cmd;
-char * terminal_cmd;
-char * logout_cmd;
+struct {
+    char * file_manager_cmd;
+    char * terminal_cmd;
+    char * logout_cmd;
+    int kiosk_mode;
+    int arg_kiosk_mode;
+} global_config;
+
+/* panel_config.c */
+
+extern void load_global_config(void);
+extern void free_global_config(void);
+extern void enable_kiosk_mode(void);
+extern void panel_config_save(Panel* panel);
+
+/* configurator.c */
+
+extern void panel_configure(Panel* p, int sel_page );
+extern gboolean panel_edge_available(Panel* p, int edge);
+extern void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);
 
 
 #endif

@@ -1130,18 +1130,18 @@ void panel_configure( Panel* p, int sel_page )
     }
     /* advanced, applications */
     w = (GtkWidget*)gtk_builder_get_object( builder, "file_manager" );
-    if (file_manager_cmd)
-        gtk_entry_set_text( (GtkEntry*)w, file_manager_cmd );
+    if (global_config.file_manager_cmd)
+        gtk_entry_set_text( (GtkEntry*)w, global_config.file_manager_cmd );
     g_signal_connect( w, "focus-out-event",
                       G_CALLBACK(on_entry_focus_out),
-                      &file_manager_cmd);
+                      &global_config.file_manager_cmd);
 
     w = (GtkWidget*)gtk_builder_get_object( builder, "term" );
-    if (terminal_cmd)
-        gtk_entry_set_text( (GtkEntry*)w, terminal_cmd );
+    if (global_config.terminal_cmd)
+        gtk_entry_set_text( (GtkEntry*)w, global_config.terminal_cmd );
     g_signal_connect( w, "focus-out-event",
                       G_CALLBACK(on_entry_focus_out),
-                      &terminal_cmd);
+                      &global_config.terminal_cmd);
 
     /* If we are under LXSession, setting logout command is not necessary. */
     w = (GtkWidget*)gtk_builder_get_object( builder, "logout" );
@@ -1151,11 +1151,11 @@ void panel_configure( Panel* p, int sel_page )
         gtk_widget_hide( w );
     }
     else {
-        if(logout_cmd)
-            gtk_entry_set_text( (GtkEntry*)w, logout_cmd );
+        if(global_config.logout_cmd)
+            gtk_entry_set_text( (GtkEntry*)w, global_config.logout_cmd );
         g_signal_connect( w, "focus-out-event",
                         G_CALLBACK(on_entry_focus_out),
-                        &logout_cmd);
+                        &global_config.logout_cmd);
     }
 
     panel_adjust_geometry_terminology(p);

@@ -40,18 +40,7 @@
 
 #include <lxpanelx/dbg.h>
 
-void panel_configure(Panel* p, int sel_page );
-void panel_config_save(Panel* panel);
 static void save_global_config();
-
-char * file_manager_cmd = NULL;
-char * terminal_cmd = NULL;
-char * logout_cmd = NULL;
-static int kiosk_mode = 0;
-
-static int arg_kiosk_mode = 0;
-
-extern int config;
 
 void panel_global_config_save( Panel* p, FILE *fp);
 void panel_plugin_config_save( Panel* p, FILE *fp);
@@ -251,13 +240,13 @@ void load_global_config()
     if (loaded)
     {
         if (g_key_file_has_key(kf, general_group, "KioskMode", NULL))
-            kiosk_mode = g_key_file_get_boolean( kf, general_group, "KioskMode", NULL );
+            global_config.kiosk_mode = g_key_file_get_boolean( kf, general_group, "KioskMode", NULL );
         else
-            kiosk_mode = 0;
+            global_config.kiosk_mode = 0;
 
-        file_manager_cmd = g_key_file_get_string( kf, command_group, "FileManager", NULL );
-        terminal_cmd = g_key_file_get_string( kf, command_group, "Terminal", NULL );
-        logout_cmd = g_key_file_get_string( kf, command_group, "Logout", NULL );
+        global_config.file_manager_cmd = g_key_file_get_string( kf, command_group, "FileManager", NULL );
+        global_config.terminal_cmd     = g_key_file_get_string( kf, command_group, "Terminal", NULL );
+        global_config.logout_cmd       = g_key_file_get_string( kf, command_group, "Logout", NULL );
     }
     g_key_file_free( kf );
 }
@@ -273,15 +262,15 @@ static void save_global_config()
     if (f)
     {
         fprintf( f, "[%s]\n", general_group );
-        fprintf( f, "KioskMode=%s\n", kiosk_mode ? "true" : "false" );
+        fprintf( f, "KioskMode=%s\n", global_config.kiosk_mode ? "true" : "false" );
 
         fprintf( f, "[%s]\n", command_group );
-        if( file_manager_cmd )
-            fprintf( f, "FileManager=%s\n", file_manager_cmd );
-        if( terminal_cmd )
-            fprintf( f, "Terminal=%s\n", terminal_cmd );
-        if( logout_cmd )
-            fprintf( f, "Logout=%s\n", logout_cmd );
+        if( global_config.file_manager_cmd )
+            fprintf( f, "FileManager=%s\n", global_config.file_manager_cmd );
+        if( global_config.terminal_cmd )
+            fprintf( f, "Terminal=%s\n", global_config.terminal_cmd );
+        if( global_config.logout_cmd )
+            fprintf( f, "Logout=%s\n", global_config.logout_cmd );
         fclose( f );
     }
 
@@ -290,34 +279,36 @@ static void save_global_config()
 
 void free_global_config()
 {
-    g_free( file_manager_cmd );
-    g_free( terminal_cmd );
-    g_free( logout_cmd );
+    g_free( global_config.file_manager_cmd );
+    g_free( global_config.terminal_cmd );
+    g_free( global_config.logout_cmd );
 }
 
 /******************************************************************************/
 
 extern const char* lxpanel_get_logout_command()
 {
-    return logout_cmd;
+    return global_config.logout_cmd;
 }
 
 extern const char* lxpanel_get_file_manager()
 {
-    return file_manager_cmd ? file_manager_cmd : get_default_application("file-manager");
+    return global_config.file_manager_cmd ?
+        global_config.file_manager_cmd : get_default_application("file-manager");
 }
 
 extern const char* lxpanel_get_terminal()
 {
-    return terminal_cmd ? terminal_cmd : get_default_application("terminal-emulator");
+    return global_config.terminal_cmd ?
+        global_config.terminal_cmd : get_default_application("terminal-emulator");
 }
 
 extern int lxpanel_is_in_kiosk_mode(void)
 {
-    return kiosk_mode || arg_kiosk_mode;
+    return global_config.kiosk_mode || global_config.arg_kiosk_mode;
 }
 
 extern void enable_kiosk_mode(void)
 {
-    arg_kiosk_mode = 1;
+    global_config.arg_kiosk_mode = 1;
 }

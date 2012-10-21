@@ -35,6 +35,7 @@ lxpanelx_SOURCES = \
 	Xsupport.c \
 	pixbuf-stuff.c \
 	configurator.c \
+	panel_config.c \
 	dbg.c \
 	ev.c \
 	icon-grid.c \

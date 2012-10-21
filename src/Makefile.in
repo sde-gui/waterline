@@ -71,9 +71,9 @@ am__installdirs = "$(DESTDIR)$(bindir)" \
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__lxpanelx_SOURCES_DIST = misc.c defaultapplications.c libfm.c bg.c \
 	bg.h commands.c commands.h configparser.c generic_config_dlg.c \
-	Xsupport.c pixbuf-stuff.c configurator.c dbg.c ev.c \
-	icon-grid.c panel.c panel_internal.h panel_private.h plugin.c \
-	plugin_internal.h plugin_private.h paths.c gtk-run.c \
+	Xsupport.c pixbuf-stuff.c configurator.c panel_config.c dbg.c \
+	ev.c icon-grid.c panel.c panel_internal.h panel_private.h \
+	plugin.c plugin_internal.h plugin_private.h paths.c gtk-run.c \
 	menu-policy.h menu-policy.c
 @ENABLE_MENU_CACHE_TRUE@am__objects_1 = gtk-run.$(OBJEXT) \
 @ENABLE_MENU_CACHE_TRUE@	menu-policy.$(OBJEXT)
@@ -81,9 +81,9 @@ am_lxpanelx_OBJECTS = misc.$(OBJEXT) defaultapplications.$(OBJEXT) \
 	libfm.$(OBJEXT) bg.$(OBJEXT) commands.$(OBJEXT) \
 	configparser.$(OBJEXT) generic_config_dlg.$(OBJEXT) \
 	Xsupport.$(OBJEXT) pixbuf-stuff.$(OBJEXT) \
-	configurator.$(OBJEXT) dbg.$(OBJEXT) ev.$(OBJEXT) \
-	icon-grid.$(OBJEXT) panel.$(OBJEXT) plugin.$(OBJEXT) \
-	paths.$(OBJEXT) $(am__objects_1)
+	configurator.$(OBJEXT) panel_config.$(OBJEXT) dbg.$(OBJEXT) \
+	ev.$(OBJEXT) icon-grid.$(OBJEXT) panel.$(OBJEXT) \
+	plugin.$(OBJEXT) paths.$(OBJEXT) $(am__objects_1)
 lxpanelx_OBJECTS = $(am_lxpanelx_OBJECTS)
 am__DEPENDENCIES_1 =
 lxpanelx_DEPENDENCIES = $(BUILTIN_PLUGINS) $(am__DEPENDENCIES_1) \
@@ -427,6 +427,7 @@ lxpanelx_SOURCES = \
 	Xsupport.c \
 	pixbuf-stuff.c \
 	configurator.c \
+	panel_config.c \
 	dbg.c \
 	ev.c \
 	icon-grid.c \
@@ -590,6 +591,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menu-policy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/panel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/panel_config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/paths.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pixbuf-stuff.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin.Po@am__quote@

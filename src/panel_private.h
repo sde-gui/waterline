@@ -107,4 +107,9 @@ struct _Panel {
     GtkWidget* width_control;		/* Width control in preference dialog */
 };
 
+char * file_manager_cmd;
+char * terminal_cmd;
+char * logout_cmd;
+
+
 #endif

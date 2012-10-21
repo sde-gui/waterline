@@ -4,6 +4,7 @@ data/ui/netstatus.glade
 data/ui/launchbar.glade
 src/bg.c
 src/configurator.c
+src/commands.c
 src/dbg.c
 src/ev.c
 src/panel.c
@@ -15,6 +16,7 @@ src/plugins/cpu/cpu.c
 src/plugins/deskno/deskno.c
 #src/plugins/image.c
 src/plugins/launchbar.c
+src/plugins/launchbutton.c
 src/plugins/dclock.c
 src/plugins/menu.c
 src/plugins/separator.c

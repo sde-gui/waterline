@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lxpanel\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-21 19:09+0800\n"
-"PO-Revision-Date: 2012-10-21 19:23+0700\n"
+"POT-Creation-Date: 2012-10-21 20:30+0800\n"
+"PO-Revision-Date: 2012-10-21 20:31+0700\n"
 "Last-Translator: Vadim Ushakov <igeekless@gmail.com>\n"
 "Language-Team: Russian <hsh@runtu.org>\n"
 "Language: ru\n"
@@ -241,7 +241,7 @@ msgstr "<b>Уровень сигнала</b>"
 msgid "0%"
 msgstr "0%"
 
-#: ../data/ui/netstatus.glade.h:10
+#: ../data/ui/netstatus.glade.h:10 ../src/plugins/launchbutton.c:851
 #: ../src/plugins/netstatus/gnome-netstatus.glade.h:11
 msgid "General"
 msgstr "Общие"
@@ -320,6 +320,22 @@ msgstr "Добавить модуль на панель"
 #: ../src/configurator.c:664
 msgid "Available plugins"
 msgstr "Доступные модули"
+
+#: ../src/commands.c:46 ../src/gtk-run.c:342
+msgid "Run"
+msgstr "Выполнить"
+
+#: ../src/commands.c:48
+msgid "Restart"
+msgstr "Перезапустить"
+
+#: ../src/commands.c:49
+msgid "Logout"
+msgstr "Завершение работы"
+
+#: ../src/commands.c:80
+msgid "Logout command is not set"
+msgstr "Команда выхода из сеанса не задана"
 
 #: ../src/panel.c:1512
 msgid ""
@@ -469,10 +485,6 @@ msgstr "то же, что и --profile"
 msgid "same as --version"
 msgstr "то же, что и --version"
 
-#: ../src/gtk-run.c:342
-msgid "Run"
-msgstr "Выполнить"
-
 #: ../src/gtk-run.c:355
 msgid "Enter the command you want to execute:"
 msgstr "Введите команду для выполнения:"
@@ -536,6 +548,109 @@ msgstr "Показывает номер рабочего места"
 #: ../src/plugins/launchbar.c:925
 msgid "Bar with buttons to launch application"
 msgstr "Панель со значками запуска приложений"
+
+#: ../src/plugins/launchbutton.c:592
+#, c-format
+msgid "%s"
+msgstr "%s"
+
+#: ../src/plugins/launchbutton.c:596
+#, c-format
+msgid "Left click: %s"
+msgstr "ЛКМ: %s"
+
+#: ../src/plugins/launchbutton.c:608
+#, c-format
+msgid "Middle click: %s"
+msgstr "СКМ: %s"
+
+#: ../src/plugins/launchbutton.c:620
+#, c-format
+msgid "Right click: %s"
+msgstr "ПКМ: %s"
+
+#: ../src/plugins/launchbutton.c:632
+#, c-format
+msgid "Scroll up: %s"
+msgstr "Прокрутка вверх: %s"
+
+#: ../src/plugins/launchbutton.c:644
+#, c-format
+msgid "Scroll down: %s"
+msgstr "Прокрутка вниз: %s"
+
+#: ../src/plugins/launchbutton.c:854
+msgid "Title"
+msgstr "Заголовок"
+
+#: ../src/plugins/launchbutton.c:855
+msgid "Tooltip"
+msgstr "Всплывающая подсказка"
+
+#: ../src/plugins/launchbutton.c:856 ../src/plugins/menu.c:1244
+#: ../src/plugins/dirmenu.c:942
+msgid "Icon"
+msgstr "Значок"
+
+#: ../src/plugins/launchbutton.c:858
+msgid "Left button command"
+msgstr "Команда по щелчку левой кнопкой мыши"
+
+#: ../src/plugins/launchbutton.c:859
+msgid "Middle button command"
+msgstr "Команда по щелчку средней кнопкой мыши"
+
+#: ../src/plugins/launchbutton.c:860
+msgid "Right button command"
+msgstr "Команда по щелчку правой кнопкой мыши"
+
+#: ../src/plugins/launchbutton.c:861
+msgid "Scroll up command"
+msgstr "Команда на прокрутку вверх"
+
+#: ../src/plugins/launchbutton.c:862
+msgid "Scroll down command"
+msgstr "Команда на прокрутку вниз"
+
+#: ../src/plugins/launchbutton.c:864
+msgid "Interactive updates"
+msgstr "Интерактивные обновления"
+
+#: ../src/plugins/launchbutton.c:865
+msgid "Enable interactive updates"
+msgstr "Включить интерактивные обновления"
+
+#: ../src/plugins/launchbutton.c:866
+msgid "Command restart interval"
+msgstr "Интервал перезапуска команд"
+
+#: ../src/plugins/launchbutton.c:870
+msgid "Title update command"
+msgstr "Команда обновления заголовка"
+
+#: ../src/plugins/launchbutton.c:871
+msgid "Tooltip  update command"
+msgstr "Команда обновления всплывающей подсказки"
+
+#: ../src/plugins/launchbutton.c:872
+msgid "Icon path update command"
+msgstr "Команда обновления иконки"
+
+#: ../src/plugins/launchbutton.c:873
+msgid "General update command"
+msgstr "Общая команда обновления"
+
+#: ../src/plugins/launchbutton.c:917
+msgid "Button"
+msgstr "Кнопка"
+
+#: ../src/plugins/launchbutton.c:919
+msgid "Launch button"
+msgstr "Кнопка запуска"
+
+#: ../src/plugins/dclock.c:155
+msgid "Copy to Clipboard..."
+msgstr "Копировать в буфер обмена..."
 
 #: ../src/plugins/dclock.c:608
 msgid "Clock Format"
@@ -603,10 +718,6 @@ msgstr ""
 #: ../src/plugins/menu.c:920
 msgid "Recent Documents"
 msgstr "Недавние документы"
-
-#: ../src/plugins/menu.c:1244 ../src/plugins/dirmenu.c:942
-msgid "Icon"
-msgstr "Значок"
 
 #: ../src/plugins/menu.c:1245
 msgid "Caption"
@@ -1690,15 +1801,6 @@ msgstr "Индикаторы клавиш CapsLock, NumLock и ScrollLock"
 #~ msgid "Double click action"
 #~ msgstr "Действие по двойному щелчку"
 
-#~ msgid "Restart"
-#~ msgstr "Перезапустить"
-
-#~ msgid "Logout"
-#~ msgstr "Завершить Сеанс"
-
-#~ msgid "Logout command is not set"
-#~ msgstr "Команда выхода из сеанса не задана"
-
 #~ msgid "Select a directory"
 #~ msgstr "Выбрать каталог"
 
@@ -1885,9 +1987,6 @@ msgstr "Индикаторы клавиш CapsLock, NumLock и ScrollLock"
 
 #~ msgid "Remove Button"
 #~ msgstr "Удалить кнопку"
-
-#~ msgid "Buttons"
-#~ msgstr "Кнопки"
 
 #~ msgid "Accept SkipPager"
 #~ msgstr "Accept SkipPager"

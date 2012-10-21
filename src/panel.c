@@ -1441,29 +1441,30 @@ static void panel_popupmenu_remove_item( GtkMenuItem* item, Plugin* plugin )
     panel_config_save(panel);
 }
 
-/* FIXME: Potentially we can support multiple panels at the same edge,
- * but currently this cannot be done due to some positioning problems. */
 static char* gen_panel_name( int edge )
 {
-    const char* edge_str = num2str( edge_pair, edge, "" );
-    char* name = NULL;
-    char* dir = get_config_path("panels", CONFIG_USER_W);
+    const char * edge_str = num2str( edge_pair, edge, "" );
+    gchar * name = NULL;
+    gchar * dir = get_config_path("panels", CONFIG_USER_W);
     int i;
-    for( i = 0; i < G_MAXINT; ++i )
+    for( i = 1; i < G_MAXINT; ++i )
     {
         char* f;
-        if( G_LIKELY( i > 0 ) )
-            name =  g_strdup_printf( "%s%d", edge_str, i );
-        else
-            name = g_strdup( edge_str );
-        f = g_build_filename( dir, name, NULL );
-        if( ! g_file_test( f, G_FILE_TEST_EXISTS ) )
+        name =  g_strdup_printf( "%s%d", edge_str, i );
+
+        gchar * file_name = g_strdup_printf("%s.panel", name);
+
+        gchar * path = g_build_filename( dir, file_name, NULL );
+
+        g_free(file_name);
+
+        if( ! g_file_test( path, G_FILE_TEST_EXISTS ) )
         {
-            g_free( f );
+            g_free( path );
             break;
         }
         g_free( name );
-        g_free( f );
+        g_free( path );
     }
     g_free( dir );
     return name;
@@ -1475,8 +1476,6 @@ static void try_allocate_edge(Panel* p, int edge)
         p->edge = edge;
 }
 
-/* FIXME: Potentially we can support multiple panels at the same edge,
- * but currently this cannot be done due to some positioning problems. */
 static void panel_popupmenu_create_panel( GtkMenuItem* item, Panel* panel )
 {
     Panel* new_panel = panel_allocate();
@@ -1486,6 +1485,8 @@ static void panel_popupmenu_create_panel( GtkMenuItem* item, Panel* panel )
     try_allocate_edge(new_panel, EDGE_TOP);
     try_allocate_edge(new_panel, EDGE_LEFT);
     try_allocate_edge(new_panel, EDGE_RIGHT);
+	if (new_panel->edge == EDGE_NONE)
+	    new_panel->edge = EDGE_BOTTOM;
     new_panel->name = gen_panel_name(new_panel->edge);
 
     panel_configure(new_panel, 0);
@@ -1671,6 +1672,11 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
         if (display_icons)
             img = gtk_image_new_from_stock( GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU );
         menu_item = gtk_image_menu_item_new_with_mnemonic(_("Panel _Settings..."));
+
+        tmp = g_strdup_printf( _("Edit settings of panel \"%s\""), panel->name);
+        gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tmp);
+        g_free( tmp );
+
         if (display_icons)
             gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
         gtk_menu_shell_append(panel_submenu, menu_item);
@@ -1683,11 +1689,6 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
             gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
         gtk_menu_shell_append(panel_submenu, menu_item);
         g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_create_panel), panel );
-        /* FIXME: Potentially we can support multiple panels at the same edge,
-         * but currently this cannot be done due to some positioning problems. */
-        /* currently, disable the option when there are already four panels */
-        if( g_slist_length( all_panels ) >= 4 )
-            gtk_widget_set_sensitive( menu_item, FALSE );
 
         if (display_icons)
             img = gtk_image_new_from_stock( GTK_STOCK_DELETE, GTK_ICON_SIZE_MENU );
@@ -1871,7 +1872,7 @@ panel_start_gui(Panel *p)
 //    gtk_container_add(GTK_CONTAINER(p->bbox), p->box);
     gtk_container_add(GTK_CONTAINER(p->topgwin), p->box);
     gtk_widget_show(p->box);
-    
+
     make_round_corners(p);
 
     p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);

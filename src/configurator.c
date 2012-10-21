@@ -931,19 +931,23 @@ void panel_configure( Panel* p, int sel_page )
     /* position */
     w = (GtkWidget*)gtk_builder_get_object( builder, "edge_bottom" );
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), edge_selector(p, EDGE_BOTTOM));
-    gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_BOTTOM));
+    //gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_BOTTOM));
+    gtk_widget_set_sensitive(w, TRUE);
     g_signal_connect(w, "toggled", G_CALLBACK(edge_bottom_toggle), p);
     w = (GtkWidget*)gtk_builder_get_object( builder, "edge_top" );
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), edge_selector(p, EDGE_TOP));
-    gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_TOP));
+    //gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_TOP));
+    gtk_widget_set_sensitive(w, TRUE);
     g_signal_connect(w, "toggled", G_CALLBACK(edge_top_toggle), p);
     w = (GtkWidget*)gtk_builder_get_object( builder, "edge_left" );
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), edge_selector(p, EDGE_LEFT));
-    gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_LEFT));
+    //gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_LEFT));
+    gtk_widget_set_sensitive(w, TRUE);
     g_signal_connect(w, "toggled", G_CALLBACK(edge_left_toggle), p);
     w = (GtkWidget*)gtk_builder_get_object( builder, "edge_right" );
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), edge_selector(p, EDGE_RIGHT));
-    gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_RIGHT));
+    //gtk_widget_set_sensitive(w, panel_edge_available(p, EDGE_RIGHT));
+    gtk_widget_set_sensitive(w, TRUE);
     g_signal_connect(w, "toggled", G_CALLBACK(edge_right_toggle), p);
 
     /* alignment */

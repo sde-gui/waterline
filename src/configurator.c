@@ -1222,6 +1222,8 @@ panel_global_config_save(Panel* p, FILE *fp)
     lxpanel_put_line(fp, "TintColor=#%06x", gcolor2rgb24(&p->gtintcolor));
     lxpanel_put_int(fp, "Alpha", p->alpha);
 
+    lxpanel_put_str(fp, "GtkWidgetName", p->widget_name);
+
     lxpanel_put_bool(fp, "AutoHide", p->autohide);
     lxpanel_put_int(fp, "HeightWhenHidden", p->height_when_hidden);
     lxpanel_put_bool(fp, "SetDockType", p->setdocktype);

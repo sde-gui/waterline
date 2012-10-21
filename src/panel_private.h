@@ -34,6 +34,8 @@ struct _Panel {
     GtkRequisition requisition;
     GtkWidget *(*my_box_new) (gboolean, gint);
 
+    char * widget_name;
+
     FbBg *bg;
     int alpha;
     guint32 tintcolor;

@@ -1739,7 +1739,7 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
     g_signal_connect( ret, "selection-done", G_CALLBACK(gtk_widget_destroy), NULL );
 
     if (plugin && plugin_class(plugin)->popup_menu_hook)
-        plugin_class(plugin)->popup_menu_hook(plugin, ret);
+        plugin_class(plugin)->popup_menu_hook(plugin, GTK_MENU(ret));
 
     return GTK_MENU(ret);
 }
@@ -1807,7 +1807,7 @@ panel_start_gui(Panel *p)
     /* main toplevel window */
     /* p->topgwin =  gtk_window_new(GTK_WINDOW_TOPLEVEL); */
     p->topgwin = (GtkWidget*)g_object_new(PANEL_TOPLEVEL_TYPE, NULL);
-    gtk_widget_set_name(p->topgwin, "PanelToplevel");
+    gtk_widget_set_name(p->topgwin, p->widget_name);
     p->display = gdk_display_get_default();
 
     /* Set colormap. */
@@ -2124,6 +2124,9 @@ panel_parse_global(Panel *p, char **fp)
                     p->stretch_background = str2num(bool_pair, s.t[1], 0);
                 } else if (!g_ascii_strcasecmp(s.t[0], "IconSize")) {
                     p->preferred_icon_size = atoi(s.t[1]);
+                } else if( !g_ascii_strcasecmp(s.t[0], "GtkWidgetName") ) {
+                    g_free(p->widget_name);
+                    p->widget_name = g_strdup( s.t[1] );
                 } else {
                     ERR( "lxpanel: %s - unknown var in Global section\n", s.t[0]);
                 }
@@ -2302,6 +2305,9 @@ static void panel_destroy(Panel *p)
         gtk_widget_destroy(p->topgwin);
     g_free(p->workarea);
     g_free( p->background_file );
+
+    g_free( p->widget_name );
+
     gdk_flush();
     XFlush(GDK_DISPLAY());
     XSync(GDK_DISPLAY(), True);
@@ -2325,6 +2331,9 @@ Panel* panel_new( const char* config_file, const char* config_name )
     Panel* panel = panel_allocate();
     panel->orientation = ORIENT_NONE;
     panel->name = g_strdup(config_name);
+
+    panel->widget_name = g_strdup("PanelToplevel");
+
     pfp = fp;
 
     if (!panel_start(panel, &pfp))

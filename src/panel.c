@@ -1247,10 +1247,10 @@ void panel_calculate_position(Panel *p)
             Panel* lp = (Panel*)l->data;
             if (!lp->visible || lp->autohide || !lp->autohide_visible)
                 continue;
-            if (lp->edge == EDGE_TOP)
-                margin_top += lp->ch;
-            else if (lp->edge == EDGE_BOTTOM)
-                margin_bottom += lp->ch;
+            if (lp->edge == EDGE_TOP && lp->ch > margin_top)
+                margin_top = lp->ch;
+            else if (lp->edge == EDGE_BOTTOM && lp->ch > margin_bottom)
+                margin_bottom = lp->ch;
         }
     }
 

@@ -99,6 +99,7 @@ struct _Panel {
     struct {
         GtkWidget * pref_dialog;
         GtkWidget * plugin_pref_dialog;
+        GtkWidget * notebook;
         GtkWidget * margin_control;
         GtkWidget * height_label;
         GtkWidget * width_label;

@@ -871,17 +871,11 @@ update_toggle_button(GtkWidget *w, gboolean n)
     RET();
 }
 
-void panel_configure( Panel* p, int sel_page )
+static
+void panel_initialize_pref_dialog(Panel * p)
 {
-    GtkBuilder* builder;
+    GtkBuilder * builder;
     GtkWidget *w, *w2, *tint_clr;
-
-    if( p->pref_dialog.pref_dialog )
-    {
-        panel_adjust_geometry_terminology(p);
-        bring_to_current_desktop(p->pref_dialog.pref_dialog);
-        return;
-    }
 
     gchar * panel_perf_ui_path = get_private_resource_path(RESOURCE_DATA, "ui", "panel-pref.ui", 0);
     builder = gtk_builder_new();
@@ -1158,11 +1152,27 @@ void panel_configure( Panel* p, int sel_page )
                         &global_config.logout_cmd);
     }
 
-    panel_adjust_geometry_terminology(p);
-    gtk_widget_show(GTK_WIDGET(p->pref_dialog.pref_dialog));
-    w = (GtkWidget*)gtk_builder_get_object( builder, "notebook" );
-    gtk_notebook_set_current_page( (GtkNotebook*)w, sel_page );
+    p->pref_dialog.notebook = (GtkWidget*)gtk_builder_get_object( builder, "notebook" );
 
     g_object_unref(builder);
+}
+
+
+void panel_configure( Panel* p, int sel_page )
+{
+    if (!p->pref_dialog.pref_dialog)
+    {
+        panel_initialize_pref_dialog(p);
+    }
+
+    if (!p->pref_dialog.pref_dialog)
+        return;
+
+    panel_adjust_geometry_terminology(p);
+    gtk_widget_show(GTK_WIDGET(p->pref_dialog.pref_dialog));
+    bring_to_current_desktop(p->pref_dialog.pref_dialog);
+
+    if (sel_page >= 0)
+        gtk_notebook_set_current_page(GTK_NOTEBOOK(p->pref_dialog.notebook), sel_page);
 }
 

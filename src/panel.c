@@ -1424,7 +1424,7 @@ static void panel_popupmenu_remove_item( GtkMenuItem* item, Plugin* plugin )
 {
     Panel* panel = plugin->panel;
 
-    if (panel->pref_dialog != NULL)
+    if (panel->pref_dialog.pref_dialog != NULL)
     {
         configurator_remove_plugin_from_list(panel, plugin);
     }
@@ -1904,22 +1904,22 @@ panel_start_gui(Panel *p)
 /* Exchange the "width" and "height" terminology for vertical and horizontal panels. */
 void panel_adjust_geometry_terminology(Panel * p)
 {
-    if ((p->height_label != NULL) && (p->width_label != NULL)
-    && (p->alignment_left_label != NULL) && (p->alignment_right_label != NULL))
+    if ((p->pref_dialog.height_label != NULL) && (p->pref_dialog.width_label != NULL)
+    && (p->pref_dialog.alignment_left_label != NULL) && (p->pref_dialog.alignment_right_label != NULL))
     {
         if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
         {
-            gtk_label_set_text(GTK_LABEL(p->height_label), _("Height:"));
-            gtk_label_set_text(GTK_LABEL(p->width_label), _("Width:"));
-            gtk_button_set_label(GTK_BUTTON(p->alignment_left_label), _("Left"));
-            gtk_button_set_label(GTK_BUTTON(p->alignment_right_label), _("Right"));
+            gtk_label_set_text(GTK_LABEL(p->pref_dialog.height_label), _("Height:"));
+            gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Width:"));
+            gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Left"));
+            gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Right"));
         }
         else
         {
-            gtk_label_set_text(GTK_LABEL(p->height_label), _("Width:"));
-            gtk_label_set_text(GTK_LABEL(p->width_label), _("Height:"));
-            gtk_button_set_label(GTK_BUTTON(p->alignment_left_label), _("Top"));
-            gtk_button_set_label(GTK_BUTTON(p->alignment_right_label), _("Bottom"));
+            gtk_label_set_text(GTK_LABEL(p->pref_dialog.height_label), _("Width:"));
+            gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Height:"));
+            gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Top"));
+            gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Bottom"));
         }
     }
 }
@@ -2003,13 +2003,13 @@ void panel_set_panel_configuration_changed(Panel *p)
     if (previous_orientation != p->orientation)
     {
         panel_adjust_geometry_terminology(p);
-        if (p->height_control != NULL)
-            gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->height_control), p->oriented_height);
-        if ((p->oriented_width_type == WIDTH_PIXEL) && (p->width_control != NULL))
+        if (p->pref_dialog.height_control != NULL)
+            gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->pref_dialog.height_control), p->oriented_height);
+        if ((p->oriented_width_type == WIDTH_PIXEL) && (p->pref_dialog.width_control != NULL))
         {
             int value = ((p->orientation == ORIENT_HORIZ) ? gdk_screen_width() : gdk_screen_height());
-            gtk_spin_button_set_range(GTK_SPIN_BUTTON(p->width_control), 0, value);
-            gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->width_control), value);
+            gtk_spin_button_set_range(GTK_SPIN_BUTTON(p->pref_dialog.width_control), 0, value);
+            gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->pref_dialog.width_control), value);
         }
 
     }
@@ -2180,12 +2180,12 @@ static void panel_destroy(Panel *p)
     if (p->update_background_idle_cb)
         g_source_remove(p->update_background_idle_cb);
 
-    if (p->pref_dialog != NULL)
-        gtk_widget_destroy(p->pref_dialog);
-    if (p->plugin_pref_dialog != NULL)
+    if (p->pref_dialog.pref_dialog != NULL)
+        gtk_widget_destroy(p->pref_dialog.pref_dialog);
+    if (p->pref_dialog.plugin_pref_dialog != NULL)
     {
-        gtk_widget_destroy(p->plugin_pref_dialog);
-        p->plugin_pref_dialog = NULL;
+        gtk_widget_destroy(p->pref_dialog.plugin_pref_dialog);
+        p->pref_dialog.plugin_pref_dialog = NULL;
     }
 
     if (p->bg != NULL)

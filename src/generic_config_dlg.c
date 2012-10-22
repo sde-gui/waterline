@@ -135,7 +135,7 @@ inline void generic_config_dlg_save(gpointer panel_gpointer,GObject *where_the_o
 /* Handler for "response" signal from standard configuration dialog. */
 static void generic_config_dlg_response(GtkWidget * widget, int response, Plugin * plugin)
 {
-    plugin->panel->plugin_pref_dialog = NULL;
+    plugin->panel->pref_dialog.plugin_pref_dialog = NULL;
     gtk_widget_destroy(widget);
 }
 
@@ -502,9 +502,9 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 
     /* If there is already a plugin configuration dialog open, close it.
      * Then record this one in case the panel or plugin is deleted. */
-    if (p->plugin_pref_dialog != NULL)
-        gtk_widget_destroy(p->plugin_pref_dialog);
-    p->plugin_pref_dialog = dlg;
+    if (p->pref_dialog.plugin_pref_dialog != NULL)
+        gtk_widget_destroy(p->pref_dialog.plugin_pref_dialog);
+    p->pref_dialog.plugin_pref_dialog = dlg;
 
     gtk_widget_show_all( dlg );
     return dlg;

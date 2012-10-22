@@ -96,15 +96,17 @@ struct _Panel {
 
     GList * plugins;			/* List of all plugins */
 
-    GtkWidget* plugin_pref_dialog;	/* Plugin preference dialog */
-    GtkWidget* pref_dialog;		/* preference dialog */
-    GtkWidget* margin_control;		/* Margin control in preference dialog */
-    GtkWidget* height_label;		/* Label of height control */
-    GtkWidget* width_label;		/* Label of width control */
-    GtkWidget* alignment_left_label;	/* Label of alignment: left control */
-    GtkWidget* alignment_right_label;	/* Label of alignment: right control */
-    GtkWidget* height_control;		/* Height control in preference dialog */
-    GtkWidget* width_control;		/* Width control in preference dialog */
+    struct {
+        GtkWidget * pref_dialog;
+        GtkWidget * plugin_pref_dialog;
+        GtkWidget * margin_control;
+        GtkWidget * height_label;
+        GtkWidget * width_label;
+        GtkWidget * alignment_left_label;
+        GtkWidget * alignment_right_label;
+        GtkWidget * height_control;
+        GtkWidget * width_control;
+    } pref_dialog;
 };
 
 struct {

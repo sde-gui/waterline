@@ -116,8 +116,8 @@ static void edge_changed(GtkWidget *widget, Panel *p)
 
 static void set_alignment(Panel* p, int align)
 {
-    if (p->margin_control) 
-        gtk_widget_set_sensitive(p->margin_control, (align != ALIGN_CENTER));
+    if (p->pref_dialog.margin_control) 
+        gtk_widget_set_sensitive(p->pref_dialog.margin_control, (align != ALIGN_CENTER));
     p->align = align;
     update_panel_geometry(p);
 }
@@ -676,8 +676,8 @@ void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);
 void configurator_remove_plugin_from_list(Panel * p, Plugin * pl)
 {
      GtkTreeView * view = NULL;
-     if (p && p->pref_dialog)
-         view = (GtkTreeView *) g_object_get_data( G_OBJECT(p->pref_dialog), "plugin_list");
+     if (p && p->pref_dialog.pref_dialog)
+         view = (GtkTreeView *) g_object_get_data( G_OBJECT(p->pref_dialog.pref_dialog), "plugin_list");
 
      if (!view)
          return;
@@ -876,10 +876,10 @@ void panel_configure( Panel* p, int sel_page )
     GtkBuilder* builder;
     GtkWidget *w, *w2, *tint_clr;
 
-    if( p->pref_dialog )
+    if( p->pref_dialog.pref_dialog )
     {
         panel_adjust_geometry_terminology(p);
-        bring_to_current_desktop(p->pref_dialog);
+        bring_to_current_desktop(p->pref_dialog.pref_dialog);
         return;
     }
 
@@ -894,11 +894,11 @@ void panel_configure( Panel* p, int sel_page )
 
     g_free(panel_perf_ui_path);
 
-    p->pref_dialog = (GtkWidget*)gtk_builder_get_object( builder, "panel_pref" );
-    g_signal_connect(p->pref_dialog, "response", (GCallback) response_event, p);
-    g_object_add_weak_pointer( G_OBJECT(p->pref_dialog), (gpointer) &p->pref_dialog );
-    gtk_window_set_position( (GtkWindow*)p->pref_dialog, GTK_WIN_POS_CENTER );
-    panel_apply_icon(GTK_WINDOW(p->pref_dialog));
+    p->pref_dialog.pref_dialog = (GtkWidget*)gtk_builder_get_object( builder, "panel_pref" );
+    g_signal_connect(p->pref_dialog.pref_dialog, "response", (GCallback) response_event, p);
+    g_object_add_weak_pointer( G_OBJECT(p->pref_dialog.pref_dialog), (gpointer) &p->pref_dialog.pref_dialog );
+    gtk_window_set_position( (GtkWindow*)p->pref_dialog.pref_dialog, GTK_WIN_POS_CENTER );
+    panel_apply_icon(GTK_WINDOW(p->pref_dialog.pref_dialog));
 
     /* position */
 
@@ -918,26 +918,26 @@ void panel_configure( Panel* p, int sel_page )
     g_signal_connect( w, "changed", G_CALLBACK(edge_changed), p);
 
     /* alignment */
-    p->alignment_left_label = w = (GtkWidget*)gtk_builder_get_object( builder, "alignment_left" );
+    p->pref_dialog.alignment_left_label = w = (GtkWidget*)gtk_builder_get_object( builder, "alignment_left" );
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->align == ALIGN_LEFT));
     g_signal_connect(w, "toggled", G_CALLBACK(align_left_toggle), p);
     w = (GtkWidget*)gtk_builder_get_object( builder, "alignment_center" );
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->align == ALIGN_CENTER));
     g_signal_connect(w, "toggled", G_CALLBACK(align_center_toggle), p);
-    p->alignment_right_label = w = (GtkWidget*)gtk_builder_get_object( builder, "alignment_right" );
+    p->pref_dialog.alignment_right_label = w = (GtkWidget*)gtk_builder_get_object( builder, "alignment_right" );
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->align == ALIGN_RIGHT));
     g_signal_connect(w, "toggled", G_CALLBACK(align_right_toggle), p);
 
     /* margin */
-    p->margin_control = w = (GtkWidget*)gtk_builder_get_object( builder, "margin" );
+    p->pref_dialog.margin_control = w = (GtkWidget*)gtk_builder_get_object( builder, "margin" );
     gtk_spin_button_set_value( (GtkSpinButton*)w, p->margin );
-    gtk_widget_set_sensitive(p->margin_control, (p->align != ALIGN_CENTER));
+    gtk_widget_set_sensitive(p->pref_dialog.margin_control, (p->align != ALIGN_CENTER));
     g_signal_connect( w, "value-changed",
                       G_CALLBACK(set_margin), p);
 
     /* size */
-    p->width_label = (GtkWidget*)gtk_builder_get_object( builder, "width_label");
-    p->width_control = w = (GtkWidget*)gtk_builder_get_object( builder, "width" );
+    p->pref_dialog.width_label = (GtkWidget*)gtk_builder_get_object( builder, "width_label");
+    p->pref_dialog.width_control = w = (GtkWidget*)gtk_builder_get_object( builder, "width" );
     gtk_widget_set_sensitive( w, p->oriented_width_type != WIDTH_REQUEST );
     gint upper = 0;
     if( p->oriented_width_type == WIDTH_PERCENT)
@@ -950,12 +950,12 @@ void panel_configure( Panel* p, int sel_page )
 
     w = (GtkWidget*)gtk_builder_get_object( builder, "width_unit" );
     update_opt_menu( w, p->oriented_width_type - 1 );
-    g_object_set_data(G_OBJECT(w), "width_spin", p->width_control );
+    g_object_set_data(G_OBJECT(w), "width_spin", p->pref_dialog.width_control );
     g_signal_connect( w, "changed",
                      G_CALLBACK(set_width_type), p);
 
-    p->height_label = (GtkWidget*)gtk_builder_get_object( builder, "height_label");
-    p->height_control = w = (GtkWidget*)gtk_builder_get_object( builder, "height" );
+    p->pref_dialog.height_label = (GtkWidget*)gtk_builder_get_object( builder, "height_label");
+    p->pref_dialog.height_control = w = (GtkWidget*)gtk_builder_get_object( builder, "height" );
     gtk_spin_button_set_range( (GtkSpinButton*)w, PANEL_HEIGHT_MIN, PANEL_HEIGHT_MAX );
     gtk_spin_button_set_value( (GtkSpinButton*)w, p->oriented_height );
     g_signal_connect( w, "value-changed", G_CALLBACK(set_height), p );
@@ -1108,7 +1108,7 @@ void panel_configure( Panel* p, int sel_page )
     {
         GtkWidget* plugin_list = (GtkWidget*)gtk_builder_get_object( builder, "plugin_list" );
 
-        g_object_set_data( G_OBJECT(p->pref_dialog), "plugin_list", plugin_list );
+        g_object_set_data( G_OBJECT(p->pref_dialog.pref_dialog), "plugin_list", plugin_list );
 
         /* buttons used to edit plugin list */
         w = (GtkWidget*)gtk_builder_get_object( builder, "add_btn" );
@@ -1159,7 +1159,7 @@ void panel_configure( Panel* p, int sel_page )
     }
 
     panel_adjust_geometry_terminology(p);
-    gtk_widget_show(GTK_WIDGET(p->pref_dialog));
+    gtk_widget_show(GTK_WIDGET(p->pref_dialog.pref_dialog));
     w = (GtkWidget*)gtk_builder_get_object( builder, "notebook" );
     gtk_notebook_set_current_page( (GtkNotebook*)w, sel_page );
 

@@ -328,10 +328,10 @@ void plugin_delete(Plugin * pl)
     PluginClass * pc = pl->class;
 
     /* If a plugin configuration dialog is open, close it. */
-    if (p->plugin_pref_dialog != NULL)
+    if (p->pref_dialog.plugin_pref_dialog != NULL)
     {
-        gtk_widget_destroy(p->plugin_pref_dialog);
-        p->plugin_pref_dialog = NULL;
+        gtk_widget_destroy(p->pref_dialog.plugin_pref_dialog);
+        p->pref_dialog.plugin_pref_dialog = NULL;
     }
 
     /* Run the destructor and then destroy the top level widget.

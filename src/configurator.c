@@ -61,6 +61,8 @@ extern gboolean on_entry_focus_out( GtkWidget* edit, GdkEventFocus *evt, gpointe
 
 static void gui_update_width(Panel* p)
 {
+    p->pref_dialog.doing_update++;
+
     GtkSpinButton * spin = GTK_SPIN_BUTTON(p->pref_dialog.width_control);
 
     gtk_widget_set_sensitive(GTK_WIDGET(spin), p->oriented_width_type!= WIDTH_REQUEST);
@@ -84,6 +86,8 @@ static void gui_update_width(Panel* p)
     gtk_spin_button_set_value(spin, p->oriented_width);
 
     gtk_combo_box_set_active(GTK_COMBO_BOX(p->pref_dialog.width_unit), p->oriented_width_type - 1);
+
+    p->pref_dialog.doing_update--;
 }
 
 /******************************************************************************/
@@ -179,6 +183,9 @@ set_margin( GtkSpinButton* spin,  Panel* p  )
 static void
 set_width(  GtkSpinButton* spin, Panel* p )
 {
+    if (p->pref_dialog.doing_update)
+        return;
+
     int oriented_width = gtk_spin_button_get_value(spin);
     if (p->oriented_width == oriented_width)
         return;
@@ -198,40 +205,49 @@ set_height( GtkSpinButton* spin, Panel* p )
 
 static void set_width_type( GtkWidget *item, Panel* p )
 {
+    if (p->pref_dialog.doing_update)
+        return;
+
     int widthtype = gtk_combo_box_get_active(GTK_COMBO_BOX(item)) + 1;
 
     if (p->oriented_width_type == widthtype)
         return;
 
+    if (widthtype == WIDTH_PERCENT || widthtype == WIDTH_PIXEL)
+    {
+        int max_width = ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM)) ?
+            gdk_screen_width() :
+            gdk_screen_height();
+        int width = p->oriented_width;
+
+        if (widthtype == WIDTH_PERCENT)
+        {
+            if (p->oriented_width_type == WIDTH_PIXEL)
+                width = 100 * width / max_width;
+            else
+                width = 100;
+        }
+        else if (widthtype == WIDTH_PIXEL)
+        {
+            if (p->oriented_width_type == WIDTH_PERCENT)
+                width = (width + 1) * max_width / 100;
+            else
+                width = max_width;
+        }
+        p->oriented_width = width;
+    }
+
     p->oriented_width_type = widthtype;
-
-    GtkSpinButton * spin = GTK_SPIN_BUTTON(p->pref_dialog.width_control);
-
-    if (widthtype == WIDTH_PERCENT)
-    {
-        p->oriented_width = 100;
-    }
-    else if (widthtype == WIDTH_PIXEL)
-    {
-        if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
-        {
-            p->oriented_width = gdk_screen_width();
-        }
-        else
-        {
-            p->oriented_width = gdk_screen_height();
-        }
-    }
-
-    gui_update_width(p);
 
     update_panel_geometry(p);
     panel_set_panel_configuration_changed(p);
+
+    gui_update_width(p);
 }
 
 static void stretch_background_toggle(GtkWidget * w, Panel*  p)
 {
-    ENTER;    
+    ENTER;
 
     gboolean t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
 

@@ -108,6 +108,7 @@ struct _Panel {
         GtkWidget * width_unit;
         GtkWidget * height_label;
         GtkWidget * height_control;
+        gboolean doing_update;
     } pref_dialog;
 };
 

@@ -165,31 +165,28 @@ set_height( GtkSpinButton* spin, Panel* p )
 
 static void set_width_type( GtkWidget *item, Panel* p )
 {
-    GtkWidget* spin;
-    int widthtype;
-    gboolean t;
-    widthtype = gtk_combo_box_get_active(GTK_COMBO_BOX(item)) + 1;
+    int widthtype = gtk_combo_box_get_active(GTK_COMBO_BOX(item)) + 1;
     p->oriented_width_type = widthtype;
 
-    spin = (GtkWidget*)g_object_get_data(G_OBJECT(item), "width_spin" );
-    t = (widthtype != WIDTH_REQUEST);
-    gtk_widget_set_sensitive( spin, t );
+    GtkSpinButton * spin = GTK_SPIN_BUTTON(p->pref_dialog.width_control);
+    gtk_widget_set_sensitive(GTK_WIDGET(spin), widthtype != WIDTH_REQUEST);
+
     if (widthtype == WIDTH_PERCENT)
     {
-        gtk_spin_button_set_range( (GtkSpinButton*)spin, 0, 100 );
-        gtk_spin_button_set_value( (GtkSpinButton*)spin, 100 );
+        gtk_spin_button_set_range( spin, 0, 100 );
+        gtk_spin_button_set_value( spin, 100 );
     }
     else if (widthtype == WIDTH_PIXEL)
     {
         if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
         {
-            gtk_spin_button_set_range( (GtkSpinButton*)spin, 0, gdk_screen_width() );
-            gtk_spin_button_set_value( (GtkSpinButton*)spin, gdk_screen_width() );
+            gtk_spin_button_set_range( spin, 0, gdk_screen_width() );
+            gtk_spin_button_set_value( spin, gdk_screen_width() );
         }
         else
         {
-            gtk_spin_button_set_range( (GtkSpinButton*)spin, 0, gdk_screen_height() );
-            gtk_spin_button_set_value( (GtkSpinButton*)spin, gdk_screen_height() );
+            gtk_spin_button_set_range( spin, 0, gdk_screen_height() );
+            gtk_spin_button_set_value( spin, gdk_screen_height() );
         }
     }
 
@@ -944,9 +941,7 @@ void panel_initialize_pref_dialog(Panel * p)
 
     w = (GtkWidget*)gtk_builder_get_object( builder, "width_unit" );
     update_opt_menu( w, p->oriented_width_type - 1 );
-    g_object_set_data(G_OBJECT(w), "width_spin", p->pref_dialog.width_control );
-    g_signal_connect( w, "changed",
-                     G_CALLBACK(set_width_type), p);
+    g_signal_connect( w, "changed", G_CALLBACK(set_width_type), p);
 
     p->pref_dialog.height_label = (GtkWidget*)gtk_builder_get_object( builder, "height_label");
     p->pref_dialog.height_control = w = (GtkWidget*)gtk_builder_get_object( builder, "height" );

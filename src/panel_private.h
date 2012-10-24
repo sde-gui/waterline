@@ -100,13 +100,14 @@ struct _Panel {
         GtkWidget * pref_dialog;
         GtkWidget * plugin_pref_dialog;
         GtkWidget * notebook;
-        GtkWidget * margin_control;
-        GtkWidget * height_label;
-        GtkWidget * width_label;
         GtkWidget * alignment_left_label;
         GtkWidget * alignment_right_label;
-        GtkWidget * height_control;
+        GtkWidget * margin_control;
+        GtkWidget * width_label;
         GtkWidget * width_control;
+        GtkWidget * width_unit;
+        GtkWidget * height_label;
+        GtkWidget * height_control;
     } pref_dialog;
 };
 

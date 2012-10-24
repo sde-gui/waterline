@@ -59,6 +59,35 @@ extern gboolean on_entry_focus_out( GtkWidget* edit, GdkEventFocus *evt, gpointe
 
 /******************************************************************************/
 
+static void gui_update_width(Panel* p)
+{
+    GtkSpinButton * spin = GTK_SPIN_BUTTON(p->pref_dialog.width_control);
+
+    gtk_widget_set_sensitive(GTK_WIDGET(spin), p->oriented_width_type!= WIDTH_REQUEST);
+
+    if (p->oriented_width_type == WIDTH_PERCENT)
+    {
+        gtk_spin_button_set_range(spin, 0, 100);
+    }
+    else if (p->oriented_width_type == WIDTH_PIXEL)
+    {
+        if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
+        {
+            gtk_spin_button_set_range(spin, 0, gdk_screen_width());
+        }
+        else
+        {
+            gtk_spin_button_set_range(spin, 0, gdk_screen_height());
+        }
+    }
+
+    gtk_spin_button_set_value(spin, p->oriented_width);
+
+    gtk_combo_box_set_active(GTK_COMBO_BOX(p->pref_dialog.width_unit), p->oriented_width_type - 1);
+}
+
+/******************************************************************************/
+
 static void
 response_event(GtkDialog *widget, gint arg1, Panel* panel )
 {
@@ -150,7 +179,11 @@ set_margin( GtkSpinButton* spin,  Panel* p  )
 static void
 set_width(  GtkSpinButton* spin, Panel* p )
 {
-    p->oriented_width = (int)gtk_spin_button_get_value(spin);
+    int oriented_width = gtk_spin_button_get_value(spin);
+    if (p->oriented_width == oriented_width)
+        return;
+
+    p->oriented_width = oriented_width;
     update_panel_geometry(p);
     panel_set_panel_configuration_changed(p);
 }
@@ -166,29 +199,31 @@ set_height( GtkSpinButton* spin, Panel* p )
 static void set_width_type( GtkWidget *item, Panel* p )
 {
     int widthtype = gtk_combo_box_get_active(GTK_COMBO_BOX(item)) + 1;
+
+    if (p->oriented_width_type == widthtype)
+        return;
+
     p->oriented_width_type = widthtype;
 
     GtkSpinButton * spin = GTK_SPIN_BUTTON(p->pref_dialog.width_control);
-    gtk_widget_set_sensitive(GTK_WIDGET(spin), widthtype != WIDTH_REQUEST);
 
     if (widthtype == WIDTH_PERCENT)
     {
-        gtk_spin_button_set_range( spin, 0, 100 );
-        gtk_spin_button_set_value( spin, 100 );
+        p->oriented_width = 100;
     }
     else if (widthtype == WIDTH_PIXEL)
     {
         if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
         {
-            gtk_spin_button_set_range( spin, 0, gdk_screen_width() );
-            gtk_spin_button_set_value( spin, gdk_screen_width() );
+            p->oriented_width = gdk_screen_width();
         }
         else
         {
-            gtk_spin_button_set_range( spin, 0, gdk_screen_height() );
-            gtk_spin_button_set_value( spin, gdk_screen_height() );
+            p->oriented_width = gdk_screen_height();
         }
     }
+
+    gui_update_width(p);
 
     update_panel_geometry(p);
     panel_set_panel_configuration_changed(p);
@@ -926,22 +961,17 @@ void panel_initialize_pref_dialog(Panel * p)
     g_signal_connect( w, "value-changed",
                       G_CALLBACK(set_margin), p);
 
-    /* size */
+    /* width */
     p->pref_dialog.width_label = (GtkWidget*)gtk_builder_get_object( builder, "width_label");
     p->pref_dialog.width_control = w = (GtkWidget*)gtk_builder_get_object( builder, "width" );
-    gtk_widget_set_sensitive( w, p->oriented_width_type != WIDTH_REQUEST );
-    gint upper = 0;
-    if( p->oriented_width_type == WIDTH_PERCENT)
-        upper = 100;
-    else if( p->oriented_width_type == WIDTH_PIXEL)
-        upper = (((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM)) ? gdk_screen_width() : gdk_screen_height());
-    gtk_spin_button_set_range( (GtkSpinButton*)w, 0, upper );
-    gtk_spin_button_set_value( (GtkSpinButton*)w, p->oriented_width );
     g_signal_connect( w, "value-changed", G_CALLBACK(set_width), p );
 
-    w = (GtkWidget*)gtk_builder_get_object( builder, "width_unit" );
-    update_opt_menu( w, p->oriented_width_type - 1 );
+    p->pref_dialog.width_unit = w = (GtkWidget*)gtk_builder_get_object( builder, "width_unit" );
     g_signal_connect( w, "changed", G_CALLBACK(set_width_type), p);
+
+    gui_update_width(p);
+
+    /* height */
 
     p->pref_dialog.height_label = (GtkWidget*)gtk_builder_get_object( builder, "height_label");
     p->pref_dialog.height_control = w = (GtkWidget*)gtk_builder_get_object( builder, "height" );

@@ -198,7 +198,7 @@ static Panel* panel_allocate(void)
     p->autohide = 0;
     p->autohide_visible = TRUE;
     p->visible = TRUE;
-    p->height_when_hidden = 2;
+    p->height_when_hidden = 1;
     p->transparent = 0;
     p->alpha = 255;
     gdk_color_parse("white", &p->gtintcolor);

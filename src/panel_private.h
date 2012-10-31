@@ -109,10 +109,14 @@ struct _Panel {
         GtkWidget * width_unit;
         GtkWidget * height_label;
         GtkWidget * height_control;
+
         GtkWidget * always_visible;
         GtkWidget * always_below;
         GtkWidget * autohide;
         GtkWidget * gobelow;
+        GtkWidget * height_when_minimized;
+        GtkWidget * reserve_space;
+
         gboolean doing_update;
     } pref_dialog;
 };

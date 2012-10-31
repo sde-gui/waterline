@@ -90,6 +90,30 @@ static void gui_update_width(Panel* p)
     p->pref_dialog.doing_update--;
 }
 
+static void gui_update_visibility(Panel* p)
+{
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->pref_dialog.always_visible),
+        (p->visibility_mode == VISIBILITY_ALWAYS));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->pref_dialog.always_below),
+        (p->visibility_mode == VISIBILITY_BELOW));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->pref_dialog.autohide),
+        (p->visibility_mode == VISIBILITY_AUTOHIDE));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->pref_dialog.gobelow),
+        (p->visibility_mode == VISIBILITY_GOBELOW));
+
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->pref_dialog.height_when_minimized),
+        p->height_when_hidden);
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->pref_dialog.reserve_space),
+        p->setstrut);
+
+    gtk_widget_set_sensitive(p->pref_dialog.height_when_minimized,
+        (p->visibility_mode == VISIBILITY_AUTOHIDE) || (p->visibility_mode == VISIBILITY_GOBELOW));
+
+    gtk_widget_set_sensitive(p->pref_dialog.reserve_space,
+        (p->visibility_mode != VISIBILITY_AUTOHIDE) && (p->visibility_mode != VISIBILITY_GOBELOW));
+}
+
 /******************************************************************************/
 
 static void
@@ -252,6 +276,7 @@ static void set_visibility(Panel* p, int visibility_mode)
         return;
     p->visibility_mode = visibility_mode;
     update_panel_geometry(p);
+    gui_update_visibility(p);
 }
 
 static void always_visible_toggle(GtkToggleButton *widget, Panel *p)
@@ -292,7 +317,7 @@ static void stretch_background_toggle(GtkWidget * w, Panel*  p)
 
 static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
 {
-    ENTER;    
+    ENTER;
 
     int alpha = gtk_range_get_value(GTK_RANGE(w));
 
@@ -1021,45 +1046,29 @@ void panel_initialize_pref_dialog(Panel * p)
     gtk_spin_button_set_value( (GtkSpinButton*)w, p->preferred_icon_size );
     g_signal_connect( w, "value_changed", G_CALLBACK(set_icon_size), p );
 
-    /* properties */
-
-    /* Explaination from Ruediger Arp <ruediger@gmx.net>:
-        "Set Strut": Reserve panel's space so that it will not be
-        covered by maximazied windows.
-        This is clearly an option to avoid the panel being
-        covered/hidden by other applications so that it always is
-        accessible. The panel "steals" some screen estate which cannot
-        be accessed by other applications.
-        GNOME Panel acts this way, too.
-    */
-    w = (GtkWidget*)gtk_builder_get_object( builder, "reserve_space" );
-    update_toggle_button( w, p->setstrut );
-    g_signal_connect( w, "toggled",
-                      G_CALLBACK(set_strut), p );
-
     /* visibility */
 
     p->pref_dialog.always_visible = w = (GtkWidget*)gtk_builder_get_object( builder, "always_visible" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_ALWAYS));
     g_signal_connect(w, "toggled", G_CALLBACK(always_visible_toggle), p);
 
     p->pref_dialog.always_below = w = (GtkWidget*)gtk_builder_get_object( builder, "always_below" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_BELOW));
     g_signal_connect(w, "toggled", G_CALLBACK(always_below_toggle), p);
 
     p->pref_dialog.autohide = w = (GtkWidget*)gtk_builder_get_object( builder, "autohide" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_AUTOHIDE));
     g_signal_connect(w, "toggled", G_CALLBACK(autohide_toggle), p);
 
     p->pref_dialog.gobelow = w = (GtkWidget*)gtk_builder_get_object( builder, "gobelow" );
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_GOBELOW));
     g_signal_connect(w, "toggled", G_CALLBACK(gobelow_toggle), p);
 
+    p->pref_dialog.reserve_space = w = (GtkWidget*)gtk_builder_get_object( builder, "reserve_space" );
+    g_signal_connect( w, "toggled",
+                      G_CALLBACK(set_strut), p );
 
-    w = (GtkWidget*)gtk_builder_get_object( builder, "height_when_minimized" );
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(w), p->height_when_hidden);
+    p->pref_dialog.height_when_minimized = w = (GtkWidget*)gtk_builder_get_object( builder, "height_when_minimized" );
     g_signal_connect( w, "value-changed",
                       G_CALLBACK(set_height_when_minimized), p);
+
+    gui_update_visibility(p);
 
     /* transparancy */
     tint_clr = w = (GtkWidget*)gtk_builder_get_object( builder, "tint_clr" );

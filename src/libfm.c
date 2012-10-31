@@ -119,7 +119,7 @@ GtkMenu * lxpanel_fm_file_menu_for_path(const char * path)
     gfile_info = g_file_query_info(gfile, "standard::*,unix::*,time::*", G_FILE_QUERY_INFO_NONE, NULL, NULL);
     if (!gfile_info)
         goto out;
-            
+
     fm_path = __fm_path_new_for_path(path);
     if (!fm_path)
         goto out;
@@ -137,7 +137,7 @@ GtkMenu * lxpanel_fm_file_menu_for_path(const char * path)
         goto out;
 
     popup = __fm_file_menu_get_menu(fm_file_menu);
- 
+
 out:
 
     if (fm_file_info)

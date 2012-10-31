@@ -162,7 +162,7 @@ static gboolean dirmenu_menuitem_button_press(GtkWidget * item, GdkEventButton* 
         }
 
         GtkMenu * popup = lxpanel_fm_file_menu_for_path(path);
-        
+
         if (popup)
         {
             g_signal_connect(popup, "deactivate", G_CALLBACK(restore_grabs), item);
@@ -820,7 +820,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
                     dm->image = g_strdup(s.t[1]);
                 else if (g_ascii_strcasecmp(s.t[0], "path") == 0)
                     dm->path = g_strdup(s.t[1]);
-		else if (g_ascii_strcasecmp(s.t[0], "name") == 0)
+                else if (g_ascii_strcasecmp(s.t[0], "name") == 0)
                     dm->name = g_strdup( s.t[1] );
                 else if (g_ascii_strcasecmp(s.t[0], "ShowHidden") == 0)
                     dm->show_hidden = str2num(bool_pair, s.t[1], dm->show_hidden);
@@ -1006,6 +1006,24 @@ static void dirmenu_run_command(Plugin * p, char ** argv, int argc)
     }
 }
 
+static void dirmenu_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
+{
+    DirMenuPlugin * dm = PRIV(plugin);
+
+    const gchar * path = (dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir();
+    GtkMenu * file_menu = lxpanel_fm_file_menu_for_path(path);
+    if (file_menu)
+    {
+        GtkWidget * item = gtk_separator_menu_item_new();
+        gtk_widget_show(item);
+        gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), item);
+
+        item = gtk_image_menu_item_new_with_label(path);
+        gtk_menu_item_set_submenu(item, file_menu);
+        gtk_widget_show(item);
+        gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), item);
+    }
+}
 
 /* Plugin descriptor. */
 PluginClass dirmenu_plugin_class = {
@@ -1022,5 +1040,6 @@ PluginClass dirmenu_plugin_class = {
     config : dirmenu_configure,
     save : dirmenu_save_configuration,
     panel_configuration_changed : dirmenu_panel_configuration_changed,
-    run_command : dirmenu_run_command
+    run_command : dirmenu_run_command,
+    popup_menu_hook : dirmenu_popup_menu_hook
 };

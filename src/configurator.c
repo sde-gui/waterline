@@ -157,6 +157,7 @@ static void set_edge(Panel* p, int edge)
     p->edge = edge;
     update_panel_geometry(p);
     panel_set_panel_configuration_changed(p);
+    panel_adjust_geometry_terminology(p);
 }
 
 static void edge_changed(GtkWidget *widget, Panel *p)

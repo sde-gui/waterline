@@ -1944,6 +1944,10 @@ void panel_adjust_geometry_terminology(Panel * p)
             gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Width:"));
             gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Left"));
             gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Right"));
+            if (p->align == ALIGN_RIGHT)
+                gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Right margin:"));
+            else
+                gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Left margin:"));
         }
         else
         {
@@ -1951,6 +1955,10 @@ void panel_adjust_geometry_terminology(Panel * p)
             gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Height:"));
             gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Top"));
             gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Bottom"));
+            if (p->align == ALIGN_RIGHT)
+                gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Bottom margin:"));
+            else
+                gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Top margin:"));
         }
     }
 }

@@ -103,6 +103,7 @@ struct _Panel {
         GtkWidget * notebook;
         GtkWidget * alignment_left_label;
         GtkWidget * alignment_right_label;
+        GtkWidget * align_margin_label;
         GtkWidget * align_margin_control;
         GtkWidget * width_label;
         GtkWidget * width_control;

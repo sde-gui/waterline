@@ -177,6 +177,7 @@ static void set_alignment(Panel* p, int align)
         gtk_widget_set_sensitive(p->pref_dialog.align_margin_control, (align != ALIGN_CENTER));
     p->align = align;
     update_panel_geometry(p);
+    panel_adjust_geometry_terminology(p);
 }
 
 static void align_left_toggle(GtkToggleButton *widget, Panel *p)
@@ -1014,6 +1015,7 @@ void panel_initialize_pref_dialog(Panel * p)
     g_signal_connect(w, "toggled", G_CALLBACK(align_right_toggle), p);
 
     /* margin */
+    p->pref_dialog.align_margin_label = (GtkWidget*)gtk_builder_get_object( builder, "align_margin_label");
     p->pref_dialog.align_margin_control = w = (GtkWidget*)gtk_builder_get_object( builder, "align_margin" );
     gtk_spin_button_set_value( (GtkSpinButton*)w, p->align_margin );
     gtk_widget_set_sensitive(p->pref_dialog.align_margin_control, (p->align != ALIGN_CENTER));

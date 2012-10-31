@@ -323,6 +323,8 @@ static gboolean panel_set_wm_strut_real(Panel *p)
             return FALSE;
     }
 
+    strut_size += p->edge_margin;
+
     /* Handle autohide case.  EWMH recommends having the strut be the minimized size. */
     if (p->visibility_mode == VISIBILITY_AUTOHIDE || p->visibility_mode == VISIBILITY_GOBELOW)
     {
@@ -1229,8 +1231,8 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
         sswidth  = gdk_screen_get_width( gtk_widget_get_screen(np->topgwin) );
         ssheight = gdk_screen_get_height( gtk_widget_get_screen(np->topgwin) );
     }
-/*
-    int edge_margin = 0;
+
+    int edge_margin = np->edge_margin;
 
     if (np->visibility_mode == VISIBILITY_AUTOHIDE || np->visibility_mode == VISIBILITY_GOBELOW)
     {
@@ -1244,7 +1246,7 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
         case EDGE_LEFT  : minx     += edge_margin; break;
         case EDGE_RIGHT : sswidth  -= edge_margin; break;
     }
-*/
+
     if (np->edge == EDGE_TOP || np->edge == EDGE_BOTTOM) {
         np->aw = np->oriented_width;
         np->ax = minx;
@@ -1938,6 +1940,16 @@ void panel_adjust_geometry_terminology(Panel * p)
     if ((p->pref_dialog.height_label != NULL) && (p->pref_dialog.width_label != NULL)
     && (p->pref_dialog.alignment_left_label != NULL) && (p->pref_dialog.alignment_right_label != NULL))
     {
+        char * edge_align_text = "";
+        switch (p->edge)
+        {
+            case EDGE_TOP   : edge_align_text = _("Top margin:"); break;
+            case EDGE_BOTTOM: edge_align_text = _("Bottom margin:"); break;
+            case EDGE_LEFT  : edge_align_text = _("Left margin:"); break;
+            case EDGE_RIGHT : edge_align_text = _("Right margin:"); break;
+        }
+        gtk_label_set_text(GTK_LABEL(p->pref_dialog.edge_margin_label), edge_align_text);
+
         if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
         {
             gtk_label_set_text(GTK_LABEL(p->pref_dialog.height_label), _("Height:"));

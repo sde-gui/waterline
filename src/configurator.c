@@ -112,6 +112,9 @@ static void gui_update_visibility(Panel* p)
 
     gtk_widget_set_sensitive(p->pref_dialog.reserve_space,
         (p->visibility_mode != VISIBILITY_AUTOHIDE) && (p->visibility_mode != VISIBILITY_GOBELOW));
+
+    gtk_widget_set_sensitive(p->pref_dialog.edge_margin_control,
+        (p->visibility_mode != VISIBILITY_AUTOHIDE) && (p->visibility_mode != VISIBILITY_GOBELOW));
 }
 
 /******************************************************************************/
@@ -171,6 +174,16 @@ static void edge_changed(GtkWidget *widget, Panel *p)
         set_edge(p, edge);
 }
 
+static void
+set_edge_margin( GtkSpinButton* spin,  Panel* p  )
+{
+    int edge_margin = gtk_spin_button_get_value(spin);
+    if (p->edge_margin == edge_margin)
+        return;
+    p->edge_margin = edge_margin;
+    update_panel_geometry(p);
+}
+
 static void set_alignment(Panel* p, int align)
 {
     if (p->pref_dialog.align_margin_control) 
@@ -201,7 +214,10 @@ static void align_right_toggle(GtkToggleButton *widget, Panel *p)
 static void
 set_align_margin( GtkSpinButton* spin,  Panel* p  )
 {
-    p->align_margin = (int)gtk_spin_button_get_value(spin);
+    int align_margin = gtk_spin_button_get_value(spin);
+    if (p->align_margin == align_margin)
+        return;
+    p->align_margin = align_margin;
     update_panel_geometry(p);
 }
 
@@ -1014,10 +1030,17 @@ void panel_initialize_pref_dialog(Panel * p)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->align == ALIGN_RIGHT));
     g_signal_connect(w, "toggled", G_CALLBACK(align_right_toggle), p);
 
-    /* margin */
+    /* edge margin */
+    p->pref_dialog.edge_margin_label = (GtkWidget*)gtk_builder_get_object( builder, "edge_margin_label");
+    p->pref_dialog.edge_margin_control = w = (GtkWidget*)gtk_builder_get_object( builder, "edge_margin" );
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(w), p->edge_margin);
+    g_signal_connect( w, "value-changed",
+                      G_CALLBACK(set_edge_margin), p);
+
+    /* align margin */
     p->pref_dialog.align_margin_label = (GtkWidget*)gtk_builder_get_object( builder, "align_margin_label");
     p->pref_dialog.align_margin_control = w = (GtkWidget*)gtk_builder_get_object( builder, "align_margin" );
-    gtk_spin_button_set_value( (GtkSpinButton*)w, p->align_margin );
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(w), p->align_margin);
     gtk_widget_set_sensitive(p->pref_dialog.align_margin_control, (p->align != ALIGN_CENTER));
     g_signal_connect( w, "value-changed",
                       G_CALLBACK(set_align_margin), p);

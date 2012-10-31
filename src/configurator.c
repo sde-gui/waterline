@@ -461,14 +461,6 @@ on_use_round_corners_toggled( GtkToggleButton* btn,   Panel* p )
 }
 
 static void
-set_dock_type(GtkToggleButton* toggle,  Panel* p )
-{
-    p->setdocktype = gtk_toggle_button_get_active(toggle) ? 1 : 0;
-    panel_set_dock_type( p );
-    update_panel_geometry(p);
-}
-
-static void
 set_strut(GtkToggleButton* toggle,  Panel* p )
 {
     p->setstrut = gtk_toggle_button_get_active(toggle) ? 1 : 0;
@@ -1030,18 +1022,6 @@ void panel_initialize_pref_dialog(Panel * p)
     g_signal_connect( w, "value_changed", G_CALLBACK(set_icon_size), p );
 
     /* properties */
-
-    /* Explaination from Ruediger Arp <ruediger@gmx.net>:
-        "Set Dock Type", it is referring to the behaviour of
-        dockable applications such as those found in WindowMaker (e.g.
-        http://www.cs.mun.ca/~gstarkes/wmaker/dockapps ) and other
-        lightweight window managers. These dockapps are probably being
-        treated in some special way.
-    */
-    w = (GtkWidget*)gtk_builder_get_object( builder, "as_dock" );
-    update_toggle_button( w, p->setdocktype );
-    g_signal_connect( w, "toggled",
-                      G_CALLBACK(set_dock_type), p );
 
     /* Explaination from Ruediger Arp <ruediger@gmx.net>:
         "Set Strut": Reserve panel's space so that it will not be

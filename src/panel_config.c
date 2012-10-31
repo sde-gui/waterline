@@ -74,7 +74,7 @@ panel_parse_global(Panel *p, char **fp)
             } else if (!g_ascii_strcasecmp(s.t[0], "spacing")) {
                 p->spacing = atoi(s.t[1]);
             } else if (!g_ascii_strcasecmp(s.t[0], "SetDockType")) {
-                p->setdocktype = str2num(bool_pair, s.t[1], 0);
+                /* ignore */
             } else if (!g_ascii_strcasecmp(s.t[0], "SetPartialStrut")) {
                 p->setstrut = str2num(bool_pair, s.t[1], 0);
             } else if (!g_ascii_strcasecmp(s.t[0], "RoundCorners")) {
@@ -169,7 +169,6 @@ panel_global_config_save(Panel* p, FILE *fp)
 
     lxpanel_put_enum(fp, "Visibility", p->visibility_mode, panel_visibility_pair);
     lxpanel_put_int(fp, "HeightWhenHidden", p->height_when_hidden);
-    lxpanel_put_bool(fp, "SetDockType", p->setdocktype);
     lxpanel_put_bool(fp, "SetPartialStrut", p->setstrut);
 
     lxpanel_put_bool(fp, "UseFontColor", p->usefontcolor);

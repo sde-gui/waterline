@@ -64,7 +64,6 @@ struct _Panel {
 
     guint config_changed : 1;
     guint self_destroy : 1;
-    guint setdocktype : 1;
     guint setstrut : 1;
     guint round_corners : 1;
     guint usefontcolor : 1;

@@ -191,7 +191,6 @@ static Panel* panel_allocate(void)
     p->oriented_width = 100;
     p->oriented_height_type = HEIGHT_PIXEL;
     p->oriented_height = PANEL_HEIGHT_DEFAULT;
-    p->setdocktype = 1;
     p->setstrut = 1;
     p->round_corners = 0;
     p->round_corners_radius = 7;
@@ -382,15 +381,10 @@ void panel_set_wm_strut(Panel *p)
 
 void panel_set_dock_type(Panel *p)
 {
-    if (p->setdocktype) {
-        Atom state = a_NET_WM_WINDOW_TYPE_DOCK;
-        XChangeProperty(GDK_DISPLAY(), p->topxwin,
-                        a_NET_WM_WINDOW_TYPE, XA_ATOM, 32,
-                        PropModeReplace, (unsigned char *) &state, 1);
-    }
-    else {
-        XDeleteProperty( GDK_DISPLAY(), p->topxwin, a_NET_WM_WINDOW_TYPE );
-    }
+    Atom state = a_NET_WM_WINDOW_TYPE_DOCK;
+    XChangeProperty(GDK_DISPLAY(), p->topxwin,
+                    a_NET_WM_WINDOW_TYPE, XA_ATOM, 32,
+                    PropModeReplace, (unsigned char *) &state, 1);
 }
 
 void panel_set_wm_state(Panel *p)

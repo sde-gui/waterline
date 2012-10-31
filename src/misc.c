@@ -62,11 +62,16 @@ int strempty(const char* s) {
 gchar *
 expand_tilda(gchar *file)
 {
-    ENTER;
-    RET((file[0] == '~') ?
-        g_strdup_printf("%s%s", getenv("HOME"), file+1)
-        : g_strdup(file));
+    if (file[0] != '~')
+        return g_strdup(file);
 
+    const char * homedir = g_getenv("HOME");
+    if (!homedir)
+        homedir = g_get_home_dir();
+    if (!homedir)
+        homedir = g_get_tmp_dir();
+
+    return g_strdup_printf("%s%s", homedir, file + 1);
 }
 
 /********************************************************************/

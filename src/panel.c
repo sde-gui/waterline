@@ -196,6 +196,7 @@ static Panel* panel_allocate(void)
     p->round_corners = 0;
     p->round_corners_radius = 7;
     p->autohide_visible = TRUE;
+    p->gobelow = FALSE;
     p->visible = TRUE;
     p->height_when_hidden = 1;
     p->transparent = 0;
@@ -394,7 +395,7 @@ void panel_set_dock_type(Panel *p)
 
 void panel_set_wm_state(Panel *p)
 {
-    gboolean below = (p->visibility_mode == VISIBILITY_BELOW);
+    gboolean below = (p->visibility_mode == VISIBILITY_BELOW) || p->gobelow;
 
     GdkWindow * w = gtk_widget_get_window(p->topgwin);
 
@@ -415,24 +416,39 @@ void panel_set_wm_state(Panel *p)
 
 /*= autohide tracking =*/
 
-static void panel_set_autohide_visibility(Panel *p, gboolean autohide_visible)
+static void panel_set_autohide_visibility(Panel *p, gboolean visible)
 {
-    if (p->autohide_visible == autohide_visible)
-        return;
+    gboolean autohide_visible = visible;
+    gboolean gobelow = !visible;
 
-    p->autohide_visible = autohide_visible;
+    if (p->visibility_mode != VISIBILITY_AUTOHIDE)
+        autohide_visible = TRUE;
 
-    if (!autohide_visible)
-        gtk_widget_hide(p->box);
+    if (p->visibility_mode != VISIBILITY_GOBELOW)
+        gobelow = FALSE;
 
-    panel_calculate_position(p);
-    gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
-    gdk_window_move(p->topgwin->window, p->ax, p->ay);
+    if (p->autohide_visible != autohide_visible)
+    {
+        p->autohide_visible = autohide_visible;
 
-    if (autohide_visible)
-        gtk_widget_show(p->box);
+        if (!autohide_visible)
+            gtk_widget_hide(p->box);
 
-    panel_set_wm_strut(p);
+        panel_calculate_position(p);
+        gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
+        gdk_window_move(p->topgwin->window, p->ax, p->ay);
+
+        if (autohide_visible)
+            gtk_widget_show(p->box);
+
+        panel_set_wm_strut(p);
+    }
+
+    if (p->gobelow != gobelow)
+    {
+        p->gobelow = gobelow;
+        panel_set_wm_state(p);
+    }
 }
 
 static gboolean panel_leave_real(Panel *p);
@@ -441,7 +457,7 @@ void panel_autohide_conditions_changed( Panel* p )
 {
     gboolean autohide_visible = FALSE;
 
-    if (p->visibility_mode != VISIBILITY_AUTOHIDE)
+    if (p->visibility_mode != VISIBILITY_AUTOHIDE && p->visibility_mode != VISIBILITY_GOBELOW)
         autohide_visible = TRUE;
 
     if (!autohide_visible)
@@ -481,7 +497,7 @@ void panel_autohide_conditions_changed( Panel* p )
     if (autohide_visible)
     {
         panel_set_autohide_visibility(p, TRUE);
-        if (p->visibility_mode == VISIBILITY_AUTOHIDE)
+        if (p->visibility_mode == VISIBILITY_AUTOHIDE || p->visibility_mode == VISIBILITY_GOBELOW)
         {
             if (p->hide_timeout == 0)
                 p->hide_timeout = g_timeout_add(500, (GSourceFunc) panel_leave_real, p);
@@ -519,18 +535,13 @@ static gboolean panel_drag_motion(GtkWidget *widget, GdkDragContext *drag_contex
 
 void panel_establish_autohide(Panel *p)
 {
-    if (p->visibility_mode == VISIBILITY_AUTOHIDE)
+    if (p->visibility_mode == VISIBILITY_AUTOHIDE || p->visibility_mode == VISIBILITY_GOBELOW)
     {
         gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
         g_signal_connect(G_OBJECT(p->topgwin), "enter-notify-event", G_CALLBACK(panel_enter), p);
         g_signal_connect(G_OBJECT(p->topgwin), "drag-motion", (GCallback) panel_drag_motion, p);
         gtk_drag_dest_set(p->topgwin, GTK_DEST_DEFAULT_MOTION, NULL, 0, 0);
         gtk_drag_dest_set_track_motion(p->topgwin, TRUE);
-    }
-    else if (!p->autohide_visible)
-    {
-        gtk_widget_show(p->box);
-        p->autohide_visible = TRUE;
     }
     panel_autohide_conditions_changed(p);
 }
@@ -1228,7 +1239,7 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
         np->ax = minx;
         calculate_width(sswidth, np->oriented_width_type, np->align, np->margin,
               &np->aw, &np->ax);
-        np->ah = ((( np->visibility_mode != VISIBILITY_AUTOHIDE) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
+        np->ah = np->autohide_visible ? np->oriented_height : np->height_when_hidden;
         np->ay = miny + ((np->edge == EDGE_TOP) ? 0 : (ssheight - np->ah));
 
     } else {
@@ -1239,7 +1250,7 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
         np->ay = miny;
         calculate_width(ssheight, np->oriented_width_type, np->align, np->margin,
               &np->ah, &np->ay);
-        np->aw = ((( np->visibility_mode != VISIBILITY_AUTOHIDE) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
+        np->aw = np->autohide_visible ? np->oriented_height : np->height_when_hidden;
         np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));
     }
     //g_debug("%s - x=%d y=%d w=%d h=%d\n", __FUNCTION__, np->ax, np->ay, np->aw, np->ah);
@@ -1259,7 +1270,7 @@ void panel_calculate_position(Panel *p)
         for( l = all_panels; l; l = l->next )
         {
             Panel* lp = (Panel*)l->data;
-            if (!lp->visible || lp->visibility_mode == VISIBILITY_AUTOHIDE || !lp->autohide_visible)
+            if (!lp->visible || lp->visibility_mode == VISIBILITY_AUTOHIDE)
                 continue;
             if (lp->edge == EDGE_TOP && lp->ch > margin_top)
                 margin_top = lp->ch;

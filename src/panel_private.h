@@ -74,6 +74,7 @@ struct _Panel {
     guint background : 1;
     guint spacing;
 
+    guint gobelow : 1;
     guint autohide_visible : 1;         /* whether panel is in full-size state. Always true if autohide is false */
     guint visible : 1;                  /* whether panel is actually visible */
     int height_when_hidden;

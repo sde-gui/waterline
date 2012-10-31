@@ -1071,11 +1071,9 @@ void panel_initialize_pref_dialog(Panel * p)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_AUTOHIDE));
     g_signal_connect(w, "toggled", G_CALLBACK(autohide_toggle), p);
 
-    /* FIXME: not implemented */
     p->pref_dialog.gobelow = w = (GtkWidget*)gtk_builder_get_object( builder, "gobelow" );
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_GOBELOW));
     g_signal_connect(w, "toggled", G_CALLBACK(gobelow_toggle), p);
-    gtk_widget_hide(w);
 
 
     w = (GtkWidget*)gtk_builder_get_object( builder, "height_when_minimized" );

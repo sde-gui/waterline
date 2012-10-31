@@ -1195,7 +1195,7 @@ static void calculate_width(int scrw, int wtype, int align, int margin, int *pan
 
     if (align == ALIGN_CENTER)
         margin = 0;
-    
+
     *panw = MIN(scrw - margin, *panw);
 
     DBG("OUT panw=%d\n", *panw);
@@ -1229,11 +1229,26 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
         sswidth  = gdk_screen_get_width( gtk_widget_get_screen(np->topgwin) );
         ssheight = gdk_screen_get_height( gtk_widget_get_screen(np->topgwin) );
     }
+/*
+    int edge_margin = 0;
 
+    if (np->visibility_mode == VISIBILITY_AUTOHIDE || np->visibility_mode == VISIBILITY_GOBELOW)
+    {
+        edge_margin = 0;
+    }
+
+    switch (np->edge)
+    {
+        case EDGE_TOP   : miny     += edge_margin; break;
+        case EDGE_BOTTOM: ssheight -= edge_margin; break;
+        case EDGE_LEFT  : minx     += edge_margin; break;
+        case EDGE_RIGHT : sswidth  -= edge_margin; break;
+    }
+*/
     if (np->edge == EDGE_TOP || np->edge == EDGE_BOTTOM) {
         np->aw = np->oriented_width;
         np->ax = minx;
-        calculate_width(sswidth, np->oriented_width_type, np->align, np->margin,
+        calculate_width(sswidth, np->oriented_width_type, np->align, np->align_margin,
               &np->aw, &np->ax);
         np->ah = np->autohide_visible ? np->oriented_height : np->height_when_hidden;
         np->ay = miny + ((np->edge == EDGE_TOP) ? 0 : (ssheight - np->ah));
@@ -1244,7 +1259,7 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
 
         np->ah = np->oriented_width;
         np->ay = miny;
-        calculate_width(ssheight, np->oriented_width_type, np->align, np->margin,
+        calculate_width(ssheight, np->oriented_width_type, np->align, np->align_margin,
               &np->ah, &np->ay);
         np->aw = np->autohide_visible ? np->oriented_height : np->height_when_hidden;
         np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));

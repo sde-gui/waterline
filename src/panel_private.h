@@ -47,7 +47,7 @@ struct _Panel {
 
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) */
-    int align, edge, margin;
+    int align, edge, align_margin;
     int orientation;
     int oriented_width_type, oriented_width;
     int oriented_height_type, oriented_height;
@@ -103,7 +103,7 @@ struct _Panel {
         GtkWidget * notebook;
         GtkWidget * alignment_left_label;
         GtkWidget * alignment_right_label;
-        GtkWidget * margin_control;
+        GtkWidget * align_margin_control;
         GtkWidget * width_label;
         GtkWidget * width_control;
         GtkWidget * width_unit;

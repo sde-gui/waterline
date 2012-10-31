@@ -62,7 +62,9 @@ panel_parse_global(Panel *p, char **fp)
             } else if (!g_ascii_strcasecmp(s.t[0], "align")) {
                 p->align = str2num(align_pair, s.t[1], ALIGN_NONE);
             } else if (!g_ascii_strcasecmp(s.t[0], "margin")) {
-                p->margin = atoi(s.t[1]);
+                p->align_margin = atoi(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "AlignMargin")) {
+                p->align_margin = atoi(s.t[1]);
             } else if (!g_ascii_strcasecmp(s.t[0], "widthtype")) {
                 p->oriented_width_type = str2num(width_pair, s.t[1], WIDTH_NONE);
             } else if (!g_ascii_strcasecmp(s.t[0], "width")) {
@@ -149,7 +151,7 @@ panel_global_config_save(Panel* p, FILE *fp)
     lxpanel_put_line(fp, "Global {");
     lxpanel_put_str(fp, "Edge", num2str(edge_pair, p->edge, "none"));
     lxpanel_put_str(fp, "Align", num2str(align_pair, p->align, "none"));
-    lxpanel_put_int(fp, "Margin", p->margin);
+    lxpanel_put_int(fp, "AlignMargin", p->align_margin);
     lxpanel_put_str(fp, "WidthType", num2str(width_pair, p->oriented_width_type, "none"));
     lxpanel_put_int(fp, "Width", p->oriented_width);
     lxpanel_put_int(fp, "Height", p->oriented_height);

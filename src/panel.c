@@ -325,18 +325,10 @@ static gboolean panel_set_wm_strut_real(Panel *p)
 
     /* Handle autohide case.  EWMH recommends having the strut be the minimized size. */
     if (p->visibility_mode == VISIBILITY_AUTOHIDE || p->visibility_mode == VISIBILITY_GOBELOW)
-        strut_size = p->height_when_hidden;
-
-    /* Set up strut value in property format. */
-    gulong desired_strut[12];
-    memset(desired_strut, 0, sizeof(desired_strut));
-    if (p->setstrut)
     {
-        desired_strut[index] = strut_size;
-        desired_strut[4 + index * 2] = strut_lower;
-        desired_strut[5 + index * 2] = strut_upper;
+        strut_size = p->height_when_hidden;
     }
-    else
+    else if (!p->setstrut)
     {
         strut_size = 0;
         strut_lower = 0;
@@ -346,7 +338,10 @@ static gboolean panel_set_wm_strut_real(Panel *p)
     /* If strut value changed, set the property value on the panel window.
      * This avoids property change traffic when the panel layout is recalculated but strut geometry hasn't changed. */
     if ((gtk_widget_get_mapped(p->topgwin))
-    && ((p->strut_size != strut_size) || (p->strut_lower != strut_lower) || (p->strut_upper != strut_upper) || (p->strut_edge != p->edge)))
+    && ((p->strut_size != strut_size) ||
+        (p->strut_lower != strut_lower) ||
+        (p->strut_upper != strut_upper) ||
+        (p->strut_edge != p->edge)))
     {
         p->strut_size = strut_size;
         p->strut_lower = strut_lower;
@@ -357,6 +352,13 @@ static gboolean panel_set_wm_strut_real(Panel *p)
          * Set STRUT also for window managers that do not support STRUT_PARTIAL. */
         if (strut_size != 0)
         {
+            /* Set up strut value in property format. */
+            gulong desired_strut[12];
+            memset(desired_strut, 0, sizeof(desired_strut));
+            desired_strut[index] = strut_size;
+            desired_strut[4 + index * 2] = strut_lower;
+            desired_strut[5 + index * 2] = strut_upper;
+
             XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL,
                 XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) desired_strut, 12);
             XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT,

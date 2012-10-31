@@ -102,6 +102,12 @@ static void dirmenu_save_configuration(Plugin * p, FILE * fp);
 static void dirmenu_panel_configuration_changed(Plugin * p);
 
 /* Handler for activate event on file menu item. */
+static gchar * dirmenu_get_path(DirMenuPlugin * dm)
+{
+        return expand_tilda(strempty(dm->path) ? "~" : dm->path);
+}
+
+/* Handler for activate event on file menu item. */
 static void dirmenu_menuitem_open_file(GtkWidget * item, Plugin * p)
 {
     lxpanel_open_in_file_manager(g_object_get_data(G_OBJECT(item), "path"));
@@ -757,7 +763,7 @@ static void dirmenu_show_menu(Plugin * p, int btn, guint32 time)
     /* Create a menu populated with all subdirectories. */
     GtkWidget * menu = dirmenu_create_menu(
         p,
-        ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()),
+        dirmenu_get_path(dm) /* it is up to dirmenu_create_menu to free the string */,
         FALSE, NULL);
     g_signal_connect(menu, "selection-done", G_CALLBACK(dirmenu_menu_selection_done), NULL);
 
@@ -780,7 +786,9 @@ static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * 
     }
     else
     {
-        lxpanel_open_in_terminal( ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()) );
+        gchar * path = dirmenu_get_path(dm);
+        lxpanel_open_in_terminal(path);
+        g_free(path);
     }
     return TRUE;
 }
@@ -890,12 +898,14 @@ static void dirmenu_apply_configuration(Plugin * p)
 {
     DirMenuPlugin * dm = PRIV(p);
 
+    gchar * path = dirmenu_get_path(dm);
+
     gchar * icon_name = NULL;
 
 #if GLIB_CHECK_VERSION(2,20,0)
     if (!dm->image)
     {
-	GFile * file = g_file_new_for_path( ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()) );
+	GFile * file = g_file_new_for_path(path);
 	GFileInfo * file_info =g_file_query_info(file,
 	    G_FILE_ATTRIBUTE_STANDARD_ICON,
 	    G_FILE_QUERY_INFO_NONE,
@@ -918,10 +928,12 @@ static void dirmenu_apply_configuration(Plugin * p)
         ((dm->image != NULL) ? dm->image : (icon_name != NULL) ? icon_name : "file-manager"),
         ((dm->image != NULL) ? -1 : plugin_get_icon_size(p)), plugin_get_icon_size(p), TRUE);
     fb_button_set_label(plugin_widget(p), plugin_panel(p), dm->name);
-    gtk_widget_set_tooltip_text(plugin_widget(p), ((dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir()));
+    gtk_widget_set_tooltip_text(plugin_widget(p), path);
     fb_button_set_orientation(plugin_widget(p), plugin_get_orientation(p));
 
     g_free(icon_name);
+
+    g_free(path);
 }
 
 /* Callback when the configuration dialog is to be shown. */
@@ -1010,7 +1022,7 @@ static void dirmenu_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
 {
     DirMenuPlugin * dm = PRIV(plugin);
 
-    const gchar * path = (dm->path != NULL) ? expand_tilda(dm->path) : g_get_home_dir();
+    gchar * path = dirmenu_get_path(dm);
     GtkMenu * file_menu = lxpanel_fm_file_menu_for_path(path);
     if (file_menu)
     {
@@ -1023,6 +1035,7 @@ static void dirmenu_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
         gtk_widget_show(item);
         gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), item);
     }
+    g_free(path);
 }
 
 /* Plugin descriptor. */

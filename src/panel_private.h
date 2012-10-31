@@ -60,6 +60,8 @@ struct _Panel {
     int strut_edge;
     int set_wm_strut_idle;
 
+    int visibility_mode;
+
     guint config_changed : 1;
     guint self_destroy : 1;
     guint setdocktype : 1;
@@ -72,7 +74,6 @@ struct _Panel {
     guint background : 1;
     guint spacing;
 
-    guint autohide : 1;                 /* Autohide mode */
     guint autohide_visible : 1;         /* whether panel is in full-size state. Always true if autohide is false */
     guint visible : 1;                  /* whether panel is actually visible */
     int height_when_hidden;
@@ -108,6 +109,10 @@ struct _Panel {
         GtkWidget * width_unit;
         GtkWidget * height_label;
         GtkWidget * height_control;
+        GtkWidget * always_visible;
+        GtkWidget * always_below;
+        GtkWidget * autohide;
+        GtkWidget * gobelow;
         gboolean doing_update;
     } pref_dialog;
 };

@@ -45,6 +45,7 @@ extern pair width_pair[];
 extern pair height_pair[];
 extern pair bool_pair[];
 extern pair pos_pair[];
+extern pair panel_visibility_pair[];
 
 int str2num(pair *p, gchar *str, int defval);
 const gchar *num2str(const pair *p, int num, const gchar *defval);

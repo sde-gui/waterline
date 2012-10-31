@@ -195,7 +195,6 @@ static Panel* panel_allocate(void)
     p->setstrut = 1;
     p->round_corners = 0;
     p->round_corners_radius = 7;
-    p->autohide = 0;
     p->autohide_visible = TRUE;
     p->visible = TRUE;
     p->height_when_hidden = 1;
@@ -209,6 +208,7 @@ static Panel* panel_allocate(void)
     p->fontsize = 10;
     p->spacing = 0;
     p->preferred_icon_size = PANEL_ICON_SIZE;
+    p->visibility_mode = VISIBILITY_ALWAYS;
     return p;
 }
 
@@ -324,7 +324,7 @@ static gboolean panel_set_wm_strut_real(Panel *p)
     }
 
     /* Handle autohide case.  EWMH recommends having the strut be the minimized size. */
-    if (p->autohide)
+    if (p->visibility_mode == VISIBILITY_AUTOHIDE || p->visibility_mode == VISIBILITY_GOBELOW)
         strut_size = p->height_when_hidden;
 
     /* Set up strut value in property format. */
@@ -392,6 +392,25 @@ void panel_set_dock_type(Panel *p)
     }
 }
 
+void panel_set_wm_state(Panel *p)
+{
+    gboolean below = (p->visibility_mode == VISIBILITY_BELOW);
+
+    GdkWindow * w = gtk_widget_get_window(p->topgwin);
+
+    if (below)
+    {
+        gdk_window_set_keep_below(w, TRUE);
+        gdk_window_lower(w);
+    }
+    else
+    {
+        gdk_window_set_keep_below(w, FALSE);
+        gdk_window_raise(w);
+    }
+
+}
+
 /******************************************************************************/
 
 /*= autohide tracking =*/
@@ -422,7 +441,7 @@ void panel_autohide_conditions_changed( Panel* p )
 {
     gboolean autohide_visible = FALSE;
 
-    if (!p->autohide)
+    if (p->visibility_mode != VISIBILITY_AUTOHIDE)
         autohide_visible = TRUE;
 
     if (!autohide_visible)
@@ -462,7 +481,7 @@ void panel_autohide_conditions_changed( Panel* p )
     if (autohide_visible)
     {
         panel_set_autohide_visibility(p, TRUE);
-        if (p->autohide)
+        if (p->visibility_mode == VISIBILITY_AUTOHIDE)
         {
             if (p->hide_timeout == 0)
                 p->hide_timeout = g_timeout_add(500, (GSourceFunc) panel_leave_real, p);
@@ -500,7 +519,7 @@ static gboolean panel_drag_motion(GtkWidget *widget, GdkDragContext *drag_contex
 
 void panel_establish_autohide(Panel *p)
 {
-    if (p->autohide)
+    if (p->visibility_mode == VISIBILITY_AUTOHIDE)
     {
         gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
         g_signal_connect(G_OBJECT(p->topgwin), "enter-notify-event", G_CALLBACK(panel_enter), p);
@@ -510,7 +529,7 @@ void panel_establish_autohide(Panel *p)
     }
     else if (!p->autohide_visible)
     {
-	gtk_widget_show(p->box);
+        gtk_widget_show(p->box);
         p->autohide_visible = TRUE;
     }
     panel_autohide_conditions_changed(p);
@@ -537,7 +556,7 @@ Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name)
     int len = strlen(name);
     if (len == 0)
         return NULL;
-    
+
     int i = len - 1;
     while (name[i] >= '0' && name[i] <= '9' && i >= 0)
         i--;
@@ -575,7 +594,7 @@ Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name)
 }
 
 static Panel * panel_get_by_name(gchar * name)
-{   
+{
     GSList * l;
     for (l = all_panels; l; l = l->next)
     {
@@ -613,20 +632,15 @@ static void cmd_panel_visible(Panel * panel, char ** argv, int argc)
             XChangeProperty(GDK_DISPLAY(), panel->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
                   PropModeReplace, (unsigned char *) &val, 1);
 
-            Atom state[3];
-    
-            state[0] = a_NET_WM_STATE_SKIP_PAGER;
-            state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
-            state[2] = a_NET_WM_STATE_STICKY;
-            XChangeProperty(GDK_DISPLAY(), panel->topxwin, a_NET_WM_STATE, XA_ATOM,
-                  32, PropModeReplace, (unsigned char *) state, 3);
+            panel_set_wm_state(panel);
         }
     }
 }
 
 static void cmd_panel_autohide(Panel * panel, char ** argv, int argc)
 {
-    gboolean autohide = !panel->autohide;
+    gboolean autohide_old_value = (panel->visibility_mode == VISIBILITY_AUTOHIDE);
+    gboolean autohide = !autohide_old_value;
 
     if (argc > 1)
     {
@@ -636,9 +650,9 @@ static void cmd_panel_autohide(Panel * panel, char ** argv, int argc)
             autohide = FALSE;
     }
 
-    if (autohide != panel->autohide)
+    if (autohide != autohide_old_value)
     {
-        panel->autohide = autohide;
+        panel->visibility_mode = autohide ? VISIBILITY_AUTOHIDE : VISIBILITY_ALWAYS;
         update_panel_geometry(panel);
     }
 }
@@ -1214,7 +1228,7 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
         np->ax = minx;
         calculate_width(sswidth, np->oriented_width_type, np->align, np->margin,
               &np->aw, &np->ax);
-        np->ah = ((( ! np->autohide) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
+        np->ah = ((( np->visibility_mode != VISIBILITY_AUTOHIDE) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
         np->ay = miny + ((np->edge == EDGE_TOP) ? 0 : (ssheight - np->ah));
 
     } else {
@@ -1225,7 +1239,7 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
         np->ay = miny;
         calculate_width(ssheight, np->oriented_width_type, np->align, np->margin,
               &np->ah, &np->ay);
-        np->aw = ((( ! np->autohide) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
+        np->aw = ((( np->visibility_mode != VISIBILITY_AUTOHIDE) || (np->autohide_visible)) ? np->oriented_height : np->height_when_hidden);
         np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));
     }
     //g_debug("%s - x=%d y=%d w=%d h=%d\n", __FUNCTION__, np->ax, np->ay, np->aw, np->ah);
@@ -1245,7 +1259,7 @@ void panel_calculate_position(Panel *p)
         for( l = all_panels; l; l = l->next )
         {
             Panel* lp = (Panel*)l->data;
-            if (!lp->visible || lp->autohide || !lp->autohide_visible)
+            if (!lp->visible || lp->visibility_mode == VISIBILITY_AUTOHIDE || !lp->autohide_visible)
                 continue;
             if (lp->edge == EDGE_TOP && lp->ch > margin_top)
                 margin_top = lp->ch;
@@ -1277,6 +1291,7 @@ void update_panel_geometry(Panel* p)
         gdk_window_move(p->topgwin->window, p->ax, p->ay);
         panel_update_background(p);
         panel_establish_autohide(p);
+        panel_set_wm_state(p);
         panel_set_wm_strut(p);
     }
 }
@@ -1790,8 +1805,6 @@ gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const gchar * 
 static void
 panel_start_gui(Panel *p)
 {
-    Atom state[3];
-
     ENTER;
 
     p->curdesk = get_net_current_desktop();
@@ -1888,11 +1901,7 @@ panel_start_gui(Panel *p)
     XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
           PropModeReplace, (unsigned char *) &val, 1);
 
-    state[0] = a_NET_WM_STATE_SKIP_PAGER;
-    state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
-    state[2] = a_NET_WM_STATE_STICKY;
-    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STATE, XA_ATOM,
-          32, PropModeReplace, (unsigned char *) state, 3);
+    panel_set_wm_state(p);
 
     panel_calculate_position(p);
     gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);

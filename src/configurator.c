@@ -245,6 +245,39 @@ static void set_width_type( GtkWidget *item, Panel* p )
     gui_update_width(p);
 }
 
+
+static void set_visibility(Panel* p, int visibility_mode)
+{
+    if (p->visibility_mode == visibility_mode)
+        return;
+    p->visibility_mode = visibility_mode;
+    update_panel_geometry(p);
+}
+
+static void always_visible_toggle(GtkToggleButton *widget, Panel *p)
+{
+    if (gtk_toggle_button_get_active(widget))
+        set_visibility(p, VISIBILITY_ALWAYS);
+}
+
+static void always_below_toggle(GtkToggleButton *widget, Panel *p)
+{
+    if (gtk_toggle_button_get_active(widget))
+        set_visibility(p, VISIBILITY_BELOW);
+}
+
+static void autohide_toggle(GtkToggleButton *widget, Panel *p)
+{
+    if (gtk_toggle_button_get_active(widget))
+        set_visibility(p, VISIBILITY_AUTOHIDE);
+}
+
+static void gobelow_toggle(GtkToggleButton *widget, Panel *p)
+{
+    if (gtk_toggle_button_get_active(widget))
+        set_visibility(p, VISIBILITY_GOBELOW);
+}
+
 static void stretch_background_toggle(GtkWidget * w, Panel*  p)
 {
     ENTER;
@@ -439,13 +472,6 @@ static void
 set_strut(GtkToggleButton* toggle,  Panel* p )
 {
     p->setstrut = gtk_toggle_button_get_active(toggle) ? 1 : 0;
-    update_panel_geometry(p);
-}
-
-static void
-set_autohide(GtkToggleButton* toggle,  Panel* p )
-{
-    p->autohide = gtk_toggle_button_get_active(toggle) ? 1 : 0;
     update_panel_geometry(p);
 }
 
@@ -1031,10 +1057,26 @@ void panel_initialize_pref_dialog(Panel * p)
     g_signal_connect( w, "toggled",
                       G_CALLBACK(set_strut), p );
 
-    w = (GtkWidget*)gtk_builder_get_object( builder, "autohide" );
-    update_toggle_button( w, p->autohide );
-    g_signal_connect( w, "toggled",
-                      G_CALLBACK(set_autohide), p );
+    /* visibility */
+
+    p->pref_dialog.always_visible = w = (GtkWidget*)gtk_builder_get_object( builder, "always_visible" );
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_ALWAYS));
+    g_signal_connect(w, "toggled", G_CALLBACK(always_visible_toggle), p);
+
+    p->pref_dialog.always_below = w = (GtkWidget*)gtk_builder_get_object( builder, "always_below" );
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_BELOW));
+    g_signal_connect(w, "toggled", G_CALLBACK(always_below_toggle), p);
+
+    p->pref_dialog.autohide = w = (GtkWidget*)gtk_builder_get_object( builder, "autohide" );
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_AUTOHIDE));
+    g_signal_connect(w, "toggled", G_CALLBACK(autohide_toggle), p);
+
+    /* FIXME: not implemented */
+    p->pref_dialog.gobelow = w = (GtkWidget*)gtk_builder_get_object( builder, "gobelow" );
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (p->visibility_mode == VISIBILITY_GOBELOW));
+    g_signal_connect(w, "toggled", G_CALLBACK(gobelow_toggle), p);
+    gtk_widget_hide(w);
+
 
     w = (GtkWidget*)gtk_builder_get_object( builder, "height_when_minimized" );
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(w), p->height_when_hidden);

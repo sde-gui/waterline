@@ -88,7 +88,9 @@ panel_parse_global(Panel *p, char **fp)
                 if (p->alpha > 255)
                     p->alpha = 255;
             } else if (!g_ascii_strcasecmp(s.t[0], "AutoHide")) {
-                p->autohide = str2num(bool_pair, s.t[1], 0);
+                p->visibility_mode = str2num(bool_pair, s.t[1], 0) ? VISIBILITY_AUTOHIDE : VISIBILITY_ALWAYS;
+            } else if (!g_ascii_strcasecmp(s.t[0], "Visibility")) {
+                p->visibility_mode = str2num(panel_visibility_pair, s.t[1], 0);
             } else if (!g_ascii_strcasecmp(s.t[0], "HeightWhenHidden")) {
                 p->height_when_hidden = atoi(s.t[1]);
             } else if (!g_ascii_strcasecmp(s.t[0], "TintColor")) {
@@ -165,7 +167,7 @@ panel_global_config_save(Panel* p, FILE *fp)
 
     lxpanel_put_str(fp, "GtkWidgetName", p->widget_name);
 
-    lxpanel_put_bool(fp, "AutoHide", p->autohide);
+    lxpanel_put_enum(fp, "Visibility", p->visibility_mode, panel_visibility_pair);
     lxpanel_put_int(fp, "HeightWhenHidden", p->height_when_hidden);
     lxpanel_put_bool(fp, "SetDockType", p->setdocktype);
     lxpanel_put_bool(fp, "SetPartialStrut", p->setstrut);

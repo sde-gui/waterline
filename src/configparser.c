@@ -62,10 +62,19 @@ pair bool_pair[] = {
     { 1, "1" },
     { 0, NULL },
 };
+
 pair pos_pair[] = {
     { POS_NONE, "none" },
     { POS_START, "start" },
     { POS_END,  "end" },
+    { 0, NULL},
+};
+
+pair panel_visibility_pair[] = {
+    { VISIBILITY_ALWAYS, "always" },
+    { VISIBILITY_BELOW, "below" },
+    { VISIBILITY_AUTOHIDE,  "autohide" },
+    { VISIBILITY_GOBELOW,  "gobelow" },
     { 0, NULL},
 };
 

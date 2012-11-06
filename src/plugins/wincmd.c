@@ -132,7 +132,7 @@ static gboolean wincmd_button_clicked(GtkWidget * widget, GdkEventButton * event
         return TRUE;
 
     /* Left-click to iconify. */
-    if (event->button == 1)
+    if (event->button == 1 && event->type == GDK_BUTTON_PRESS)
     {
         GdkScreen* screen = gtk_widget_get_screen(widget);
         static GdkAtom atom = 0;

@@ -402,7 +402,8 @@ typedef struct _taskbar {
 
     gboolean show_urgency_all_desks;		/* User preference: show windows from other workspaces if they set urgent hint*/
     gboolean use_urgency_hint;			/* User preference: windows with urgency will flash */
-    gboolean flat_button;			/* User preference: taskbar buttons have visible background */
+    gboolean flat_inactive_buttons;
+    gboolean flat_active_button;
 
     gboolean bold_font_on_mouse_over;
 
@@ -747,7 +748,9 @@ static gboolean task_is_visible(Task * tk)
 static int task_button_is_really_flat(Task * tk)
 {
     TaskbarPlugin * tb = tk->tb;
-    return ( tb->single_window ) || (tb->flat_button && !tk->focused );
+    return ( tb->single_window ) ||
+		(tb->flat_inactive_buttons && !tk->focused ) ||
+		(tb->flat_active_button && tk->focused );
 }
 
 /******************************************************************************/
@@ -4823,7 +4826,14 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                 else if (g_ascii_strcasecmp(s.t[0], "IconThumbnails") == 0)
                     tb->use_thumbnails_as_icons = str2num(bool_pair, s.t[1], tb->use_thumbnails_as_icons);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatButton") == 0)
-                    tb->flat_button = str2num(bool_pair, s.t[1], tb->flat_button);
+				{
+                    tb->flat_inactive_buttons = str2num(bool_pair, s.t[1], tb->flat_inactive_buttons);
+					tb->flat_active_button    = str2num(bool_pair, s.t[1], tb->flat_active_button);
+				}
+                else if (g_ascii_strcasecmp(s.t[0], "FlatInactiveButtons") == 0)
+                    tb->flat_inactive_buttons = str2num(bool_pair, s.t[1], tb->flat_inactive_buttons);
+                else if (g_ascii_strcasecmp(s.t[0], "FlatActiveButton") == 0)
+                    tb->flat_active_button = str2num(bool_pair, s.t[1], tb->flat_active_button);
                 else if (g_ascii_strcasecmp(s.t[0], "BoldFontOnMouseOver") == 0)
                     tb->bold_font_on_mouse_over = str2num(bool_pair, s.t[1], tb->bold_font_on_mouse_over);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupedTasks") == 0)		/* For backward compatibility */
@@ -5050,7 +5060,8 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Show tooltips"), (gpointer)&tb->tooltips, (GType)CONF_TYPE_BOOL,
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
         _("Dimm iconified"), (gpointer)&tb->dimm_iconified, (GType)CONF_TYPE_BOOL,
-        _("Flat buttons"), (gpointer)&tb->flat_button, (GType)CONF_TYPE_BOOL,
+        _("Display inactive buttons flat"), (gpointer)&tb->flat_inactive_buttons, (GType)CONF_TYPE_BOOL,
+		_("Display active button flat"), (gpointer)&tb->flat_active_button, (GType)CONF_TYPE_BOOL,
         _("Bold font when mouse is over a button"), (gpointer)&tb->bold_font_on_mouse_over, (GType)CONF_TYPE_BOOL,
         _("Colorize buttons"), (gpointer)&tb->colorize_buttons, (GType)CONF_TYPE_BOOL,
         _("Display window thumbnails instead of icons (requires compositing wm enabled)"), (gpointer)&tb->use_thumbnails_as_icons, (GType)CONF_TYPE_BOOL,
@@ -5159,7 +5170,8 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowAllDesks", tb->show_all_desks);
     lxpanel_put_bool(fp, "ShowUrgencyAllDesks", tb->show_urgency_all_desks);
     lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);
-    lxpanel_put_bool(fp, "FlatButton", tb->flat_button);
+    lxpanel_put_bool(fp, "FlatInactiveButtons", tb->flat_inactive_buttons);
+    lxpanel_put_bool(fp, "FlatActiveButton", tb->flat_active_button);
     lxpanel_put_bool(fp, "BoldFontOnMouseOver", tb->bold_font_on_mouse_over);
     lxpanel_put_bool(fp, "ColorizeButtons", tb->colorize_buttons);
     lxpanel_put_bool(fp, "IconThumbnails", tb->use_thumbnails_as_icons);

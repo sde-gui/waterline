@@ -23,7 +23,6 @@
  = HC SVNT DRACONES =
 \********************/
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -1412,9 +1411,9 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
         g_source_remove(tk->flash_timeout);
 
     if (tk->icon_pixbuf)
-	g_object_unref(tk->icon_pixbuf);
+        g_object_unref(tk->icon_pixbuf);
     if (tk->icon_pixbuf_iconified)
-	g_object_unref(tk->icon_pixbuf_iconified);
+        g_object_unref(tk->icon_pixbuf_iconified);
 
     /* Deallocate structures. */
     icon_grid_remove(tb->icon_grid, tk->button);
@@ -3667,7 +3666,8 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
         {
             if (tk_pred == NULL)
                 tb->task_list = tk_succ;
-                else tk_pred->task_flink = tk_succ;
+            else
+                tk_pred->task_flink = tk_succ;
             task_delete(tb, tk, FALSE);
             redraw = TRUE;
         }
@@ -3977,11 +3977,15 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                     {
                         task_delete(tb, tk, TRUE);
                         taskbar_redraw(tb);
+                        tk = NULL;
                     }
-                    tk->maximized = nws.maximized_vert || nws.maximized_horz;
-                    tk->shaded    = nws.shaded;
-                    tk->decorated = get_decorations(tk->win, &nws);
-                    task_update_composite_thumbnail(tk);
+                    else
+                    {
+                        tk->maximized = nws.maximized_vert || nws.maximized_horz;
+                        tk->shaded    = nws.shaded;
+                        tk->decorated = get_decorations(tk->win, &nws);
+                        task_update_composite_thumbnail(tk);
+                    }
                 }
                 else if (at == a_MOTIF_WM_HINTS)
                 {

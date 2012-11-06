@@ -404,6 +404,8 @@ typedef struct _taskbar {
     gboolean use_urgency_hint;			/* User preference: windows with urgency will flash */
     gboolean flat_button;			/* User preference: taskbar buttons have visible background */
 
+    gboolean bold_font_on_mouse_over;
+
     gboolean use_group_separators;
     int group_separator_size;
 
@@ -939,8 +941,11 @@ static void taskbar_update_x_window_position(TaskbarPlugin * tb)
 static void task_draw_label(Task * tk)
 {
     TaskClass * tc = tk->task_class;
-    gboolean bold_style = (((tk->entered_state) || (tk->flash_state)) && (tk->tb->flat_button));
+
+    gboolean bold_style = tk->entered_state && tk->tb->bold_font_on_mouse_over;
+	bold_style |= tk->flash_state && task_button_is_really_flat(tk);
     bold_style |= tk->name_changed && tk->tb->highlight_modified_titles;
+
     if (task_is_folded(tk) && (tc) && (tc->visible_task == tk))
     {
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
@@ -4819,6 +4824,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->use_thumbnails_as_icons = str2num(bool_pair, s.t[1], tb->use_thumbnails_as_icons);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatButton") == 0)
                     tb->flat_button = str2num(bool_pair, s.t[1], tb->flat_button);
+                else if (g_ascii_strcasecmp(s.t[0], "BoldFontOnMouseOver") == 0)
+                    tb->bold_font_on_mouse_over = str2num(bool_pair, s.t[1], tb->bold_font_on_mouse_over);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupedTasks") == 0)		/* For backward compatibility */
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "Mode") == 0)
@@ -5044,6 +5051,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
         _("Dimm iconified"), (gpointer)&tb->dimm_iconified, (GType)CONF_TYPE_BOOL,
         _("Flat buttons"), (gpointer)&tb->flat_button, (GType)CONF_TYPE_BOOL,
+        _("Bold font when mouse is over a button"), (gpointer)&tb->bold_font_on_mouse_over, (GType)CONF_TYPE_BOOL,
         _("Colorize buttons"), (gpointer)&tb->colorize_buttons, (GType)CONF_TYPE_BOOL,
         _("Display window thumbnails instead of icons (requires compositing wm enabled)"), (gpointer)&tb->use_thumbnails_as_icons, (GType)CONF_TYPE_BOOL,
         _("Highlight modified titles"), (gpointer)&tb->highlight_modified_titles, (GType)CONF_TYPE_BOOL,
@@ -5152,6 +5160,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "ShowUrgencyAllDesks", tb->show_urgency_all_desks);
     lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);
     lxpanel_put_bool(fp, "FlatButton", tb->flat_button);
+    lxpanel_put_bool(fp, "BoldFontOnMouseOver", tb->bold_font_on_mouse_over);
     lxpanel_put_bool(fp, "ColorizeButtons", tb->colorize_buttons);
     lxpanel_put_bool(fp, "IconThumbnails", tb->use_thumbnails_as_icons);
     lxpanel_put_bool(fp, "DimmIconified", tb->dimm_iconified);

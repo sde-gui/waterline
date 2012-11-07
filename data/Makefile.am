@@ -1,5 +1,6 @@
 template_config_DATA = \
-	template/config
+	template/config \
+	template/top-level-domain-names
 template_configdir = $(pkgdatadir)/profile/template
 
 template_config_panel_DATA = \

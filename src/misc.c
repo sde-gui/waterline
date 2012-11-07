@@ -313,13 +313,13 @@ gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal
             return FALSE;
         }
 
-	char * escaped_cmd = g_shell_quote(cmd);
+        char * escaped_cmd = g_shell_quote(cmd);
 
         if( strstr(term, "%s") )
             term_cmd = g_strdup_printf(term, escaped_cmd);
         else
             term_cmd = g_strconcat( term, " -e ", escaped_cmd, NULL );
-	g_free(escaped_cmd);
+        g_free(escaped_cmd);
         if( cmd != exec )
             g_free(cmd);
         cmd = term_cmd;

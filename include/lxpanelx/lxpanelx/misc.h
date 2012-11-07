@@ -128,4 +128,6 @@ char * format_bytes_with_suffix(guint64  bytes);
 
 void color_parse_d(const char * src, double dst[3]);
 
+gchar ** read_list_from_config(gchar * file_name);
+
 #endif

@@ -325,6 +325,22 @@ static gboolean run_command(gchar * command, GtkDialog* dialog)
                 lxpanel_open_web_link(command);
                 return TRUE;
             }
+
+            gchar ** domain_list = read_list_from_config("top-level-domain-names");
+            if (domain_list)
+            {
+                gchar **l;
+                for (l = domain_list; *l; l++)
+                {
+                    if (g_str_has_suffix(command, *l))
+                    {
+                        g_free(domain_list);
+                        lxpanel_open_web_link(command);
+                        return TRUE;
+                    }
+                }
+                g_free(domain_list);
+            }
         }
     }
 

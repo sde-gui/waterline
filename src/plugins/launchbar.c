@@ -246,16 +246,16 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
     {
         /* There is a valid desktop file name.  Try to open it. */
         GKeyFile * desktop = g_key_file_new();
-        
-	gchar * desktop_file = NULL;
+
+        gchar * desktop_file = NULL;
         gboolean loaded;	
-	if (g_path_is_absolute(btn->desktop_id))
+        if (g_path_is_absolute(btn->desktop_id))
         {
             desktop_file = g_strdup(btn->desktop_id);
             loaded = g_key_file_load_from_file(desktop, desktop_file, G_KEY_FILE_NONE, NULL );
-	}
-	else 
-	{
+        }
+        else
+        {
             /* Load from the freedesktop.org specified data directories. */
             gchar * full_id = g_strconcat("applications/", btn->desktop_id, NULL);
             loaded = g_key_file_load_from_data_dirs(
@@ -263,7 +263,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
             g_free(full_id);
         }
 
-	if (loaded)
+        if (loaded)
         {
             /* Desktop file located.  Get Icon, Name, Exec, and Terminal parameters. */
             gchar * icon = g_key_file_get_string(desktop, desktop_ent, "Icon", NULL);
@@ -290,6 +290,13 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
             }
             g_free(title);
             g_free(comment);
+        }
+        else
+        {
+            if ( ! btn->customize_tooltip)
+            {
+                btn->tooltip = g_strdup_printf(_("%s\n(application not found)"), btn->desktop_id);
+            }
         }
 
         g_free(desktop_file);

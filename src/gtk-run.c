@@ -141,13 +141,56 @@ static MenuCacheApp* match_app_by_exec(const char* exec)
     return ret;
 }
 
+
+static gboolean entry_completion_function(GtkEntryCompletion *completion,
+                                          const gchar        *key,
+                                          GtkTreeIter        *iter,
+                                          gpointer            user_data)
+{
+  gchar *item = NULL;
+  gchar *normalized_string;
+  gchar *case_normalized_string;
+
+  gboolean ret = FALSE;
+
+  GtkTreeModel *model;
+
+  model = model = gtk_entry_completion_get_model (completion);
+
+  gtk_tree_model_get (model, iter,
+                      /*completion->priv->text_column*/ 0, &item,
+                      -1);
+
+  if (item != NULL)
+  {
+      normalized_string = g_utf8_normalize (item, -1, G_NORMALIZE_ALL);
+
+      if (normalized_string != NULL)
+      {
+          case_normalized_string = g_utf8_casefold (normalized_string, -1);
+
+          //if (!strncmp (key, case_normalized_string, strlen (key)))
+          if (strstr(case_normalized_string, key))
+              ret = TRUE;
+
+          g_free (case_normalized_string);
+      }
+      g_free (normalized_string);
+  }
+  g_free (item);
+
+  return ret;
+}
+
+
+
 static void setup_auto_complete_with_data(ThreadData* data)
 {
     GtkListStore* store;
     GSList *l;
     GtkEntryCompletion* comp = gtk_entry_completion_new();
     gtk_entry_completion_set_minimum_key_length( comp, 2 );
-    gtk_entry_completion_set_inline_completion( comp, TRUE );
+    gtk_entry_completion_set_inline_completion( comp, FALSE );
 #if GTK_CHECK_VERSION( 2, 8, 0 )
     gtk_entry_completion_set_popup_set_width( comp, TRUE );
     gtk_entry_completion_set_popup_single_match( comp, FALSE );
@@ -165,6 +208,7 @@ static void setup_auto_complete_with_data(ThreadData* data)
     gtk_entry_completion_set_model( comp, (GtkTreeModel*)store );
     g_object_unref( store );
     gtk_entry_completion_set_text_column( comp, 0 );
+    gtk_entry_completion_set_match_func(comp, entry_completion_function, NULL, NULL);
     gtk_entry_set_completion( (GtkEntry*)data->entry, comp );
 
     /* trigger entry completion */

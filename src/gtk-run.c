@@ -296,17 +296,43 @@ static void reload_apps(MenuCache* cache, gpointer user_data)
     app_list = (GSList*)menu_cache_list_all_apps(cache);
 }
 
+static gboolean run_command(gchar * command, GtkDialog* dialog)
+{
+    if (strempty(command))
+        return FALSE;
+
+    if (g_path_is_absolute(command))
+    {
+        if (g_file_test(command, G_FILE_TEST_IS_DIR) ||
+            (g_file_test(command, G_FILE_TEST_EXISTS) && !g_file_test(command, G_FILE_TEST_IS_EXECUTABLE)))
+        {
+            lxpanel_open_in_file_manager(command);
+            return TRUE;
+        }
+    }
+
+    GError* err = NULL;
+    if( !g_spawn_command_line_async( command, &err ) )
+    {
+        show_error( GTK_WINDOW(dialog), err->message );
+        g_error_free( err );
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 static void on_response( GtkDialog* dlg, gint response, gpointer user_data )
 {
     GtkEntry* entry = (GtkEntry*)user_data;
     if( G_LIKELY(response == GTK_RESPONSE_OK) )
     {
-        GError* err = NULL;
-        if( !g_spawn_command_line_async( gtk_entry_get_text(entry), &err ) )
+        gchar * command = expand_tilda(gtk_entry_get_text(entry));
+        gboolean result = run_command(command, dlg);
+        g_free(command);
+        if (!result)
         {
-            show_error( (GtkWindow*)dlg, err->message );
-            g_error_free( err );
-            g_signal_stop_emission_by_name( dlg, "response" );
+            g_signal_stop_emission_by_name(dlg, "response");
             return;
         }
     }

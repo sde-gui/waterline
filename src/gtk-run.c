@@ -316,6 +316,17 @@ static gboolean run_command(gchar * command, GtkDialog* dialog)
             return TRUE;
         }
     }
+    else 
+    {
+        if (!g_file_test(command, G_FILE_TEST_EXISTS) && strpbrk(command, " \t\"\'") == NULL)
+        {
+            if (g_str_has_prefix(command, "www."))
+            {
+                lxpanel_open_web_link(command);
+                return TRUE;
+            }
+        }
+    }
 
     GError* err = NULL;
     if( !g_spawn_command_line_async( command, &err ) )

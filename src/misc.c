@@ -392,7 +392,14 @@ void lxpanel_open_in_terminal(const char * path)
 
 void lxpanel_open_web_link(const char * link)
 {
-    lxpanel_open_in_file_manager(link);
+    gchar * addr = NULL;
+    if (strchr(link, ':'))
+        addr = g_strdup(link);
+    else
+        addr = g_strdup_printf("http://%s", link);
+
+    lxpanel_open_in_file_manager(addr);
+    g_free(addr);
 }
 
 /********************************************************************/

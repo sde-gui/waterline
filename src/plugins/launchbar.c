@@ -93,6 +93,7 @@ typedef struct {
     guchar customize_image : 1;		/* True if image icon from configuration file */
     guchar customize_action : 1;	/* True if action from configuration file */
     guchar customize_tooltip : 1;	/* True if tooltip from configuration file */
+    guchar customize_terminal : 1;	/* True if use_terminal from configuration file */
 } LaunchButton;
 
 /* Private context for launchbar plugin. */
@@ -282,7 +283,10 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
                 g_free(exec);
             }
 
-            btn->use_terminal = g_key_file_get_boolean(desktop, desktop_ent, "Terminal", NULL);
+            if (!btn->customize_terminal)
+            {
+                btn->use_terminal = g_key_file_get_boolean(desktop, desktop_ent, "Terminal", NULL);
+            }
 
             if ( ! btn->customize_tooltip)
             {
@@ -375,6 +379,7 @@ static int launchbutton_constructor(Plugin * p, char ** fp)
                 }
                 else if (g_ascii_strcasecmp(s.t[0], "terminal") == 0)
                 {
+                    btn->customize_terminal = TRUE;
                     btn->use_terminal = str2num(bool_pair, s.t[1], 0);
                 }
                 else
@@ -686,7 +691,7 @@ static void launchbar_configure_add_menu_recursive(GtkTreeStore * tree, GtkTreeI
                 break;
 
             case MENU_CACHE_TYPE_APP:
-                {
+            {
                 /* If an application, build a LaunchButton data structure so we can identify
                  * the button in the handler.  In this application, the desktop_id is the
                  * fully qualified desktop file path.  The image and tooltip are what is displayed in the view. */
@@ -703,11 +708,11 @@ static void launchbar_configure_add_menu_recursive(GtkTreeStore * tree, GtkTreeI
                     COL_TITLE, menu_cache_item_get_name(item),
                     COL_BTN, btn,
                     -1);
-                }
                 break;
+            }
 
             case MENU_CACHE_TYPE_DIR:
-                {
+            {
                 GtkTreeIter it;
                 gtk_tree_store_append(tree, &it, parent_it);
                 gtk_tree_store_set(tree, &it,
@@ -716,8 +721,8 @@ static void launchbar_configure_add_menu_recursive(GtkTreeStore * tree, GtkTreeI
                     -1);
                 /* If a directory, recursively add its menu items. */
                 launchbar_configure_add_menu_recursive(tree, &it, MENU_CACHE_DIR(item));
-                }
                 break;
+            }
         }
     }
     if(!parent_it)
@@ -878,8 +883,8 @@ static void launchbar_save_configuration(Plugin * p, FILE * fp)
             lxpanel_put_str(fp, "tooltip", btn->tooltip);
         if (btn->customize_action)
             lxpanel_put_str(fp, "action", btn->action);
-        if (btn->use_terminal)
-            lxpanel_put_bool(fp, "terminal", TRUE);
+        if (btn->customize_terminal)
+            lxpanel_put_bool(fp, "terminal", btn->use_terminal);
         lxpanel_put_line(fp, "}");
     }
 }

@@ -474,7 +474,8 @@ void fb_button_set_label(GtkWidget * btn, Panel * panel, gchar * label)
     else if (GTK_IS_BOX(child))
     {
         GList * children = gtk_container_get_children(GTK_CONTAINER(child));
-        lbl = GTK_WIDGET(GTK_IMAGE(children->next->data));
+        if (children->next)
+            lbl = GTK_WIDGET(GTK_IMAGE(children->next->data));
         g_list_free(children);
     }
 
@@ -488,26 +489,35 @@ void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width,
 {
     /* Locate the image within the button. */
     GtkWidget * child = gtk_bin_get_child(GTK_BIN(btn));
-    GtkWidget * img = NULL;
+    GtkWidget * image = NULL;
+    GtkWidget * label = NULL;
+
     if (GTK_IS_IMAGE(child))
-        img = child;
+    {
+        image = child;
+    }
     else if (GTK_IS_BOX(child))
     {
         GList * children = gtk_container_get_children(GTK_CONTAINER(child));
-        img = GTK_WIDGET(GTK_IMAGE(children->data));
+        image = GTK_WIDGET(GTK_IMAGE(children->data));
+        if (children->next)
+            label = GTK_WIDGET(GTK_IMAGE(children->next->data));
         g_list_free(children);
     }
 
-    if (img != NULL)
+    if (image)
     {
-        ImgData * data = (ImgData *) g_object_get_qdata(G_OBJECT(img), img_data_id);
+        ImgData * data = (ImgData *) g_object_get_qdata(G_OBJECT(image), img_data_id);
         g_free(data->fname);
         data->fname = g_strdup(img_file);
         data->dw = width;
         data->dh = height;
         data->keep_ratio = keep_ratio;
-        data->use_dummy_image = TRUE;
-        _gtk_image_set_from_file_scaled(img, data->fname, data->dw, data->dh, data->keep_ratio, data->use_dummy_image);
+        data->use_dummy_image = label && !strempty(gtk_label_get_text(label));
+        _gtk_image_set_from_file_scaled(image,
+            data->fname, data->dw, data->dh, data->keep_ratio, data->use_dummy_image);
+
+        gtk_widget_set_visible(image, !(strempty(img_file) && data->use_dummy_image));
     }
 }
 

@@ -301,6 +301,12 @@ static gboolean run_command(gchar * command, GtkDialog* dialog)
     if (strempty(command))
         return FALSE;
 
+    if (g_str_has_prefix(command, "http://") || g_str_has_prefix(command, "https://"))
+    {
+        lxpanel_open_web_link(command);
+        return TRUE;
+    }
+
     if (g_path_is_absolute(command))
     {
         if (g_file_test(command, G_FILE_TEST_IS_DIR) ||

@@ -390,6 +390,11 @@ void lxpanel_open_in_terminal(const char * path)
         g_free(argv[0]);
 }
 
+void lxpanel_open_web_link(const char * link)
+{
+    lxpanel_open_in_file_manager(link);
+}
+
 /********************************************************************/
 
 /* data used by themed images buttons */

@@ -17,6 +17,10 @@ template_plugins_dclock_DATA = \
 	template/plugins/dclock/formats
 template_plugins_dclockdir = $(pkgdatadir)/profile/template/plugins/dclock/
 
+template_plugins_taskbar_DATA = \
+	template/plugins/taskbar/task-menu
+template_plugins_taskbardir = $(pkgdatadir)/profile/template/plugins/taskbar/
+
 
 uidir=$(pkgdatadir)/ui
 ui_in_files= \
@@ -82,5 +86,6 @@ EXTRA_DIST = \
 	$(ui_DATA) \
 	$(template_config_DATA) \
 	$(template_applications_DATA) \
-	$(template_plugins_dclock_DATA)
+	$(template_plugins_dclock_DATA) \
+	$(template_plugins_taskbar_DATA)
 

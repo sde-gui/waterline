@@ -323,6 +323,7 @@ typedef struct _taskbar {
 
     /* Context menu */
 
+    gchar ** menu_config;
     GtkWidget * menu;				/* Popup menu for task control (Close, Raise, etc.) */
     GtkWidget * workspace_submenu;		/* Workspace submenu of the task control menu */
     GtkWidget * move_to_this_workspace_menuitem;
@@ -4255,17 +4256,20 @@ static void task_adjust_menu_move_to_group(Task * tk)
 
 static void menu_set_sensitive(GtkWidget * widget, gboolean value)
 {
-     char * p = (char *) g_object_get_data(G_OBJECT(widget), "hide_inactive");
-     gboolean hide_inactive = (p && strcmp(p, "true") == 0) ? TRUE : FALSE;
-     if (hide_inactive)
-     {
-         gtk_widget_set_visible(widget, value);
-     }
-     else
-     {
-         gtk_widget_set_visible(widget, TRUE);
-         gtk_widget_set_sensitive(widget, value);
-     }
+    if (!widget)
+        return;
+
+    char * p = (char *) g_object_get_data(G_OBJECT(widget), "hide_inactive");
+    gboolean hide_inactive = (p && strcmp(p, "true") == 0) ? TRUE : FALSE;
+    if (hide_inactive)
+    {
+        gtk_widget_set_visible(widget, value);
+    }
+    else
+    {
+        gtk_widget_set_visible(widget, TRUE);
+        gtk_widget_set_sensitive(widget, value);
+    }
 }
 
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
@@ -4288,24 +4292,28 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
         if (tb->move_to_group_menuitem)
             gtk_widget_set_visible(GTK_WIDGET(tb->move_to_group_menuitem), TRUE);
 
-	if (tb->ungroup_menuitem)
-	    menu_set_sensitive(GTK_WIDGET(tb->ungroup_menuitem),
-	        tk->task_class && tk->task_class->visible_count > 1);
+        if (tb->ungroup_menuitem)
+            menu_set_sensitive(GTK_WIDGET(tb->ungroup_menuitem),
+                tk->task_class && tk->task_class->visible_count > 1);
 
-	if (tb->unfold_group_menuitem)
-	    menu_set_sensitive(GTK_WIDGET(tb->unfold_group_menuitem),
-		!tb->_show_single_group && tk->task_class && task_is_folded(tk));
+        if (tb->unfold_group_menuitem)
+            menu_set_sensitive(GTK_WIDGET(tb->unfold_group_menuitem),
+                !tb->_show_single_group && tk->task_class && task_is_folded(tk));
 
-	if (tb->fold_group_menuitem)
-	    menu_set_sensitive(GTK_WIDGET(tb->fold_group_menuitem),
-		!tb->_show_single_group && tk->task_class && !task_is_folded(tk));
+        if (tb->fold_group_menuitem)
+            menu_set_sensitive(GTK_WIDGET(tb->fold_group_menuitem),
+                !tb->_show_single_group && tk->task_class && !task_is_folded(tk));
     }
     else
     {
-        gtk_widget_set_visible(GTK_WIDGET(tb->move_to_group_menuitem), FALSE);
-        gtk_widget_set_visible(GTK_WIDGET(tb->ungroup_menuitem), FALSE);
-        gtk_widget_set_visible(GTK_WIDGET(tb->unfold_group_menuitem), FALSE);
-        gtk_widget_set_visible(GTK_WIDGET(tb->fold_group_menuitem), FALSE);
+        if (tb->move_to_group_menuitem)
+            gtk_widget_set_visible(GTK_WIDGET(tb->move_to_group_menuitem), FALSE);
+        if (tb->ungroup_menuitem)
+            gtk_widget_set_visible(GTK_WIDGET(tb->ungroup_menuitem), FALSE);
+        if (tb->unfold_group_menuitem)
+            gtk_widget_set_visible(GTK_WIDGET(tb->unfold_group_menuitem), FALSE);
+        if (tb->fold_group_menuitem)
+            gtk_widget_set_visible(GTK_WIDGET(tb->fold_group_menuitem), FALSE);
     }
 
 
@@ -4409,8 +4417,10 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     GtkWidget * mi;
 
     gchar * menu_description =
-         "close2 raise @restore @maximize @iconify @roll @undecorate - @move_to_this_workspace move_to_workspace - "
-         "@ungroup move_to_group - @unfold_group @fold_group - run_new - copy_title";
+        "close2 raise @restore @maximize @iconify @roll @undecorate - "
+        "@move_to_this_workspace move_to_workspace - "
+        "@ungroup move_to_group - @unfold_group @fold_group - "
+        "run_new - copy_title";
 
     tb->workspace_submenu = NULL;
     tb->move_to_this_workspace_menuitem = NULL;
@@ -4426,9 +4436,23 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     tb->title_menuitem = NULL;
     tb->group_menu = NULL;
 
-    /* Create menu items. */
+    /* Load menu configuration */
 
-    gchar ** elements = g_strsplit_set(menu_description, " \t\n,", 0);
+    if (!tb->menu_config)
+    {
+        tb->menu_config = read_list_from_config("plugins/taskbar/task-menu");
+        if (!tb->menu_config || g_strv_length(tb->menu_config) == 0)
+        {
+            g_strfreev(tb->menu_config);
+            tb->menu_config = g_strsplit_set(menu_description, " \t\n,", 0);
+            if (!tb->menu_config)
+                return;
+        }
+    }
+
+    gchar ** elements = tb->menu_config;
+
+    /* Create menu items. */
 
     int close2 = 0;
 
@@ -4983,6 +5007,9 @@ static void taskbar_destructor(Plugin * p)
         g_free(tc->class_name);
         g_free(tc);
     }
+
+    if (tb->menu_config)
+        g_strfreev(tb->menu_config);
 
     /* Deallocate other memory. */
     icon_grid_free(tb->icon_grid);

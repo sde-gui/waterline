@@ -193,7 +193,8 @@ static void setup_auto_complete_with_data(ThreadData* data)
     gtk_entry_completion_set_inline_completion( comp, FALSE );
 #if GTK_CHECK_VERSION( 2, 8, 0 )
     gtk_entry_completion_set_popup_set_width( comp, TRUE );
-    gtk_entry_completion_set_popup_single_match( comp, FALSE );
+    //gtk_entry_completion_set_popup_single_match( comp, FALSE );
+    gtk_entry_completion_set_popup_single_match( comp, TRUE );
 #endif
     store = gtk_list_store_new( 1, G_TYPE_STRING );
 

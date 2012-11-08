@@ -56,16 +56,21 @@ gboolean lxpanel_fm_init(void)
     if (libfm_initialized)
         return TRUE;
 
-    GModule * libfm = g_module_open("libfm-gtk.so.3", 0);
+    GModule * libfm = g_module_open("libfm-gtk.so.4", 0);
 
     if (!libfm)
     {
-        GModule * libfm = g_module_open("libfm-gtk.so.2", 0);
+        libfm = g_module_open("libfm-gtk.so.3", 0);
     }
 
     if (!libfm)
     {
-        ERR("Failed load libfm-gtk.so.3 or libfm-gtk.so.2");
+        libfm = g_module_open("libfm-gtk.so.2", 0);
+    }
+
+    if (!libfm)
+    {
+        ERR("Failed load libfm-gtk.so.4, libfm-gtk.so.3 or libfm-gtk.so.2");
         goto fail;
     }
 

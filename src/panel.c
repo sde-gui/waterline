@@ -669,7 +669,7 @@ static void cmd_panel_autohide(Panel * panel, char ** argv, int argc)
 static void cmd_panel(Panel * panel, char ** argv, int argc)
 {
     if (!panel)
-         return;
+        return;
 
     if (argc < 1)
         return;
@@ -1936,6 +1936,8 @@ panel_start_gui(Panel *p)
 
     /* window mapping point */
     gtk_widget_show_all(p->topgwin);
+
+    gdk_window_set_accept_focus(gtk_widget_get_window(p->topgwin), FALSE);
 
     /* the settings that should be done after window is mapped */
     panel_establish_autohide(p);

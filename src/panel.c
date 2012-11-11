@@ -1634,9 +1634,17 @@ static void panel_popupmenu_quit( GtkMenuItem* item, Panel* panel )
 
 void panel_apply_icon( GtkWindow *w )
 {
-    gchar * icon_path = get_private_resource_path(RESOURCE_DATA, "images", "my-computer.png", 0);
-    gtk_window_set_icon_from_file(w, icon_path, NULL);
-    g_free(icon_path);
+    if (gtk_icon_theme_has_icon(gtk_icon_theme_get_default(), "start-here"))
+    {
+        gtk_window_set_icon(w,
+            gtk_icon_theme_load_icon(gtk_icon_theme_get_default(), "start-here", 24, 0, NULL));
+    }
+    else
+    {
+        gchar * icon_path = get_private_resource_path(RESOURCE_DATA, "images", "my-computer.png", 0);
+        gtk_window_set_icon_from_file(w, icon_path, NULL);
+        g_free(icon_path);
+    }
 }
 
 GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_menu)

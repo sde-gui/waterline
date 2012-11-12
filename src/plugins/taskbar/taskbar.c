@@ -266,7 +266,7 @@ typedef struct _task {
     GtkWidget* click_on;
 
     gboolean separator;
-    
+
     int x_window_position;
 
     guint show_popup_delay_timer;
@@ -766,7 +766,7 @@ static void taskbar_recompute_fold_by_count(TaskbarPlugin * tb)
     ENTER;
 
     TaskClass * tc;
-    
+
     for (tc = tb->task_class_list; tc != NULL; tc = tc->task_class_flink)
     {
         tc->fold_by_count = FALSE;
@@ -883,7 +883,7 @@ static void recompute_group_visibility_for_class(TaskbarPlugin * tb, TaskClass *
             tc->visible_task->flash_state = flashing_task->flash_state;
             flashing_task->flash_state = FALSE;
             set_timer_on_task(tc->visible_task);
-        }   
+        }
     }
     else
     {
@@ -1270,8 +1270,8 @@ static void task_set_class(Task * tk)
                 class_name = task_get_desktop_name(tk, NULL); break;
             case GROUP_BY_STATE:
                 class_name = g_strdup(
-                    (tk->urgency) ? _("Urgency") : 
-                    (tk->iconified) ? _("Iconified") : 
+                    (tk->urgency) ? _("Urgency") :
+                    (tk->iconified) ? _("Iconified") :
                     _("Mapped")
                 );
                 break;
@@ -1385,7 +1385,7 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
         g_source_remove(tk->update_composite_thumbnail_timeout);
     if (tk->update_thumbnail_preview_idle)
         g_source_remove(tk->update_thumbnail_preview_idle);
-        
+
     /* If we think this task had focus, remove that. */
     if (tb->focused == tk)
         tb->focused = NULL;
@@ -1467,7 +1467,7 @@ static gboolean task_update_thumbnail_preview_real(Task * tk)
     {
         int preview_width = 150;
         int preview_height = 100;
-        tk->thumbnail_preview = _gdk_pixbuf_scale_in_rect(tk->thumbnail, preview_width, preview_height);
+        tk->thumbnail_preview = _gdk_pixbuf_scale_in_rect(tk->thumbnail, preview_width, preview_height, TRUE);
         if (tk->thumbnail_preview && tk->preview_image)
         {
             gtk_image_set_from_pixbuf(GTK_IMAGE(tk->preview_image), tk->thumbnail_preview);
@@ -1719,7 +1719,7 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
     if (tb->thumbnails && tb->use_thumbnails_as_icons)
     {
         if (!tk->thumbnail_icon && tk->thumbnail)
-            tk->thumbnail_icon =  _gdk_pixbuf_scale_in_rect(tk->thumbnail, icon_size, icon_size);
+            tk->thumbnail_icon =  _gdk_pixbuf_scale_in_rect(tk->thumbnail, icon_size, icon_size, TRUE);
 
         if (tk->thumbnail_icon)
         {
@@ -1743,7 +1743,7 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
         pixbuf = get_window_icon(tk, icon_size, source);
         if (pixbuf)
         {
-            GdkPixbuf * scaled_pixbuf =  _gdk_pixbuf_scale_in_rect(pixbuf, icon_size, icon_size);
+            GdkPixbuf * scaled_pixbuf =  _gdk_pixbuf_scale_in_rect(pixbuf, icon_size, icon_size, TRUE);
             g_object_unref(pixbuf);
             pixbuf = scaled_pixbuf;
         }
@@ -2521,7 +2521,7 @@ static void task_show_preview_panel(Task * tk)
         }
     }
 */
-    GtkWidget * box = 
+    GtkWidget * box =
         (plugin_get_orientation(tb->plug) == ORIENT_HORIZ) ?
         gtk_hbox_new(TRUE, 5):
         gtk_vbox_new(TRUE, 5);
@@ -2541,7 +2541,7 @@ static void task_show_preview_panel(Task * tk)
 
         GtkWidget * container = gtk_hbox_new(FALSE, 0);
         gtk_container_set_border_width(GTK_CONTAINER(container), 0);
-    
+
         if (tk->tb->tooltips)
             gtk_widget_set_tooltip_text(button, task_get_displayed_name(tk_cursor));
 
@@ -3312,7 +3312,7 @@ static void taskbar_update_separators(TaskbarPlugin * tb)
 static int task_compare(Task * tk1, Task * tk2)
 {
     int result = 0;
-    
+
     if (tk1->tb->rearrange)
     {
         if (tk1->tb->grouped_tasks)
@@ -3407,7 +3407,7 @@ static Task * task_get_prev(Task * tk)
     Task* tk_cursor = NULL;
     if (tb->task_list == tk)
         return NULL;
-    
+
     for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
     {
         if (tk_cursor->task_flink == tk)
@@ -3491,7 +3491,7 @@ static void task_reorder(Task * tk, gboolean and_others)
 
 
 again: ;
-    
+
     Task* tk_prev_new = NULL;
     for (tk_cursor = tb->task_list; tk_cursor != NULL; tk_cursor = tk_cursor->task_flink)
     {
@@ -4101,7 +4101,7 @@ static void menu_move_to_group(GtkWidget * widget, TaskbarPlugin * tb)
 static void task_move_to_new_group_cb(char * value, gpointer p)
 {
     Task * tk = (Task *) p;
-    
+
     tk->new_group_dlg = NULL;
 
     if (value)
@@ -4186,7 +4186,7 @@ typedef struct {
 static void adjust_separators_callback(GtkWidget * widget, gpointer d)
 {
     _AdjustSeparatorsData * data = (_AdjustSeparatorsData *) d;
-    
+
     gboolean is_separator = GTK_IS_SEPARATOR_MENU_ITEM(widget);
 
     if (gtk_widget_get_visible(GTK_WIDGET(widget))) {

@@ -24,7 +24,8 @@
 //#define PIXBUF_INTERP GDK_INTERP_NEAREST
 //#define PIXBUF_INTERP GDK_INTERP_TILES
 //#define PIXBUF_INTERP GDK_INTERP_BILINEAR
-#define PIXBUF_INTERP GDK_INTERP_HYPER
+#define PIXBUF_INTERP_GOOD_QUALITY GDK_INTERP_HYPER
+#define PIXBUF_INTERP_POOR_QUALITY GDK_INTERP_BILINEAR
 
 /******************************************************************************/
 
@@ -189,7 +190,7 @@ void _gdk_pixbuf_get_pixel (GdkPixbuf *pixbuf, int x, int y, unsigned * red, uns
         *alpha = (n_channels > 3) ? p[3] : 0;
 }
 
-GdkPixbuf * _gdk_pixbuf_scale_in_rect(GdkPixbuf * pixmap, int required_width, int required_height)
+GdkPixbuf * _gdk_pixbuf_scale_in_rect(GdkPixbuf * pixmap, int required_width, int required_height, gboolean good_quality)
 {
     /* If we got a pixmap, scale it and return it. */
     if (pixmap == NULL)
@@ -225,10 +226,14 @@ GdkPixbuf * _gdk_pixbuf_scale_in_rect(GdkPixbuf * pixmap, int required_width, in
                 h = 2;
         }
 
+        GdkInterpType interp = good_quality ?
+            PIXBUF_INTERP_GOOD_QUALITY:
+            PIXBUF_INTERP_POOR_QUALITY;
+
         /* Attemp to avoid hang up in gdk_pixbuf_scale_simple(). */
-        GdkInterpType interp = 
+        interp =
         ((w < 3 && h < 3) ||
-         (w < 5 && h < 5 && w1 > 200 && h1 > 2000) ) ? GDK_INTERP_NEAREST : PIXBUF_INTERP;
+         (w < 5 && h < 5 && w1 > 200 && h1 > 2000) ) ? GDK_INTERP_NEAREST : interp;
 
         //g_print("w = %d, h = %d --> w = %d, h = %d\n", w1, h1, w, h);
 
@@ -242,7 +247,7 @@ void _gdk_pixbuf_get_color_sample (GdkPixbuf *pixbuf, GdkColor * c1, GdkColor * 
 {
     /* scale pixbuff down */
 
-    GdkPixbuf * p1 = _gdk_pixbuf_scale_in_rect(pixbuf, 3, 3);
+    GdkPixbuf * p1 = _gdk_pixbuf_scale_in_rect(pixbuf, 3, 3, FALSE);
 
     gulong pw = gdk_pixbuf_get_width(p1);
     gulong ph = gdk_pixbuf_get_height(p1);
@@ -331,13 +336,13 @@ GdkPixbuf * _composite_thumb_icon(GdkPixbuf * thumb, GdkPixbuf * icon, int size,
     gdk_pixbuf_copy_area(thumb, 0, 0, w, h, p1, x, y);
     if (icon)
     {
-        GdkPixbuf * p3 = _gdk_pixbuf_scale_in_rect(icon, icon_size, icon_size);
+        GdkPixbuf * p3 = _gdk_pixbuf_scale_in_rect(icon, icon_size, icon_size, TRUE);
         gulong w = gdk_pixbuf_get_width(p3);
         gulong h = gdk_pixbuf_get_height(p3);
         gdk_pixbuf_composite(p3, p1,
             size - w, size - h, w, h,
             size - w, size - h, 1, 1,
-            PIXBUF_INTERP,
+            PIXBUF_INTERP_GOOD_QUALITY,
             255);
         g_object_unref(p3);
     }

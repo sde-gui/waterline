@@ -89,6 +89,7 @@ typedef struct {
     gchar * image;			/* Image icon (from Icon entry) */
     gchar * action;			/* Action (from Exec entry) */
     gchar * tooltip;			/* Tooltip (from Name entry) */
+    gchar * tooltip_markup;
     guchar use_terminal : 1;		/* True if Terminal=true or from configuration file */
     guchar customize_image : 1;		/* True if image icon from configuration file */
     guchar customize_action : 1;	/* True if action from configuration file */
@@ -139,6 +140,7 @@ static void launchbutton_free(LaunchButton * btn)
     g_free(btn->image);
     g_free(btn->action);
     g_free(btn->tooltip);
+    g_free(btn->tooltip_markup);
     g_free(btn);
 }
 
@@ -291,6 +293,14 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
             if ( ! btn->customize_tooltip)
             {
                 btn->tooltip = strempty(comment) ? g_strdup(title) : g_strdup_printf("%s\n%s", title, comment);
+                if (comment)
+                {
+                    gchar * escaped_title = g_markup_escape_text(title, -1);
+                    gchar * escaped_comment = g_markup_escape_text(comment, -1);
+                    btn->tooltip_markup = g_strdup_printf("<b>%s</b>\n%s", escaped_title, escaped_comment);
+                    g_free(escaped_comment);
+                    g_free(escaped_title);
+                }
             }
             g_free(title);
             g_free(comment);
@@ -311,7 +321,10 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
     GtkWidget * button = fb_button_new_from_file(btn->image, plugin_get_icon_size(p), plugin_get_icon_size(p), TRUE, TRUE);
     btn->widget = button;
     gtk_widget_set_can_focus(button, FALSE);
-    if (btn->tooltip != NULL)
+
+    if (btn->tooltip_markup != NULL)
+        gtk_widget_set_tooltip_markup(button, btn->tooltip_markup);
+    else if (btn->tooltip != NULL)
         gtk_widget_set_tooltip_text(button, btn->tooltip);
 
     /* Add the button to the icon grid. */

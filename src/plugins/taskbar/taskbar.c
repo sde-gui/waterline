@@ -2035,11 +2035,11 @@ static void task_raiseiconify(Task * tk, GdkEventButton * event)
      * If the task is not iconified and has focus, iconify it.
      * If the task is not iconified and does not have focus, raise it. */
     if (tk->iconified)
-        task_raise_window(tk, event->time);
+        task_raise_window(tk, event ? event->time : gtk_get_current_event_time());
     else if ((tk->focused) || (tk == tk->tb->focused_previous))
         task_iconify(tk);
     else
-        task_raise_window(tk, event->time);
+        task_raise_window(tk, event ? event->time : gtk_get_current_event_time());
 }
 
 static void task_maximize(Task* tk)
@@ -2091,7 +2091,7 @@ static void task_show_menu(Task * tk, GdkEventButton * event, Task* visible_task
         GTK_MENU(tk->tb->menu),
         NULL, NULL,
         (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) visible_task,
-        event->button, event->time);
+        event ? event->button : 0, event ? event->time : gtk_get_current_event_time());
 }
 
 
@@ -2172,12 +2172,14 @@ static void task_activate_neighbour(Task * tk, GdkEventButton * event, gboolean 
     }
 
     if (result)
-        task_raise_window(result, event->time);
+    {
+        task_raise_window(result, event ? event->time : gtk_get_current_event_time());
+    }
     else if (in_group)
     {
         if (!tk->focused)
         {
-            task_raise_window(tk, event->time);
+            task_raise_window(tk, event ? event->time : gtk_get_current_event_time());
         }
     }
 }
@@ -3064,7 +3066,7 @@ static gboolean taskbar_button_scroll_event(GtkWidget * widget, GdkEventScroll *
         action = (event->state & GDK_SHIFT_MASK) ? tk->tb->shift_scroll_down_action : tk->tb->scroll_down_action;
 
     task_action(tk, action, &e, tk, FALSE);
-    
+
     return TRUE;
 }
 
@@ -5272,6 +5274,28 @@ static void taskbar_panel_configuration_changed(Plugin * p)
     taskbar_redraw(tb);
 }
 
+/******************************************************************************/
+
+
+static void taskbar_run_command(Plugin * p, char ** argv, int argc)
+{
+    if (argc < 1)
+        return;
+
+    TaskbarPlugin * tb = PRIV(p);
+
+    int action = str2num(action_pair, argv[0], -1);
+    if (action > 0)
+    {
+        Task * tk = tb->focused;
+        if (tk)
+            task_action(tk, action, NULL, tk, FALSE);
+    }
+
+}
+
+/******************************************************************************/
+
 /* Plugin descriptor. */
 PluginClass taskbar_plugin_class = {
 
@@ -5290,6 +5314,6 @@ PluginClass taskbar_plugin_class = {
     destructor  : taskbar_destructor,
     config : taskbar_configure,
     save : taskbar_save_configuration,
-    panel_configuration_changed : taskbar_panel_configuration_changed
-
+    panel_configuration_changed : taskbar_panel_configuration_changed,
+    run_command : taskbar_run_command
 };

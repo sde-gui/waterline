@@ -1713,7 +1713,6 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
 
     ENTER;
 
-    /* Get the icon from the window's hints. */
     GdkPixbuf * pixbuf = NULL;
 
     if (tb->thumbnails && tb->use_thumbnails_as_icons)
@@ -1726,9 +1725,10 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
             pixbuf = tk->thumbnail_icon;
             g_object_ref(pixbuf);
 
-            if (icon_size > 40)
+            int s =
+                (icon_size < 30) ? 0 : icon_size / 3;
+            if (s)
             {
-                int s = icon_size / 4;
                 GdkPixbuf * p1 = get_window_icon(tk, s, source);
                 GdkPixbuf * p2 = _composite_thumb_icon(pixbuf, p1, icon_size, s);
                 g_object_unref(p1);

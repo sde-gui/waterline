@@ -29,7 +29,8 @@ struct _Panel {
     GdkDisplay * display;		/* Main panel's GdkDisplay */
     GtkStyle * defstyle;
 
-    GtkWidget * box;			/* Top level widget */
+    GtkWidget * toplevel_alignment;	/* Widget containing plugin_box */
+    GtkWidget * plugin_box;			/* Widget containing plugins */
 
     GtkRequisition requisition;
     GtkWidget *(*my_box_new) (gboolean, gint);

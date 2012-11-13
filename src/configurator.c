@@ -187,10 +187,11 @@ set_edge_margin( GtkSpinButton* spin,  Panel* p  )
 
 static void set_alignment(Panel* p, int align)
 {
-    if (p->pref_dialog.align_margin_control) 
+    if (p->pref_dialog.align_margin_control)
         gtk_widget_set_sensitive(p->pref_dialog.align_margin_control, (align != ALIGN_CENTER));
     p->align = align;
     update_panel_geometry(p);
+    panel_set_panel_configuration_changed(p);
     panel_adjust_geometry_terminology(p);
 }
 
@@ -353,7 +354,7 @@ static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
 
 static void rgba_transparency_toggle(GtkWidget * w, Panel*  p)
 {
-    ENTER;    
+    ENTER;
 
     gboolean t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
 
@@ -566,8 +567,9 @@ on_plugin_expand_toggled(GtkCellRendererToggle* render, char* path, GtkTreeView*
 
             /* Query the old packing of the plugin widget.
              * Apply the new packing with only "expand" modified. */
-            gtk_box_query_child_packing( GTK_BOX(pl->panel->box), pl->pwid, &old_expand, &fill, &padding, &pack_type );
-            gtk_box_set_child_packing( GTK_BOX(pl->panel->box), pl->pwid, expand, fill, padding, pack_type );
+            gtk_box_query_child_packing( GTK_BOX(pl->panel->plugin_box), pl->pwid, &old_expand, &fill, &padding, &pack_type );
+            gtk_box_set_child_packing( GTK_BOX(pl->panel->plugin_box), pl->pwid, expand, fill, padding, pack_type );
+            panel_update_toplevel_alignment(pl->panel);
         }
     }
     gtk_tree_path_free( tp );
@@ -900,7 +902,7 @@ static void on_moveup_plugin(  GtkButton* btn, GtkTreeView* view )
             }
             if( pl->pwid )
             {
-                gtk_box_reorder_child( GTK_BOX(panel->box), pl->pwid, get_widget_index( panel, pl ) );
+                gtk_box_reorder_child( GTK_BOX(panel->plugin_box), pl->pwid, get_widget_index( panel, pl ) );
             }
             panel_config_save(panel);
             return;
@@ -942,7 +944,7 @@ static void on_movedown_plugin(  GtkButton* btn, GtkTreeView* view )
     }
     if( pl->pwid )
     {
-        gtk_box_reorder_child( GTK_BOX(panel->box), pl->pwid, get_widget_index( panel, pl ) );
+        gtk_box_reorder_child( GTK_BOX(panel->plugin_box), pl->pwid, get_widget_index( panel, pl ) );
     }
     panel_config_save(panel);
 }

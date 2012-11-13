@@ -379,7 +379,7 @@ static gboolean panel_set_wm_strut_real(Panel *p)
 void panel_set_wm_strut(Panel *p)
 {
     if (p->set_wm_strut_idle == 0)
-        p->set_wm_strut_idle = g_idle_add_full( G_PRIORITY_LOW, 
+        p->set_wm_strut_idle = g_idle_add_full( G_PRIORITY_LOW,
             (GSourceFunc)panel_set_wm_strut_real, p, NULL );
 }
 
@@ -430,14 +430,14 @@ static void panel_set_autohide_visibility(Panel *p, gboolean visible)
         p->autohide_visible = autohide_visible;
 
         if (!autohide_visible)
-            gtk_widget_hide(p->box);
+            gtk_widget_hide(p->plugin_box);
 
         panel_calculate_position(p);
         gtk_widget_set_size_request(p->topgwin, p->aw, p->ah);
         gdk_window_move(p->topgwin->window, p->ax, p->ay);
 
         if (autohide_visible)
-            gtk_widget_show(p->box);
+            gtk_widget_show(p->plugin_box);
 
         panel_set_wm_strut(p);
     }
@@ -1153,7 +1153,7 @@ void panel_require_update_background( Panel* p )
 {
     if (!p->update_background_idle_cb)
     {
-        p->update_background_idle_cb = g_idle_add_full( G_PRIORITY_LOW, 
+        p->update_background_idle_cb = g_idle_add_full( G_PRIORITY_LOW,
             (GSourceFunc)delay_update_background, p, NULL );
     }
 }
@@ -1622,7 +1622,7 @@ static void panel_popupmenu_about( GtkMenuItem* item, Panel* panel )
     gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(about), authors);
     gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(about), translators);
     gtk_dialog_run(GTK_DIALOG(about));
-    gtk_widget_destroy(about); 
+    gtk_widget_destroy(about);
 
     g_free(logo_path);
 }
@@ -1926,12 +1926,16 @@ panel_start_gui(Panel *p)
     gtk_widget_realize(p->topgwin);
     //gdk_window_set_decorations(p->topgwin->window, 0);
 
-    // main layout manager as a single child of panel
-    p->box = p->my_box_new(FALSE, 0);
-    gtk_container_set_border_width(GTK_CONTAINER(p->box), 0);
-//    gtk_container_add(GTK_CONTAINER(p->bbox), p->box);
-    gtk_container_add(GTK_CONTAINER(p->topgwin), p->box);
-    gtk_widget_show(p->box);
+    // containers
+    p->toplevel_alignment = gtk_alignment_new(0, 0, 0, 0);
+    p->plugin_box = p->my_box_new(FALSE, 0);
+    gtk_container_set_border_width(GTK_CONTAINER(p->toplevel_alignment), 0);
+    gtk_container_set_border_width(GTK_CONTAINER(p->plugin_box), 0);
+    gtk_container_add(GTK_CONTAINER(p->topgwin), p->toplevel_alignment);
+    gtk_container_add(GTK_CONTAINER(p->toplevel_alignment), p->plugin_box);
+    gtk_widget_show(p->toplevel_alignment);
+    gtk_widget_show(p->plugin_box);
+    panel_update_toplevel_alignment(p);
 
     make_round_corners(p);
 
@@ -2075,6 +2079,34 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean b
     }
 }
 
+void panel_update_toplevel_alignment(Panel *p)
+{
+    gboolean expand = FALSE;
+    GList * l;
+    for (l = p->plugins; l; l = l->next)
+    {
+        Plugin * pl = (Plugin *) l->data;
+        if (pl->expand)
+        {
+            expand = TRUE;
+            break;
+        }
+    }
+
+    float scale = expand ? 1 : 0;
+
+    float align = 0.5;
+    if (p->align == ALIGN_LEFT)
+        align = 0;
+    else if (p->align == ALIGN_RIGHT)
+        align = 1;
+
+    if (p->orientation == ORIENT_HORIZ)
+        gtk_alignment_set(GTK_ALIGNMENT(p->toplevel_alignment), align, 0.5, scale, 1);
+    else
+        gtk_alignment_set(GTK_ALIGNMENT(p->toplevel_alignment), 0.5, align, 1, scale);
+}
+
 void panel_set_panel_configuration_changed(Panel *p)
 {
     GList* l;
@@ -2104,20 +2136,22 @@ void panel_set_panel_configuration_changed(Panel *p)
     }
 
     /* recreate the main layout box */
-    if (p->box != NULL)
+    if (p->plugin_box != NULL)
     {
 #if GTK_CHECK_VERSION(2,16,0)
         GtkOrientation bo = (p->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-        gtk_orientable_set_orientation(GTK_ORIENTABLE(p->box), bo);
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(p->plugin_box), bo);
 #else
-        GtkBox * newbox = GTK_BOX(recreate_box(GTK_BOX(p->box), p->orientation));
-        if (GTK_WIDGET(newbox) != p->box)
+        GtkBox * new_plugin_box = GTK_BOX(recreate_box(GTK_BOX(p->plugin_box), p->orientation));
+        if (GTK_WIDGET(new_plugin_box) != p->plugin_box)
         {
-            p->box = GTK_WIDGET(newbox);
-            gtk_container_add(GTK_CONTAINER(p->topgwin), GTK_WIDGET(newbox));
+            p->plugin_box = GTK_WIDGET(new_plugin_box);
+            gtk_container_add(GTK_CONTAINER(p->toplevel_alignment), p->plugin_box);
         }
 #endif
+        panel_update_toplevel_alignment(p);
     }
+
 
     /* NOTE: This loop won't be executed when panel started since
        plugins are not loaded at that time.
@@ -2239,8 +2273,9 @@ int panel_start( Panel *p, char **fp )
         panel_parse_plugin(p, fp);
     }
 
-    /* update backgrond of panel and all plugins */
-    panel_update_background( p );
+    panel_update_toplevel_alignment(p);
+    panel_update_background(p);
+
     return 1;
 }
 

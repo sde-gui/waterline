@@ -307,7 +307,7 @@ int plugin_start(Plugin * pl, char ** fp)
         pl->background_update_scheduled = FALSE;
         g_signal_connect(G_OBJECT(pl->pwid), "size-allocate", G_CALLBACK(plugin_size_allocate), (gpointer) pl);
         gtk_widget_set_name(pl->pwid, pl->class->type);
-        gtk_box_pack_start(GTK_BOX(pl->panel->box), pl->pwid, pl->expand, TRUE, pl->padding);
+        gtk_box_pack_start(GTK_BOX(pl->panel->plugin_box), pl->pwid, pl->expand, TRUE, pl->padding);
         gtk_container_set_border_width(GTK_CONTAINER(pl->pwid), pl->border);
         gtk_widget_show(pl->pwid);
     }

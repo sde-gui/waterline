@@ -1673,7 +1673,7 @@ static gboolean task_update_bgcolor_idle(Task * tk)
         tk->icon_for_bgcolor = NULL;
     }
 
-    tk->update_bgcolor_cb = NULL;
+    tk->update_bgcolor_cb = 0;
 
     return FALSE;
 }
@@ -2498,10 +2498,11 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
     g_signal_connect_after(G_OBJECT (win), "leave-notify-event", G_CALLBACK(preview_panel_leave), (gpointer) tb);
     g_signal_connect_after(G_OBJECT (win), "motion-notify-event", G_CALLBACK(preview_panel_motion_event), (gpointer) tb);
 
-
     gtk_widget_realize(win);
-    wm_noinput(GDK_WINDOW_XWINDOW(win->window));
+
+//    wm_noinput(GDK_WINDOW_XWINDOW(win->window));
     gdk_window_set_accept_focus(gtk_widget_get_window(win), FALSE);
+
 /*
     Atom state[3];
     state[0] = a_NET_WM_STATE_SKIP_PAGER;

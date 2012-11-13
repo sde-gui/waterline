@@ -520,6 +520,28 @@ void plugin_popup_set_position_helper2(Plugin * p, GtkWidget * near, GtkWidget *
              y += near->allocation.height * alignment - (popop_height * alignment);
              break;
     }
+
+    switch (p->panel->edge)
+    {
+        case EDGE_TOP:
+        case EDGE_BOTTOM:
+        {
+             int screen_width = gdk_screen_width();
+             while (x < 0 && x + popop_width < screen_width) x++;
+             while (x > 0 && x + popop_width > screen_width) x--;
+             break;
+        }
+        case EDGE_LEFT:
+        case EDGE_RIGHT:
+        {
+             int screen_height = gdk_screen_height();
+             while (y < 0 && y + popop_height < screen_height) y++;
+             while (y > 0 && y + popop_height > screen_height) y--;
+             break;
+        }
+    }
+
+
     *px = x;
     *py = y;
 }

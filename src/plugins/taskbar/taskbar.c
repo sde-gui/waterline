@@ -531,8 +531,7 @@ static void task_set_class(Task * tk);
 
 static Task * task_lookup(TaskbarPlugin * tb, Window win);
 static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink);
-static void task_update_icon2(Task * tk, Atom source, gboolean use_old);
-static void task_update_icon(Task * tk, Atom source);
+static void task_update_icon(Task * tk, Atom source, gboolean forse_icon_erase);
 static void task_defer_update_icon(Task * tk, gboolean forse_icon_erase);
 
 static void task_reorder(Task * tk, gboolean and_others);
@@ -1010,7 +1009,7 @@ static void task_button_redraw(Task * tk)
         if (tk->deferred_iconified_update)
         {
             tk->deferred_iconified_update = FALSE;
-            task_update_icon2(tk, None, FALSE);
+            task_update_icon(tk, None, FALSE);
         }
         task_draw_label(tk);
         icon_grid_set_visible(tb->icon_grid, tk->button, TRUE);
@@ -1755,7 +1754,7 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
 
 }
 
-static void task_update_icon2(Task * tk, Atom source, gboolean forse_icon_erase)
+static void task_update_icon(Task * tk, Atom source, gboolean forse_icon_erase)
 {
     forse_icon_erase |= tk->forse_icon_erase;
 
@@ -1810,15 +1809,10 @@ static void task_update_icon2(Task * tk, Atom source, gboolean forse_icon_erase)
 
 }
 
-static void task_update_icon(Task * tk, Atom source)
-{
-	task_update_icon2(tk, source, TRUE);
-}
-
 static gboolean task_update_icon_cb(Task * tk)
 {
     tk->update_icon_idle_cb = 0;
-    task_update_icon(tk, None);
+    task_update_icon(tk, None, TRUE);
     return FALSE;
 }
 
@@ -3243,7 +3237,7 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
     /* Create an image to contain the application icon and add it to the box. */
     tk->image = gtk_image_new_from_pixbuf(NULL);
     gtk_misc_set_padding(GTK_MISC(tk->image), 0, 0);
-    task_update_icon(tk, None);
+    task_update_icon(tk, None, TRUE);
     gtk_widget_show(tk->image);
     gtk_box_pack_start(GTK_BOX(tk->container), tk->image, TRUE, TRUE, 0);
 
@@ -3941,7 +3935,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         {
                            tk->deferred_iconified_update = FALSE;
                            task_draw_label(tk);
-                           task_update_icon2(tk, None, FALSE);
+                           task_update_icon(tk, None, FALSE);
                         }
                         else
                         {
@@ -3958,7 +3952,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                     /* Window changed "window manager hints".
                      * Some windows set their WM_HINTS icon after mapping. */
                     //task_update_icon(tk, XA_WM_HINTS);
-                    task_update_icon(tk, None);
+                    task_update_icon(tk, None, TRUE);
 
                     if (tb->use_urgency_hint)
                     {
@@ -3997,7 +3991,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 else if (at == a_NET_WM_ICON)
                 {
                     /* Window changed EWMH icon. */
-                    task_update_icon(tk, a_NET_WM_ICON);
+                    task_update_icon(tk, a_NET_WM_ICON, TRUE);
                 }
                 else if (at == a_NET_WM_WINDOW_TYPE)
                 {
@@ -5266,7 +5260,7 @@ static void taskbar_panel_configuration_changed(Plugin * p)
         Task * tk;
         for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         {
-            task_update_icon(tk, None);
+            task_update_icon(tk, None, TRUE);
         }
     }
 

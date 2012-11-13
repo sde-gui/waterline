@@ -2580,6 +2580,10 @@ static void task_show_preview_panel(Task * tk)
         if (tk->tb->tooltips)
             gtk_widget_set_tooltip_text(button, task_get_displayed_name(tk_cursor));
 
+        GtkWidget * inner_container = gtk_vbox_new(FALSE, 0);
+        gtk_container_set_border_width(GTK_CONTAINER(inner_container), 0);
+        gtk_box_pack_start(GTK_BOX(container), inner_container, TRUE, TRUE, 0);
+
         g_signal_connect(button, "button_press_event", G_CALLBACK(preview_panel_press_event), (gpointer) tk_cursor);
 //        g_signal_connect(button, "button_release_event", G_CALLBACK(preview_panel_release_event), (gpointer) tk_cursor);
 
@@ -2591,7 +2595,12 @@ static void task_show_preview_panel(Task * tk)
 
         GtkWidget * image = tk_cursor->preview_image;
 
-        gtk_box_pack_start(GTK_BOX(container), image, TRUE, TRUE, 0);
+        GtkWidget * label = gtk_label_new(tk_cursor->name);
+        gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+        gtk_widget_set_size_request(label, 1, -1);
+        gtk_box_pack_start(GTK_BOX(inner_container), label, TRUE, TRUE, 0);
+
+        gtk_box_pack_start(GTK_BOX(inner_container), image, TRUE, TRUE, 0);
         gtk_container_add(GTK_CONTAINER(button), container);
         gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
 

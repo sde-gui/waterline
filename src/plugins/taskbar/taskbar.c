@@ -280,6 +280,9 @@ typedef struct _task {
     GdkPixbuf * icon_pixbuf;           /* Resulting icon image for visible windows */
     GdkPixbuf * icon_pixbuf_iconified; /* Resulting icon image for iconified windows. */
 
+    GdkPixbuf * icon_for_bgcolor;
+    guint update_bgcolor_cb;
+
     Pixmap backing_pixmap;             /* Backing pixmap of the window. (0 if not visible) */
     GdkPixbuf * thumbnail;             /* Latest copy of window content (full size). If backing_pixmap became 0, thumbnail stays valid.*/
     GdkPixbuf * thumbnail_icon;        /* thumbnail, scaled to icon_size */
@@ -1370,6 +1373,11 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
         gdk_colormap_free_colors(tb->color_map, &tk->bgcolor1, 1);
     if (tk->bgcolor2.pixel)
         gdk_colormap_free_colors(tb->color_map, &tk->bgcolor2, 1);
+    if (tk->icon_for_bgcolor)
+        g_object_unref(G_OBJECT(tk->icon_for_bgcolor));
+    if (tk->update_bgcolor_cb)
+        g_source_remove(tk->update_bgcolor_cb);
+
 
     /* Free thumbnails. */
     if (tk->backing_pixmap != 0)
@@ -1619,6 +1627,57 @@ static void task_update_composite_thumbnail(Task * tk)
             (GSourceFunc) task_update_composite_thumbnail_timeout, tk);
 }
 
+static gboolean task_update_bgcolor_idle(Task * tk)
+{
+    TaskbarPlugin * tb = tk->tb;
+
+    GdkColor * c1 = NULL;
+    GdkColor * c2 = NULL;
+
+    if (tk->icon_for_bgcolor && tb->colorize_buttons)
+    {
+        _gdk_pixbuf_get_color_sample(tk->icon_for_bgcolor, &tk->bgcolor1, &tk->bgcolor2);
+
+        if (!tb->color_map)
+            tb->color_map = panel_get_color_map(plugin_panel(tb->plug));
+
+        if (tk->bgcolor1.pixel)
+        {
+            gdk_colormap_free_colors(tb->color_map, &tk->bgcolor1, 1);
+            tk->bgcolor1.pixel = 0;
+        }
+        if (tk->bgcolor2.pixel)
+        {
+            gdk_colormap_free_colors(tb->color_map, &tk->bgcolor2, 1);
+            tk->bgcolor2.pixel = 0;
+        }
+
+        gdk_colormap_alloc_color(tb->color_map, &tk->bgcolor1, FALSE, TRUE);
+        gdk_colormap_alloc_color(tb->color_map, &tk->bgcolor2, FALSE, TRUE);
+
+        if (tk->bgcolor1.pixel && tk->bgcolor2.pixel)
+        {
+            c1 = &tk->bgcolor1;
+            c2 = &tk->bgcolor2;
+        }
+
+    }
+
+    gtk_widget_modify_bg(GTK_WIDGET(tk->button), GTK_STATE_NORMAL, c1);
+    gtk_widget_modify_bg(GTK_WIDGET(tk->button), GTK_STATE_ACTIVE, c1);
+    gtk_widget_modify_bg(GTK_WIDGET(tk->button), GTK_STATE_PRELIGHT, c2);
+
+    if (tk->icon_for_bgcolor)
+    {
+        g_object_unref(G_OBJECT(tk->icon_for_bgcolor));
+        tk->icon_for_bgcolor = NULL;
+    }
+
+    tk->update_bgcolor_cb = NULL;
+
+    return FALSE;
+}
+
 static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
 {
     TaskbarPlugin * tb = tk->tb;
@@ -1663,40 +1722,14 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
          }
     }
 
-    GdkColor * c1 = NULL;
-    GdkColor * c2 = NULL;
 
-    if (pixbuf && tb->colorize_buttons)
-    {
-        _gdk_pixbuf_get_color_sample(pixbuf, &tk->bgcolor1, &tk->bgcolor2);
+    if (tk->icon_for_bgcolor)
+        g_object_unref(G_OBJECT(tk->icon_for_bgcolor));
+    g_object_ref(pixbuf);
+    tk->icon_for_bgcolor = pixbuf;
 
-        if (!tb->color_map)
-            tb->color_map = panel_get_color_map(plugin_panel(tb->plug));
-
-        if (tk->bgcolor1.pixel)
-        {
-            gdk_colormap_free_colors(tb->color_map, &tk->bgcolor1, 1);
-            tk->bgcolor1.pixel = 0;
-        }
-        if (tk->bgcolor2.pixel)
-        {
-            gdk_colormap_free_colors(tb->color_map, &tk->bgcolor2, 1);
-            tk->bgcolor2.pixel = 0;
-        }
-
-        gdk_colormap_alloc_color(tb->color_map, &tk->bgcolor1, FALSE, TRUE);
-        gdk_colormap_alloc_color(tb->color_map, &tk->bgcolor2, FALSE, TRUE);
-
-        if (tk->bgcolor1.pixel && tk->bgcolor2.pixel)
-        {
-            c1 = &tk->bgcolor1;
-            c2 = &tk->bgcolor2;
-        }
-    }
-
-    gtk_widget_modify_bg(GTK_WIDGET(tk->button), GTK_STATE_NORMAL, c1);
-    gtk_widget_modify_bg(GTK_WIDGET(tk->button), GTK_STATE_ACTIVE, c1);
-    gtk_widget_modify_bg(GTK_WIDGET(tk->button), GTK_STATE_PRELIGHT, c2);
+    if (!tk->update_bgcolor_cb)
+        tk->update_bgcolor_cb = g_idle_add((GSourceFunc) task_update_bgcolor_idle, tk);
 
     return pixbuf;
 }

@@ -2479,6 +2479,8 @@ static gboolean preview_panel_motion_event(GtkWidget * widget, GdkEventMotion * 
 
 static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 {
+    ENTER;
+
     GtkWidget * win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_decorated(GTK_WINDOW(win), FALSE);
     gtk_window_set_resizable(GTK_WINDOW(win), FALSE);
@@ -2499,6 +2501,7 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 
     gtk_widget_realize(win);
     wm_noinput(GDK_WINDOW_XWINDOW(win->window));
+    gdk_window_set_accept_focus(gtk_widget_get_window(win), FALSE);
 /*
     Atom state[3];
     state[0] = a_NET_WM_STATE_SKIP_PAGER;
@@ -2509,6 +2512,8 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 */
 
     tb->preview_panel_window = win;
+
+    RET();
 }
 
 static void taskbar_hide_preview_panel(TaskbarPlugin * tb)
@@ -2521,6 +2526,8 @@ static void taskbar_hide_preview_panel(TaskbarPlugin * tb)
 
 static void task_show_preview_panel(Task * tk)
 {
+    ENTER;
+
     TaskbarPlugin * tb = tk->tb;
 
     if (!tb->preview_panel_window)
@@ -2579,7 +2586,7 @@ static void task_show_preview_panel(Task * tk)
             g_object_unref(G_OBJECT(tk_cursor->preview_image));
         tk_cursor->preview_image = gtk_image_new_from_pixbuf(
             tk_cursor->thumbnail_preview ? tk_cursor->thumbnail_preview : tk_cursor->icon_pixbuf);
-        g_object_unref(G_OBJECT(tk_cursor->preview_image));
+        g_object_ref(G_OBJECT(tk_cursor->preview_image));
 
         GtkWidget * image = tk_cursor->preview_image;
 
@@ -2616,6 +2623,8 @@ static void task_show_preview_panel(Task * tk)
     gtk_window_move(GTK_WINDOW(tb->preview_panel_window), px, py);
 
     //g_print("%d, %d\n", px, py);
+
+    RET();
 }
 
 /******************************************************************************/

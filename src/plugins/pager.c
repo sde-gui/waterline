@@ -129,12 +129,12 @@ static PagerTask * task_lookup(PagerPlugin * pg, Window win)
 {
     PagerTask * tk;
     for (tk = pg->task_list; tk != NULL; tk = tk->task_flink)
-        {
+    {
         if (tk->win == win)
-	    return tk;
+            return tk;
         if (tk->win > win)
             break;
-        }
+    }
     return NULL;
 }
 
@@ -392,7 +392,7 @@ static gboolean desk_button_press_event(GtkWidget * widget, GdkEventButton * eve
 /* Allocate the structure and the graphic elements representing a desktop. */
 static void desk_new(PagerPlugin * pg, int desktop_number)
 {
-    
+
     /* Allocate and initialize structure. */
     PagerDesk * d = pg->desks[desktop_number] = g_new0(PagerDesk, 1);
     d->pg = pg;
@@ -457,7 +457,7 @@ static void pager_property_notify_event(PagerPlugin * pg, XEvent * ev)
                 XErrorHandler previous_error_handler = XSetErrorHandler(panel_handle_x_error_swallow_BadWindow_BadDrawable);
 
                 /* Dispatch on atom. */
-                if (at == a_WM_STATE)   
+                if (at == a_WM_STATE)
                 {
                     /* Window changed state. */
                     tk->ws = get_wm_state(tk->win);
@@ -476,9 +476,9 @@ static void pager_property_notify_event(PagerPlugin * pg, XEvent * ev)
                     desk_set_dirty_by_win(pg, tk);
                     tk->desktop = get_net_wm_desktop(tk->win);
                     desk_set_dirty_by_win(pg, tk);
+                }
 
                 XSetErrorHandler(previous_error_handler);
-                }
             }
         }
     }

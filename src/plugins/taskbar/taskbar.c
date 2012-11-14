@@ -3661,7 +3661,8 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
 
                     tk->x_window_position = -1;
 
-                    tk->iconified = (get_wm_state(tk->win) == IconicState);
+                    //tk->iconified = (get_wm_state(tk->win) == IconicState);
+                    tk->iconified = nws.hidden;
                     tk->maximized = nws.maximized_vert || nws.maximized_horz;
                     tk->shaded    = nws.shaded;
                     tk->decorated = get_decorations(tk->win, &nws);
@@ -3977,6 +3978,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 }
                 else if (at == a_WM_STATE)
                 {
+#if 0
                     /* Window changed state. */
                     gboolean iconified = get_wm_state(win) == IconicState;
                     if (tk->iconified != iconified)
@@ -3998,6 +4000,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         task_update_sorting(tk, SORT_BY_STATE);
                         task_update_composite_thumbnail(tk);
                     }
+#endif
                 }
                 else if (at == XA_WM_HINTS)
                 {
@@ -4034,6 +4037,20 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         tk->shaded    = nws.shaded;
                         tk->decorated = get_decorations(tk->win, &nws);
                         task_update_composite_thumbnail(tk);
+
+                        gboolean iconified = nws.hidden;
+
+                        if (tk->iconified != iconified)
+                        {
+                            tk->iconified = iconified;
+                            tk->deferred_iconified_update = FALSE;
+                            task_draw_label(tk);
+                            task_update_icon(tk, None, FALSE);
+                            task_update_grouping(tk, GROUP_BY_STATE);
+                            task_update_sorting(tk, SORT_BY_STATE);
+                            task_update_composite_thumbnail(tk);
+                        }
+
                     }
                 }
                 else if (at == a_MOTIF_WM_HINTS)

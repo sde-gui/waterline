@@ -71,6 +71,7 @@ enum TASKBAR_ACTION {
     ACTION_NONE,
     ACTION_MENU,
     ACTION_CLOSE,
+    ACTION_RAISE,
     ACTION_RAISEICONIFY,
     ACTION_ICONIFY,
     ACTION_MAXIMIZE,
@@ -136,6 +137,7 @@ static pair action_pair[] = {
     { ACTION_NONE, "None"},
     { ACTION_MENU, "Menu"},
     { ACTION_CLOSE, "Close"},
+    { ACTION_RAISE, "Raise"},
     { ACTION_RAISEICONIFY, "RaiseIconify"},
     { ACTION_ICONIFY, "Iconify"},
     { ACTION_MAXIMIZE, "Maximize"},
@@ -547,7 +549,7 @@ static void taskbar_hide_popup(TaskbarPlugin * tb);
 static gboolean flash_window_timeout(Task * tk);
 static void task_set_urgency(Task * tk);
 static void task_clear_urgency(Task * tk);
-static void task_raise_window(Task * tk, guint32 time);
+static void task_raise(Task * tk, GdkEventButton * event);
 static void taskbar_popup_set_position(GtkWidget * menu, gint * px, gint * py, gboolean * push_in, gpointer data);
 static void taskbar_group_menu_destroy(TaskbarPlugin * tb);
 static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * event, Task * tk, gboolean popup_menu);
@@ -919,9 +921,6 @@ static void recompute_group_visibility_on_current_desktop(TaskbarPlugin * tb)
 
 static void taskbar_update_x_window_position(TaskbarPlugin * tb)
 {
-    if (!tb->use_x_window_position)
-        return;
-
     Task * tk;
     int position = 0;
     for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
@@ -932,10 +931,13 @@ static void taskbar_update_x_window_position(TaskbarPlugin * tb)
         if (p != tk->x_window_position)
         {
             tk->x_window_position = p;
-            gint32 data = p;
-            XChangeProperty(gdk_x11_get_default_xdisplay(), tk->win,
-                atom_LXPANEL_TASKBAR_WINDOW_POSITION,
-                XA_CARDINAL, 32, PropModeReplace, (guchar *) &data, 1);
+            if (tb->use_x_window_position)
+            {
+                gint32 data = p;
+                XChangeProperty(gdk_x11_get_default_xdisplay(), tk->win,
+                    atom_LXPANEL_TASKBAR_WINDOW_POSITION,
+                    XA_CARDINAL, 32, PropModeReplace, (guchar *) &data, 1);
+            }
         }
     }
 }
@@ -2062,11 +2064,11 @@ static void task_raiseiconify(Task * tk, GdkEventButton * event)
      * If the task is not iconified and has focus, iconify it.
      * If the task is not iconified and does not have focus, raise it. */
     if (tk->iconified)
-        task_raise_window(tk, event ? event->time : gtk_get_current_event_time());
+        task_raise(tk, event);
     else if ((tk->focused) || (tk == tk->tb->focused_previous))
         task_iconify(tk);
     else
-        task_raise_window(tk, event ? event->time : gtk_get_current_event_time());
+        task_raise(tk, event);
 }
 
 static void task_maximize(Task* tk)
@@ -2200,13 +2202,13 @@ static void task_activate_neighbour(Task * tk, GdkEventButton * event, gboolean 
 
     if (result)
     {
-        task_raise_window(result, event ? event->time : gtk_get_current_event_time());
+        task_raise(result, event);
     }
     else if (in_group)
     {
         if (!tk->focused)
         {
-            task_raise_window(tk, event ? event->time : gtk_get_current_event_time());
+            task_raise(tk, event);
         }
     }
 }
@@ -2227,6 +2229,9 @@ static void task_action(Task * tk, int action, GdkEventButton * event, Task* vis
         break;
       case ACTION_CLOSE:
         task_close(tk);
+        break;
+      case ACTION_RAISE:
+        task_raise(tk, event);
         break;
       case ACTION_RAISEICONIFY:
         task_raiseiconify(tk, event);
@@ -2283,8 +2288,10 @@ static void task_action(Task * tk, int action, GdkEventButton * event, Task* vis
 /* Do the proper steps to raise a window.
  * This means removing it from iconified state and bringing it to the front.
  * We also switch the active desktop and viewport if needed. */
-static void task_raise_window(Task * tk, guint32 time)
+static void task_raise(Task * tk, GdkEventButton * event)
 {
+    guint32 time = event ? event->time : gtk_get_current_event_time();
+
     /* Change desktop if needed. */
     if ((tk->desktop != ALL_WORKSPACES) && (tk->desktop != tk->tb->current_desktop))
         Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, tk->desktop, 0, 0, 0, 0);
@@ -3023,7 +3030,7 @@ static gboolean taskbar_popup_activate_event(GtkWidget * widget, GdkEventButton 
 static gboolean taskbar_button_drag_motion_timeout(Task * tk)
 {
     guint time = gtk_get_current_event_time();
-    task_raise_window(tk, ((time != 0) ? time : CurrentTime));
+    task_raise(tk, NULL);
     tk->tb->dnd_delay_timer = 0;
     return FALSE;
 }
@@ -4094,9 +4101,12 @@ static GdkFilterReturn taskbar_event_filter(XEvent * xev, GdkEvent * event, Task
 
 static void menu_raise_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
+    /*
     if ((tb->menutask->desktop != ALL_WORKSPACES) && (tb->menutask->desktop != tb->current_desktop))
         Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, tb->menutask->desktop, 0, 0, 0, 0);
     XMapRaised(gdk_x11_get_default_xdisplay(), tb->menutask->win);
+    */
+    task_raise(tb->menutask, NULL);
     taskbar_group_menu_destroy(tb);
 }
 
@@ -5117,7 +5127,7 @@ static void taskbar_apply_configuration(Plugin * p)
 /* Display the configuration dialog. */
 static void taskbar_configure(Plugin * p, GtkWindow * parent)
 {
-    const char* actions = _("|None|Show context menu|Close|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list (menu)|Show group window list (menu)|Next window|Previous window|Next window in current group|Previous window in current group|Next window in pointed group|Previous window in pointed group|Copy title");
+    const char* actions = _("|None|Show context menu|Close|Raise|Raise/Iconify|Iconify|Maximize|Shade|Undecorate|Fullscreen|Stick|Show window list (menu)|Show group window list (menu)|Next window|Previous window|Next window in current group|Previous window in current group|Next window in pointed group|Previous window in pointed group|Copy title");
     char* button1_action = g_strdup_printf("%s%s", _("|Left button"), actions);
     char* button2_action = g_strdup_printf("%s%s", _("|Middle button"), actions);
     char* button3_action = g_strdup_printf("%s%s", _("|Right button"), actions);
@@ -5339,6 +5349,40 @@ static void taskbar_panel_configuration_changed(Plugin * p)
 
 /******************************************************************************/
 
+static Task * taskbar_get_task_by_position(TaskbarPlugin * tb, int position)
+{
+    Task * tk;
+    for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
+    {
+        if (tk->x_window_position == position)
+        {
+            return tk;
+        }
+    }
+    return NULL;
+}
+
+static void taskbar_run_command_position(Plugin * p, char ** argv, int argc)
+{
+    if (argc < 1)
+        return;
+
+    TaskbarPlugin * tb = PRIV(p);
+
+    int position = atoi(argv[0]);
+    if (position < 0)
+        return;
+
+    Task * tk = taskbar_get_task_by_position(tb, position);
+    if (!tk)
+        return;
+
+    int action = ACTION_RAISE;
+    if (argc > 1)
+        action = str2num(action_pair, argv[1], -1);
+    if (action > 0)
+        task_action(tk, action, NULL, tk, FALSE);
+}
 
 static void taskbar_run_command(Plugin * p, char ** argv, int argc)
 {
@@ -5353,8 +5397,13 @@ static void taskbar_run_command(Plugin * p, char ** argv, int argc)
         Task * tk = tb->focused;
         if (tk)
             task_action(tk, action, NULL, tk, FALSE);
+        return;
     }
 
+    if (strcmp(argv[0], "position") == 0)
+    {
+        taskbar_run_command_position(p, argv + 1, argc - 1);
+    }
 }
 
 /******************************************************************************/

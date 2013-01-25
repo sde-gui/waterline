@@ -1897,7 +1897,7 @@ panel_start_gui(Panel *p)
     gtk_container_set_border_width(GTK_CONTAINER(p->topgwin), 0);
     gtk_window_set_resizable(GTK_WINDOW(p->topgwin), FALSE);
     gtk_window_set_wmclass(GTK_WINDOW(p->topgwin), "panel", "lxpanelx");
-    gtk_window_set_title(GTK_WINDOW(p->topgwin), "panel");
+    gtk_window_set_title(GTK_WINDOW(p->topgwin), p->name);
     gtk_window_set_position(GTK_WINDOW(p->topgwin), GTK_WIN_POS_NONE);
     gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
 

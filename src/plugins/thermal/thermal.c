@@ -52,7 +52,7 @@ typedef struct {
     int critical;
     int warning1;
     int warning2;
-    int custom_levels, auto_sensor;
+    int auto_levels, auto_sensor;
     char *sensor,
          *str_cl_normal,
          *str_cl_warning1,
@@ -255,6 +255,22 @@ check_sensors( thermal* th )
     g_dir_close(sensorsDirectory);
 }
 
+static void
+sensor_changed(thermal *th)
+{
+    //if (th->sensor == NULL) th->auto_sensor = TRUE;
+    if (th->auto_sensor) check_sensors(th);
+
+    set_get_functions(th);
+
+    th->critical = th->get_critical(th);
+
+    if (th->auto_levels && th->critical > 0) {
+        th->warning1 = th->critical - 10;
+        th->warning2 = th->critical - 5;
+    }
+}
+
 static int
 thermal_constructor(Plugin *p, char** fp)
 {
@@ -278,6 +294,10 @@ thermal_constructor(Plugin *p, char** fp)
     g_signal_connect (G_OBJECT (pwid), "button_press_event",
           G_CALLBACK (plugin_button_press_event), (gpointer) p);
 
+    th->warning1 = 75;
+    th->warning2 = 80;
+    th->auto_levels = 1;
+
     line s;
 
     if (fp) {
@@ -295,9 +315,9 @@ thermal_constructor(Plugin *p, char** fp)
                 }else if (!g_ascii_strcasecmp(s.t[0], "Warning2Color")){
                     th->str_cl_warning2 = g_strdup(s.t[1]);
                 }else if (!g_ascii_strcasecmp(s.t[0], "AutomaticSensor")){
-                    th->auto_sensor= atoi(s.t[1]);
-                }else if (!g_ascii_strcasecmp(s.t[0], "CustomLevels")){
-                    th->custom_levels= atoi(s.t[1]);
+                    th->auto_sensor = atoi(s.t[1]);
+                }else if (!g_ascii_strcasecmp(s.t[0], "AutomaticLevels")){
+                    th->auto_levels = atoi(s.t[1]);
                 }else if (!g_ascii_strcasecmp(s.t[0], "Sensor")){
                     th->sensor= g_strdup(s.t[1]);
                 }else if (!g_ascii_strcasecmp(s.t[0], "Warning1Temp")){
@@ -328,17 +348,7 @@ thermal_constructor(Plugin *p, char** fp)
     gdk_color_parse(th->str_cl_warning2, &(th->cl_warning2));
 
 
-    if(th->sensor == NULL) th->auto_sensor = TRUE;
-    if(th->auto_sensor) check_sensors(th);
-
-    set_get_functions(th);
-
-    th->critical = th->get_critical(th);
-
-    if(!th->custom_levels){
-        th->warning1 = th->critical - 10;
-        th->warning2 = th->critical - 5;
-    }
+    sensor_changed(th);
 
     gtk_widget_show(th->namew);
 
@@ -362,13 +372,7 @@ static void applyConfig(Plugin* p)
     if (th->str_cl_warning1) gdk_color_parse(th->str_cl_warning1, &th->cl_warning1);
     if (th->str_cl_warning2) gdk_color_parse(th->str_cl_warning2, &th->cl_warning2);
 
-    if(th->auto_sensor) check_sensors(th);
-    set_get_functions(th);
-
-    if(th->custom_levels){
-        th->warning1 = th->critical - 10;
-        th->warning2 = th->critical - 5;
-    }
+    sensor_changed(th);
 
     RET();
 }
@@ -390,7 +394,7 @@ static void config(Plugin *p, GtkWindow* parent) {
 
             _("Automatic sensor location"), &th->auto_sensor, (GType)CONF_TYPE_BOOL,
             _("Sensor"), &th->sensor, (GType)CONF_TYPE_STR,
-            _("Automatic temperature levels"), &th->custom_levels, (GType)CONF_TYPE_BOOL,
+            _("Automatic temperature levels"), &th->auto_levels, (GType)CONF_TYPE_BOOL,
             _("Warning1 Temperature"), &th->warning1, (GType)CONF_TYPE_INT,
             _("Warning2 Temperature"), &th->warning2, (GType)CONF_TYPE_INT,
             NULL);
@@ -423,7 +427,7 @@ static void save_config( Plugin* p, FILE* fp )
     lxpanel_put_str( fp, "NormalColor", th->str_cl_normal );
     lxpanel_put_str( fp, "Warning1Color", th->str_cl_warning1 );
     lxpanel_put_str( fp, "Warning2Color", th->str_cl_warning2 );
-    lxpanel_put_int( fp, "CustomLevels", th->custom_levels );
+    lxpanel_put_int( fp, "AutomaticLevels", th->auto_levels );
     lxpanel_put_int( fp, "Warning1Temp", th->warning1 );
     lxpanel_put_int( fp, "Warning2Temp", th->warning2 );
     lxpanel_put_int( fp, "AutomaticSensor", th->auto_sensor );

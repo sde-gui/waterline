@@ -363,6 +363,7 @@ static void applyConfig(Plugin* p)
     if (th->str_cl_warning2) gdk_color_parse(th->str_cl_warning2, &th->cl_warning2);
 
     if(th->auto_sensor) check_sensors(th);
+    set_get_functions(th);
 
     if(th->custom_levels){
         th->warning1 = th->critical - 10;

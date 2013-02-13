@@ -188,6 +188,30 @@ static pair sort_by_pair[] = {
 
 /******************************************************************************/
 
+#define UNREF_AND_NULL(v) \
+    if (v) \
+    { \
+        g_object_unref(G_OBJECT(v)); \
+        v = NULL; \
+    }
+
+/******************************************************************************/
+
+typedef struct {
+    GtkWidget * button;
+    GtkWidget * container;
+    GtkWidget * inner_container;
+    GtkWidget * image;
+    GtkWidget * label;
+    /*
+        button(container(
+            inner_container(label, image)
+        ))
+    */
+} PreviewPanelTaskItem;
+
+/******************************************************************************/
+
 struct _taskbar;
 struct _task_class;
 struct _task;
@@ -238,7 +262,6 @@ typedef struct _task {
     GtkWidget * button_close;			/* Close button */
 
     GtkWidget * new_group_dlg;			/* Move to new group dialog */
-
 
     GtkAllocation button_alloc;
     guint adapt_to_allocated_size_idle_cb;
@@ -295,7 +318,7 @@ typedef struct _task {
     int update_composite_thumbnail_repeat_count;
     guint update_thumbnail_preview_idle; /* update_thumbnail_preview event source id */
 
-    GtkWidget * preview_image;          /* image on preview panel */
+    PreviewPanelTaskItem preview_item;
 
     /* Background colors from icon */
     GdkColor bgcolor1; /* normal */
@@ -352,6 +375,7 @@ typedef struct _taskbar {
 
     GtkWidget * preview_panel_window;
     GtkWidget * preview_panel_box;
+    GtkWidget * preview_panel_box1;
     GtkAllocation preview_panel_window_alloc;
     guint preview_panel_motion_timer;
     int preview_panel_speed;
@@ -969,6 +993,17 @@ static void task_draw_label(Task * tk)
         if (tk->label)
             panel_draw_label_text(plugin_panel(tk->tb->plug), tk->label, name, bold_style, task_button_is_really_flat(tk));
     }
+
+    char * name = task_get_displayed_name(tk);
+    if (tk->preview_item.button)
+    {
+        if (tk->tb->tooltips)
+            gtk_widget_set_tooltip_text(tk->preview_item.button, name);
+        else
+            gtk_widget_set_tooltip_text(tk->preview_item.button, "");
+    }
+    if (tk->preview_item.label)
+            gtk_label_set_text(GTK_LABEL(tk->preview_item.label), name);
 }
 
 static void task_button_redraw_button_state(Task * tk, TaskbarPlugin * tb)
@@ -1352,6 +1387,7 @@ static Task * task_lookup(TaskbarPlugin * tb, Window win)
     return NULL;
 }
 
+
 /* Delete a task and optionally unlink it from the task list. */
 static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 {
@@ -1362,8 +1398,11 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     if (tk->run_path && tk->run_path != (gchar *)-1)
         g_free(tk->run_path);
 
-    if (tk->preview_image)
-        g_object_unref(G_OBJECT(tk->preview_image));
+    UNREF_AND_NULL(tk->preview_item.button);
+    UNREF_AND_NULL(tk->preview_item.container);
+    UNREF_AND_NULL(tk->preview_item.inner_container);
+    UNREF_AND_NULL(tk->preview_item.label);
+    UNREF_AND_NULL(tk->preview_item.image);
 
     if (tk == tb->popup_task ||
         (tb->popup_task && tb->popup_task->task_class && tb->popup_task->task_class == tk->task_class))
@@ -1477,9 +1516,9 @@ static gboolean task_update_thumbnail_preview_real(Task * tk)
         int preview_width = 150;
         int preview_height = 100;
         tk->thumbnail_preview = _gdk_pixbuf_scale_in_rect(tk->thumbnail, preview_width, preview_height, TRUE);
-        if (tk->thumbnail_preview && tk->preview_image)
+        if (tk->thumbnail_preview && tk->preview_item.image)
         {
-            gtk_image_set_from_pixbuf(GTK_IMAGE(tk->preview_image), tk->thumbnail_preview);
+            gtk_image_set_from_pixbuf(GTK_IMAGE(tk->preview_item.image), tk->thumbnail_preview);
         }
     }
 
@@ -2532,6 +2571,95 @@ static void taskbar_hide_preview_panel(TaskbarPlugin * tb)
     }
 }
 
+static void task_update_preview_item(Task * tk, gboolean create)
+{
+    TaskbarPlugin * tb = tk->tb;
+    PreviewPanelTaskItem * I = &tk->preview_item;
+
+    if (!I->button && create)
+    {
+        I->button = gtk_toggle_button_new();
+        g_object_ref(G_OBJECT(I->button));
+
+        g_signal_connect(I->button, "button_press_event", G_CALLBACK(preview_panel_press_event), (gpointer) tk);
+        //g_signal_connect(I->button, "button_release_event", G_CALLBACK(preview_panel_release_event), (gpointer) tk);
+        gtk_container_set_border_width(GTK_CONTAINER(I->button), 0);
+    }
+
+    if (!I->container && create)
+    {
+        I->container = gtk_hbox_new(FALSE, 0);
+        g_object_ref(G_OBJECT(I->container));
+
+        gtk_container_set_border_width(GTK_CONTAINER(I->container), 0);
+        gtk_container_add(GTK_CONTAINER(I->button), I->container);
+    }
+
+    if (!I->inner_container && create)
+    {
+        I->inner_container = gtk_vbox_new(FALSE, 0);
+        g_object_ref(G_OBJECT(I->inner_container));
+
+        gtk_container_set_border_width(GTK_CONTAINER(I->inner_container), 0);
+        gtk_box_pack_start(GTK_BOX(I->container), I->inner_container, TRUE, TRUE, 0);
+    }
+
+    if (!I->label && create)
+    {
+        I->label = gtk_label_new(task_get_displayed_name(tk));
+        g_object_ref(G_OBJECT(I->label));
+
+        gtk_label_set_ellipsize(GTK_LABEL(I->label), PANGO_ELLIPSIZE_END);
+        gtk_widget_set_size_request(I->label, 1, -1);
+        gtk_box_pack_start(GTK_BOX(I->inner_container), I->label, TRUE, TRUE, 0);
+    }
+
+    if (create)
+    {
+        if (I->image)
+        {
+            gtk_widget_destroy(I->image);
+            g_object_unref(G_OBJECT(I->image));
+        }
+        I->image = gtk_image_new_from_pixbuf(
+           tk->thumbnail_preview ? tk->thumbnail_preview : tk->icon_pixbuf);
+        g_object_ref(G_OBJECT(I->image));
+        gtk_box_pack_start(GTK_BOX(I->inner_container), I->image, TRUE, TRUE, 0);
+    }
+
+    if (I->button)
+    {
+        if (tb->tooltips)
+            gtk_widget_set_tooltip_text(I->button, task_get_displayed_name(tk));
+        else
+            gtk_widget_set_tooltip_text(I->button, "");
+
+        if (tb->colorize_buttons)
+        {
+            if (tk->bgcolor1.pixel)
+            {
+                gtk_widget_modify_bg(I->button, GTK_STATE_NORMAL, &tk->bgcolor1);
+                gtk_widget_modify_bg(I->button, GTK_STATE_ACTIVE, &tk->bgcolor1);
+            }
+            if (tk->bgcolor2.pixel)
+            {
+                gtk_widget_modify_bg(GTK_WIDGET(I->button), GTK_STATE_PRELIGHT, &tk->bgcolor2);
+            }
+        }
+    }
+
+    if (I->label)
+    {
+        gtk_label_set_text(GTK_LABEL(I->label), task_get_displayed_name(tk));
+    }
+
+}
+
+static void _remove_from_container(GtkWidget * widget, GtkWidget * parent)
+{
+    gtk_container_remove(GTK_CONTAINER(parent), widget);
+}
+
 static void task_show_preview_panel(Task * tk)
 {
     ENTER;
@@ -2541,6 +2669,11 @@ static void task_show_preview_panel(Task * tk)
     if (!tb->preview_panel_window)
     {
          taskbar_build_preview_panel(tb);
+    }
+
+    if (tb->preview_panel_box1)
+    {
+        gtk_container_foreach(GTK_CONTAINER(tb->preview_panel_box1), _remove_from_container, tb->preview_panel_box1);
     }
 
     if (tb->preview_panel_box)
@@ -2563,7 +2696,7 @@ static void task_show_preview_panel(Task * tk)
         }
     }
 */
-    GtkWidget * box =
+    GtkWidget * box = tb->preview_panel_box1 =
         (plugin_get_orientation(tb->plug) == ORIENT_HORIZ) ?
         gtk_hbox_new(TRUE, 5):
         gtk_vbox_new(TRUE, 5);
@@ -2577,53 +2710,8 @@ static void task_show_preview_panel(Task * tk)
     {
         if (!task_is_visible_on_current_desktop(tk_cursor))
             continue;
-
-        GtkWidget * button = gtk_toggle_button_new();
-        gtk_container_set_border_width(GTK_CONTAINER(button), 0);
-
-        GtkWidget * container = gtk_hbox_new(FALSE, 0);
-        gtk_container_set_border_width(GTK_CONTAINER(container), 0);
-
-        if (tk->tb->tooltips)
-            gtk_widget_set_tooltip_text(button, task_get_displayed_name(tk_cursor));
-
-        GtkWidget * inner_container = gtk_vbox_new(FALSE, 0);
-        gtk_container_set_border_width(GTK_CONTAINER(inner_container), 0);
-        gtk_box_pack_start(GTK_BOX(container), inner_container, TRUE, TRUE, 0);
-
-        g_signal_connect(button, "button_press_event", G_CALLBACK(preview_panel_press_event), (gpointer) tk_cursor);
-//        g_signal_connect(button, "button_release_event", G_CALLBACK(preview_panel_release_event), (gpointer) tk_cursor);
-
-        if (tk_cursor->preview_image)
-            g_object_unref(G_OBJECT(tk_cursor->preview_image));
-        tk_cursor->preview_image = gtk_image_new_from_pixbuf(
-            tk_cursor->thumbnail_preview ? tk_cursor->thumbnail_preview : tk_cursor->icon_pixbuf);
-        g_object_ref(G_OBJECT(tk_cursor->preview_image));
-
-        GtkWidget * image = tk_cursor->preview_image;
-
-        GtkWidget * label = gtk_label_new(tk_cursor->name);
-        gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-        gtk_widget_set_size_request(label, 1, -1);
-        gtk_box_pack_start(GTK_BOX(inner_container), label, TRUE, TRUE, 0);
-
-        gtk_box_pack_start(GTK_BOX(inner_container), image, TRUE, TRUE, 0);
-        gtk_container_add(GTK_CONTAINER(button), container);
-        gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
-
-        if (tb->colorize_buttons)
-        {
-            if (tk_cursor->bgcolor1.pixel)
-            {
-                gtk_widget_modify_bg(button, GTK_STATE_NORMAL, &tk_cursor->bgcolor1);
-                gtk_widget_modify_bg(button, GTK_STATE_ACTIVE, &tk_cursor->bgcolor1);
-            }
-            if (tk_cursor->bgcolor2.pixel)
-            {
-                gtk_widget_modify_bg(GTK_WIDGET(button), GTK_STATE_PRELIGHT, &tk_cursor->bgcolor2);
-            }
-        }
-
+        task_update_preview_item(tk_cursor, TRUE);
+        gtk_box_pack_start(GTK_BOX(box), tk_cursor->preview_item.button, TRUE, TRUE, 0);
     }
 
     gtk_widget_show_all(tb->preview_panel_box);

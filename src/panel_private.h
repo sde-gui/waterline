@@ -20,7 +20,9 @@
 #ifndef PANEL_PRIVATE_H
 #define PANEL_PRIVATE_H
 
+#include <lxpanelx/typedef.h>
 #include "bg.h"
+
 
 struct _Panel {
     char* name;
@@ -132,6 +134,8 @@ struct {
     int kiosk_mode;
     int arg_kiosk_mode;
 } global_config;
+
+GKeyFile * global_settings;
 
 /* panel_config.c */
 

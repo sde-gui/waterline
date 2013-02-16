@@ -329,21 +329,27 @@ void load_global_config()
 {
     GKeyFile* kf = g_key_file_new();
     gchar * file = get_config_path("config", CONFIG_USER);
-    gboolean loaded = g_key_file_load_from_file( kf, file, 0, NULL );
+    gboolean loaded = g_key_file_load_from_file(kf, file, 0, NULL);
     g_free(file);
 
     if (loaded)
     {
         if (g_key_file_has_key(kf, general_group, "KioskMode", NULL))
-            global_config.kiosk_mode = g_key_file_get_boolean( kf, general_group, "KioskMode", NULL );
+            global_config.kiosk_mode = g_key_file_get_boolean(kf, general_group, "KioskMode", NULL);
         else
             global_config.kiosk_mode = 0;
 
-        global_config.file_manager_cmd = g_key_file_get_string( kf, command_group, "FileManager", NULL );
-        global_config.terminal_cmd     = g_key_file_get_string( kf, command_group, "Terminal", NULL );
-        global_config.logout_cmd       = g_key_file_get_string( kf, command_group, "Logout", NULL );
+        global_config.file_manager_cmd = g_key_file_get_string(kf, command_group, "FileManager", NULL);
+        global_config.terminal_cmd     = g_key_file_get_string(kf, command_group, "Terminal", NULL);
+        global_config.logout_cmd       = g_key_file_get_string(kf, command_group, "Logout", NULL);
     }
-    g_key_file_free( kf );
+    g_key_file_free(kf);
+
+    global_settings = g_key_file_new();
+    file = get_config_path("settings", CONFIG_USER);
+    if (file)
+        g_key_file_load_from_file(global_settings, file, 0, NULL);
+	g_free(file);
 }
 
 static void save_global_config()
@@ -377,6 +383,7 @@ void free_global_config()
     g_free( global_config.file_manager_cmd );
     g_free( global_config.terminal_cmd );
     g_free( global_config.logout_cmd );
+    g_key_file_free(global_settings);
 }
 
 /******************************************************************************/

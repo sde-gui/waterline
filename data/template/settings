@@ -1,0 +1,7 @@
+[ColorSample]
+SaturationMin=0.2
+SaturationMax=0.5
+ValueMin=0.4
+ValueMax=0.6
+SaturationDelta=0.1
+ValueDelta=0.2

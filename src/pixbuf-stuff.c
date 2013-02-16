@@ -18,6 +18,7 @@
 
 #include <lxpanelx/pixbuf-stuff.h>
 #include <lxpanelx/gtkcompat.h>
+#include "panel_private.h"
 #include <gdk/gdkx.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 
@@ -299,15 +300,22 @@ void _gdk_pixbuf_get_color_sample (GdkPixbuf *pixbuf, GdkColor * c1, GdkColor * 
 
     gtk_rgb_to_hsv(r, g, b, &h, &s, &v);
 
-    if (s < 0.2)
-        s = 0.2;
-    if (s > 0.5)
-        s = 0.5;
+    gdouble saturation_min = g_key_file_get_double(global_settings, "ColorSample", "SaturationMin", NULL);
+    gdouble saturation_max = g_key_file_get_double(global_settings, "ColorSample", "SaturationMax", NULL);
+    gdouble value_min = g_key_file_get_double(global_settings, "ColorSample", "ValueMin", NULL);
+    gdouble value_max = g_key_file_get_double(global_settings, "ColorSample", "ValueMax", NULL);
+    gdouble saturation_delta = g_key_file_get_double(global_settings, "ColorSample", "SaturationDelta", NULL);
+    gdouble value_delta = g_key_file_get_double(global_settings, "ColorSample", "ValueDelta", NULL);
 
-    if (v < 0.4)
-        v = 0.4;
-    if (v > 0.6)
-        v = 0.6;
+    if (s < saturation_min)
+        s = saturation_min;
+    if (s > saturation_max)
+        s = saturation_max;
+
+    if (v < value_min)
+        v = value_min;
+    if (v > value_max)
+        v = value_max;
 
     gtk_hsv_to_rgb(h, s, v, &r, &g, &b);
 
@@ -315,7 +323,8 @@ void _gdk_pixbuf_get_color_sample (GdkPixbuf *pixbuf, GdkColor * c1, GdkColor * 
     c1->green = g * (256 * 256 - 1);
     c1->blue  = b * (256 * 256 - 1);
 
-    v += 0.2;
+    s += saturation_delta;
+    v += value_delta;
 
     gtk_hsv_to_rgb(h, s, v, &r, &g, &b);
 

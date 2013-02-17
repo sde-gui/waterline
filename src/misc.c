@@ -64,7 +64,7 @@ int strempty(const char* s) {
 /********************************************************************/
 
 gchar *
-expand_tilda(gchar *file)
+expand_tilda(const gchar * file)
 {
     if (file[0] != '~')
         return g_strdup(file);

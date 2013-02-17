@@ -51,7 +51,7 @@ enum {
     CONF_TYPE_SET_PROPERTY
 };
 
-gchar *expand_tilda(gchar *file);
+gchar * expand_tilda(const gchar * file);
 
 GtkWidget *_gtk_image_new_from_file_scaled(const gchar *file, gint width,
                                            gint height, gboolean keep_ratio, gboolean use_dummy_image);

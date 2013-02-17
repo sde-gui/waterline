@@ -164,7 +164,7 @@ static PluginClass * plugin_load_dynamic(const char * type, const gchar * path)
 
     if (pc->structure_magic != PLUGINCLASS_MAGIC)
     {
-        ERR("%s.so is not a lxpanelx plugin: invalid magic value 0x%x (should be 0x%x)\n", type, pc->structure_magic, PLUGINCLASS_MAGIC);
+        ERR("%s.so is not a lxpanelx plugin: invalid magic value 0x%lx (should be 0x%lx)\n", type, pc->structure_magic, PLUGINCLASS_MAGIC);
         goto err;
     }
 

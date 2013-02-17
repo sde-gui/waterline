@@ -30,7 +30,7 @@
 
 /* Support for external plugin versioning.
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */
-#define PLUGINCLASS_MAGIC 0x7bd4370f
+#define PLUGINCLASS_MAGIC ((unsigned long)0x7bd4370f)
 #define PLUGINCLASS_VERSION 1
 #define PLUGINCLASS_BASE_SIZE ((unsigned short) (unsigned) & ((PluginClass*)0)->__end_of_required_part)
 #define PLUGINCLASS_VERSIONING \

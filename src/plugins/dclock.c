@@ -692,7 +692,7 @@ static void dclock_run_command(Plugin * p, char ** argv, int argc)
 
 static void dclock_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
 {
-    DClockPlugin * dc = PRIV(plugin);
+    //DClockPlugin * dc = PRIV(plugin);
 
 #if GTK_CHECK_VERSION(2,16,0)
     dclock_generate_copy_to_clipboard_menu(menu, plugin);

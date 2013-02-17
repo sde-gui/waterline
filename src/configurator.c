@@ -48,7 +48,7 @@ enum{
 };
 
 static void update_opt_menu(GtkWidget *w, int ind);
-static void update_toggle_button(GtkWidget *w, gboolean n);
+//static void update_toggle_button(GtkWidget *w, gboolean n);
 static void modify_plugin( GtkTreeView* view );
 
 /******************************************************************************/
@@ -965,7 +965,7 @@ update_opt_menu(GtkWidget *w, int ind)
     gtk_combo_box_set_active(GTK_COMBO_BOX(w), ind);
     RET();
 }
-
+#if 0
 static void
 update_toggle_button(GtkWidget *w, gboolean n)
 {
@@ -981,7 +981,7 @@ update_toggle_button(GtkWidget *w, gboolean n)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), n);
     RET();
 }
-
+#endif
 static
 void panel_initialize_pref_dialog(Panel * p)
 {

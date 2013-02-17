@@ -157,9 +157,7 @@ static gboolean entry_completion_function(GtkEntryCompletion *completion,
 
   gboolean ret = FALSE;
 
-  GtkTreeModel *model;
-
-  model = model = gtk_entry_completion_get_model (completion);
+  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
 
   gtk_tree_model_get (model, iter,
                       /*completion->priv->text_column*/ 0, &item,

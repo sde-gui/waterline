@@ -1503,7 +1503,6 @@ static char* gen_panel_name( int edge )
     int i;
     for( i = 1; i < G_MAXINT; ++i )
     {
-        char* f;
         name =  g_strdup_printf( "%s%d", edge_str, i );
 
         gchar * file_name = g_strdup_printf("%s.panel", name);

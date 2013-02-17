@@ -3118,7 +3118,6 @@ static gboolean taskbar_popup_activate_event(GtkWidget * widget, GdkEventButton 
 /* Handler for "drag-motion" timeout. */
 static gboolean taskbar_button_drag_motion_timeout(Task * tk)
 {
-    guint time = gtk_get_current_event_time();
     task_raise(tk, NULL);
     tk->tb->dnd_delay_timer = 0;
     return FALSE;

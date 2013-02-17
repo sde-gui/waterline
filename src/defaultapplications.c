@@ -23,6 +23,7 @@
 #include <lxpanelx/defaultapplications.h>
 #include <lxpanelx/paths.h>
 #include <lxpanelx/dbg.h>
+#include <lxpanelx/misc.h>
 
 /********************************************************************/
 

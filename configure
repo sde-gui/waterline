@@ -668,6 +668,10 @@ LIBFM_LIBS
 LIBFM_CFLAGS
 ENABLE_MENU_CACHE_FALSE
 ENABLE_MENU_CACHE_TRUE
+MENU_CACHE_MICRO_VERSION
+MENU_CACHE_MINOR_VERSION
+MENU_CACHE_MAJOR_VERSION
+MENU_CACHE_VERSION
 MENU_CACHE_LIBS
 MENU_CACHE_CFLAGS
 INDICATORICONSDIR
@@ -12790,6 +12794,17 @@ $as_echo "#define DISABLE_MENU 1" >>confdefs.h
 	fi
 
 
+    MENU_CACHE_VERSION="$(pkg-config --modversion libmenu-cache)"
+    old_IFS="$IFS"
+    IFS=.
+    read MENU_CACHE_MAJOR_VERSION MENU_CACHE_MINOR_VERSION MENU_CACHE_MICRO_VERSION <<enddoc
+$MENU_CACHE_VERSION
+enddoc
+    IFS="$old_IFS"
+
+
+
+
 else
 	enable_menu_cache=no
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libmenu-cache disabled.  All menu related routines are not built." >&5
@@ -12805,6 +12820,22 @@ else
   ENABLE_MENU_CACHE_TRUE='#'
   ENABLE_MENU_CACHE_FALSE=
 fi
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define MENU_CACHE_MAJOR_VERSION $MENU_CACHE_MAJOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define MENU_CACHE_MINOR_VERSION $MENU_CACHE_MINOR_VERSION
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define MENU_CACHE_MICRO_VERSION $MENU_CACHE_MICRO_VERSION
+_ACEOF
 
 
 PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"' -I$(top_srcdir)/include/lxpanelx/'
@@ -17452,14 +17483,15 @@ echo Dynamic loader for plugins....... : disabled.
 fi
 
 echo
-echo 'PACKAGE_CFLAGS    = ' $PACKAGE_CFLAGS
-echo 'PACKAGE_LIBS      = ' $PACKAGE_LIBS
-echo 'X11_CFLAGS        = ' $X11_CFLAGS
-echo 'X11_LIBS          = ' $X11_LIBS
-#echo 'MENU_CACHE_CFLAGS = ' $MENU_CACHE_CFLAGS
-#echo 'MENU_CACHE_LIBS   = ' $MENU_CACHE_LIBS
-echo 'LDFLAGS           = ' $LDFLAGS
-echo 'CFLAGS            = ' $CFLAGS
+echo "PACKAGE_CFLAGS     = $PACKAGE_CFLAGS"
+echo "PACKAGE_LIBS       =  $PACKAGE_LIBS"
+echo "X11_CFLAGS         =  $X11_CFLAGS"
+echo "X11_LIBS           =  $X11_LIBS"
+#echo "MENU_CACHE_CFLAGS  =  $MENU_CACHE_CFLAGS"
+#echo "MENU_CACHE_LIBS    =  $MENU_CACHE_LIBS"
+echo "MENU_CACHE_VERSION =  $MENU_CACHE_VERSION"
+echo "LDFLAGS            =  $LDFLAGS"
+echo "CFLAGS             =  $CFLAGS"
 
 #echo
 #echo 'LXPanelX requires menu-cache and lxmenu-data packages since'

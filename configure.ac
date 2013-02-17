@@ -72,12 +72,27 @@ if test "x$with_menucache" != "xno"; then
 	fi
 	AC_SUBST(MENU_CACHE_CFLAGS)
 	AC_SUBST(MENU_CACHE_LIBS)
+    MENU_CACHE_VERSION="$(pkg-config --modversion libmenu-cache)"
+    old_IFS="$IFS"
+    IFS=.
+    read MENU_CACHE_MAJOR_VERSION MENU_CACHE_MINOR_VERSION MENU_CACHE_MICRO_VERSION <<enddoc
+$MENU_CACHE_VERSION
+enddoc
+    IFS="$old_IFS"
+    AC_SUBST(MENU_CACHE_VERSION)
+    AC_SUBST(MENU_CACHE_MAJOR_VERSION)
+    AC_SUBST(MENU_CACHE_MINOR_VERSION)
+    AC_SUBST(MENU_CACHE_MICRO_VERSION)
 else
 	enable_menu_cache=no
 	AC_WARN([libmenu-cache disabled.  All menu related routines are not built.])
 	AC_DEFINE(DISABLE_MENU, [1], [Disable menu related routines])
 fi
 AM_CONDITIONAL(ENABLE_MENU_CACHE, test x"$enable_menu_cache" = x"yes")
+
+AC_DEFINE_UNQUOTED([MENU_CACHE_MAJOR_VERSION],[$MENU_CACHE_MAJOR_VERSION], [-])
+AC_DEFINE_UNQUOTED([MENU_CACHE_MINOR_VERSION],[$MENU_CACHE_MINOR_VERSION], [-])
+AC_DEFINE_UNQUOTED([MENU_CACHE_MICRO_VERSION],[$MENU_CACHE_MICRO_VERSION], [-])
 
 PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"' -I$(top_srcdir)/include/lxpanelx/'
 PACKAGE_LIBS="$PACKAGE_LIBS $MENU_CACHE_LIBS -lutil"
@@ -418,14 +433,15 @@ echo Dynamic loader for plugins....... : disabled.
 fi
 
 echo
-echo 'PACKAGE_CFLAGS    = ' $PACKAGE_CFLAGS
-echo 'PACKAGE_LIBS      = ' $PACKAGE_LIBS
-echo 'X11_CFLAGS        = ' $X11_CFLAGS
-echo 'X11_LIBS          = ' $X11_LIBS
-#echo 'MENU_CACHE_CFLAGS = ' $MENU_CACHE_CFLAGS
-#echo 'MENU_CACHE_LIBS   = ' $MENU_CACHE_LIBS
-echo 'LDFLAGS           = ' $LDFLAGS
-echo 'CFLAGS            = ' $CFLAGS
+echo "PACKAGE_CFLAGS     = $PACKAGE_CFLAGS"
+echo "PACKAGE_LIBS       =  $PACKAGE_LIBS"
+echo "X11_CFLAGS         =  $X11_CFLAGS"
+echo "X11_LIBS           =  $X11_LIBS"
+#echo "MENU_CACHE_CFLAGS  =  $MENU_CACHE_CFLAGS"
+#echo "MENU_CACHE_LIBS    =  $MENU_CACHE_LIBS"
+echo "MENU_CACHE_VERSION =  $MENU_CACHE_VERSION"
+echo "LDFLAGS            =  $LDFLAGS"
+echo "CFLAGS             =  $CFLAGS"
 
 #echo
 #echo 'LXPanelX requires menu-cache and lxmenu-data packages since'

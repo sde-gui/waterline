@@ -103,6 +103,15 @@
    */
 #undef LT_OBJDIR
 
+/* - */
+#undef MENU_CACHE_MAJOR_VERSION
+
+/* - */
+#undef MENU_CACHE_MICRO_VERSION
+
+/* - */
+#undef MENU_CACHE_MINOR_VERSION
+
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O
 

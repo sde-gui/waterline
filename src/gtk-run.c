@@ -17,6 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
@@ -25,7 +29,7 @@
 
 #include <lxpanelx/Xsupport.h>
 #include <lxpanelx/misc.h>
-#include <menu-cache.h>
+#include <lxpanelx/menu-cache-compat.h>
 
 static GtkWidget* win = NULL; /* the run dialog */
 static MenuCache* menu_cache = NULL;
@@ -499,7 +503,7 @@ void gtk_run()
     {
         menu_cache_reload(menu_cache);
         app_list = (GSList*)menu_cache_list_all_apps(menu_cache);
-        reload_notify_id = menu_cache_add_reload_notify(menu_cache, (GFunc)reload_apps, NULL);
+        reload_notify_id = menu_cache_add_reload_notify(menu_cache, (MenuCacheReloadNotify)reload_apps, NULL);
     }
 
     gtk_window_present(GTK_WINDOW(win));

@@ -54,6 +54,7 @@ lxpanelx_include_HEADERS = \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/ev.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/global.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/gtkcompat.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/menu-cache-compat.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/icon-grid.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/libfm.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/misc.h \

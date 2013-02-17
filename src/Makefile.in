@@ -161,6 +161,7 @@ am__lxpanelx_include_HEADERS_DIST =  \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/ev.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/global.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/gtkcompat.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/menu-cache-compat.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/icon-grid.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/libfm.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/misc.h \
@@ -322,6 +323,10 @@ MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MENU_CACHE_CFLAGS = @MENU_CACHE_CFLAGS@
 MENU_CACHE_LIBS = @MENU_CACHE_LIBS@
+MENU_CACHE_MAJOR_VERSION = @MENU_CACHE_MAJOR_VERSION@
+MENU_CACHE_MICRO_VERSION = @MENU_CACHE_MICRO_VERSION@
+MENU_CACHE_MINOR_VERSION = @MENU_CACHE_MINOR_VERSION@
+MENU_CACHE_VERSION = @MENU_CACHE_VERSION@
 MKDIR_P = @MKDIR_P@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
@@ -466,6 +471,7 @@ lxpanelx_SOURCES = \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/ev.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/global.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/gtkcompat.h \
+@BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/menu-cache-compat.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/icon-grid.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/libfm.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/misc.h \

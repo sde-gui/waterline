@@ -17,6 +17,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,7 +28,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
-#include <menu-cache.h>
+#include <lxpanelx/menu-cache-compat.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>

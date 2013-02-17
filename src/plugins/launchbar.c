@@ -32,7 +32,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
-#include <menu-cache.h>
+#include <lxpanelx/menu-cache-compat.h>
 
 #define PLUGIN_PRIV_TYPE LaunchbarPlugin
 

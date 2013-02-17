@@ -976,7 +976,7 @@ read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
             return;
         }
         m->visibility_flags = flags;
-        m->reload_notify = menu_cache_add_reload_notify(m->menu_cache, (GFunc) on_reload_menu, m);
+        m->reload_notify = menu_cache_add_reload_notify(m->menu_cache, (MenuCacheReloadNotify) on_reload_menu, m);
     }
 
     if( fp )

@@ -1031,7 +1031,7 @@ static void dirmenu_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
         gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), item);
 
         item = gtk_image_menu_item_new_with_label(path);
-        gtk_menu_item_set_submenu(item, file_menu);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(file_menu));
         gtk_widget_show(item);
         gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), item);
     }

@@ -525,7 +525,7 @@ void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width,
         data->dw = width;
         data->dh = height;
         data->keep_ratio = keep_ratio;
-        data->use_dummy_image = label && !strempty(gtk_label_get_text(label));
+        data->use_dummy_image = label && !strempty(gtk_label_get_text(GTK_LABEL(label)));
         _gtk_image_set_from_file_scaled(image,
             data->fname, data->dw, data->dh, data->keep_ratio, data->use_dummy_image);
 

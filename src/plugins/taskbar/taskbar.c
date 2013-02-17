@@ -2655,8 +2655,9 @@ static void task_update_preview_item(Task * tk, gboolean create)
 
 }
 
-static void _remove_from_container(GtkWidget * widget, GtkWidget * parent)
+static void _remove_from_container(GtkWidget * widget, gpointer data)
 {
+    GtkWidget * parent = GTK_WIDGET(data);
     gtk_container_remove(GTK_CONTAINER(parent), widget);
 }
 

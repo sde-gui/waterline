@@ -282,7 +282,12 @@ static void setup_auto_complete( GtkEntry* entry )
         /* load in another working thread */
         thread_data = g_slice_new0(ThreadData); /* the data will be freed in idle handler later. */
         thread_data->entry = entry;
+#if GLIB_CHECK_VERSION(2,32,0)
+        GThread * thread = g_thread_new("gtk-run-thread", (GThreadFunc)thread_func, thread_data);
+        g_thread_unref(thread);
+#else
         g_thread_create((GThreadFunc)thread_func, thread_data, FALSE, NULL);
+#endif
     }
 }
 

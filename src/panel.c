@@ -546,6 +546,38 @@ void panel_establish_autohide(Panel *p)
 
 /******************************************************************************/
 
+void panel_application_class_visibility_changed(Panel* p)
+{
+    GList * l;
+    for (l = p->plugins; l; l = l->next)
+    {
+        Plugin * pl = (Plugin *) l->data;
+        if (pl->class->application_class_visibility_changed)
+        {
+            pl->class->application_class_visibility_changed(pl);
+        }
+    }
+    return;
+}
+
+gboolean panel_is_application_class_visible(Panel* p, const char * class_name)
+{
+    GList * l;
+    for (l = p->plugins; l; l = l->next)
+    {
+        Plugin * pl = (Plugin *) l->data;
+        if (pl->class->is_application_class_visible)
+        {
+            if (pl->class->is_application_class_visible(pl, class_name))
+                return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+
+/******************************************************************************/
+
 /*= command handling =*/
 
 Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name)

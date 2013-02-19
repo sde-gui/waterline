@@ -79,6 +79,9 @@ struct _PluginClass {
     void (*add_launch_item)(struct _Plugin * plugin, const char * name);
     int  (*get_priority_of_launch_item_adding)(struct _Plugin * plugin);
     void (*popup_menu_hook)(struct _Plugin * plugin, GtkMenu * menu);
+
+    gboolean (*is_application_class_visible)(struct _Plugin * plugin, const char * class_name);
+    void (*application_class_visibility_changed)(struct _Plugin * plugin);
 };
 
 

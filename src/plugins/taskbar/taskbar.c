@@ -466,6 +466,8 @@ typedef struct _taskbar {
     gboolean use_x_net_wm_icon_geometry;
     gboolean use_x_window_position;
 
+    gboolean hide_from_launchbar;
+
 
     /* Effective config values, evaluated from "User preference" variables: */
     gboolean grouped_tasks;			/* Group task of the same class into single button. */
@@ -783,6 +785,14 @@ static int task_button_is_really_flat(Task * tk)
 
 /******************************************************************************/
 
+static void taskbar_notify_panel_class_visibility_changed(TaskbarPlugin * tb, gboolean force)
+{
+    if (force || tb->hide_from_launchbar)
+        panel_application_class_visibility_changed(plugin_panel(tb->plug));
+}
+
+/******************************************************************************/
+
 static void taskbar_recompute_fold_by_count(TaskbarPlugin * tb)
 {
     if (tb->_panel_fold_threshold < 1)
@@ -974,7 +984,7 @@ static void task_draw_label(Task * tk)
     TaskClass * tc = tk->task_class;
 
     gboolean bold_style = tk->entered_state && tk->tb->bold_font_on_mouse_over;
-	bold_style |= tk->flash_state && task_button_is_really_flat(tk);
+    bold_style |= tk->flash_state && task_button_is_really_flat(tk);
     bold_style |= tk->name_changed && tk->tb->highlight_modified_titles;
 
     if (task_is_folded(tk) && (tc) && (tc->visible_task == tk))
@@ -1276,7 +1286,6 @@ static gchar* task_read_wm_class(Task * tk) {
 static void task_update_wm_class(Task * tk) {
     g_free(tk->wm_class);
     tk->wm_class = task_read_wm_class(tk);
-
     if (tk->run_path && tk->run_path != (gchar *)-1)
         g_free(tk->run_path);
     tk->run_path = (gchar *)-1;
@@ -1493,6 +1502,7 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
     g_free(tk);
 
     taskbar_recompute_fold_by_count(tb);
+    taskbar_notify_panel_class_visibility_changed(tb, FALSE);
 
     RET();
 }
@@ -3821,7 +3831,10 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
 
     /* Redraw the taskbar. */
     if (redraw)
+    {
         taskbar_redraw(tb);
+        taskbar_notify_panel_class_visibility_changed(tb, FALSE);
+    }
 
     RET();
 }
@@ -3910,6 +3923,8 @@ static void taskbar_set_current_desktop(TaskbarPlugin * tb, int desktop)
     taskbar_redraw(tb);
 
     icon_grid_resume_updates(tb->icon_grid);
+
+    taskbar_notify_panel_class_visibility_changed(tb, FALSE);
 
     RET();
 }
@@ -4051,6 +4066,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                     task_update_grouping(tk, GROUP_BY_WORKSPACE);
                     task_update_sorting(tk, SORT_BY_WORKSPACE);
                     taskbar_redraw(tb);
+                    taskbar_notify_panel_class_visibility_changed(tb, FALSE);
                 }
                 else if ((at == XA_WM_NAME) || (at == a_NET_WM_NAME) || (at == a_NET_WM_VISIBLE_NAME))
                 {
@@ -4070,6 +4086,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                     /* Window changed class. */
                     task_update_wm_class(tk);
                     task_update_grouping(tk, GROUP_BY_CLASS);
+                    taskbar_notify_panel_class_visibility_changed(tb, FALSE);
                 }
                 else if (at == a_WM_STATE)
                 {
@@ -4113,6 +4130,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                             task_clear_urgency(tk);
                         task_update_grouping(tk, GROUP_BY_STATE);
                         task_update_sorting(tk, SORT_BY_STATE);
+                        taskbar_notify_panel_class_visibility_changed(tb, FALSE);
                     }
                 }
                 else if (at == a_NET_WM_STATE)
@@ -4931,6 +4949,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 
     tb->highlight_modified_titles = FALSE;
 
+    //tb->hide_from_launchbar = TRUE;
+
     tb->button1_action    = ACTION_RAISEICONIFY;
     tb->button2_action    = ACTION_SHADE;
     tb->button3_action    = ACTION_MENU;
@@ -5017,10 +5037,10 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                 else if (g_ascii_strcasecmp(s.t[0], "IconThumbnails") == 0)
                     tb->use_thumbnails_as_icons = str2num(bool_pair, s.t[1], tb->use_thumbnails_as_icons);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatButton") == 0)
-				{
+                {
                     tb->flat_inactive_buttons = str2num(bool_pair, s.t[1], tb->flat_inactive_buttons);
-					tb->flat_active_button    = str2num(bool_pair, s.t[1], tb->flat_active_button);
-				}
+                    tb->flat_active_button    = str2num(bool_pair, s.t[1], tb->flat_active_button);
+                }
                 else if (g_ascii_strcasecmp(s.t[0], "FlatInactiveButtons") == 0)
                     tb->flat_inactive_buttons = str2num(bool_pair, s.t[1], tb->flat_inactive_buttons);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatActiveButton") == 0)
@@ -5095,6 +5115,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->use_group_separators = str2num(bool_pair, s.t[1], tb->use_group_separators);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupSeparatorSize") == 0)
                     tb->group_separator_size = atoi(s.t[1]);
+                else if (g_ascii_strcasecmp(s.t[0], "HideVisibleAppsFromLaunchbar") == 0)
+                    tb->hide_from_launchbar = str2num(bool_pair, s.t[1], tb->hide_from_launchbar);
                 else if (g_ascii_strcasecmp(s.t[0], "UseXNetWmIconGeometry") == 0)
                     tb->use_x_net_wm_icon_geometry = str2num(bool_pair, s.t[1], tb->use_x_net_wm_icon_geometry);
                 else if (g_ascii_strcasecmp(s.t[0], "UseXWindowPosition") == 0)
@@ -5126,6 +5148,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     taskbar_net_active_window(NULL, tb);
 
     taskbar_update_style(tb);
+
+    taskbar_notify_panel_class_visibility_changed(tb, FALSE);
 
     return 1;
 }
@@ -5161,6 +5185,8 @@ static void taskbar_destructor(Plugin * p)
     /* Deallocate task list. */
     while (tb->task_list != NULL)
         task_delete(tb, tb->task_list, TRUE);
+
+    taskbar_notify_panel_class_visibility_changed(tb, FALSE);
 
     /* Deallocate class list. */
     while (tb->task_class_list != NULL)
@@ -5210,6 +5236,8 @@ static void taskbar_apply_configuration(Plugin * p)
     /* Refetch the client list and redraw. */
     recompute_group_visibility_on_current_desktop(tb);
     taskbar_net_client_list(NULL, tb);
+
+    taskbar_notify_panel_class_visibility_changed(tb, TRUE);
 }
 
 /* Display the configuration dialog. */
@@ -5326,6 +5354,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 
         _("Integration"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
 
+        _("Hide buttons of visible applications from launchbar"), (gpointer)&tb->hide_from_launchbar, (GType)CONF_TYPE_BOOL,
         _("_NET_WM_ICON_GEOMETRY"), (gpointer)&tb->use_x_net_wm_icon_geometry, (GType)CONF_TYPE_BOOL,
         _("_LXPANEL_TASKBAR_WINDOW_POSITION"), (gpointer)&tb->use_x_window_position, (GType)CONF_TYPE_BOOL,
 
@@ -5404,6 +5433,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
     lxpanel_put_bool(fp, "UseGroupSeparators", tb->use_group_separators);
     lxpanel_put_int(fp, "GroupSeparatorSize", tb->group_separator_size);
+    lxpanel_put_bool(fp, "HideVisibleAppsFromLaunchbar", tb->hide_from_launchbar);
     lxpanel_put_bool(fp, "UseXNetWmIconGeometry", tb->use_x_net_wm_icon_geometry);
     lxpanel_put_bool(fp, "UseXWindowPosition", tb->use_x_window_position);
 }
@@ -5494,6 +5524,22 @@ static void taskbar_run_command(Plugin * p, char ** argv, int argc)
     }
 }
 
+static gboolean taskbar_is_application_class_visible(Plugin * p, const char * class_name)
+{
+    TaskbarPlugin * tb = PRIV(p);
+    Task * tk;
+
+    if (!tb->hide_from_launchbar)
+        return FALSE;
+
+    for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
+    {
+        if (task_is_visible_on_current_desktop(tk) && g_ascii_strcasecmp(tk->wm_class, class_name) == 0)
+            return TRUE;
+    }
+    return FALSE;
+}
+
 /******************************************************************************/
 
 /* Plugin descriptor. */
@@ -5515,5 +5561,6 @@ PluginClass taskbar_plugin_class = {
     config : taskbar_configure,
     save : taskbar_save_configuration,
     panel_configuration_changed : taskbar_panel_configuration_changed,
-    run_command : taskbar_run_command
+    run_command : taskbar_run_command,
+    is_application_class_visible : taskbar_is_application_class_visible
 };

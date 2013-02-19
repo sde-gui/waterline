@@ -28,6 +28,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
+#include <libgen.h>
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
@@ -143,6 +144,33 @@ static void launchbutton_free(LaunchButton * btn)
     g_free(btn->tooltip_markup);
     g_free(btn);
 }
+
+static void launchbar_update_item_visibility(Plugin * p)
+{
+    LaunchbarPlugin * lb = PRIV(p);
+    GSList* l;
+    for (l = lb->buttons; l != NULL; l = l->next)
+    {
+        LaunchButton * btn = (LaunchButton *) l->data;
+        gboolean visible = FALSE;
+        if (!btn->desktop_id)
+        {
+            visible = TRUE;
+        }
+        else
+        {
+            gchar * id = g_strdup(btn->desktop_id);
+            const char * suffix = ".desktop";
+            if (g_str_has_suffix(id, suffix))
+                id[strlen(id) - strlen(suffix)] = 0;
+            char * bname = basename(id);
+            visible = !panel_is_application_class_visible(plugin_panel(p), bname);
+            g_free(id);
+        }
+        icon_grid_set_visible(lb->icon_grid, btn->widget, visible);
+    }
+}
+
 
 /* Handler for "button-press-event" event from launchbar button. */
 static gboolean launchbutton_press_event(GtkWidget * widget, GdkEventButton * event, LaunchButton * b)
@@ -350,6 +378,8 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
     /* Show the widget and return. */
     gtk_widget_show(button);
     //plugin_widget_set_background(button, plugin_panel(p));
+
+    launchbar_update_item_visibility(p);
 }
 
 /* Read the configuration file entry for a launchbar button and create it. */
@@ -939,6 +969,11 @@ static int launchbar_get_priority_of_launch_item_adding(struct _Plugin * plugin)
     return g_slist_length(lb->buttons);
 }
 
+static void launchbar_application_class_visibility_changed(struct _Plugin * plugin)
+{
+    launchbar_update_item_visibility(plugin);
+}
+
 /* Plugin descriptor. */
 PluginClass launchbar_plugin_class = {
 
@@ -955,5 +990,6 @@ PluginClass launchbar_plugin_class = {
     save : launchbar_save_configuration,
     panel_configuration_changed : launchbar_panel_configuration_changed,
     add_launch_item : launchbar_add_launch_item,
-    get_priority_of_launch_item_adding : launchbar_get_priority_of_launch_item_adding
+    get_priority_of_launch_item_adding : launchbar_get_priority_of_launch_item_adding,
+    application_class_visibility_changed : launchbar_application_class_visibility_changed
 };

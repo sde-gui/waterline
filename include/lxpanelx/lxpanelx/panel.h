@@ -59,5 +59,7 @@ extern gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const g
 
 extern GList * panel_get_plugins(Panel * p);
 
+extern void panel_application_class_visibility_changed(Panel* p);
+extern gboolean panel_is_application_class_visible(Panel* p, const char * class_name);
 
 #endif

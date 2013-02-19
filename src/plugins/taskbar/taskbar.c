@@ -380,6 +380,7 @@ typedef struct _taskbar {
     guint preview_panel_motion_timer;
     int preview_panel_speed;
     int preview_panel_mouse_position;
+    gboolean preview_panel_expose_event_connected;
 
     Task * popup_task;                          /* Task that owns popup. */
     guint hide_popup_delay_timer;               /* Timer to close popup if mouse leaves it */
@@ -2385,6 +2386,77 @@ static void task_raise(Task * tk, GdkEventButton * event)
 /* preview panel */
 
 
+static gboolean preview_panel_expose_event(GtkWidget *widget, GdkEventExpose *event, TaskbarPlugin * tb)
+{
+    cairo_t *cr;
+
+    cr = gdk_cairo_create(widget->window);
+
+    float a = 0.2;
+    float r = 0.5;
+    float g = 0.5;
+    float b = 0.5;
+
+    GtkStyle * style = gtk_widget_get_style(widget);
+    if (style)
+    {
+        r = style->bg[GTK_STATE_NORMAL].red / 65535.0;
+        g = style->bg[GTK_STATE_NORMAL].green / 65535.0;
+        b = style->bg[GTK_STATE_NORMAL].blue / 65535.0;
+    }
+
+    cairo_set_source_rgba(cr, r, g, b, a);
+    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+    cairo_paint(cr);
+
+    cairo_set_source_rgba(cr, r, g, b, 1);
+    cairo_set_line_width(cr, 1);
+    cairo_rectangle(cr, 0, 0, widget->allocation.width, widget->allocation.height);
+    cairo_stroke(cr);
+
+    cairo_destroy(cr);
+
+    return FALSE;
+}
+
+static void preview_panel_setup_rgba_transparency(TaskbarPlugin * tb)
+{
+    gboolean rgba_transparency = TRUE;
+
+    GtkWidget * widget = tb->preview_panel_window;
+    //GdkWindow * window = widget->window;
+
+    if (rgba_transparency)
+    {
+        gtk_widget_set_app_paintable(widget, TRUE);
+        //gdk_window_set_back_pixmap(window, NULL, FALSE);
+    }
+    else
+    {
+        //gdk_window_set_back_pixmap(window, NULL, FALSE);
+        gtk_widget_set_app_paintable(widget, FALSE);
+    }
+
+
+    if (rgba_transparency)
+    {
+        if (!tb->preview_panel_expose_event_connected)
+        {
+            g_signal_connect(G_OBJECT(widget), "expose_event", G_CALLBACK(preview_panel_expose_event), tb);
+            tb->preview_panel_expose_event_connected = TRUE;
+        }
+    }
+    else
+    {
+        if (tb->preview_panel_expose_event_connected)
+        {
+            g_signal_handlers_disconnect_by_func(G_OBJECT(widget), G_CALLBACK(preview_panel_expose_event), tb);
+            tb->preview_panel_expose_event_connected = FALSE;
+        }
+    }
+
+}
+
 static  gboolean preview_panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, TaskbarPlugin * tb)
 {
     tb->preview_panel_window_alloc.x = e->x;
@@ -2548,6 +2620,18 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 
     gtk_widget_set_can_focus(win, FALSE);
 
+
+    GdkScreen * screen = gtk_widget_get_screen(win);
+    GdkColormap * colormap = NULL;
+    if (1)
+    {
+        colormap = gdk_screen_get_rgba_colormap(screen);
+    }
+    if (colormap)
+        gtk_widget_set_colormap(win, colormap);
+
+
+
     g_signal_connect(G_OBJECT (win), "size-allocate", G_CALLBACK(preview_panel_size_allocate), (gpointer) tb);
     g_signal_connect(G_OBJECT (win), "configure-event",  G_CALLBACK(preview_panel_configure_event), (gpointer) tb);
     g_signal_connect_after(G_OBJECT (win), "enter-notify-event", G_CALLBACK(preview_panel_enter), (gpointer) tb);
@@ -2682,6 +2766,8 @@ static void task_show_preview_panel(Task * tk)
          taskbar_build_preview_panel(tb);
     }
 
+    preview_panel_setup_rgba_transparency(tb);
+
     if (tb->preview_panel_box1)
     {
         gtk_container_foreach(GTK_CONTAINER(tb->preview_panel_box1), _remove_from_container, tb->preview_panel_box1);
@@ -2695,6 +2781,7 @@ static void task_show_preview_panel(Task * tk)
     }
 
     tb->preview_panel_box = gtk_event_box_new();
+    gtk_widget_set_has_window(tb->preview_panel_box, FALSE);
     g_object_ref(G_OBJECT(tb->preview_panel_box));
     //gtk_container_set_border_width(GTK_CONTAINER(tb->preview_panel_window), 5);
     gtk_container_add(GTK_CONTAINER(tb->preview_panel_window), tb->preview_panel_box);
@@ -2713,6 +2800,7 @@ static void task_show_preview_panel(Task * tk)
         gtk_vbox_new(TRUE, 5);
     gtk_container_set_border_width(GTK_CONTAINER(box), 5);
     gtk_container_add(GTK_CONTAINER(tb->preview_panel_box), box);
+
 
     Task* tk_cursor = tk;
     if (tk->task_class)

@@ -57,6 +57,9 @@ static gboolean load_window_action_icon_openbox(GtkImage * image, const char * n
 
 static gboolean load_window_action_icon_xfce(GtkImage * image, const char * name, int w, int h)
 {
+    if (strcmp(get_de_name(), "XFCE") != 0)
+        return FALSE;
+
     const char * xfce_icon_name = NULL;
 
     if (strcmp(name, "close") == 0)

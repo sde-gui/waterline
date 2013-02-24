@@ -26,11 +26,9 @@
 
 extern GdkPixbuf * ob_load_icon_from_theme(const char * name, int w, int h);
 
-void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size)
+
+static gboolean load_window_action_icon_openbox(GtkImage * image, const char * name, int w, int h)
 {
-    int w, h;
-    gtk_icon_size_lookup(icon_size, &w, &h);
-#if 0
     const char * openbox_icon_name = NULL;
 
     if (strcmp(name, "close") == 0)
@@ -51,11 +49,14 @@ void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize ic
         {
             gtk_image_set_from_pixbuf(image, icon);
             g_object_unref(icon);
-            return;
+            return TRUE;
         }
     }
-#endif
+    return FALSE;
+}
 
+static gboolean load_window_action_icon_xfce(GtkImage * image, const char * name, int w, int h)
+{
     const char * xfce_icon_name = NULL;
 
     if (strcmp(name, "close") == 0)
@@ -76,11 +77,56 @@ void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize ic
         {
             gtk_image_set_from_pixbuf(image, icon);
             g_object_unref(icon);
-            return;
+            return TRUE;
         }
     }
+    return FALSE;
+}
+
+static gboolean load_window_action_icon_gnome2(GtkImage * image, const char * name, int w, int h)
+{
+    const char * gnome2_icon_name = NULL;
 
     if (strcmp(name, "close") == 0)
+        gnome2_icon_name = "window-close";
+    else if (strcmp(name, "iconify") == 0)
+        gnome2_icon_name = "go-down";
+    else if (strcmp(name, "maximize") == 0)
+        gnome2_icon_name = "view-fullscreen";
+    else if (strcmp(name, "restore") == 0)
+        gnome2_icon_name = "view-restore";
+
+    if (gnome2_icon_name)
+    {
+        GdkPixbuf * icon = lxpanel_load_icon(gnome2_icon_name, w, h, FALSE);
+        if (icon)
+        {
+            gtk_image_set_from_pixbuf(image, icon);
+            g_object_unref(icon);
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+static void load_window_action_icon_fallback(GtkImage * image, const char * name, GtkIconSize icon_size)
+{
+    if (strcmp(name, "close") == 0)
         gtk_image_set_from_stock(image, GTK_STOCK_CLOSE, icon_size);
+}
+
+
+void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size)
+{
+    int w, h;
+    gtk_icon_size_lookup(icon_size, &w, &h);
+/*
+    if (load_window_action_icon_openbox(image, name, w, h))
+        return;*/
+    if (load_window_action_icon_xfce(image, name, w, h))
+        return;
+    if (load_window_action_icon_gnome2(image, name, w, h))
+        return;
+    load_window_action_icon_fallback(image, name, icon_size);
 }
 

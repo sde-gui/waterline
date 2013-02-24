@@ -73,7 +73,7 @@ am__lxpanelx_SOURCES_DIST = misc.c defaultapplications.c libfm.c \
 	commands.h configparser.c generic_config_dlg.c Xsupport.c \
 	pixbuf-stuff.c configurator.c panel_config.c dbg.c ev.c \
 	icon-grid.c panel.c panel_internal.h panel_private.h plugin.c \
-	plugin_internal.h plugin_private.h paths.c gtk-run.c \
+	plugin_internal.h plugin_private.h paths.c de.c gtk-run.c \
 	menu-policy.h menu-policy.c
 @ENABLE_MENU_CACHE_TRUE@am__objects_1 = gtk-run.$(OBJEXT) \
 @ENABLE_MENU_CACHE_TRUE@	menu-policy.$(OBJEXT)
@@ -84,7 +84,7 @@ am_lxpanelx_OBJECTS = misc.$(OBJEXT) defaultapplications.$(OBJEXT) \
 	Xsupport.$(OBJEXT) pixbuf-stuff.$(OBJEXT) \
 	configurator.$(OBJEXT) panel_config.$(OBJEXT) dbg.$(OBJEXT) \
 	ev.$(OBJEXT) icon-grid.$(OBJEXT) panel.$(OBJEXT) \
-	plugin.$(OBJEXT) paths.$(OBJEXT) $(am__objects_1)
+	plugin.$(OBJEXT) paths.$(OBJEXT) de.$(OBJEXT) $(am__objects_1)
 lxpanelx_OBJECTS = $(am_lxpanelx_OBJECTS)
 am__DEPENDENCIES_1 =
 lxpanelx_DEPENDENCIES = $(BUILTIN_PLUGINS) $(am__DEPENDENCIES_1) \
@@ -464,6 +464,7 @@ lxpanelx_SOURCES = \
 	panel.c panel_internal.h panel_private.h \
 	plugin.c plugin_internal.h plugin_private.h \
 	paths.c \
+	de.c \
 	$(MENU_SOURCES)
 
 @BUILD_PLUGIN_LOADER_TRUE@DYNAMIC_FLAGS = -export-dynamic
@@ -615,6 +616,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/configparser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/configurator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbg.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/de.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/defaultapplications.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ev.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generic_config_dlg.Po@am__quote@

@@ -22,6 +22,7 @@
 #include <lxpanelx/global.h>
 #include "menu-policy.h"
 #include <lxpanelx/panel.h>
+#include <lxpanelx/misc.h>
 
 guint32 visibility_flags = 0;
 
@@ -34,7 +35,7 @@ MenuCache * panel_menu_cache_new(guint32* visibility_flags)
     cache = menu_cache_lookup("applications.menu");
     if (visibility_flags)
     {
-        const char* de_name = g_getenv("XDG_CURRENT_DESKTOP");
+        const char* de_name = get_de_name();
         if (de_name)
             *visibility_flags = menu_cache_get_desktop_env_flag(cache, de_name);
         else

@@ -44,6 +44,7 @@ lxpanelx_SOURCES = \
 	panel.c panel_internal.h panel_private.h \
 	plugin.c plugin_internal.h plugin_private.h \
 	paths.c \
+	de.c \
 	$(MENU_SOURCES)
 
 if BUILD_PLUGIN_LOADER

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2012 vadim Ushakov
+ * Copyright (c) 2012 Vadim Ushakov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

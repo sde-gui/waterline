@@ -97,6 +97,8 @@ Atom a_MOTIF_WM_HINTS;
 Atom a_LXPANELX_CMD; /* for private client message */
 Atom a_LXPANELX_TEXT_CMD;
 
+Atom a_OB_THEME;
+
 /* if current window manager is EWMH conforming. */
 gboolean is_ewmh_supported;
 
@@ -162,6 +164,9 @@ enum{
 
     I_LXPANELX_CMD,
     I_LXPANELX_TEXT_CMD,
+
+    I_OB_THEME,
+
     N_ATOMS
 };
 
@@ -231,6 +236,8 @@ void resolve_atoms()
 
     atom_names[ I_LXPANELX_CMD ] = "_LXPANELX_CMD";
     atom_names[ I_LXPANELX_TEXT_CMD ] = "_LXPANELX_TEXT_CMD";
+
+    atom_names[ I_OB_THEME ] = "_OB_THEME";
 
     Atom atoms[ N_ATOMS ];
 
@@ -317,6 +324,8 @@ void resolve_atoms()
 
     a_LXPANELX_CMD = atoms[ I_LXPANELX_CMD ];
     a_LXPANELX_TEXT_CMD = atoms[ I_LXPANELX_TEXT_CMD ];
+
+    a_OB_THEME = atoms[ I_OB_THEME ];
 
     RET();
 }
@@ -806,7 +815,7 @@ void update_net_supported()
         _net_supported = NULL;
         _net_supported_nitems = 0;
     }
-    
+
     _net_supported = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_SUPPORTED, XA_ATOM, &_net_supported_nitems);
 
     RET();

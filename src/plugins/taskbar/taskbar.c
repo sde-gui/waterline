@@ -354,6 +354,8 @@ typedef struct _taskbar {
     gchar ** menu_config;
     GtkWidget * menu;				/* Popup menu for task control (Close, Raise, etc.) */
     GtkWidget * workspace_submenu;		/* Workspace submenu of the task control menu */
+    GtkWidget * close_menuitem;
+    GtkWidget * close2_menuitem;
     GtkWidget * move_to_this_workspace_menuitem;
     GtkWidget * restore_menuitem;
     GtkWidget * maximize_menuitem;
@@ -3431,6 +3433,7 @@ static void task_build_gui_button_close(TaskbarPlugin * tb, Task* tk)
 
     /* Create close button. */
     tk->button_close = gtk_image_new_from_stock (GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
+    load_window_action_icon(GTK_IMAGE(tk->button_close), "close", GTK_ICON_SIZE_MENU);
     gtk_box_pack_end(GTK_BOX(box), tk->button_close, TRUE, FALSE, 0);
     gtk_widget_set_tooltip_text (tk->button_close, _("Close window"));
     gtk_widget_show(tk->button_close);
@@ -4541,6 +4544,21 @@ static void menu_set_sensitive(GtkWidget * widget, gboolean value)
     }
 }
 
+static void menu_load_icon(GtkWidget * mi, const char * name)
+{
+    if (!mi || !GTK_IMAGE_MENU_ITEM(mi))
+        return;
+
+    GtkImage * image = GTK_IMAGE(gtk_image_menu_item_get_image(GTK_IMAGE_MENU_ITEM(mi)));
+    if (!image)
+    {
+        image = GTK_IMAGE(gtk_image_new());
+        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), GTK_WIDGET(image));
+    }
+
+    load_window_action_icon(image, name, GTK_ICON_SIZE_MENU);
+}
+
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 {
     TaskbarPlugin * tb = tk->tb;
@@ -4649,6 +4667,13 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
         gtk_widget_set_visible(GTK_WIDGET(tb->title_menuitem), from_popup_menu);
 
     adjust_separators(tb->menu);
+
+    menu_load_icon(tb->close_menuitem, "close");
+    menu_load_icon(tb->close2_menuitem, "close");
+    menu_load_icon(tb->iconify_menuitem, "iconify");
+    menu_load_icon(tb->maximize_menuitem, "maximize");
+    menu_load_icon(tb->restore_menuitem, "restore");
+    menu_load_icon(tb->roll_menuitem, "shade");
 }
 
 /******************************************************************************/
@@ -4658,7 +4683,7 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
 /* Helper function to create menu items for taskbar_make_menu() */
 static GtkWidget * create_menu_item(TaskbarPlugin * tb, char * name, GCallback activate_cb, GtkWidget ** menuitem, gboolean hide_inactive)
 {
-    GtkWidget * mi = gtk_menu_item_new_with_mnemonic(name);
+    GtkWidget * mi = gtk_image_menu_item_new_with_mnemonic(name);
     gtk_menu_shell_append(GTK_MENU_SHELL(tb->menu), mi);
     if (activate_cb)
         g_signal_connect(G_OBJECT(mi), "activate", activate_cb, tb);
@@ -4813,7 +4838,7 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
         } else IF("run_new") {
             create_menu_item(tb, _("_Run new"), (GCallback) menu_run_new, &tb->run_new_menuitem, hide_inactive);
         } else IF("close") {
-            create_menu_item(tb, _("_Close Window"), (GCallback) menu_close_window, NULL, hide_inactive);
+            create_menu_item(tb, _("_Close Window"), (GCallback) menu_close_window, &tb->close_menuitem, hide_inactive);
         } else IF("close2") {
             close2 = 1;
         } else {
@@ -4827,7 +4852,7 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
     /* Add Close menu item.  By popular demand, we place this menu item closest to the cursor. */
     if (close2)
     {
-        mi = gtk_menu_item_new_with_mnemonic (_("_Close Window"));
+        mi = tb->close2_menuitem = gtk_image_menu_item_new_with_mnemonic (_("_Close Window"));
         if (panel_get_edge(plugin_panel(tb->plug)) != EDGE_BOTTOM)
         {
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());

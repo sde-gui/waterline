@@ -28,6 +28,8 @@ lxpanelx_SOURCES = \
 	misc.c \
 	defaultapplications.c \
 	libfm.c \
+	window-icons.c \
+	openbox-integration.c \
 	bg.c bg.h  \
 	commands.c commands.h \
 	configparser.c \

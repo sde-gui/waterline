@@ -170,7 +170,7 @@ static void on_menu_item( GtkMenuItem* mi, MenuCacheItem* item )
 /* load icon when mapping the menu item to speed up */
 static void on_menu_item_map(GtkWidget* mi, MenuCacheItem* item)
 {
-  GtkImage* img = GTK_IMAGE(gtk_image_menu_item_get_image(GTK_IMAGE_MENU_ITEM(mi)));
+    GtkImage* img = GTK_IMAGE(gtk_image_menu_item_get_image(GTK_IMAGE_MENU_ITEM(mi)));
     if( img )
     {
         if( gtk_image_get_storage_type(img) == GTK_IMAGE_EMPTY )

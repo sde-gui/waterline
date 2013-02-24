@@ -88,6 +88,8 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
 
 extern GdkPixbuf* lxpanel_load_icon( const char* name, int width, int height, gboolean use_fallback );
 
+extern void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size);
+
 gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal);
 gboolean lxpanel_launch(const char* exec, GList* files);
 void lxpanel_open_in_file_manager(const char * path);

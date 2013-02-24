@@ -795,6 +795,8 @@ static void process_command(char ** argv, int argc)
         cmd_restart(argv + 1, argc - 1);
     else if (strcmp(argv[0], "exit") == 0)
         cmd_exit(argv + 1, argc - 1);
+    else if (strcmp(argv[0], "glib_mem_profiler") == 0)
+        g_mem_profile();
 }
 
 #if 0
@@ -2564,6 +2566,13 @@ int main(int argc, char *argv[], char *env[])
 {
     int i;
 
+    for (i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--glib-mem-profiler") || !strcmp(argv[i], "--glib_mem_profiler")) {
+           g_mem_set_vtable(glib_mem_profiler_table);
+           break;
+        }
+    }
+
     setlocale(LC_CTYPE, "");
 
 #if !GLIB_CHECK_VERSION(2,32,0)
@@ -2621,6 +2630,8 @@ int main(int argc, char *argv[], char *env[])
             force_compositing_wm_disabled = TRUE;
         } else if (!strcmp(argv[i], "--force-composite-disabled")) {
            force_composite_disabled = TRUE;
+        } else if (!strcmp(argv[i], "--glib-mem-profiler") || !strcmp(argv[i], "--glib_mem_profiler")) {
+           /* nothing */
         } else if (!strcmp(argv[i], "--colormap")) {
             i++;
             if (i == argc) {

@@ -496,12 +496,15 @@ void gtk_run()
       until it is loaded. But it hangs. So we call menu_cache_reload() every time.
     */
     /* get all apps */
-    menu_cache = menu_cache_lookup(g_getenv("XDG_MENU_PREFIX") ? "applications.menu" : "lxde-applications.menu" );
-    if( menu_cache )
+    if (!menu_cache)
     {
-        menu_cache_reload(menu_cache);
-        app_list = (GSList*)menu_cache_list_all_apps(menu_cache);
-        reload_notify_id = menu_cache_add_reload_notify(menu_cache, (MenuCacheReloadNotify)reload_apps, NULL);
+        menu_cache = menu_cache_lookup(g_getenv("XDG_MENU_PREFIX") ? "applications.menu" : "lxde-applications.menu" );
+        if (menu_cache)
+        {
+    /*        menu_cache_reload(menu_cache);
+            app_list = (GSList*)menu_cache_list_all_apps(menu_cache);*/
+            reload_notify_id = menu_cache_add_reload_notify(menu_cache, (MenuCacheReloadNotify)reload_apps, NULL);
+        }
     }
 
     gtk_window_present(GTK_WINDOW(win));

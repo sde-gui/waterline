@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 #include <lxpanelx/Xsupport.h>
 #include <lxpanelx/misc.h>
+#include <string.h>
 
 extern GdkPixbuf * ob_load_icon_from_theme(const char * name, int w, int h);
 

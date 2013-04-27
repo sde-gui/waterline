@@ -1317,7 +1317,7 @@ void panel_calculate_position(Panel *p)
         for( l = all_panels; l; l = l->next )
         {
             Panel* lp = (Panel*)l->data;
-            if (!lp->visible || lp->visibility_mode == VISIBILITY_AUTOHIDE)
+            if (!lp->visible || lp->visibility_mode == VISIBILITY_AUTOHIDE || !lp->setstrut)
                 continue;
             if (lp->edge == EDGE_TOP && lp->ch > margin_top)
                 margin_top = lp->ch;

@@ -437,6 +437,8 @@ typedef struct _taskbar {
     gboolean flat_inactive_buttons;
     gboolean flat_active_button;
 
+    gboolean highlight_modified_titles;
+    gboolean highlight_title_of_focused_button;
     gboolean bold_font_on_mouse_over;
 
     gboolean use_group_separators;
@@ -461,7 +463,6 @@ typedef struct _taskbar {
 
     gboolean rearrange;
 
-    gboolean highlight_modified_titles;		/* User preference: highlight modified titles */
 
     int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
     int spacing;				/* Spacing between taskbar buttons */
@@ -1009,7 +1010,7 @@ static void task_draw_label(Task * tk)
     gboolean i_style = FALSE;
     gboolean u_style = FALSE;
 
-    if (tk->focused && FALSE /*tk->tb->hightlight_focused*/)
+    if (tk->focused && tk->tb->highlight_title_of_focused_button)
     {
         b_style |= active_button_label_bold;
         i_style |= active_button_label_italic;
@@ -5207,6 +5208,10 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->flat_inactive_buttons = str2num(bool_pair, s.t[1], tb->flat_inactive_buttons);
                 else if (g_ascii_strcasecmp(s.t[0], "FlatActiveButton") == 0)
                     tb->flat_active_button = str2num(bool_pair, s.t[1], tb->flat_active_button);
+                else if (g_ascii_strcasecmp(s.t[0], "HighlightModifiedTitles") == 0)
+                    tb->highlight_modified_titles = str2num(bool_pair, s.t[1], tb->highlight_modified_titles);
+                else if (g_ascii_strcasecmp(s.t[0], "HighlightTitleOfFocusedButton") == 0)
+                    tb->highlight_title_of_focused_button = str2num(bool_pair, s.t[1], tb->highlight_title_of_focused_button);
                 else if (g_ascii_strcasecmp(s.t[0], "BoldFontOnMouseOver") == 0)
                     tb->bold_font_on_mouse_over = str2num(bool_pair, s.t[1], tb->bold_font_on_mouse_over);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupedTasks") == 0)		/* For backward compatibility */
@@ -5271,8 +5276,6 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     tb->menu_actions_click_press = str2num(action_trigged_by_pair, s.t[1], tb->menu_actions_click_press);
                 else if (g_ascii_strcasecmp(s.t[0], "OtherActionsTriggeredBy") == 0)
                     tb->other_actions_click_press = str2num(action_trigged_by_pair, s.t[1], tb->other_actions_click_press);
-                else if (g_ascii_strcasecmp(s.t[0], "HighlightModifiedTitles") == 0)
-                    tb->highlight_modified_titles = str2num(bool_pair, s.t[1], tb->highlight_modified_titles);
                 else if (g_ascii_strcasecmp(s.t[0], "UseGroupSeparators") == 0)
                     tb->use_group_separators = str2num(bool_pair, s.t[1], tb->use_group_separators);
                 else if (g_ascii_strcasecmp(s.t[0], "GroupSeparatorSize") == 0)
@@ -5453,7 +5456,8 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 
         _("Title settings"), (gpointer)NULL, CONF_TYPE_TITLE,
         _("Highlight modified titles"), (gpointer)&tb->highlight_modified_titles, (GType)CONF_TYPE_BOOL,
-        _("Bold font when mouse is over a button"), (gpointer)&tb->bold_font_on_mouse_over, (GType)CONF_TYPE_BOOL,
+        _("Highlight title of active button"), (gpointer)&tb->highlight_title_of_focused_button, (GType)CONF_TYPE_BOOL,
+        _("Highlight title when mouse is over a button"), (gpointer)&tb->bold_font_on_mouse_over, (GType)CONF_TYPE_BOOL,
 
         _("Geometry"), (gpointer)NULL, CONF_TYPE_TITLE,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
@@ -5476,7 +5480,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Fold group when it has Nr windows"), (gpointer)&tb->group_fold_threshold, (GType)CONF_TYPE_INT,
         _("Fold groups when taskbar has Nr windows"), (gpointer)&tb->panel_fold_threshold, (GType)CONF_TYPE_INT,
         _("Unfold focused group"), (gpointer)&tb->unfold_focused_group, (GType)CONF_TYPE_BOOL,
-	_("Show only focused group"), (gpointer)&tb->show_single_group, (GType)CONF_TYPE_BOOL,
+        _("Show only focused group"), (gpointer)&tb->show_single_group, (GType)CONF_TYPE_BOOL,
         _("Manual grouping"), (gpointer)&tb->manual_grouping, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
@@ -5563,12 +5567,16 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);
     lxpanel_put_bool(fp, "FlatInactiveButtons", tb->flat_inactive_buttons);
     lxpanel_put_bool(fp, "FlatActiveButton", tb->flat_active_button);
-    lxpanel_put_bool(fp, "BoldFontOnMouseOver", tb->bold_font_on_mouse_over);
     lxpanel_put_bool(fp, "ColorizeButtons", tb->colorize_buttons);
     lxpanel_put_bool(fp, "IconThumbnails", tb->use_thumbnails_as_icons);
     lxpanel_put_bool(fp, "DimIconified", tb->dim_iconified);
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
     lxpanel_put_int(fp, "spacing", tb->spacing);
+
+    lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
+    lxpanel_put_bool(fp, "HighlightTitleOfFocusedButton", tb->highlight_title_of_focused_button);
+    lxpanel_put_bool(fp, "BoldFontOnMouseOver", tb->bold_font_on_mouse_over);
+
     lxpanel_put_enum(fp, "Mode", tb->mode, mode_pair);
     lxpanel_put_int(fp, "GroupFoldThreshold", tb->group_fold_threshold);
     lxpanel_put_int(fp, "FoldThreshold", tb->panel_fold_threshold);
@@ -5598,7 +5606,6 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_enum(fp, "OtherActionsTriggeredBy", tb->other_actions_click_press, action_trigged_by_pair);
     //lxpanel_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
     lxpanel_put_enum(fp, "MouseOverAction", tb->mouse_over_action, mouse_over_action_pair);
-    lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
     lxpanel_put_bool(fp, "UseGroupSeparators", tb->use_group_separators);
     lxpanel_put_int(fp, "GroupSeparatorSize", tb->group_separator_size);
     lxpanel_put_bool(fp, "HideVisibleAppsFromLaunchbar", tb->hide_from_launchbar);

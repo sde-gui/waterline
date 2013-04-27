@@ -634,6 +634,9 @@ static void taskbar_panel_configuration_changed(Plugin * p);
 /* Set an urgency timer on a task. */
 static void set_timer_on_task(Task * tk)
 {
+    if (tk->flash_timeout)
+        return;
+
     gint interval;
     g_object_get(gtk_widget_get_settings(tk->button), "gtk-cursor-blink-time", &interval, NULL);
     tk->flash_timeout = g_timeout_add(interval, (GSourceFunc) flash_window_timeout, tk);

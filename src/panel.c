@@ -2043,7 +2043,7 @@ void panel_adjust_geometry_terminology(Panel * p)
 }
 
 /* Draw text into a label, with the user preference color and optionally bold. */
-void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean bold, gboolean custom_color)
+void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean bold, gboolean italic, gboolean underline, gboolean custom_color)
 {
     if (text == NULL)
     {
@@ -2095,10 +2095,14 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean b
         if (font_desc > 0)
             attr_desc_allocated = attr_desc = g_strdup_printf(" font_desc=\"%d\"", font_desc);
 
-        gchar * text = g_strdup_printf("<span%s%s>%s%s%s</span>",
+        gchar * text = g_strdup_printf("<span%s%s>%s%s%s%s%s%s%s</span>",
                 attr_desc, attr_color,
                 ((bold) ? "<b>" : ""),
+                ((italic) ? "<i>" : ""),
+                ((underline) ? "<u>" : ""),
                 valid_markup,
+                ((underline) ? "</u>" : ""),
+                ((italic) ? "</i>" : ""),
                 ((bold) ? "</b>" : ""));
         gtk_label_set_markup(GTK_LABEL(label), text);
 

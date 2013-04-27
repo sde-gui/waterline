@@ -53,7 +53,7 @@ extern int panel_get_oriented_height_pixels(Panel * p);
 extern gboolean panel_is_composited(Panel * p);
 extern gboolean panel_is_composite_available(Panel * p);
 
-extern void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean bold, gboolean custom_color);
+extern void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean bold, gboolean italic, gboolean underline, gboolean custom_color);
 extern void panel_image_set_from_file(Panel * p, GtkWidget * image, char * file);
 extern gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const gchar * icon);
 

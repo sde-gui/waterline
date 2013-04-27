@@ -138,7 +138,7 @@ void xkb_redraw(XkbPlugin * xkb)
         char * group_name = (char *) xkb_get_current_symbol_name(xkb);
         if (group_name != NULL)
         {
-            panel_draw_label_text(plugin_panel(xkb->plugin), xkb->label, (char *) group_name, TRUE, TRUE);
+            panel_draw_label_text(plugin_panel(xkb->plugin), xkb->label, (char *) group_name, TRUE, FALSE, FALSE, TRUE);
             gtk_widget_hide(xkb->image);
             gtk_widget_show(xkb->label);
             gtk_widget_set_tooltip_text(xkb->btn, xkb_get_current_group_name(xkb));

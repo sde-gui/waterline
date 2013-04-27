@@ -504,6 +504,7 @@ void gtk_run()
     /*        menu_cache_reload(menu_cache);
             app_list = (GSList*)menu_cache_list_all_apps(menu_cache);*/
             reload_notify_id = menu_cache_add_reload_notify(menu_cache, (MenuCacheReloadNotify)reload_apps, NULL);
+            menu_cache_reload(menu_cache);
         }
     }
 

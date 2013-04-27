@@ -413,7 +413,7 @@ netstatus_iface_set_polling_error (NetstatusIface *iface,
   va_start (args, format);
 
   error_message = g_strdup_vprintf (format, args);
-  error = g_error_new (NETSTATUS_ERROR, code, error_message);
+  error = g_error_new (NETSTATUS_ERROR, code, "%s", error_message);
 
   dprintf (POLLING, "ERROR: %s\n", error->message);
   netstatus_iface_set_error (iface, error);

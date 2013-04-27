@@ -493,6 +493,56 @@ static void on_xkb_dialog_config_response(GtkDialog *p_dialog, gint response, gp
     p_xkb->p_dialog_config = NULL;
 }
 
+// callback for double click
+static gboolean  on_treeview_kbd_model_button_press_event(GtkWidget *p_widget,
+                                                       GdkEventButton *p_event,
+                                                       gpointer p_dialog)
+{
+    if(p_event->button == 1)
+    {
+        if(p_event->type == GDK_2BUTTON_PRESS)
+        {
+            GtkButton *p_button_ok = (GtkButton *)gtk_dialog_get_widget_for_response(GTK_DIALOG(p_dialog), GTK_RESPONSE_OK);
+            gtk_button_clicked(p_button_ok);
+        }
+    }
+    return FALSE;
+}
+
+// callback for double click
+static gboolean  on_treeview_kbd_change_button_press_event(GtkWidget *p_widget,
+                                                        GdkEventButton *p_event,
+                                                        gpointer p_dialog)
+{
+    if(p_event->button == 1)
+    {
+        if(p_event->type == GDK_2BUTTON_PRESS)
+        {
+            GtkButton *p_button_ok = (GtkButton *)gtk_dialog_get_widget_for_response(GTK_DIALOG(p_dialog), GTK_RESPONSE_OK);
+            gtk_button_clicked(p_button_ok);
+        }
+    }
+    return FALSE;
+}
+
+
+// callback for double click
+static gboolean  on_treeview_add_layout_button_press_event(GtkWidget *p_widget,
+                                                        GdkEventButton *p_event,
+                                                        gpointer p_dialog)
+{
+    if(p_event->button == 1)
+    {
+        if(p_event->type == GDK_2BUTTON_PRESS)
+        {
+            GtkButton *p_button_ok = (GtkButton *)gtk_dialog_get_widget_for_response(GTK_DIALOG(p_dialog), GTK_RESPONSE_OK);
+            gtk_button_clicked(p_button_ok);
+        }
+    }
+    return FALSE;
+}
+
+
 static void on_button_kbd_model_clicked(GtkButton *p_button, gpointer *p_data)
 {
     XkbPlugin *p_xkb = (XkbPlugin *)p_data;
@@ -554,23 +604,8 @@ static void on_button_kbd_model_clicked(GtkButton *p_button, gpointer *p_data)
     }
     g_free(xkbcfg_filepath);
 
-    // callback for double click
-    gboolean  on_treeview_kbd_model_button_press_event(GtkWidget *p_widget,
-                                                       GdkEventButton *p_event,
-                                                       gpointer p_data)
-    {
-        if(p_event->button == 1)
-        {
-            if(p_event->type == GDK_2BUTTON_PRESS)
-            {
-                GtkButton *p_button_ok = (GtkButton *)gtk_dialog_get_widget_for_response(GTK_DIALOG(p_dialog), GTK_RESPONSE_OK);
-                gtk_button_clicked(p_button_ok);
-            }
-        }
-        return FALSE;
-    }
     g_signal_connect(p_treeview_kbd_model, "button-press-event",
-                     G_CALLBACK(on_treeview_kbd_model_button_press_event), NULL);
+                     G_CALLBACK(on_treeview_kbd_model_button_press_event), p_dialog);
     gtk_widget_set_size_request(p_dialog, 600, 500);
     gtk_widget_show_all(GTK_WIDGET(p_scrolledwindow_kbd_model));
     gint  response = gtk_dialog_run(GTK_DIALOG(p_dialog));
@@ -657,23 +692,8 @@ static void on_button_kbd_change_layout_clicked(GtkButton *p_button, gpointer *p
     }
     g_free(xkbcfg_filepath);
 
-    // callback for double click
-    gboolean  on_treeview_kbd_change_button_press_event(GtkWidget *p_widget,
-                                                        GdkEventButton *p_event,
-                                                        gpointer p_data)
-    {
-        if(p_event->button == 1)
-        {
-            if(p_event->type == GDK_2BUTTON_PRESS)
-            {
-                GtkButton *p_button_ok = (GtkButton *)gtk_dialog_get_widget_for_response(GTK_DIALOG(p_dialog), GTK_RESPONSE_OK);
-                gtk_button_clicked(p_button_ok);
-            }
-        }
-        return FALSE;
-    }
     g_signal_connect(p_treeview_kbd_change, "button-press-event",
-                     G_CALLBACK(on_treeview_kbd_change_button_press_event), NULL);
+                     G_CALLBACK(on_treeview_kbd_change_button_press_event), p_dialog);
     gtk_widget_set_size_request(p_dialog, 600, 500);
     gtk_widget_show_all(GTK_WIDGET(p_scrolledwindow_kbd_change));
     gint  response = gtk_dialog_run(GTK_DIALOG(p_dialog));
@@ -848,23 +868,8 @@ static void on_button_add_layout_clicked(GtkButton *p_button, gpointer *p_data)
     }
     g_free(xkbcfg_filepath);
 
-    // callback for double click
-    gboolean  on_treeview_add_layout_button_press_event(GtkWidget *p_widget,
-                                                        GdkEventButton *p_event,
-                                                        gpointer p_data)
-    {
-        if(p_event->button == 1)
-        {
-            if(p_event->type == GDK_2BUTTON_PRESS)
-            {
-                GtkButton *p_button_ok = (GtkButton *)gtk_dialog_get_widget_for_response(GTK_DIALOG(p_dialog), GTK_RESPONSE_OK);
-                gtk_button_clicked(p_button_ok);
-            }
-        }
-        return FALSE;
-    }
     g_signal_connect(p_treeview_add_layout, "button-press-event",
-                     G_CALLBACK(on_treeview_add_layout_button_press_event), NULL);
+                     G_CALLBACK(on_treeview_add_layout_button_press_event), p_dialog);
     gtk_widget_set_size_request(p_dialog, 600, 500);
     gtk_widget_show_all(GTK_WIDGET(p_scrolledwindow_add_layout));
     gint  response = gtk_dialog_run(GTK_DIALOG(p_dialog));

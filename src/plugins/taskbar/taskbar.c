@@ -5437,19 +5437,25 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     GtkWidget* dlg = create_generic_config_dlg(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
-    	    (GSourceFunc) taskbar_apply_configuration, (gpointer) p,
+            (GSourceFunc) taskbar_apply_configuration, (gpointer) p,
         _("Appearance"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
 
         _("|Show:|Icons only|Titles only|Icons and titles"), (gpointer)&tb->show_icons_titles, (GType)CONF_TYPE_ENUM,
         _("Show tooltips"), (gpointer)&tb->tooltips, (GType)CONF_TYPE_BOOL,
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
-        _("Dim iconified"), (gpointer)&tb->dim_iconified, (GType)CONF_TYPE_BOOL,
         _("Display inactive buttons flat"), (gpointer)&tb->flat_inactive_buttons, (GType)CONF_TYPE_BOOL,
-		_("Display active button flat"), (gpointer)&tb->flat_active_button, (GType)CONF_TYPE_BOOL,
-        _("Bold font when mouse is over a button"), (gpointer)&tb->bold_font_on_mouse_over, (GType)CONF_TYPE_BOOL,
+        _("Display active button flat"), (gpointer)&tb->flat_active_button, (GType)CONF_TYPE_BOOL,
         _("Colorize buttons"), (gpointer)&tb->colorize_buttons, (GType)CONF_TYPE_BOOL,
+
+        _("Icon settings"), (gpointer)NULL, CONF_TYPE_TITLE,
+        _("Dim iconified"), (gpointer)&tb->dim_iconified, (GType)CONF_TYPE_BOOL,
         _("Display window thumbnails instead of icons (requires compositing wm enabled)"), (gpointer)&tb->use_thumbnails_as_icons, (GType)CONF_TYPE_BOOL,
+
+        _("Title settings"), (gpointer)NULL, CONF_TYPE_TITLE,
         _("Highlight modified titles"), (gpointer)&tb->highlight_modified_titles, (GType)CONF_TYPE_BOOL,
+        _("Bold font when mouse is over a button"), (gpointer)&tb->bold_font_on_mouse_over, (GType)CONF_TYPE_BOOL,
+
+        _("Geometry"), (gpointer)NULL, CONF_TYPE_TITLE,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Maximum width of task button"), (gpointer)&tb->task_width_max, (GType)CONF_TYPE_INT,
         "int-min-value", (gpointer)&min_width_max, (GType)CONF_TYPE_SET_PROPERTY,

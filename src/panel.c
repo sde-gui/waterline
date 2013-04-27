@@ -1501,14 +1501,12 @@ static void panel_popupmenu_remove_item( GtkMenuItem* item, Plugin* plugin )
 
     GtkWidget* dlg;
 
-    gchar * tmp = g_strdup_printf( _("Really delete plugin \"%s\" from the panel?"), _(plugin->class->name) );
-
     dlg = gtk_message_dialog_new_with_markup(GTK_WINDOW(panel->topgwin),
                                              GTK_DIALOG_MODAL,
                                              GTK_MESSAGE_QUESTION,
                                              GTK_BUTTONS_OK_CANCEL,
-                                             tmp );
-    g_free(tmp);
+                                             _("Really delete plugin \"%s\" from the panel?"),
+                                             _(plugin->class->name));
 
     panel_apply_icon(GTK_WINDOW(dlg));
     gtk_window_set_title(GTK_WINDOW(dlg), _("Confirm") );

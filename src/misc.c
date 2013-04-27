@@ -1128,7 +1128,7 @@ void get_format_for_bytes_with_suffix(guint64  bytes, const char ** format, guin
         bytes = (bytes * 10) / (1 << 10);
         f = "%lld.%lld KiB";
     }
-    else if (bytes >= 0)
+    else
     {
         bytes = bytes * 10;
         f = "%lld B";

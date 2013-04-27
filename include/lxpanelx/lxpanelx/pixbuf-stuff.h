@@ -25,7 +25,7 @@
 
 GdkPixbuf * _gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, int height);
 
-void _wnck_dimm_icon(GdkPixbuf *pixbuf);
+void _wnck_dim_icon(GdkPixbuf *pixbuf);
 
 GdkPixbuf * _gdk_pixbuf_apply_mask(GdkPixbuf * pixbuf, GdkPixbuf * mask);
 void _gdk_pixbuf_get_pixel(GdkPixbuf *pixbuf, int x, int y, unsigned * red, unsigned * green, unsigned * blue, unsigned * alpha);

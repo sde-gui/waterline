@@ -442,7 +442,7 @@ typedef struct _taskbar {
     gboolean use_group_separators;
     int group_separator_size;
 
-    gboolean dimm_iconified;
+    gboolean dim_iconified;
 
     gboolean colorize_buttons;
 
@@ -490,7 +490,7 @@ typedef struct _taskbar {
     gboolean show_mapped_prev;
     gboolean show_iconified_prev;
 
-    gboolean dimm_iconified_prev;
+    gboolean dim_iconified_prev;
     gboolean colorize_buttons_prev;
     gboolean use_group_separators_prev;
 
@@ -1882,12 +1882,12 @@ static void task_update_icon(Task * tk, Atom source, gboolean forse_icon_erase)
     if (tk->icon_pixbuf)
     {
         GdkPixbuf * pixbuf = tk->icon_pixbuf;
-        if (tk->tb->dimm_iconified && tk->iconified)
+        if (tk->tb->dim_iconified && tk->iconified)
         {
             if (!tk->icon_pixbuf_iconified)
             {
                 tk->icon_pixbuf_iconified = gdk_pixbuf_add_alpha(tk->icon_pixbuf, FALSE, 0, 0, 0);;
-                _wnck_dimm_icon(tk->icon_pixbuf_iconified);
+                _wnck_dim_icon(tk->icon_pixbuf_iconified);
             }
             pixbuf = tk->icon_pixbuf_iconified;
         }
@@ -4196,7 +4196,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         }
                         else
                         {
-                            if (tb->dimm_iconified)
+                            if (tb->dim_iconified)
                                 tk->deferred_iconified_update = TRUE;
                         }
                         task_update_grouping(tk, GROUP_BY_STATE);
@@ -5002,9 +5002,9 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
 
     tb->thumbnails = (tb->thumbnails_preview || tb->use_thumbnails_as_icons) && panel_is_composited(plugin_panel(tb->plug));
 
-    if (tb->dimm_iconified_prev != tb->dimm_iconified)
+    if (tb->dim_iconified_prev != tb->dim_iconified)
     {
-        tb->dimm_iconified_prev = tb->dimm_iconified;
+        tb->dim_iconified_prev = tb->dim_iconified;
         Task * tk;
         for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
         {
@@ -5143,8 +5143,8 @@ static int taskbar_constructor(Plugin * p, char ** fp)
                     ;
                 else if (g_ascii_strcasecmp(s.t[0], "UseUrgencyHint") == 0)
                     tb->use_urgency_hint = str2num(bool_pair, s.t[1], tb->use_urgency_hint);
-                else if (g_ascii_strcasecmp(s.t[0], "DimmIconified") == 0)
-                    tb->dimm_iconified = str2num(bool_pair, s.t[1], tb->dimm_iconified);
+                else if (g_ascii_strcasecmp(s.t[0], "DimIconified") == 0 || g_ascii_strcasecmp(s.t[0], "DimmIconified") == 0)
+                    tb->dim_iconified = str2num(bool_pair, s.t[1], tb->dim_iconified);
                 else if (g_ascii_strcasecmp(s.t[0], "ColorizeButtons") == 0)
                     tb->colorize_buttons = str2num(bool_pair, s.t[1], tb->colorize_buttons);
                 else if (g_ascii_strcasecmp(s.t[0], "IconThumbnails") == 0)
@@ -5394,7 +5394,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("|Show:|Icons only|Titles only|Icons and titles"), (gpointer)&tb->show_icons_titles, (GType)CONF_TYPE_ENUM,
         _("Show tooltips"), (gpointer)&tb->tooltips, (GType)CONF_TYPE_BOOL,
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
-        _("Dimm iconified"), (gpointer)&tb->dimm_iconified, (GType)CONF_TYPE_BOOL,
+        _("Dim iconified"), (gpointer)&tb->dim_iconified, (GType)CONF_TYPE_BOOL,
         _("Display inactive buttons flat"), (gpointer)&tb->flat_inactive_buttons, (GType)CONF_TYPE_BOOL,
 		_("Display active button flat"), (gpointer)&tb->flat_active_button, (GType)CONF_TYPE_BOOL,
         _("Bold font when mouse is over a button"), (gpointer)&tb->bold_font_on_mouse_over, (GType)CONF_TYPE_BOOL,
@@ -5511,7 +5511,7 @@ static void taskbar_save_configuration(Plugin * p, FILE * fp)
     lxpanel_put_bool(fp, "BoldFontOnMouseOver", tb->bold_font_on_mouse_over);
     lxpanel_put_bool(fp, "ColorizeButtons", tb->colorize_buttons);
     lxpanel_put_bool(fp, "IconThumbnails", tb->use_thumbnails_as_icons);
-    lxpanel_put_bool(fp, "DimmIconified", tb->dimm_iconified);
+    lxpanel_put_bool(fp, "DimIconified", tb->dim_iconified);
     lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
     lxpanel_put_int(fp, "spacing", tb->spacing);
     lxpanel_put_enum(fp, "Mode", tb->mode, mode_pair);

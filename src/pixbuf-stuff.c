@@ -92,37 +92,62 @@ GdkPixbuf * _gdk_pixbuf_get_from_pixmap(Pixmap xpixmap, int width, int height)
 
 /* http://git.gnome.org/browse/libwnck/tree/libwnck/tasklist.c?h=gnome-2-30 */
 
-void _wnck_dimm_icon(GdkPixbuf *pixbuf)
+void _wnck_dim_icon(GdkPixbuf *pixbuf)
 {
-  int x, y, pixel_stride, row_stride;
-  guchar *row, *pixels;
-  int w, h;
+    int x, y, pixel_stride, row_stride;
+    guchar *row, *pixels;
+    int w, h;
+    int i;
 
-  if (!pixbuf)
-      return;
+    if (!pixbuf)
+        return;
 
-  w = gdk_pixbuf_get_width (pixbuf);
-  h = gdk_pixbuf_get_height (pixbuf);
+    if (!gdk_pixbuf_get_has_alpha(pixbuf))
+        return;
 
-  g_assert (gdk_pixbuf_get_has_alpha (pixbuf));
+    gdouble alpha_multiplier = g_key_file_get_double(global_settings, "Dim", "AlphaMultiplier", NULL);
+    gdouble rgb_offset       = g_key_file_get_double(global_settings, "Dim", "RGBOffset", NULL);
+    gdouble desaturation     = g_key_file_get_double(global_settings, "Dim", "Desaturation", NULL);
 
-  pixel_stride = 4;
+    w = gdk_pixbuf_get_width(pixbuf);
+    h = gdk_pixbuf_get_height(pixbuf);
 
-  row = gdk_pixbuf_get_pixels (pixbuf);
-  row_stride = gdk_pixbuf_get_rowstride (pixbuf);
+    pixel_stride = 4;
 
-  for (y = 0; y < h; y++)
+    row = gdk_pixbuf_get_pixels(pixbuf);
+    row_stride = gdk_pixbuf_get_rowstride(pixbuf);
+
+    for (y = 0; y < h; y++)
     {
-      pixels = row;
+        pixels = row;
 
-      for (x = 0; x < w; x++)
-	{
-	  pixels[3] /= 2;
+        for (x = 0; x < w; x++)
+        {
+            if (desaturation)
+            {
+                int gray = (pixels[0] + pixels[1] + pixels[2]) / 3;
+                pixels[0] = pixels[0] * (1.0 - desaturation) + gray * desaturation;
+                pixels[1] = pixels[1] * (1.0 - desaturation) + gray * desaturation;
+                pixels[2] = pixels[2] * (1.0 - desaturation) + gray * desaturation;
+            }
 
-	  pixels += pixel_stride;
-	}
+            if (rgb_offset)
+            {
+                for (i = 0; i < 3; i++)
+                {
+                    int v = pixels[i] + rgb_offset * 255;
+                    if (v < 0)
+                        v = 0;
+                    if (v > 255)
+                        v = 255;
+                    pixels[i] = v;
+                }
+            }
 
-      row += row_stride;
+            pixels[3] *= alpha_multiplier;
+            pixels += pixel_stride;
+        }
+        row += row_stride;
     }
 }
 

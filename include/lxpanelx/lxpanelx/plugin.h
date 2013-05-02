@@ -125,4 +125,6 @@ extern void plugin_unlock_visible(Plugin * plugin);
 
 extern void plugin_run_command(Plugin * plugin, char ** argv, int argc);
 
+extern void plugin_save_configuration(Plugin * plugin);
+
 #endif

@@ -667,3 +667,8 @@ void plugin_show_menu(Plugin * plugin, GdkEventButton * event)
 {
     panel_show_panel_menu(plugin_panel(plugin), plugin, event);
 }
+
+void plugin_save_configuration(Plugin * plugin)
+{
+    panel_config_save(plugin_panel(plugin));
+}

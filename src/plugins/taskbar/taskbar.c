@@ -4199,6 +4199,13 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
             Task * tk = task_lookup(tb, win);
             if (tk != NULL)
             {
+                if (0)
+                {
+                    char * atom_name = XGetAtomName(gdk_x11_get_default_xdisplay(), at);
+                    g_print("message %s for %s\n", atom_name, tk->name);
+                    XFree(atom_name);
+                }
+
                 /* Install an error handler that ignores BadWindow.
                  * We frequently get a PropertyNotify event on deleted windows. */
                 XErrorHandler previous_error_handler = XSetErrorHandler(panel_handle_x_error_swallow_BadWindow_BadDrawable);

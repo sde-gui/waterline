@@ -333,30 +333,37 @@ void update_display(lx_battery *lx_b) {
     /* Make a tooltip string, and display remaining charge time if the battery
        is charging or remaining life if it's discharging */
     if (isCharging) {
-	int hours = lx_b->b->seconds / 3600;
-	int left_seconds = b->seconds - 3600 * hours;
-	int minutes = left_seconds / 60;
-	snprintf(tooltip, 256,
-		_("Battery: %d%% charged, %d:%02d until full"),
-		lx_b->b->percentage,
-		hours,
-		minutes );
+        if (lx_b->b->seconds >= 60) {
+            int hours = lx_b->b->seconds / 3600;
+            int left_seconds = b->seconds - 3600 * hours;
+            int minutes = left_seconds / 60;
+            snprintf(tooltip, 256,
+                _("Battery: %d%% charged, %d:%02d until full"),
+                lx_b->b->percentage,
+                hours,
+                minutes );
+        }
+        else {
+            snprintf(tooltip, 256,
+                _("Battery: %d%% charged"),
+                lx_b->b->percentage);
+        }
     } else {
-	/* if we have enough rate information for battery */
-	if (lx_b->b->percentage != 100) {
-	    int hours = lx_b->b->seconds / 3600;
-	    int left_seconds = b->seconds - 3600 * hours;
-	    int minutes = left_seconds / 60;
-	    snprintf(tooltip, 256,
-		    _("Battery: %d%% charged, %d:%02d left"),
-		    lx_b->b->percentage,
-		    hours,
-		    minutes );
-	} else {
-	    snprintf(tooltip, 256,
-		    _("Battery: %d%% charged"),
-		    100 );
-	}
+        /* if we have enough rate information for battery */
+        if (lx_b->b->percentage != 100) {
+            int hours = lx_b->b->seconds / 3600;
+            int left_seconds = b->seconds - 3600 * hours;
+            int minutes = left_seconds / 60;
+            snprintf(tooltip, 256,
+                _("Battery: %d%% charged, %d:%02d left"),
+                lx_b->b->percentage,
+                hours,
+            minutes );
+        } else {
+            snprintf(tooltip, 256,
+                _("Battery: %d%% charged"),
+                100 );
+        }
     }
 
     gtk_widget_set_tooltip_text(lx_b->vbox, tooltip);

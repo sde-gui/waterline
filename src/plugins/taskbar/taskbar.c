@@ -2523,7 +2523,9 @@ static  gboolean preview_panel_configure_event (GtkWidget *widget, GdkEventConfi
 
 static void preview_panel_size_allocate(GtkWidget * w, GtkAllocation * alloc, TaskbarPlugin * tb)
 {
-    tb->preview_panel_window_alloc = *alloc;
+    //g_print("size-allocate: %d, %d, %d, %d\n", alloc->x, alloc->y, alloc->width, alloc->height);
+    tb->preview_panel_window_alloc.width = alloc->width;
+    tb->preview_panel_window_alloc.height = alloc->height;
 }
 
 static gboolean preview_panel_enter(GtkWidget * widget, GdkEvent * event, TaskbarPlugin * tb)

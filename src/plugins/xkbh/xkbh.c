@@ -36,10 +36,38 @@
 /* The X Keyboard Extension: Library Specification
  * http://www.xfree86.org/current/XKBlib.pdf */
 
+typedef enum
+{
+    NEW_KBD_STATE_NOTIFY_IGNORE_NO,
+    NEW_KBD_STATE_NOTIFY_IGNORE_YES_SET,
+    NEW_KBD_STATE_NOTIFY_IGNORE_YES_ALL,
+    
+} t_new_kbd_notify_ignore;
+
+static void             xkb_enter_locale_by_process(XkbPlugin * xkb);
 static void             refresh_group_xkb(XkbPlugin * xkb);
 static int              initialize_keyboard_description(XkbPlugin * xkb);
 static GdkFilterReturn  xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, XkbPlugin * xkb);
 
+static t_new_kbd_notify_ignore  xkb_new_kbd_notify_ignore = NEW_KBD_STATE_NOTIFY_IGNORE_NO;
+
+
+static gboolean xkb_new_kbd_notify_ignore_slot(gpointer p_data)
+{
+    xkb_new_kbd_notify_ignore = NEW_KBD_STATE_NOTIFY_IGNORE_NO;
+    return FALSE; // remove source
+}
+
+/* Insert a process and its layout into the hash table. */
+static void xkb_enter_locale_by_process(XkbPlugin * xkb)
+{
+    if ((xkb->p_hash_table_group != NULL) && (fb_ev_active_window(fbev) != None))
+    {
+        Window * win = fb_ev_active_window(fbev);
+        if (*win != None)
+            g_hash_table_insert(xkb->p_hash_table_group, GINT_TO_POINTER(*win), GINT_TO_POINTER(xkb->current_group_xkb_no));
+    }
+}
 
 /* Return the current group Xkb ID. */
 int xkb_get_current_group_xkb_no(XkbPlugin * xkb)
@@ -171,7 +199,7 @@ static int initialize_keyboard_description(XkbPlugin * xkb)
                         else if ((*p < 'a') || (*p > 'z'))
                             *p = '\0';
                     }
-
+                    
                     /* Crosscheck the group count determined from the "ctrls" structure,
                      * that determined from the "groups" vector, and that determined from the "symbols" string.
                      * The "ctrls" structure is considered less reliable because it has been observed to be incorrect. */
@@ -200,6 +228,12 @@ static int initialize_keyboard_description(XkbPlugin * xkb)
         if (xkb->symbol_names[i] == NULL)
             xkb->symbol_names[i] = g_strdup("None");
     }
+    
+    /* Create or recreate hash table */
+    if (xkb->p_hash_table_group != NULL)
+        g_hash_table_destroy(xkb->p_hash_table_group);
+    xkb->p_hash_table_group = g_hash_table_new(g_direct_hash, NULL);
+    
     return TRUE;
 }
 
@@ -214,9 +248,22 @@ static GdkFilterReturn xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, Xk
         XkbEvent * xkbev = (XkbEvent *) ev;
         if (xkbev->any.xkb_type == XkbNewKeyboardNotify)
         {
-            initialize_keyboard_description(xkb);
-            refresh_group_xkb(xkb);
-            xkb_redraw(xkb);
+            if(xkb_new_kbd_notify_ignore == NEW_KBD_STATE_NOTIFY_IGNORE_NO)
+            {
+                //g_print("xkb_new_kbd_notify_ignore == NEW_KBD_STATE_NOTIFY_IGNORE_NO\n");
+                xkb_new_kbd_notify_ignore = NEW_KBD_STATE_NOTIFY_IGNORE_YES_SET;
+                (void)g_timeout_add(1000/*msec*/, xkb_new_kbd_notify_ignore_slot, NULL);
+                xkb_setxkbmap(xkb);
+            }
+            else if(xkb_new_kbd_notify_ignore == NEW_KBD_STATE_NOTIFY_IGNORE_YES_SET)
+            {
+                //g_print("xkb_new_kbd_notify_ignore == NEW_KBD_STATE_NOTIFY_IGNORE_YES_SET\n");
+                xkb_new_kbd_notify_ignore = NEW_KBD_STATE_NOTIFY_IGNORE_YES_ALL;
+                initialize_keyboard_description(xkb);
+                refresh_group_xkb(xkb);
+                xkb_redraw(xkb);
+                xkb_enter_locale_by_process(xkb);
+            }
         }
         else if (xkbev->any.xkb_type == XkbStateNotify)
         {
@@ -227,6 +274,7 @@ static GdkFilterReturn xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, Xk
                 xkb->current_group_xkb_no = xkbev->state.group & (XkbNumKbdGroups - 1);
                 refresh_group_xkb(xkb);
                 xkb_redraw(xkb);
+                xkb_enter_locale_by_process(xkb);
             }
         }
     }
@@ -279,6 +327,10 @@ void xkb_mechanism_destructor(XkbPlugin * xkb)
             xkb->symbol_names[i] = NULL;
         }
     }
+    
+    /* Destroy the hash table. */
+    g_hash_table_destroy(xkb->p_hash_table_group);
+    xkb->p_hash_table_group = NULL;
 }
 
 /* Set the layout to the next layout. */
@@ -293,7 +345,22 @@ int xkb_change_group(XkbPlugin * xkb, int increment)
     XkbLockGroup(GDK_DISPLAY(), XkbUseCoreKbd, next_group);
     refresh_group_xkb(xkb);
     xkb_redraw(xkb);
+    xkb_enter_locale_by_process(xkb);
     return 1;
 }
 
+/* React to change of focus by switching to the application's layout or the default layout. */
+void xkb_active_window_changed(XkbPlugin * xkb, Window window)
+{
+    gint  new_group_xkb_no = 0;
 
+    gpointer pKey = 0, pVal = 0;
+    if ((xkb->p_hash_table_group != NULL) && (g_hash_table_lookup_extended(xkb->p_hash_table_group, GINT_TO_POINTER(window), &pKey, &pVal)))
+        new_group_xkb_no = GPOINTER_TO_INT(pVal);
+
+    if (new_group_xkb_no < xkb->group_count)
+    {
+        XkbLockGroup(GDK_DISPLAY(), XkbUseCoreKbd, new_group_xkb_no);
+        refresh_group_xkb(xkb);
+    }
+}

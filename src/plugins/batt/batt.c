@@ -366,6 +366,30 @@ void update_display(lx_battery *lx_b) {
         }
     }
 
+    if (lx_b->b->voltage_now > 0 && lx_b->b->current_now > 0)
+    {
+        if (isCharging)
+        {
+            snprintf(tooltip + strlen(tooltip), 256 - strlen(tooltip),
+                _("\nVoltage %.1fV\nCharging current: %.1fA"),
+                lx_b->b->voltage_now / 1000.0,
+                lx_b->b->current_now / 1000.0
+            );
+        }
+        else
+        {
+            int power_now = lx_b->b->power_now;
+            if (power_now <= 0)
+                power_now = lx_b->b->voltage_now * lx_b->b->current_now / 1000;
+            snprintf(tooltip + strlen(tooltip), 256 - strlen(tooltip),
+                _("\nPower: %.1fW (%.1fV, %.1fA)"),
+                power_now / 1000.0,
+                lx_b->b->voltage_now / 1000.0,
+                lx_b->b->current_now / 1000.0
+            );
+        }
+    }
+
     gtk_widget_set_tooltip_text(lx_b->vbox, tooltip);
 
     if (lx_b->display_as == DISPLAY_AS_BAR)

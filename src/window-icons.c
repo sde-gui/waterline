@@ -27,7 +27,7 @@
 
 extern GdkPixbuf * ob_load_icon_from_theme(const char * name, int w, int h);
 
-
+/*
 static gboolean load_window_action_icon_openbox(GtkImage * image, const char * name, int w, int h)
 {
     const char * openbox_icon_name = NULL;
@@ -55,7 +55,7 @@ static gboolean load_window_action_icon_openbox(GtkImage * image, const char * n
     }
     return FALSE;
 }
-
+*/
 static gboolean load_window_action_icon_xfce(GtkImage * image, const char * name, int w, int h)
 {
     if (strcmp(get_de_name(), "XFCE") != 0)

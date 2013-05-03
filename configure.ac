@@ -141,6 +141,21 @@ if test x"$cast_checks" = "xno"; then
 fi
 AC_SUBST(G_CAST_CHECKS)
 
+# 
+
+AC_ARG_ENABLE([gtk-checks],
+    AS_HELP_STRING([--enable-gtk-checks],
+               [defines GTK_DISABLE_SINGLE_INCLUDES, GDK_DISABLE_DEPRECATED, GTK_DISABLE_DEPRECATED, GSEAL_ENABLE]),
+               gtk_checks=$enableval, gtk_checks="no")
+GTK_CHECKS=""
+if test x"$gtk_checks" = "xyes"; then
+    GTK_CHECKS="-DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE"
+fi
+#AC_SUBST(GTK_CHECKS)
+
+PACKAGE_CFLAGS="$PACKAGE_CFLAGS $GTK_CHECKS"
+
+
 dnl linker tweaking
 # The function of the link flag --as-needed is to prevent unnecesary linking.
 # Example: A -> B -> C

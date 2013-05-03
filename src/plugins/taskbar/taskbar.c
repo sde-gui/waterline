@@ -2442,7 +2442,7 @@ static gboolean preview_panel_expose_event(GtkWidget *widget, GdkEventExpose *ev
 {
     cairo_t *cr;
 
-    cr = gdk_cairo_create(widget->window);
+    cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
     float a = 0.2;
     float r = 0.5;
@@ -2463,7 +2463,8 @@ static gboolean preview_panel_expose_event(GtkWidget *widget, GdkEventExpose *ev
 
     cairo_set_source_rgba(cr, r, g, b, 1);
     cairo_set_line_width(cr, 1);
-    cairo_rectangle(cr, 0, 0, widget->allocation.width, widget->allocation.height);
+    //cairo_rectangle(cr, 0, 0, widget->allocation.width, widget->allocation.height);
+    cairo_rectangle(cr, 0, 0, tb->preview_panel_window_alloc.width, tb->preview_panel_window_alloc.height);
     cairo_stroke(cr);
 
     cairo_destroy(cr);
@@ -2476,7 +2477,7 @@ static void preview_panel_setup_rgba_transparency(TaskbarPlugin * tb)
     gboolean rgba_transparency = TRUE;
 
     GtkWidget * widget = tb->preview_panel_window;
-    //GdkWindow * window = widget->window;
+    //GdkWindow * window = gtk_widget_get_window(widget);
 
     if (rgba_transparency)
     {
@@ -2694,9 +2695,9 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 
     gtk_widget_realize(win);
 
-    gdk_window_set_group(win->window, win->window);
+    gdk_window_set_group(gtk_widget_get_window(win), gtk_widget_get_window(win));
 
-//    wm_noinput(GDK_WINDOW_XWINDOW(win->window));
+//    wm_noinput(GDK_WINDOW_XWINDOW(gtk_widget_get_window(win)));
     gdk_window_set_accept_focus(gtk_widget_get_window(win), FALSE);
 
 /*
@@ -2704,7 +2705,7 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
     state[0] = a_NET_WM_STATE_SKIP_PAGER;
     state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
     state[2] = a_NET_WM_STATE_STICKY;
-    XChangeProperty(gdk_x11_get_default_xdisplay(), GDK_WINDOW_XWINDOW(win->window), a_NET_WM_STATE, XA_ATOM,
+    XChangeProperty(gdk_x11_get_default_xdisplay(), GDK_WINDOW_XWINDOW(gtk_widget_get_window(win)), a_NET_WM_STATE, XA_ATOM,
           32, PropModeReplace, (unsigned char *) state, 3);
 */
 

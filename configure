@@ -857,6 +857,7 @@ with_menucache
 with_libfm
 enable_man
 enable_cast_checks
+enable_gtk_checks
 enable_alsa
 enable_plugins_loading
 with_plugins
@@ -1527,6 +1528,9 @@ Optional Features:
                           enable libindicator support (default: disable)
   --enable-man            regenerate roff man pages from Docbook [default=no]
   --enable-cast-checks    enable Glib casting checks (default: disable)
+  --enable-gtk-checks     defines GTK_DISABLE_SINGLE_INCLUDES,
+                          GDK_DISABLE_DEPRECATED, GTK_DISABLE_DEPRECATED,
+                          GSEAL_ENABLE
   --disable-alsa          compile ALSA providers (default: enable)
   --disable-plugins-loading
                           disable plugin loading (default: enable)
@@ -12975,6 +12979,24 @@ G_CAST_CHECKS=""
 if test x"$cast_checks" = "xno"; then
     G_CAST_CHECKS="-DG_DISABLE_CAST_CHECKS"
 fi
+
+
+#
+
+# Check whether --enable-gtk-checks was given.
+if test "${enable_gtk_checks+set}" = set; then :
+  enableval=$enable_gtk_checks; gtk_checks=$enableval
+else
+  gtk_checks="no"
+fi
+
+GTK_CHECKS=""
+if test x"$gtk_checks" = "xyes"; then
+    GTK_CHECKS="-DGTK_DISABLE_SINGLE_INCLUDES -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE"
+fi
+#AC_SUBST(GTK_CHECKS)
+
+PACKAGE_CFLAGS="$PACKAGE_CFLAGS $GTK_CHECKS"
 
 
 # The function of the link flag --as-needed is to prevent unnecesary linking.

@@ -264,6 +264,7 @@ typedef struct _task {
     GtkWidget * new_group_dlg;			/* Move to new group dialog */
 
     GtkAllocation button_alloc;
+    GtkAllocation button_close_alloc;
     guint adapt_to_allocated_size_idle_cb;
     guint update_icon_idle_cb;
 
@@ -592,6 +593,7 @@ static void taskbar_button_enter(GtkWidget * widget, Task * tk);
 static void taskbar_button_leave(GtkWidget * widget, Task * tk);
 static gboolean taskbar_button_scroll_event(GtkWidget * widget, GdkEventScroll * event, Task * tk);
 static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc, Task * tk);
+static void taskbar_button_close_size_allocate(GtkWidget * btn, GtkAllocation * alloc, Task * tk);
 static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, Task * tk);
 static void taskbar_update_style(TaskbarPlugin * tb);
 static void task_update_style(Task * tk, TaskbarPlugin * tb);
@@ -3143,7 +3145,7 @@ static gboolean taskbar_task_control_event(GtkWidget * widget, GdkEventButton * 
         // FIXME: какой нормальный способ узнать, находится ли мышь в пределах виджета?
         gint dest_x, dest_y;
         gtk_widget_translate_coordinates(widget, tk->button_close, event->x, event->y, &dest_x, &dest_y);
-        if (dest_x >= 0 && dest_y >= 0 && dest_x < GTK_WIDGET(tk->button_close)->allocation.width && dest_y <= GTK_WIDGET(tk->button_close)->allocation.height) {
+        if (dest_x >= 0 && dest_y >= 0 && dest_x < tk->button_close_alloc.width && dest_y <= tk->button_close_alloc.height) {
             event_in_close_button = TRUE;
         }
     }
@@ -3400,6 +3402,11 @@ static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc,
     }
 }
 
+static void taskbar_button_close_size_allocate(GtkWidget * btn, GtkAllocation * alloc, Task * tk)
+{
+    tk->button_close_alloc = *alloc;
+}
+
 /* Handler for "size-allocate" event from taskbar button image. */
 static void taskbar_image_size_allocate(GtkWidget * img, GtkAllocation * alloc, Task * tk)
 {
@@ -3501,6 +3508,8 @@ static void task_build_gui_button_close(TaskbarPlugin * tb, Task* tk)
         gtk_widget_size_request(tk->button_close, &r);
         tb->extra_size = r.width;
     }
+
+    g_signal_connect(tk->button_close, "size-allocate", G_CALLBACK(taskbar_button_close_size_allocate), (gpointer) tk);
 }
 
 /* Build graphic elements needed for a task button. */

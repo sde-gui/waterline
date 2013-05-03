@@ -371,6 +371,11 @@ void gdk_visual_get_blue_pixel_details (GdkVisual *visual, guint32 *mask, gint *
     *precision = visual->blue_prec;
 }
 
+GdkWindow * gtk_button_get_event_window(GtkButton *button)
+{
+    return button->event_window;
+}
+
 #endif // !GTK_CHECK_VERSION(2,22,0)
 
 

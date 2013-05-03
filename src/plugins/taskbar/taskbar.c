@@ -3385,7 +3385,7 @@ static void taskbar_button_size_allocate(GtkWidget * btn, GtkAllocation * alloc,
     {
         /* Get the coordinates of the button. */
         int x, y;
-        gdk_window_get_origin(GTK_BUTTON(btn)->event_window, &x, &y);
+        gdk_window_get_origin(gtk_button_get_event_window(GTK_BUTTON(btn)), &x, &y);
 
         /* Send a NET_WM_ICON_GEOMETRY property change on the window. */
         if (tk->tb->use_x_net_wm_icon_geometry)

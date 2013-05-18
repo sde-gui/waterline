@@ -327,6 +327,10 @@ done
 AC_SUBST(PLUGINS_LIST)
 
 
+if test x"$plugin_notification_area" != x; then
+    AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
+fi
+
 # Checks for header files.
 AC_PATH_X
 AC_HEADER_STDC
@@ -398,6 +402,7 @@ AC_CONFIG_FILES([
 ])
 AC_OUTPUT
 
+
 echo
 echo lxpanelx ........................ : Version $VERSION
 echo
@@ -408,7 +413,6 @@ echo Building dynamic plugins:
         AC_MSG_RESULT([    taskbar - Taskbar])
     fi
     if test x"$plugin_notification_area" != x; then
-        AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
         AC_MSG_RESULT([    notification_area - notification area])
     fi
     if test x"$plugin_netstatus" != x; then

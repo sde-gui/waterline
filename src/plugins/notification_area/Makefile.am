@@ -43,8 +43,9 @@ na-marshal.h: na-marshal.list $(GLIB_GENMARSHAL)
 	$(AM_V_GEN)$(GLIB_GENMARSHAL) $< --header --prefix=_na_marshal > $@
 
 na-marshal.c: na-marshal.list $(GLIB_GENMARSHAL)
-	$(AM_V_GEN)echo "#include \"na-marshal.h\"" > $@ && \
-	$(GLIB_GENMARSHAL) $< --body --prefix=_na_marshal >> $@
+	$(AM_V_GEN)echo "#include \"na-marshal.h\"" > $@.tmp && \
+	$(GLIB_GENMARSHAL) $< --body --prefix=_na_marshal >> $@.tmp && \
+	mv $@.tmp $@
 
 BUILT_SOURCES = na-marshal.c na-marshal.h
 

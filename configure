@@ -632,8 +632,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='GLIB_GENMARSHAL
-am__EXEEXT_FALSE
+ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 ENABLE_REGENERATE_MAN_FALSE
@@ -655,6 +654,7 @@ MSGFMT_OPTS
 GETTEXT_PACKAGE
 LIBOBJS
 XMKMF
+GLIB_GENMARSHAL
 PLUGINS_LIST
 ALL_PLUGINS_LIST
 BUILD_PLUGIN_LOADER_FALSE
@@ -13251,6 +13251,49 @@ done
 
 
 
+if test x"$plugin_notification_area" != x; then
+    # Extract the first word of "glib-genmarshal", so it can be a program name with args.
+set dummy glib-genmarshal; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_GLIB_GENMARSHAL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $GLIB_GENMARSHAL in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_GLIB_GENMARSHAL="$GLIB_GENMARSHAL" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_GLIB_GENMARSHAL="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+GLIB_GENMARSHAL=$ac_cv_path_GLIB_GENMARSHAL
+if test -n "$GLIB_GENMARSHAL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GLIB_GENMARSHAL" >&5
+$as_echo "$GLIB_GENMARSHAL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+
 # Checks for header files.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for X" >&5
 $as_echo_n "checking for X... " >&6; }
@@ -17443,6 +17486,7 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
+
 echo
 echo lxpanelx ........................ : Version $VERSION
 echo
@@ -17454,46 +17498,6 @@ echo Building dynamic plugins:
 $as_echo "    taskbar - Taskbar" >&6; }
     fi
     if test x"$plugin_notification_area" != x; then
-        # Extract the first word of "glib-genmarshal", so it can be a program name with args.
-set dummy glib-genmarshal; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_GLIB_GENMARSHAL+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $GLIB_GENMARSHAL in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_GLIB_GENMARSHAL="$GLIB_GENMARSHAL" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_GLIB_GENMARSHAL="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-GLIB_GENMARSHAL=$ac_cv_path_GLIB_GENMARSHAL
-if test -n "$GLIB_GENMARSHAL"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GLIB_GENMARSHAL" >&5
-$as_echo "$GLIB_GENMARSHAL" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
         { $as_echo "$as_me:${as_lineno-$LINENO}: result:     notification_area - notification area" >&5
 $as_echo "    notification_area - notification area" >&6; }
     fi

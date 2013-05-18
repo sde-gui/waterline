@@ -1549,8 +1549,8 @@ Optional Packages:
                          plugins may be comma separated
                          'all' builds all plugins (default), 'none' builds none
                          Possible plugins are:
-                         taskbar, netstatus, volume, volumealsa, cpu, deskno, batt,
-                         kbled xkb thermal cpufreq
+                         taskbar, notification_area, netstatus, volume, volumealsa,
+                         cpu, deskno, batt, kbled, xkb, thermal, cpufreq
   --with-x                use the X Window System
   --with-xml-catalog=CATALOG
                           path to xml catalog to use
@@ -13169,7 +13169,7 @@ $as_echo "#define DISABLE_PLUGINS_LOADING 1" >>confdefs.h
 
 fi
 
-ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb xkbh thermal cpufreq indicator"
+ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb xkbh thermal cpufreq indicator notification_area"
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking which plugins should be built dynamically" >&5
@@ -14997,7 +14997,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files lxpanelx.pc Makefile src/Makefile src/libexec/Makefile src/plugins/Makefile src/plugins/taskbar/Makefile src/plugins/netstatus/Makefile src/plugins/volume/Makefile src/plugins/volumealsa/Makefile src/plugins/cpu/Makefile src/plugins/deskno/Makefile src/plugins/batt/Makefile src/plugins/kbled/Makefile src/plugins/xkb/Makefile src/plugins/xkbh/Makefile src/plugins/thermal/Makefile src/plugins/cpufreq/Makefile src/plugins/indicator/Makefile po/Makefile.in data/Makefile data/template/panels/panel.panel man/Makefile"
+ac_config_files="$ac_config_files lxpanelx.pc Makefile src/Makefile src/libexec/Makefile src/plugins/Makefile src/plugins/taskbar/Makefile src/plugins/notification_area/Makefile src/plugins/netstatus/Makefile src/plugins/volume/Makefile src/plugins/volumealsa/Makefile src/plugins/cpu/Makefile src/plugins/deskno/Makefile src/plugins/batt/Makefile src/plugins/kbled/Makefile src/plugins/xkb/Makefile src/plugins/xkbh/Makefile src/plugins/thermal/Makefile src/plugins/cpufreq/Makefile src/plugins/indicator/Makefile po/Makefile.in data/Makefile data/template/panels/panel.panel man/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -16044,6 +16044,7 @@ do
     "src/libexec/Makefile") CONFIG_FILES="$CONFIG_FILES src/libexec/Makefile" ;;
     "src/plugins/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/Makefile" ;;
     "src/plugins/taskbar/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/taskbar/Makefile" ;;
+    "src/plugins/notification_area/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/notification_area/Makefile" ;;
     "src/plugins/netstatus/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/netstatus/Makefile" ;;
     "src/plugins/volume/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/volume/Makefile" ;;
     "src/plugins/volumealsa/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/volumealsa/Makefile" ;;
@@ -17450,6 +17451,10 @@ echo Building dynamic plugins:
     if test x"$plugin_taskbar" != x; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: result:     taskbar - Taskbar" >&5
 $as_echo "    taskbar - Taskbar" >&6; }
+    fi
+    if test x"$plugin_taskbar" != x; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result:     notification_area - notification area" >&5
+$as_echo "    notification_area - notification area" >&6; }
     fi
     if test x"$plugin_netstatus" != x; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: result:     netstatus - Monitor networking status" >&5

@@ -407,7 +407,8 @@ echo Building dynamic plugins:
     if test x"$plugin_taskbar" != x; then
         AC_MSG_RESULT([    taskbar - Taskbar])
     fi
-    if test x"$plugin_taskbar" != x; then
+    if test x"$plugin_notification_area" != x; then
+        AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
         AC_MSG_RESULT([    notification_area - notification area])
     fi
     if test x"$plugin_netstatus" != x; then

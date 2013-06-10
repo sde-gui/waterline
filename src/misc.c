@@ -49,7 +49,7 @@
 
 /********************************************************************/
 
-GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_name, int width, int height, gboolean keep_ratio);
+static GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_name, int width, int height, gboolean keep_ratio);
 
 /********************************************************************/
 
@@ -476,7 +476,7 @@ GtkWidget* recreate_box( GtkBox* oldbox, GtkOrientation orientation )
 
 /********************************************************************/
 
-GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_path, int width, int height, gboolean keep_ratio)
+static GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_path, int width, int height, gboolean keep_ratio)
 {
     GdkPixbuf * icon = gdk_pixbuf_new_from_file_at_scale(file_path, width, height, keep_ratio, NULL);
     if (!icon)
@@ -568,7 +568,15 @@ static GdkPixbuf * load_icon_from_theme(GtkIconTheme * theme, const char * icon_
 
 GdkPixbuf * lxpanel_load_icon(const char * name, int width, int height, gboolean use_fallback)
 {
+    return lxpanel_load_icon2(name, width, height, use_fallback, NULL);
+}
+
+GdkPixbuf* lxpanel_load_icon2(const char* name, int width, int height, gboolean use_fallback, gboolean * themed)
+{
     GdkPixbuf * icon = NULL;
+
+    if (themed)
+        *themed = TRUE;
 
     if (name != NULL)
     {
@@ -576,6 +584,8 @@ GdkPixbuf * lxpanel_load_icon(const char * name, int width, int height, gboolean
         {
             /* Absolute path. */
             icon = _gdk_pixbuf_new_from_file_at_scale(name, width, height, TRUE);
+            if (themed)
+                *themed = FALSE;
         }
         else
         {

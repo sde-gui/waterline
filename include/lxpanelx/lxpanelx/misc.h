@@ -79,7 +79,8 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                       const char* name, ... );
 
 
-extern GdkPixbuf* lxpanel_load_icon( const char* name, int width, int height, gboolean use_fallback );
+extern GdkPixbuf* lxpanel_load_icon(const char* name, int width, int height, gboolean use_fallback);
+extern GdkPixbuf* lxpanel_load_icon2(const char* name, int width, int height, gboolean use_fallback, gboolean * themed);
 
 extern void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size);
 

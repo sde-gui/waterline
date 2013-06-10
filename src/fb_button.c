@@ -50,10 +50,6 @@
 
 /********************************************************************/
 
-GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_name, int width, int height, gboolean keep_ratio);
-
-/********************************************************************/
-
 /* data used by themed images buttons */
 typedef struct {
     char* fname;
@@ -197,7 +193,7 @@ static void _gtk_image_set_from_file_scaled(GtkWidget * img, const gchar * file,
         data->pixbuf = NULL;
     }
 
-    /* if there is a cached hilighted version of this pixbuf, free it */
+    /* if there is a cached highlighted version of this pixbuf, free it */
     if (data->pixbuf_highlighted != NULL)
     {
         g_object_unref(data->pixbuf_highlighted);
@@ -214,17 +210,7 @@ static void _gtk_image_set_from_file_scaled(GtkWidget * img, const gchar * file,
             data->fname = g_strdup(file);
         }
 
-        if (g_file_test(file, G_FILE_TEST_EXISTS))
-        {
-            GdkPixbuf * pb_scaled = _gdk_pixbuf_new_from_file_at_scale(file, width, height, keep_ratio);
-            if (pb_scaled != NULL)
-                data->pixbuf = pb_scaled;
-        }
-        else
-        {
-            data->pixbuf = lxpanel_load_icon(file, width, height, keep_ratio);
-            themed = TRUE;
-        }
+        data->pixbuf = lxpanel_load_icon2(file, width, height, FALSE, &themed);
     }
 
     if (data->pixbuf != NULL)

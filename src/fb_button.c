@@ -59,8 +59,8 @@ typedef struct {
     char* fname;
     guint theme_changed_handler;
     GdkPixbuf* pixbuf;
-    GdkPixbuf* hilight;
-    gulong hicolor;
+    GdkPixbuf* pixbuf_highlighted;
+    gulong highlight_color;
     int dw, dh; /* desired size */
     gboolean use_dummy_image;
 } ImgData;
@@ -78,8 +78,8 @@ static void img_data_free(ImgData * data)
         g_signal_handler_disconnect(gtk_icon_theme_get_default(), data->theme_changed_handler);
     if (data->pixbuf != NULL)
         g_object_unref(data->pixbuf);
-    if (data->hilight != NULL)
-        g_object_unref(data->hilight);
+    if (data->pixbuf_highlighted != NULL)
+        g_object_unref(data->pixbuf_highlighted);
     g_free(data);
 }
 
@@ -195,10 +195,10 @@ static void _gtk_image_set_from_file_scaled(GtkWidget * img, const gchar * file,
     }
 
     /* if there is a cached hilighted version of this pixbuf, free it */
-    if (data->hilight != NULL)
+    if (data->pixbuf_highlighted != NULL)
     {
-        g_object_unref(data->hilight);
-        data->hilight = NULL;
+        g_object_unref(data->pixbuf_highlighted);
+        data->pixbuf_highlighted = NULL;
     }
 
     /* if they are the same string, eliminate unnecessary copy. */
@@ -277,20 +277,20 @@ static gboolean fb_button_enter(GtkImage * widget, GdkEventCrossing * event)
         ImgData * data = (ImgData *) g_object_get_qdata(G_OBJECT(widget), img_data_id);
         if (data != NULL)
         {
-            if (data->hilight == NULL)
+            if (data->pixbuf_highlighted == NULL)
             {
                 GdkPixbuf * dark = data->pixbuf;
                 int height = gdk_pixbuf_get_height(dark);
                 int rowstride = gdk_pixbuf_get_rowstride(dark);
-                gulong hicolor = data->hicolor;
+                gulong highlight_color = data->highlight_color;
 
                 GdkPixbuf * light = gdk_pixbuf_add_alpha(dark, FALSE, 0, 0, 0);
                 if (light != NULL)
                 {
                     guchar extra[3];
                     int i;
-                    for (i = 2; i >= 0; i--, hicolor >>= 8)
-                        extra[i] = hicolor & 0xFF;
+                    for (i = 2; i >= 0; i--, highlight_color >>= 8)
+                        extra[i] = highlight_color & 0xFF;
 
                     guchar * src = gdk_pixbuf_get_pixels(light);
                     guchar * up;
@@ -306,12 +306,12 @@ static gboolean fb_button_enter(GtkImage * widget, GdkEventCrossing * event)
                             }
                         }
                     }
-                data->hilight = light;
+                    data->pixbuf_highlighted = light;
                 }
             }
 
-        if (data->hilight != NULL)
-            gtk_image_set_from_pixbuf(widget, data->hilight);
+        if (data->pixbuf_highlighted != NULL)
+            gtk_image_set_from_pixbuf(widget, data->pixbuf_highlighted);
         }
     }
     return TRUE;
@@ -351,7 +351,7 @@ GtkWidget * fb_button_new_from_file_with_label(
     if (highlight_color != 0)
     {
         ImgData * data = (ImgData *) g_object_get_qdata(G_OBJECT(image), img_data_id);
-        data->hicolor = highlight_color;
+        data->highlight_color = highlight_color;
 
         gtk_widget_add_events(event_box, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
         g_signal_connect_swapped(G_OBJECT(event_box), "enter-notify-event", G_CALLBACK(fb_button_enter), image);

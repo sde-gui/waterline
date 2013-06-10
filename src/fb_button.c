@@ -268,31 +268,6 @@ GtkWidget * _gtk_image_new_from_file_scaled(const gchar * file, gint width, gint
 }
 
 
-void
-get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name)
-{
-    GtkWidget *b;
-    //gint focus_width;
-    //gint focus_pad;
-
-    ENTER;
-    b = gtk_button_new();
-    gtk_widget_set_name(GTK_WIDGET(b), name);
-    GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
-    GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_DEFAULT);
-    gtk_container_set_border_width (GTK_CONTAINER (b), 0);
-
-    if (parent)
-        gtk_container_add(parent, b);
-
-    gtk_widget_show(b);
-    gtk_widget_size_request(b, req);
-
-    gtk_widget_destroy(b);
-    RET();
-}
-
-
 guint32 gcolor2rgb24(GdkColor *color)
 {
     guint32 i;

@@ -61,7 +61,6 @@ typedef struct {
     GdkPixbuf* hilight;
     gulong hicolor;
     int dw, dh; /* desired size */
-    gboolean keep_ratio;
     gboolean use_dummy_image;
 } ImgData;
 
@@ -87,7 +86,7 @@ static void img_data_free(ImgData * data)
 static void on_theme_changed(GtkIconTheme * theme, GtkWidget * img)
 {
     ImgData * data = (ImgData *) g_object_get_qdata(G_OBJECT(img), img_data_id);
-    _gtk_image_set_from_file_scaled(img, data->fname, data->dw, data->dh, data->keep_ratio, data->use_dummy_image);
+    _gtk_image_set_from_file_scaled(img, data->fname, data->dw, data->dh, TRUE, data->use_dummy_image);
 }
 
 void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation)
@@ -146,7 +145,7 @@ void fb_button_set_label(GtkWidget * btn, Panel * panel, gchar * label)
         panel_draw_label_text(panel, lbl, label, FALSE, FALSE, FALSE, TRUE);
 }
 
-void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width, gint height, gboolean keep_ratio)
+void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width, gint height)
 {
     /* Locate the image within the button. */
     GtkWidget * child = gtk_bin_get_child(GTK_BIN(btn));
@@ -173,10 +172,9 @@ void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width,
         data->fname = g_strdup(img_file);
         data->dw = width;
         data->dh = height;
-        data->keep_ratio = keep_ratio;
         data->use_dummy_image = label && !strempty(gtk_label_get_text(GTK_LABEL(label)));
         _gtk_image_set_from_file_scaled(image,
-            data->fname, data->dw, data->dh, data->keep_ratio, data->use_dummy_image);
+            data->fname, data->dw, data->dh, TRUE, data->use_dummy_image);
 
         gtk_widget_set_visible(image, !(strempty(img_file) && data->use_dummy_image));
     }
@@ -187,7 +185,6 @@ static void _gtk_image_set_from_file_scaled(GtkWidget * img, const gchar * file,
     ImgData * data = (ImgData *) g_object_get_qdata(G_OBJECT(img), img_data_id);
     data->dw = width;
     data->dh = height;
-    data->keep_ratio = keep_ratio;
     data->use_dummy_image = use_dummy_image;
 
     if (data->pixbuf != NULL)
@@ -378,14 +375,13 @@ static gboolean fb_button_leave(GtkImage * widget, GdkEventCrossing * event, gpo
 }
 
 
-GtkWidget * fb_button_new_from_file(
-    gchar * image_file, int width, int height, gboolean highlighted, gboolean keep_ratio)
+GtkWidget * fb_button_new_from_file(gchar * image_file, int width, int height, gboolean highlighted)
 {
-    return fb_button_new_from_file_with_label(image_file, width, height, highlighted, keep_ratio, NULL, NULL);
+    return fb_button_new_from_file_with_label(image_file, width, height, highlighted, NULL, NULL);
 }
 
 GtkWidget * fb_button_new_from_file_with_label(
-    gchar * image_file, int width, int height, gboolean highlighted, gboolean keep_ratio, Panel * panel, gchar * label)
+    gchar * image_file, int width, int height, gboolean highlighted, Panel * panel, gchar * label)
 {
     gulong highlight_color = highlighted ? PANEL_ICON_HIGHLIGHT : 0;
 
@@ -394,7 +390,7 @@ GtkWidget * fb_button_new_from_file_with_label(
     gtk_widget_set_has_window(event_box, FALSE);
     GTK_WIDGET_UNSET_FLAGS(event_box, GTK_CAN_FOCUS);
 
-    GtkWidget * image = _gtk_image_new_from_file_scaled(image_file, width, height, keep_ratio, !label || strlen(label) == 0);
+    GtkWidget * image = _gtk_image_new_from_file_scaled(image_file, width, height, TRUE, !label || strlen(label) == 0);
     gtk_misc_set_padding(GTK_MISC(image), 0, 0);
     gtk_misc_set_alignment(GTK_MISC(image), 0, 0);
     if (highlight_color != 0)

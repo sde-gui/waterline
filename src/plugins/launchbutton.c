@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011-2012 Vadim Ushakov
+ * Copyright (c) 2011-2013 Vadim Ushakov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,20 +33,10 @@
 #include <fcntl.h>
 #include <pty.h>
 
-//#include <menu-cache.h>
-
-//#include <sys/types.h>
-//#include <sys/stat.h>
-//#include <unistd.h>
-//#include <fcntl.h>
-
 #define PLUGIN_PRIV_TYPE lb_t
 
 #include <lxpanelx/panel.h>
 #include <lxpanelx/misc.h>
-//#include "plugin.h"
-//#include "bg.h"
-//#include "menu-policy.h"
 
 #include <lxpanelx/gtkcompat.h>
 
@@ -127,7 +117,7 @@ static int _set_nonblocking(int fd)
     if (-1 == (flags = fcntl(fd, F_GETFL, 0)))
         flags = 0;
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-}     
+}
 
 static gboolean input_on_child_input(GIOChannel *source, GIOCondition condition, gpointer _input)
 {
@@ -145,7 +135,7 @@ static gboolean input_on_child_input(GIOChannel *source, GIOCondition condition,
     input->eof |= (condition == G_IO_HUP) || (condition == G_IO_ERR);
 
     GIOStatus status = 0;
-    
+
     if (!input->eof)
     {
         status = g_io_channel_read_chars(source, buf, 1023, &bytes_read, NULL);
@@ -160,58 +150,58 @@ static gboolean input_on_child_input(GIOChannel *source, GIOCondition condition,
 
     if (bytes_read > 0)
     {
-	gchar * newbuffer = g_strconcat(input->input_buffer ? input->input_buffer : "", buf, NULL);
-	g_free(input->input_buffer);
-	input->input_buffer = newbuffer;
+        gchar * newbuffer = g_strconcat(input->input_buffer ? input->input_buffer : "", buf, NULL);
+        g_free(input->input_buffer);
+        input->input_buffer = newbuffer;
 
-	gchar ** lines = g_strsplit(input->input_buffer, "\n", 0);
-	int line_nr = g_strv_length(lines);
+        gchar ** lines = g_strsplit(input->input_buffer, "\n", 0);
+        int line_nr = g_strv_length(lines);
 
-	g_free(input->input_buffer);
+        g_free(input->input_buffer);
 
-	for (i = 0; i < line_nr - (input->eof ? 0 : 1); i++)
-	{
-	    int l = strlen(lines[i]);
-	    if (lines[i][l - 1] == '\r')
-		lines[i][l - 1] = 0;
+        for (i = 0; i < line_nr - (input->eof ? 0 : 1); i++)
+        {
+            int l = strlen(lines[i]);
+            if (lines[i][l - 1] == '\r')
+                lines[i][l - 1] = 0;
 
-	    //g_print("== %s\n", lines[i]);
+            //g_print("== %s\n", lines[i]);
 
-	    lb_input(input->lb, input, lines[i]);
-	}
+            lb_input(input->lb, input, lines[i]);
+        }
 
-	if (!input->eof)
-	    input->input_buffer = g_strdup(lines[line_nr - 1]);
+        if (!input->eof)
+            input->input_buffer = g_strdup(lines[line_nr - 1]);
 
-	g_strfreev(lines);
+        g_strfreev(lines);
     }
 
     if (input->eof)
     {
-	if (input->input_source_id)
-	{
-	    g_source_remove(input->input_source_id);
-	    input->input_source_id = 0;
-	}
+        if (input->input_source_id)
+        {
+            g_source_remove(input->input_source_id);
+            input->input_source_id = 0;
+        }
 
-	if (input->input_hup_source_id)
-	{
-	    g_source_remove(input->input_hup_source_id);
-	    input->input_hup_source_id = 0;
-	}
+        if (input->input_hup_source_id)
+        {
+            g_source_remove(input->input_hup_source_id);
+            input->input_hup_source_id = 0;
+        }
 
-	if (input->input_err_source_id)
-	{
-	    g_source_remove(input->input_err_source_id);
-	    input->input_err_source_id = 0;
-	}
+        if (input->input_err_source_id)
+        {
+            g_source_remove(input->input_err_source_id);
+            input->input_err_source_id = 0;
+        }
 
-	if (input->input_channel)
-	{
-	    g_io_channel_shutdown(input->input_channel, FALSE, NULL);
-	    g_io_channel_unref(input->input_channel);
-	    input->input_channel = NULL;
-	}
+        if (input->input_channel)
+        {
+            g_io_channel_shutdown(input->input_channel, FALSE, NULL);
+            g_io_channel_unref(input->input_channel);
+            input->input_channel = NULL;
+        }
     }
 
     return input->eof ? FALSE : TRUE;
@@ -424,10 +414,10 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
             else if (g_ascii_strcasecmp(parts[0], "Tooltip") == 0)
                 gtk_widget_set_tooltip_text(lb->button, parts[1]);
             else if (g_ascii_strcasecmp(parts[0], "IconPath") == 0 || g_ascii_strcasecmp(parts[0], "Icon") == 0)
-	    {
-		int icon_size = plugin_get_icon_size(lb->plug);
-		fb_button_set_from_file(lb->button, parts[1], icon_size, icon_size, TRUE);
-	    }
+            {
+                int icon_size = plugin_get_icon_size(lb->plug);
+                fb_button_set_from_file(lb->button, parts[1], icon_size, icon_size, TRUE);
+            }
             else if (g_ascii_strcasecmp(parts[0], "Command1") == 0)
             {
                 g_free(lb->command1_override);
@@ -842,7 +832,7 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
 
     int min_input_restart_interval = 0;
     int max_input_restart_interval = 100000;
-    
+
     GtkWidget * dlg = create_generic_config_dlg(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),

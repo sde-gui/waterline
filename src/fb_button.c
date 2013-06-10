@@ -66,6 +66,7 @@ typedef struct {
 } ImgData;
 
 static GQuark img_data_id = 0;
+static GQuark plugin_pointer_id = 0;
 
 static void on_theme_changed(GtkIconTheme* theme, GtkWidget* img);
 static void _gtk_image_set_from_file_scaled( GtkWidget* img, const gchar *file, gint width, gint height, gboolean keep_ratio, gboolean use_dummy_image);
@@ -103,8 +104,10 @@ void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation)
     }
 }
 
-void fb_button_set_label(GtkWidget * btn, Plugin * plugin, gchar * label)
+void fb_button_set_label(GtkWidget * btn, gchar * label)
 {
+    Plugin * plugin = (Plugin *) g_object_get_qdata(G_OBJECT(btn), plugin_pointer_id);
+
     /* Locate the label within the button. */
     GtkWidget * child = gtk_bin_get_child(GTK_BIN(btn));
     GtkWidget * lbl = NULL;
@@ -343,6 +346,11 @@ GtkWidget * fb_button_new_from_file_with_label(gchar * image_file, int width, in
     gtk_container_set_border_width(GTK_CONTAINER(event_box), 0);
     gtk_widget_set_has_window(event_box, FALSE);
     GTK_WIDGET_UNSET_FLAGS(event_box, GTK_CAN_FOCUS);
+
+    if (plugin_pointer_id == 0)
+        plugin_pointer_id = g_quark_from_static_string("fb_button_plugin_pointer");
+
+    g_object_set_qdata_full(G_OBJECT(event_box), plugin_pointer_id, plugin, NULL);
 
     GtkWidget * image = _gtk_image_new_from_file_scaled(image_file, width, height, TRUE, !label || strlen(label) == 0);
     gtk_misc_set_padding(GTK_MISC(image), 0, 0);

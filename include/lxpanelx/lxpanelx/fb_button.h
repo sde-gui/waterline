@@ -28,7 +28,7 @@ GtkWidget * fb_button_new_from_file_with_label(
     gchar * image_file, int width, int height, Plugin * plugin, gchar * label);
 void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation);
 void fb_button_set_from_file(GtkWidget* btn, const char* img_file, gint width, gint height);
-void fb_button_set_label(GtkWidget * btn, Plugin * plugin, gchar * label);
+void fb_button_set_label(GtkWidget * btn, gchar * label);
 
 
 #endif

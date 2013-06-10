@@ -96,24 +96,25 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(lxpanelx_includedir)"
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
-am__lxpanelx_SOURCES_DIST = misc.c defaultapplications.c libfm.c \
-	window-icons.c openbox-integration.c bg.c bg.h commands.c \
-	commands.h configparser.c generic_config_dlg.c Xsupport.c \
-	pixbuf-stuff.c configurator.c configurator_plugin_list.c \
-	panel_config.c dbg.c ev.c icon-grid.c panel.c panel_internal.h \
-	panel_private.h plugin.c plugin_internal.h plugin_private.h \
-	paths.c de.c gtk-run.c menu-policy.h menu-policy.c
+am__lxpanelx_SOURCES_DIST = misc.c fb_button.c defaultapplications.c \
+	libfm.c window-icons.c openbox-integration.c bg.c bg.h \
+	commands.c commands.h configparser.c generic_config_dlg.c \
+	Xsupport.c pixbuf-stuff.c configurator.c \
+	configurator_plugin_list.c panel_config.c dbg.c ev.c \
+	icon-grid.c panel.c panel_internal.h panel_private.h plugin.c \
+	plugin_internal.h plugin_private.h paths.c de.c gtk-run.c \
+	menu-policy.h menu-policy.c
 @ENABLE_MENU_CACHE_TRUE@am__objects_1 = gtk-run.$(OBJEXT) \
 @ENABLE_MENU_CACHE_TRUE@	menu-policy.$(OBJEXT)
-am_lxpanelx_OBJECTS = misc.$(OBJEXT) defaultapplications.$(OBJEXT) \
-	libfm.$(OBJEXT) window-icons.$(OBJEXT) \
-	openbox-integration.$(OBJEXT) bg.$(OBJEXT) commands.$(OBJEXT) \
-	configparser.$(OBJEXT) generic_config_dlg.$(OBJEXT) \
-	Xsupport.$(OBJEXT) pixbuf-stuff.$(OBJEXT) \
-	configurator.$(OBJEXT) configurator_plugin_list.$(OBJEXT) \
-	panel_config.$(OBJEXT) dbg.$(OBJEXT) ev.$(OBJEXT) \
-	icon-grid.$(OBJEXT) panel.$(OBJEXT) plugin.$(OBJEXT) \
-	paths.$(OBJEXT) de.$(OBJEXT) $(am__objects_1)
+am_lxpanelx_OBJECTS = misc.$(OBJEXT) fb_button.$(OBJEXT) \
+	defaultapplications.$(OBJEXT) libfm.$(OBJEXT) \
+	window-icons.$(OBJEXT) openbox-integration.$(OBJEXT) \
+	bg.$(OBJEXT) commands.$(OBJEXT) configparser.$(OBJEXT) \
+	generic_config_dlg.$(OBJEXT) Xsupport.$(OBJEXT) \
+	pixbuf-stuff.$(OBJEXT) configurator.$(OBJEXT) \
+	configurator_plugin_list.$(OBJEXT) panel_config.$(OBJEXT) \
+	dbg.$(OBJEXT) ev.$(OBJEXT) icon-grid.$(OBJEXT) panel.$(OBJEXT) \
+	plugin.$(OBJEXT) paths.$(OBJEXT) de.$(OBJEXT) $(am__objects_1)
 lxpanelx_OBJECTS = $(am_lxpanelx_OBJECTS)
 am__DEPENDENCIES_1 =
 lxpanelx_DEPENDENCIES = $(BUILTIN_PLUGINS) $(am__DEPENDENCIES_1) \
@@ -476,6 +477,7 @@ BUILTIN_PLUGINS = $(top_builddir)/src/plugins/libbuiltin_plugins.a
 
 lxpanelx_SOURCES = \
 	misc.c \
+	fb_button.c \
 	defaultapplications.c \
 	libfm.c \
 	window-icons.c \
@@ -654,6 +656,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/de.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/defaultapplications.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ev.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fb_button.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generic_config_dlg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk-run.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/icon-grid.Po@am__quote@

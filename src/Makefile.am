@@ -26,6 +26,7 @@ endif
 
 lxpanelx_SOURCES = \
 	misc.c \
+	fb_button.c \
 	defaultapplications.c \
 	libfm.c \
 	window-icons.c \

@@ -42,6 +42,7 @@
 #include <lxpanelx/panel.h>
 #include <lxpanelx/misc.h>
 #include <lxpanelx/plugin.h>
+#include <lxpanelx/fb_button.h>
 #include "bg.h"
 #include "menu-policy.h"
 #include "commands.h"

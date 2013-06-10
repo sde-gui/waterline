@@ -191,6 +191,7 @@ am__lxpanelx_include_HEADERS_DIST =  \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/dbg.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/defaultapplications.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/ev.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/fb_button.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/global.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/gtkcompat.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/menu-cache-compat.h \
@@ -507,6 +508,7 @@ lxpanelx_SOURCES = \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/dbg.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/defaultapplications.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/ev.h \
+@BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/fb_button.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/global.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/gtkcompat.h \
 @BUILD_PLUGIN_LOADER_TRUE@	$(top_srcdir)/include/lxpanelx/lxpanelx/menu-cache-compat.h \

@@ -37,6 +37,7 @@
 
 #include <lxpanelx/panel.h>
 #include <lxpanelx/misc.h>
+#include <lxpanelx/fb_button.h>
 
 #include <lxpanelx/gtkcompat.h>
 

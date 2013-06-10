@@ -38,6 +38,7 @@
 #include <pwd.h>
 #include <grp.h>
 
+#include <lxpanelx/fb_button.h>
 #include <lxpanelx/global.h>
 #include <lxpanelx/misc.h>
 #include <lxpanelx/panel.h>

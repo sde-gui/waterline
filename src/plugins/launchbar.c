@@ -41,6 +41,7 @@
 #include <lxpanelx/panel.h>
 #include <lxpanelx/paths.h>
 #include <lxpanelx/misc.h>
+#include <lxpanelx/fb_button.h>
 #include <lxpanelx/plugin.h>
 #include <lxpanelx/icon-grid.h>
 #include "menu-policy.h"

@@ -57,6 +57,7 @@ lxpanelx_include_HEADERS = \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/dbg.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/defaultapplications.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/ev.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/fb_button.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/global.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/gtkcompat.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/menu-cache-compat.h \

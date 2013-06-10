@@ -36,6 +36,7 @@
 
 #include <lxpanelx/panel.h>
 #include <lxpanelx/misc.h>
+#include <lxpanelx/fb_button.h>
 #include <lxpanelx/plugin.h>
 #include <lxpanelx/libfm.h>
 #include <lxpanelx/dbg.h>

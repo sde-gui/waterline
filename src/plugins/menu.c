@@ -654,12 +654,12 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
     if( name )
     {
         title = panel_translate_directory_name(name);
-        m->img = fb_button_new_from_file_with_label(fname, -1, plugin_get_icon_size(p), gcolor2rgb24(tint), plugin_panel(p), title);
+        m->img = fb_button_new_from_file_with_label(fname, -1, plugin_get_icon_size(p), p, title);
         g_free(title);
     }
     else
     {
-        m->img = fb_button_new_from_file(fname, -1, plugin_get_icon_size(p), gcolor2rgb24(tint));
+        m->img = fb_button_new_from_file(fname, -1, plugin_get_icon_size(p), p);
     }
 
     fb_button_set_orientation(m->img, plugin_get_orientation(p));
@@ -1233,7 +1233,7 @@ static void apply_config(Plugin* p)
     menup* m = PRIV(p);
     if( m->fname )
         fb_button_set_from_file( m->img, m->fname, -1, plugin_get_icon_size(p) );
-    fb_button_set_label( m->img, plugin_panel(p), m->caption);
+    fb_button_set_label( m->img, p, m->caption);
     fb_button_set_orientation(m->img, plugin_get_orientation(p));
 }
 

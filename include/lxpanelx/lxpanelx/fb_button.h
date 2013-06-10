@@ -23,12 +23,12 @@
 #include "typedef.h"
 
 GtkWidget * fb_button_new_from_file(
-    gchar * image_file, int width, int height, gboolean highlighted);
+    gchar * image_file, int width, int height, Plugin * plugin);
 GtkWidget * fb_button_new_from_file_with_label(
-    gchar * image_file, int width, int height, gboolean highlighted, Panel * panel, gchar * label);
+    gchar * image_file, int width, int height, Plugin * plugin, gchar * label);
 void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation);
 void fb_button_set_from_file(GtkWidget* btn, const char* img_file, gint width, gint height);
-void fb_button_set_label(GtkWidget * btn, Panel * panel, gchar * label);
+void fb_button_set_label(GtkWidget * btn, Plugin * plugin, gchar * label);
 
 
 #endif

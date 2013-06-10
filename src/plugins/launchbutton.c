@@ -394,7 +394,7 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
 {
     if (input == &lb->input_title)
     {
-        fb_button_set_label(lb->button, plugin_panel(lb->plug), line);
+        fb_button_set_label(lb->button, lb->plug, line);
     }
     else if (input == &lb->input_tooltip)
     {
@@ -411,7 +411,7 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
         if (g_strv_length(parts) == 2)
         {
             if (g_ascii_strcasecmp(parts[0], "Title") == 0)
-                fb_button_set_label(lb->button, plugin_panel(lb->plug), parts[1]);
+                fb_button_set_label(lb->button, lb->plug, parts[1]);
             else if (g_ascii_strcasecmp(parts[0], "Tooltip") == 0)
                 gtk_widget_set_tooltip_text(lb->button, parts[1]);
             else if (g_ascii_strcasecmp(parts[0], "IconPath") == 0 || g_ascii_strcasecmp(parts[0], "Icon") == 0)
@@ -554,7 +554,7 @@ static void lb_apply_configuration(Plugin * p)
     if (!lb->button)
     {
         lb->button = fb_button_new_from_file_with_label(lb->icon_path,
-                     plugin_get_icon_size(p), plugin_get_icon_size(p), TRUE, plugin_panel(p), lb->title);
+                     plugin_get_icon_size(p), plugin_get_icon_size(p), p, lb->title);
         gtk_container_add(GTK_CONTAINER(plugin_widget(p)), lb->button);
         g_signal_connect(G_OBJECT(lb->button), "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
         g_signal_connect(G_OBJECT(lb->button), "button-release-event", G_CALLBACK(lb_release_event), (gpointer) lb);
@@ -563,7 +563,7 @@ static void lb_apply_configuration(Plugin * p)
     }
     else
     {
-        fb_button_set_label(lb->button, plugin_panel(p), lb->title);
+        fb_button_set_label(lb->button, p, lb->title);
         fb_button_set_from_file(lb->button, lb->icon_path, plugin_get_icon_size(p), plugin_get_icon_size(p));
     }
 

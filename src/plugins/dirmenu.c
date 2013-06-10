@@ -865,7 +865,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
      * unless this strategy of initializing it with a non-empty value first is followed. */
     GtkWidget * pwid = fb_button_new_from_file_with_label(
         ((dm->image != NULL) ? dm->image : "file-manager"),
-        plugin_get_icon_size(p), plugin_get_icon_size(p), TRUE, plugin_panel(p), "Temp");
+        plugin_get_icon_size(p), plugin_get_icon_size(p), p, "Temp");
     plugin_set_widget(p, pwid);
     gtk_container_set_border_width(GTK_CONTAINER(pwid), 0);
     g_signal_connect(pwid, "button_press_event", G_CALLBACK(dirmenu_button_press_event), p);
@@ -928,7 +928,7 @@ static void dirmenu_apply_configuration(Plugin * p)
     fb_button_set_from_file(plugin_widget(p),
         ((dm->image != NULL) ? dm->image : (icon_name != NULL) ? icon_name : "file-manager"),
         ((dm->image != NULL) ? -1 : plugin_get_icon_size(p)), plugin_get_icon_size(p));
-    fb_button_set_label(plugin_widget(p), plugin_panel(p), dm->name);
+    fb_button_set_label(plugin_widget(p), p, dm->name);
     gtk_widget_set_tooltip_text(plugin_widget(p), path);
     fb_button_set_orientation(plugin_widget(p), plugin_get_orientation(p));
 

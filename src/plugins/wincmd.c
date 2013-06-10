@@ -207,7 +207,7 @@ static int wincmd_constructor(Plugin * p, char ** fp)
         wc->image = g_strdup("window-manager");
 
     /* Allocate top level widget and set into Plugin widget pointer. */
-    GtkWidget * pwid = fb_button_new_from_file(wc->image, plugin_get_icon_size(p), plugin_get_icon_size(p), TRUE);
+    GtkWidget * pwid = fb_button_new_from_file(wc->image, plugin_get_icon_size(p), plugin_get_icon_size(p), p);
     plugin_set_widget(p, pwid);
     gtk_container_set_border_width(GTK_CONTAINER(pwid), 0);
     g_signal_connect(G_OBJECT(pwid), "button_press_event", G_CALLBACK(wincmd_button_clicked), (gpointer) p);

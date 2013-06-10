@@ -103,7 +103,7 @@ void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation)
     }
 }
 
-void fb_button_set_label(GtkWidget * btn, Panel * panel, gchar * label)
+void fb_button_set_label(GtkWidget * btn, Plugin * plugin, gchar * label)
 {
     /* Locate the label within the button. */
     GtkWidget * child = gtk_bin_get_child(GTK_BIN(btn));
@@ -143,7 +143,7 @@ void fb_button_set_label(GtkWidget * btn, Panel * panel, gchar * label)
 
     /* Update label text. */
     if (lbl)
-        panel_draw_label_text(panel, lbl, label, FALSE, FALSE, FALSE, TRUE);
+        panel_draw_label_text(plugin_panel(plugin), lbl, label, FALSE, FALSE, FALSE, TRUE);
 }
 
 void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width, gint height)
@@ -330,15 +330,14 @@ static gboolean fb_button_leave(GtkImage * widget, GdkEventCrossing * event, gpo
 }
 
 
-GtkWidget * fb_button_new_from_file(gchar * image_file, int width, int height, gboolean highlighted)
+GtkWidget * fb_button_new_from_file(gchar * image_file, int width, int height, Plugin * plugin)
 {
-    return fb_button_new_from_file_with_label(image_file, width, height, highlighted, NULL, NULL);
+    return fb_button_new_from_file_with_label(image_file, width, height, plugin, NULL);
 }
 
-GtkWidget * fb_button_new_from_file_with_label(
-    gchar * image_file, int width, int height, gboolean highlighted, Panel * panel, gchar * label)
+GtkWidget * fb_button_new_from_file_with_label(gchar * image_file, int width, int height, Plugin * plugin, gchar * label)
 {
-    gulong highlight_color = highlighted ? PANEL_ICON_HIGHLIGHT : 0;
+    gulong highlight_color = (TRUE /* TODO: read setting from plugin object */) ? PANEL_ICON_HIGHLIGHT : 0;
 
     GtkWidget * event_box = gtk_event_box_new();
     gtk_container_set_border_width(GTK_CONTAINER(event_box), 0);
@@ -370,7 +369,7 @@ GtkWidget * fb_button_new_from_file_with_label(
         gtk_box_pack_start(GTK_BOX(inner), image, FALSE, FALSE, 0);
 
         GtkWidget * lbl = gtk_label_new("");
-        panel_draw_label_text(panel, lbl, label, FALSE, FALSE, FALSE, TRUE);
+        panel_draw_label_text(plugin_panel(plugin), lbl, label, FALSE, FALSE, FALSE, TRUE);
         gtk_misc_set_padding(GTK_MISC(lbl), 2, 0);
         gtk_box_pack_start(GTK_BOX(inner), lbl, FALSE, FALSE, 0);
     }
@@ -380,8 +379,8 @@ GtkWidget * fb_button_new_from_file_with_label(
 
     gtk_widget_show_all(event_box);
 
-    if (panel)
-        panel_require_update_background(panel);
+    if (plugin)
+        panel_require_update_background(plugin_panel(plugin));
 
     return event_box;
 }

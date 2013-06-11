@@ -332,10 +332,10 @@ static gboolean fb_button_leave(GtkImage * widget, GdkEventCrossing * event, gpo
 
 GtkWidget * fb_button_new_from_file(gchar * image_file, int width, int height, Plugin * plugin)
 {
-    return fb_button_new_from_file_with_label(image_file, width, height, plugin, NULL);
+    return fb_button_new_from_file_with_text(image_file, width, height, plugin, NULL);
 }
 
-GtkWidget * fb_button_new_from_file_with_label(gchar * image_file, int width, int height, Plugin * plugin, gchar * label)
+static GtkWidget * fb_button_new_from_file_with_label(gchar * image_file, int width, int height, Plugin * plugin, gchar * label, unsigned style)
 {
     gulong highlight_color = (TRUE /* TODO: read setting from plugin object */) ? PANEL_ICON_HIGHLIGHT : 0;
 
@@ -374,7 +374,7 @@ GtkWidget * fb_button_new_from_file_with_label(gchar * image_file, int width, in
         gtk_box_pack_start(GTK_BOX(inner), image, FALSE, FALSE, 0);
 
         GtkWidget * lbl = gtk_label_new("");
-        panel_draw_label_text(plugin_panel(plugin), lbl, label, STYLE_CUSTOM_COLOR);
+        panel_draw_label_text(plugin_panel(plugin), lbl, label, STYLE_CUSTOM_COLOR | style);
         gtk_misc_set_padding(GTK_MISC(lbl), 2, 0);
         gtk_box_pack_start(GTK_BOX(inner), lbl, FALSE, FALSE, 0);
     }
@@ -388,5 +388,16 @@ GtkWidget * fb_button_new_from_file_with_label(gchar * image_file, int width, in
         panel_require_update_background(plugin_panel(plugin));
 
     return event_box;
+}
+
+
+GtkWidget * fb_button_new_from_file_with_text(gchar * image_file, int width, int height, Plugin * plugin, gchar * label)
+{
+    return fb_button_new_from_file_with_label(image_file, width, height, plugin, label, 0);
+}
+
+GtkWidget * fb_button_new_from_file_with_markup(gchar * image_file, int width, int height, Plugin * plugin, gchar * label)
+{
+    return fb_button_new_from_file_with_label(image_file, width, height, plugin, label, STYLE_MARKUP);
 }
 

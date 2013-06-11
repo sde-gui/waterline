@@ -863,7 +863,7 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     /* Allocate top level widget and set into Plugin widget pointer.
      * It is not known why, but the button text will not draw if it is edited from empty to non-empty
      * unless this strategy of initializing it with a non-empty value first is followed. */
-    GtkWidget * pwid = fb_button_new_from_file_with_label(
+    GtkWidget * pwid = fb_button_new_from_file_with_text(
         ((dm->image != NULL) ? dm->image : "file-manager"),
         plugin_get_icon_size(p), plugin_get_icon_size(p), p, "Temp");
     plugin_set_widget(p, pwid);

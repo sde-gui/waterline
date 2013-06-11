@@ -553,7 +553,7 @@ static void lb_apply_configuration(Plugin * p)
 
     if (!lb->button)
     {
-        lb->button = fb_button_new_from_file_with_label(lb->icon_path,
+        lb->button = fb_button_new_from_file_with_text(lb->icon_path,
                      plugin_get_icon_size(p), plugin_get_icon_size(p), p, lb->title);
         gtk_container_add(GTK_CONTAINER(plugin_widget(p)), lb->button);
         g_signal_connect(G_OBJECT(lb->button), "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);

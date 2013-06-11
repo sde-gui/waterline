@@ -24,6 +24,8 @@
 
 #include <gtk/gtk.h>
 
+#include <lxpanelx/icon-grid.h>
+
 #include "na-tray-manager.h"
 #include "fixedtip.h"
 
@@ -46,11 +48,14 @@ struct _NaTrayPrivate
   TraysScreen *trays_screen;
 
   GtkWidget *box;
+  IconGrid  *icon_grid;
   GtkWidget *frame;
 
   guint idle_redraw_id;
 
   GtkOrientation orientation;
+  int icon_size;
+  int target_dimension;
 };
 
 typedef struct
@@ -191,7 +196,11 @@ find_icon_position (NaTray    *tray,
   role_position = find_role_position (role);
   g_object_set_data (G_OBJECT (icon), "role-position", GINT_TO_POINTER (role_position));
 
-  children = gtk_container_get_children (GTK_CONTAINER (priv->box));
+  if (priv->icon_grid)
+      children = gtk_container_get_children (GTK_CONTAINER (priv->icon_grid->widget));
+  else
+      children = gtk_container_get_children (GTK_CONTAINER (priv->box));
+
   for (l = g_list_last (children); l; l = l->prev)
     {
       GtkWidget *child = l->data;
@@ -233,10 +242,20 @@ tray_added (NaTrayManager *manager,
   g_hash_table_insert (trays_screen->icon_table, icon, tray);
 
   position = find_icon_position (tray, icon);
-  gtk_box_pack_start (GTK_BOX (priv->box), icon, FALSE, FALSE, 0);
-  gtk_box_reorder_child (GTK_BOX (priv->box), icon, position);
 
-  gtk_widget_show (icon);
+  if (priv->icon_grid)
+  {
+      icon_grid_add(priv->icon_grid, icon, FALSE);
+      icon_grid_reorder_child(priv->icon_grid, icon, position);
+      icon_grid_set_visible(priv->icon_grid, icon, TRUE);
+  }
+  else
+  {
+      gtk_box_pack_start (GTK_BOX (priv->box), icon, FALSE, FALSE, 0);
+      gtk_box_reorder_child (GTK_BOX (priv->box), icon, position);
+      gtk_widget_show (icon);
+  }
+
 }
 
 static void
@@ -495,7 +514,8 @@ update_size_and_orientation (NaTray *tray)
 {
   NaTrayPrivate *priv = tray->priv;
 
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->box), priv->orientation);
+  if (priv->box)
+      gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->box), priv->orientation);
 
   /* This only happens when setting the property during object construction */
   if (!priv->trays_screen)
@@ -508,17 +528,30 @@ update_size_and_orientation (NaTray *tray)
     na_tray_manager_set_orientation (priv->trays_screen->tray_manager,
                                      priv->orientation);
 
-  /* note, you want this larger if the frame has non-NONE relief by default. */
-  switch (priv->orientation)
-    {
-    case GTK_ORIENTATION_VERTICAL:
-      /* Give box a min size so the frame doesn't look dumb */
-      gtk_widget_set_size_request (priv->box, MIN_BOX_SIZE, -1);
-      break;
-    case GTK_ORIENTATION_HORIZONTAL:
-      gtk_widget_set_size_request (priv->box, -1, MIN_BOX_SIZE);
-      break;
-    }
+  if (priv->icon_grid)
+  {
+      icon_grid_set_geometry(priv->icon_grid,
+          priv->orientation,
+          priv->icon_size, priv->icon_size,
+          ICON_SPACING,
+          0,
+          priv->target_dimension);
+  }
+  else
+  {
+      /* note, you want this larger if the frame has non-NONE relief by default. */
+      switch (priv->orientation)
+        {
+        case GTK_ORIENTATION_VERTICAL:
+          /* Give box a min size so the frame doesn't look dumb */
+          gtk_widget_set_size_request (priv->box, MIN_BOX_SIZE, -1);
+          break;
+        case GTK_ORIENTATION_HORIZONTAL:
+          gtk_widget_set_size_request (priv->box, -1, MIN_BOX_SIZE);
+          break;
+        }
+
+  }
 }
 
 /* Children with alpha channels have been set to be composited by calling
@@ -567,17 +600,33 @@ na_tray_init (NaTray *tray)
 
   priv->screen = NULL;
   priv->orientation = GTK_ORIENTATION_HORIZONTAL;
+  priv->icon_size = -1;
+  priv->target_dimension = -1;
 
   priv->frame = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);
   gtk_container_add (GTK_CONTAINER (tray), priv->frame);
   gtk_widget_show (priv->frame);
 
-  priv->box = g_object_new (na_box_get_type (), NULL);
-  g_signal_connect (priv->box, "expose-event",
-		    G_CALLBACK (na_tray_expose_box), tray);
-  gtk_box_set_spacing (GTK_BOX (priv->box), ICON_SPACING);
-  gtk_container_add (GTK_CONTAINER (priv->frame), priv->box);
-  gtk_widget_show (priv->box);
+  if (0)
+  {
+      priv->box = g_object_new (na_box_get_type (), NULL);
+      g_signal_connect (priv->box, "expose-event",
+                        G_CALLBACK (na_tray_expose_box), tray);
+      gtk_box_set_spacing (GTK_BOX (priv->box), ICON_SPACING);
+      gtk_container_add (GTK_CONTAINER (priv->frame), priv->box);
+      gtk_widget_show (priv->box);
+  }
+  else
+  {
+      priv->icon_grid = icon_grid_new(NULL, priv->frame,
+          priv->orientation,
+          priv->icon_size, priv->icon_size, 
+          ICON_SPACING,
+          0,
+          priv->target_dimension);
+      g_signal_connect (priv->icon_grid->widget, "expose-event",
+                        G_CALLBACK (na_tray_expose_box), tray);
+  }
 }
 
 static GObject *
@@ -810,12 +859,49 @@ na_tray_get_orientation (NaTray *tray)
   return tray->priv->orientation;
 }
 
+void na_tray_set_icon_size(NaTray *tray, int icon_size)
+{
+  NaTrayPrivate *priv = tray->priv;
+
+  if (icon_size == priv->icon_size)
+    return;
+
+  priv->icon_size = icon_size;
+
+  update_size_and_orientation (tray);
+}
+
+int na_tray_get_icon_size(NaTray *tray)
+{
+  return tray->priv->icon_size;
+}
+
+void na_tray_set_target_dimension(NaTray *tray, int target_dimension)
+{
+  NaTrayPrivate *priv = tray->priv;
+
+  if (target_dimension == priv->target_dimension)
+    return;
+
+  priv->target_dimension = target_dimension;
+
+  update_size_and_orientation (tray);
+}
+
+int na_tray_get_target_dimension(NaTray *tray)
+{
+  return tray->priv->target_dimension;
+}
+
 static gboolean
 idle_redraw_cb (NaTray *tray)
 {
   NaTrayPrivate *priv = tray->priv;
 
-  gtk_container_foreach (GTK_CONTAINER (priv->box), (GtkCallback)na_tray_child_force_redraw, tray);
+  if (priv->icon_grid)
+      gtk_container_foreach (GTK_CONTAINER (priv->icon_grid), (GtkCallback)na_tray_child_force_redraw, tray);
+  else
+      gtk_container_foreach (GTK_CONTAINER (priv->box), (GtkCallback)na_tray_child_force_redraw, tray);
   
   priv->idle_redraw_id = 0;
 

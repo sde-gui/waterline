@@ -64,6 +64,14 @@ void            na_tray_set_orientation	(NaTray        *tray,
 GtkOrientation  na_tray_get_orientation (NaTray        *tray);
 void		na_tray_force_redraw	(NaTray        *tray);
 
+void            na_tray_set_icon_size	(NaTray        *tray,
+					 int            icon_size);
+int             na_tray_get_icon_size	(NaTray        *tray);
+
+void            na_tray_set_target_dimension(NaTray        *tray,
+					     int            target_dimension);
+int             na_tray_get_target_dimension(NaTray        *tray);
+
 #ifdef __cplusplus
 }
 #endif

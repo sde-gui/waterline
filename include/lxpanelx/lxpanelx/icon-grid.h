@@ -34,6 +34,7 @@ typedef struct _icon_grid_element {
     gboolean visible;				/* True if widget is visible */
     gboolean deferred_hide;
     gboolean separator;
+    gboolean being_removed;
 } IconGridElement;
 
 /* Representative of an icon grid.  This is a manager that packs widgets into a rectangular grid whose size adapts to conditions. */
@@ -59,7 +60,7 @@ typedef struct _icon_grid {
     int separator_size;
     int col_separators;
     int row_separators;
-    
+
     int requisition_width;			/* Computed preferred width */
     int requisition_height;			/* Computed preferred height */
     gboolean requisition_changed;		/* True if preferred size has been changed since last size-request */

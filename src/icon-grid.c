@@ -405,6 +405,11 @@ static void icon_grid_element_size_request(GtkWidget * widget, GtkRequisition * 
     RET();
 }
 
+static void icon_grid_remove_child(GtkContainer * container, GtkWidget * child, IconGrid * ig)
+{
+    icon_grid_remove(ig, child);
+}
+
 /* Handler for "size-request" event on the icon grid's container. */
 static void icon_grid_size_request(GtkWidget * widget, GtkRequisition * requisition, IconGrid * ig)
 {
@@ -489,6 +494,7 @@ IconGrid * icon_grid_new(
 
     /* Connect signals. */
     g_signal_connect(G_OBJECT(ig->widget), "size-request", G_CALLBACK(icon_grid_size_request), (gpointer) ig);
+    g_signal_connect(G_OBJECT(ig->widget), "remove", G_CALLBACK(icon_grid_remove_child), (gpointer) ig);
     g_signal_connect(G_OBJECT(container), "size-request", G_CALLBACK(icon_grid_size_request), (gpointer) ig);
     g_signal_connect(G_OBJECT(container), "size-allocate", G_CALLBACK(icon_grid_size_allocate), (gpointer) ig);
 
@@ -544,14 +550,24 @@ void icon_grid_remove(IconGrid * ig, GtkWidget * child)
     {
         if (ige->widget == child)
         {
+            if (ige->being_removed)
+                break;
+
+            ige->being_removed = TRUE;
+
             /* The child is found.  Remove from child list and layout container. */
-            gtk_widget_hide(ige->widget);
-            gtk_container_remove(GTK_CONTAINER(ig->widget), ige->widget);
+            if (gtk_widget_get_parent(ige->widget) == ig->widget)
+            {
+               gtk_widget_hide(ige->widget);
+               gtk_container_remove(GTK_CONTAINER(ig->widget), ige->widget);
+            }
 
             if (ige_pred == NULL)
                 ig->child_list = ige->flink;
             else
                 ige_pred->flink = ige->flink;
+
+            g_free(ige);
 
             /* Do a relayout. */
             icon_grid_demand_resize(ig);

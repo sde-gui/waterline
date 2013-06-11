@@ -302,6 +302,7 @@ static void on_container_realized(GtkWidget* widget, NAPlugin * na)
         return;
 
     na->tray = na_tray_new_for_screen(gtk_widget_get_screen(GTK_WIDGET(na->widget)), plugin_get_orientation(na->plugin));
+    na_tray_set_icon_size(na->tray, plugin_get_icon_size(na->plugin));
 
     gtk_container_add(GTK_CONTAINER(na->widget), GTK_WIDGET(na->tray));
     gtk_widget_show(GTK_WIDGET(na->tray));
@@ -336,7 +337,10 @@ static void na_panel_configuration_changed(Plugin * p)
 {
     NAPlugin * na = PRIV(p);
     if (na->tray)
+    {
         na_tray_set_orientation(na->tray, plugin_get_orientation(na->plugin));
+        na_tray_set_icon_size(na->tray, plugin_get_icon_size(na->plugin));
+    }
 }
 
 /* Plugin descriptor. */

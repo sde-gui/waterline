@@ -174,6 +174,29 @@ na_tray_child_size_allocate (GtkWidget      *widget,
         na_tray_child_force_redraw (child);
     }
 }
+/*
+static void na_tray_child_size_request(GtkWidget      *widget,
+                                       GtkRequisition *requisition)
+{
+  GtkWidget * parent = gtk_widget_get_parent(widget);
+  GtkRequisition * na_child_requisition = NULL;
+  static GQuark na_child_requisition_id = 0;
+
+  GTK_WIDGET_CLASS(na_tray_child_parent_class)->size_request(widget, requisition);
+
+  if (parent)
+  {
+      if (!na_child_requisition_id)
+          na_child_requisition_id = g_quark_from_static_string("na_child_requisition");
+      na_child_requisition = g_object_get_qdata(G_OBJECT(parent), na_child_requisition_id);
+  }
+
+  if (na_child_requisition)
+      *requisition = *na_child_requisition;
+
+  g_print("%d, %d\n", requisition->width, requisition->height);
+}
+*/
 
 /* The plug window should completely occupy the area of the child, so we won't
  * get an expose event. But in case we do (the plug unmaps itself, say), this
@@ -225,6 +248,7 @@ na_tray_child_class_init (NaTrayChildClass *klass)
   widget_class->style_set = na_tray_child_style_set;
   widget_class->realize = na_tray_child_realize;
   widget_class->size_allocate = na_tray_child_size_allocate;
+  //widget_class->size_request = na_tray_child_size_request;
   widget_class->expose_event = na_tray_child_expose_event;
 }
 

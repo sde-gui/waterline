@@ -2043,8 +2043,13 @@ void panel_adjust_geometry_terminology(Panel * p)
 }
 
 /* Draw text into a label, with the user preference color and optionally bold. */
-void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, gboolean bold, gboolean italic, gboolean underline, gboolean custom_color)
+void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned style)
 {
+    gboolean bold = style & STYLE_BOLD;
+    gboolean italic  = style & STYLE_ITALIC;
+    gboolean underline = style & STYLE_UNDERLINE;
+    gboolean custom_color = style & STYLE_CUSTOM_COLOR;
+
     if (text == NULL)
     {
         /* Null string. */

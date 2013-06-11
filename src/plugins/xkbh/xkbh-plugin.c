@@ -170,7 +170,7 @@ void xkb_redraw(XkbPlugin *p_xkb)
                     TRUE, size*4/(5*10.0), TRUE);
 */
             panel_draw_label_text(plugin_panel(p_xkb->p_plugin), p_xkb->p_label, group_name,
-                    TRUE, FALSE, FALSE, TRUE);
+                    STYLE_BOLD | STYLE_CUSTOM_COLOR);
             gtk_widget_hide(p_xkb->p_image);
             gtk_widget_show(p_xkb->p_label);
             gtk_widget_set_tooltip_text(plugin_widget(p_xkb->p_plugin), xkb_get_current_group_name(p_xkb));

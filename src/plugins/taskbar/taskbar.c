@@ -990,63 +990,36 @@ static void taskbar_update_x_window_position(TaskbarPlugin * tb)
 /* Draw the label and tooltip on a taskbar button. */
 static void task_draw_label(Task * tk)
 {
-    gboolean active_button_label_bold = FALSE;
-    gboolean active_button_label_italic = FALSE;
-    gboolean active_button_label_underline = TRUE;
-
-    gboolean flash_flat_button_label_bold = TRUE;
-    gboolean flash_flat_button_label_italic = FALSE;
-    gboolean flash_flat_button_label_underline = FALSE;
-
-    gboolean changed_button_label_bold = TRUE;
-    gboolean changed_button_label_italic = FALSE;
-    gboolean changed_button_label_underline = FALSE;
-
-    gboolean mouse_over_button_label_bold = TRUE;
-    gboolean mouse_over_button_label_italic = FALSE;
-    gboolean mouse_over_button_label_underline = FALSE;
-
     TaskClass * tc = tk->task_class;
 
-    gboolean b_style = FALSE;
-    gboolean i_style = FALSE;
-    gboolean u_style = FALSE;
+    unsigned active_button_label_style = STYLE_UNDERLINE;
+    unsigned flash_flat_button_label_style = STYLE_BOLD;
+    unsigned changed_button_label_style = STYLE_BOLD;
+    unsigned mouse_over_button_label_style = STYLE_BOLD;
+
+    unsigned label_style = 0;
 
     if (tk->focused && tk->tb->highlight_title_of_focused_button)
-    {
-        b_style |= active_button_label_bold;
-        i_style |= active_button_label_italic;
-        u_style |= active_button_label_underline;
-    }
+        label_style |= active_button_label_style;
 
     if (tk->flash_state && task_button_is_really_flat(tk))
-    {
-        b_style |= flash_flat_button_label_bold;
-        i_style |= flash_flat_button_label_italic;
-        u_style |= flash_flat_button_label_underline;
-    }
+        label_style |= flash_flat_button_label_style;
 
     if (tk->name_changed && tk->tb->highlight_modified_titles)
-    {
-        b_style |= changed_button_label_bold;
-        i_style |= changed_button_label_italic;
-        u_style |= changed_button_label_underline;
-    }
+        label_style |= changed_button_label_style;
 
     if (tk->entered_state && tk->tb->bold_font_on_mouse_over)
-    {
-        b_style |= mouse_over_button_label_bold;
-        i_style |= mouse_over_button_label_italic;
-        u_style |= mouse_over_button_label_underline;
-    }
+        label_style |= mouse_over_button_label_style;
+
+    if (task_button_is_really_flat(tk))
+        label_style |= STYLE_CUSTOM_COLOR;
 
     if (task_is_folded(tk) && (tc) && (tc->visible_task == tk))
     {
         char * label = g_strdup_printf("(%d) %s", tc->visible_count, tc->visible_name);
         gtk_widget_set_tooltip_text(tk->button, label);
         if (tk->label)
-            panel_draw_label_text(plugin_panel(tk->tb->plug), tk->label, label,
-                b_style, i_style, u_style, task_button_is_really_flat(tk));
+            panel_draw_label_text(plugin_panel(tk->tb->plug), tk->label, label, label_style);
         g_free(label);
     }
     else
@@ -1055,8 +1028,7 @@ static void task_draw_label(Task * tk)
         if (tk->tb->tooltips)
             gtk_widget_set_tooltip_text(tk->button, name);
         if (tk->label)
-            panel_draw_label_text(plugin_panel(tk->tb->plug), tk->label, name,
-                b_style, i_style, u_style, task_button_is_really_flat(tk));
+            panel_draw_label_text(plugin_panel(tk->tb->plug), tk->label, name, label_style);
     }
 
     char * name = task_get_displayed_name(tk);

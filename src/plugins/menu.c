@@ -1233,7 +1233,7 @@ static void apply_config(Plugin* p)
     menup* m = PRIV(p);
     if( m->fname )
         fb_button_set_from_file( m->img, m->fname, -1, plugin_get_icon_size(p) );
-    fb_button_set_label( m->img, m->caption);
+    fb_button_set_label_text( m->img, m->caption);
     fb_button_set_orientation(m->img, plugin_get_orientation(p));
 }
 

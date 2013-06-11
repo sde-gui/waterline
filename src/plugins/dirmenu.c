@@ -928,7 +928,7 @@ static void dirmenu_apply_configuration(Plugin * p)
     fb_button_set_from_file(plugin_widget(p),
         ((dm->image != NULL) ? dm->image : (icon_name != NULL) ? icon_name : "file-manager"),
         ((dm->image != NULL) ? -1 : plugin_get_icon_size(p)), plugin_get_icon_size(p));
-    fb_button_set_label(plugin_widget(p), dm->name);
+    fb_button_set_label_text(plugin_widget(p), dm->name);
     gtk_widget_set_tooltip_text(plugin_widget(p), path);
     fb_button_set_orientation(plugin_widget(p), plugin_get_orientation(p));
 

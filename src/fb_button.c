@@ -100,7 +100,7 @@ void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation)
     }
 }
 
-void fb_button_set_label(GtkWidget * btn, gchar * label)
+static void fb_button_set_label_text2(GtkWidget * btn, gchar * label, unsigned style)
 {
     Plugin * plugin = (Plugin *) g_object_get_qdata(G_OBJECT(btn), plugin_pointer_id);
 
@@ -142,8 +142,19 @@ void fb_button_set_label(GtkWidget * btn, gchar * label)
 
     /* Update label text. */
     if (lbl)
-        panel_draw_label_text(plugin_panel(plugin), lbl, label, STYLE_CUSTOM_COLOR);
+        panel_draw_label_text(plugin_panel(plugin), lbl, label, STYLE_CUSTOM_COLOR | style);
 }
+
+void fb_button_set_label_text(GtkWidget * btn, gchar * label)
+{
+    fb_button_set_label_text2(btn, label, 0);
+}
+
+void fb_button_set_label_markup(GtkWidget * btn, gchar * label)
+{
+    fb_button_set_label_text2(btn, label, STYLE_MARKUP);
+}
+
 
 void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width, gint height)
 {

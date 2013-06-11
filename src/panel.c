@@ -2049,6 +2049,7 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned s
     gboolean italic  = style & STYLE_ITALIC;
     gboolean underline = style & STYLE_UNDERLINE;
     gboolean custom_color = style & STYLE_CUSTOM_COLOR;
+    gboolean allow_markup = style & STYLE_MARKUP;
 
     if (text == NULL)
     {
@@ -2077,14 +2078,17 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned s
      * If any are found, create the properly escaped string and use it instead. */
     char * valid_markup = text;
     char * escaped_text = NULL;
-    char * q;
-    for (q = text; *q != '\0'; q += 1)
+    if (!allow_markup)
     {
-        if ((*q == '<') || (*q == '>') || (*q == '&'))
+        char * q;
+        for (q = text; *q != '\0'; q += 1)
         {
-            escaped_text = g_markup_escape_text(text, -1);
-            valid_markup = escaped_text;
-            break;
+            if ((*q == '<') || (*q == '>') || (*q == '&'))
+            {
+                escaped_text = g_markup_escape_text(text, -1);
+                valid_markup = escaped_text;
+                break;
+            }
         }
     }
 

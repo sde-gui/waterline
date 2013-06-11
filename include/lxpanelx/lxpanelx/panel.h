@@ -44,6 +44,7 @@ enum { POS_NONE, POS_START, POS_END };
 #define STYLE_ITALIC       (1 << 1)
 #define STYLE_UNDERLINE    (1 << 2)
 #define STYLE_CUSTOM_COLOR (1 << 3)
+#define STYLE_MARKUP       (1 << 4)
 
 extern GtkStyle * panel_get_default_style(Panel * p);
 

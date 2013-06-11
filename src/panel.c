@@ -2098,7 +2098,7 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned s
     if (font_desc > 0)
         attr_desc_allocated = attr_desc = g_strdup_printf(" font_desc=\"%d\"", font_desc);
 
-    gchar * text = g_strdup_printf("<span%s%s>%s%s%s%s%s%s%s</span>",
+    gchar * markup_text = g_strdup_printf("<span%s%s>%s%s%s%s%s%s%s</span>",
             attr_desc, attr_color,
             ((bold) ? "<b>" : ""),
             ((italic) ? "<i>" : ""),
@@ -2107,9 +2107,9 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned s
             ((underline) ? "</u>" : ""),
             ((italic) ? "</i>" : ""),
             ((bold) ? "</b>" : ""));
-    gtk_label_set_markup(GTK_LABEL(label), text);
+    gtk_label_set_markup(GTK_LABEL(label), markup_text);
 
-    g_free(text);
+    g_free(markup_text);
 
     g_free(attr_desc_allocated);
     g_free(attr_color_allocated);

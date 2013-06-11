@@ -398,7 +398,7 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
     }
     else if (input == &lb->input_tooltip)
     {
-        gtk_widget_set_tooltip_text(lb->button, line);
+        gtk_widget_set_tooltip_markup(lb->button, line);
     }
     else if (input == &lb->input_icon)
     {
@@ -415,6 +415,8 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
             else if (g_ascii_strcasecmp(parts[0], "TitlePlainText") == 0)
                 fb_button_set_label_text(lb->button, parts[1]);
             else if (g_ascii_strcasecmp(parts[0], "Tooltip") == 0)
+                gtk_widget_set_tooltip_markup(lb->button, parts[1]);
+            else if (g_ascii_strcasecmp(parts[0], "TooltipPlainText") == 0)
                 gtk_widget_set_tooltip_text(lb->button, parts[1]);
             else if (g_ascii_strcasecmp(parts[0], "IconPath") == 0 || g_ascii_strcasecmp(parts[0], "Icon") == 0)
             {
@@ -572,7 +574,7 @@ static void lb_apply_configuration(Plugin * p)
     fb_button_set_orientation(lb->button, plugin_get_orientation(p));
 
     if (!strempty(lb->tooltip)) {
-        gtk_widget_set_tooltip_text(lb->button, lb->tooltip);
+        gtk_widget_set_tooltip_markup(lb->button, lb->tooltip);
     } else {
         gchar * tooltip = NULL;
         if (strempty(lb->command2)
@@ -645,7 +647,7 @@ static void lb_apply_configuration(Plugin * p)
                 }
             }
         }
-        gtk_widget_set_tooltip_text(lb->button, tooltip);
+        gtk_widget_set_tooltip_markup(lb->button, tooltip);
         g_free(tooltip);
     }
 

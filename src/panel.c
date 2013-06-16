@@ -2221,7 +2221,7 @@ panel_parse_plugin(Panel *p, char **fp)
     border = expand = padding = 0;
     while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
-            ERR( "lxpanel: bad line %s\n", s.str);
+            ERR( "bad line %s\n", s.str);
             goto error;
         }
         if (s.type == LINE_VAR) {
@@ -2235,7 +2235,7 @@ panel_parse_plugin(Panel *p, char **fp)
             else if (!g_ascii_strcasecmp(s.t[0], "border"))
                 border = atoi(s.t[1]);
             else {
-                ERR( "lxpanel: unknown var %s\n", s.t[0]);
+                ERR( "unknown var %s\n", s.t[0]);
             }
         } else if (s.type == LINE_BLOCK_START) {
             if (!g_ascii_strcasecmp(s.t[0], "Config")) {
@@ -2244,7 +2244,7 @@ panel_parse_plugin(Panel *p, char **fp)
                 while (pno) {
                     get_line_as_is(fp, &s);
                     if (s.type == LINE_NONE) {
-                        ERR( "lxpanel: unexpected eof\n");
+                        ERR( "unexpected eof\n");
                         goto error;
                     } else if (s.type == LINE_BLOCK_START) {
                         pno++;
@@ -2253,17 +2253,17 @@ panel_parse_plugin(Panel *p, char **fp)
                     }
                 }
             } else {
-                ERR( "lxpanel: unknown block %s\n", s.t[0]);
+                ERR( "unknown block %s\n", s.t[0]);
                 goto error;
             }
         } else {
-            ERR( "lxpanel: illegal in this context %s\n", s.str);
+            ERR( "illegal in this context %s\n", s.str);
             goto error;
         }
     }
 
     if (!type || !(plug = plugin_load(type))) {
-        ERR( "lxpanel: can't load %s plugin\n", type);
+        ERR( "can't load %s plugin\n", type);
         goto error;
     }
 
@@ -2273,7 +2273,7 @@ panel_parse_plugin(Panel *p, char **fp)
     plug->border = border;
     DBG("starting\n");
     if (!plugin_start(plug, pconfig ? &pconfig : NULL)) {
-        ERR( "lxpanel: can't start plugin %s\n", type);
+        ERR( "can't start plugin %s\n", type);
         goto error;
     }
     DBG("plug %s\n", type);
@@ -2297,7 +2297,7 @@ int panel_start( Panel *p, char **fp )
     ENTER;
 
     if ((lxpanel_get_line(fp, &s) != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Global")) {
-        ERR( "lxpanel: config file must start from Global section\n");
+        ERR( "config file must start from Global section\n");
         RET(0);
     }
     if (!panel_parse_global(p, fp))
@@ -2309,7 +2309,7 @@ int panel_start( Panel *p, char **fp )
 
     while (lxpanel_get_line(fp, &s) != LINE_NONE) {
         if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Plugin")) {
-            ERR( "lxpanel: expecting Plugin section\n");
+            ERR( "expecting Plugin section\n");
             RET(0);
         }
         panel_parse_plugin(p, fp);
@@ -2405,7 +2405,7 @@ Panel* panel_new( const char* config_file, const char* config_name )
 
     if (!panel_start(panel, &pfp))
     {
-        ERR( "lxpanel: can't start panel\n");
+        ERR( "can't start panel\n");
         panel_destroy(panel);
         panel = NULL;
     }
@@ -2619,7 +2619,7 @@ int main(int argc, char *argv[], char *env[])
         } else if (!strcmp(argv[i], "--log")) {
             i++;
             if (i == argc) {
-                ERR( "lxpanel: missing log level\n");
+                ERR( "missing log level\n");
                 usage();
                 exit(1);
             } else {
@@ -2628,7 +2628,7 @@ int main(int argc, char *argv[], char *env[])
         } else if (!strcmp(argv[i], "--profile") || !strcmp(argv[i], "-p")) {
             i++;
             if (i == argc) {
-                ERR( "lxpanel: missing profile name\n");
+                ERR( "missing profile name\n");
                 usage();
                 exit(1);
             } else {
@@ -2647,14 +2647,14 @@ int main(int argc, char *argv[], char *env[])
         } else if (!strcmp(argv[i], "--colormap")) {
             i++;
             if (i == argc) {
-                ERR( "lxpanel: missing colormap argument\n");
+                ERR( "missing colormap argument\n");
                 usage();
                 exit(1);
             } else {
                 force_colormap = g_strdup(argv[i]);
             }
         } else {
-            printf("lxpanel: unknown option - %s\n", argv[i]);
+            printf("unknown option - %s\n", argv[i]);
             usage();
             exit(1);
         }

@@ -127,12 +127,12 @@ panel_parse_global(Panel *p, char **fp)
                 g_free(p->widget_name);
                 p->widget_name = g_strdup( s.t[1] );
             } else {
-                ERR( "lxpanel: %s - unknown var in Global section\n", s.t[0]);
+                ERR( "%s - unknown var in Global section\n", s.t[0]);
             }
         } else if (s.type == LINE_BLOCK_END) {
             break;
         } else {
-            ERR( "lxpanel: illegal in this context %s\n", s.str);
+            ERR( "illegal in this context %s\n", s.str);
             return 0;
         }
     }

@@ -2609,31 +2609,21 @@ int main(int argc, char *argv[], char *env[])
     resolve_atoms();
     update_net_supported();
 
+#define NEXT_ARGUMENT(s) if (++i >= argc) { ERR(s); goto print_usage_and_exit; }
+
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
             usage();
             exit(0);
         } else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version")) {
-            printf("lxpanel %s\n", version);
+            printf("%s %s\n", g_get_prgname(), version);
             exit(0);
         } else if (!strcmp(argv[i], "--log")) {
-            i++;
-            if (i == argc) {
-                ERR( "missing log level\n");
-                usage();
-                exit(1);
-            } else {
-                log_level = atoi(argv[i]);
-            }
+            NEXT_ARGUMENT("missing log level\n")
+            log_level = atoi(argv[i]);
         } else if (!strcmp(argv[i], "--profile") || !strcmp(argv[i], "-p")) {
-            i++;
-            if (i == argc) {
-                ERR( "missing profile name\n");
-                usage();
-                exit(1);
-            } else {
-                cprofile = g_strdup(argv[i]);
-            }
+            NEXT_ARGUMENT("missing profile name\n")
+            cprofile = g_strdup(argv[i]);
         } else if (!strcmp(argv[i], "--kiosk-mode")) {
             enable_kiosk_mode();
         } else if (!strcmp(argv[i], "--quit-in-menu")) {
@@ -2641,29 +2631,24 @@ int main(int argc, char *argv[], char *env[])
         } else if (!strcmp(argv[i], "--force-compositing-wm-disabled")) {
             force_compositing_wm_disabled = TRUE;
         } else if (!strcmp(argv[i], "--force-composite-disabled")) {
-           force_composite_disabled = TRUE;
+            force_composite_disabled = TRUE;
         } else if (!strcmp(argv[i], "--glib-mem-profiler") || !strcmp(argv[i], "--glib_mem_profiler")) {
-           /* nothing */
+            /* nothing */
         } else if (!strcmp(argv[i], "--colormap")) {
-            i++;
-            if (i == argc) {
-                ERR( "missing colormap argument\n");
-                usage();
-                exit(1);
-            } else {
-                force_colormap = g_strdup(argv[i]);
-            }
+            NEXT_ARGUMENT("missing colormap argument\n");
+            force_colormap = g_strdup(argv[i]);
         } else {
             ERR("unrecognized option: %s\n", argv[i]);
-            usage();
-            exit(1);
+            goto print_usage_and_exit;
         }
     }
+
+#undef NEXT_ARGUMENT
 
     /* Check for duplicated lxpanel instances */
     if (!check_main_lock()) {
         printf("There is already an instance of LXPanelX.  Now to exit\n");
-        exit(1);
+        exit(2);
     }
 
     /* Add our own icons to the search path of icon theme */
@@ -2709,4 +2694,8 @@ restart:
     gdk_threads_leave();
 
     return 0;
+
+print_usage_and_exit:
+    usage();
+    return 1;
 }

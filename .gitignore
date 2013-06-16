@@ -20,3 +20,9 @@ Makefile
 /libtool
 /lxpanelx.pc
 
+Makefile.in
+/aclocal.m4
+/compile
+/configure
+/ltmain.sh
+/missing

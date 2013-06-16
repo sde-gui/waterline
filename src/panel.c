@@ -103,6 +103,14 @@ static gboolean force_composite_disabled = FALSE;
 
 /******************************************************************************/
 
+static const char * _license = "This program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n";
+
+static const char * _website = "http://code.google.com/p/lxpanelx/";
+static const char * _email = "igeekless@gmail.com";
+static const char * _bugreporting = "http://code.google.com/p/lxpanelx/issues/list";
+
+/******************************************************************************/
+
 /* A hack used to be compatible with Gnome panel for gtk+ themes.
  * Some gtk+ themes define special styles for desktop panels.
  * http://live.gnome.org/GnomeArt/Tutorials/GtkThemes/GnomePanel
@@ -1646,10 +1654,10 @@ static void panel_popupmenu_about( GtkMenuItem* item, Panel* panel )
     gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(about), VERSION);
     gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(about), _("LXPanelX"));
     gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(about), gdk_pixbuf_new_from_file(logo_path, NULL));
-    gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(about), _("Copyright (C) 2008-2011"));
+    gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(about), _("Copyright (C) 2008-2013"));
     gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(about), _( "General purpose desktop panel. (Originally forked from LXDE LXPanel 0.5.6.)"));
-    gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(about), "This program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with this program; if not, write to the Free Software\nFoundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.");
-    gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(about), "http://code.google.com/p/lxpanelx/");
+    gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(about), _license);
+    gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(about), _website);
     gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(about), authors);
     gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(about), translators);
     gtk_dialog_run(GTK_DIALOG(about));
@@ -2539,37 +2547,54 @@ out:
 
 /******************************************************************************/
 
-static void usage(void)
+static void print_stderr(const char *string, ...)
 {
-    g_print(_("LXPanelX %s - lightweight GTK2+ panel for UNIX desktops"), version);
-    g_print("\n\n");
-    g_print(_("Syntax: %s [options]"), "lxpanelx");
-    g_print("\n\n");
-    g_print(_("Options:"));
-    g_print("\n");
-    g_print("  --help             %s\n", _("Print this help and exit"));
-    g_print("  --version          %s\n", _("Print version and exit"));
-    g_print("  --log <number>     %s\n", _("Set log level 0-5. 0 - none 5 - chatty"));
-    g_print("  --profile <name>   %s\n", _("Use specified profile"));
-    g_print("  --kiosk-mode       %s\n", _("Enable kiosk mode"));
-    g_print("\n");
-    g_print(_("Debug options:"));
-    g_print("\n");
-    g_print("  --quit-in-menu     %s\n", _("Display 'quit' command in popup menu"));
-    g_print("  --colormap <name>  %s\n", _("Force specified colormap (rgba, rgb, system, default)"));
-    g_print("  --force-compositing-wm-disabled\n"
+    va_list ap;
+    va_start(ap, string);
+    vfprintf(stderr, string, ap);
+    va_end(ap);
+}
+
+static void usage(gboolean error)
+{
+    void (*print)(const char *string, ...) = error ? print_stderr : g_print;
+
+    if (!error)
+        print(_("LXPanelX %s - lightweight GTK2+ panel for UNIX desktops"), version);
+    print("\n\n");
+    print(_("Syntax: %s [options]"), "lxpanelx");
+    print("\n\n");
+    print(_("Options:"));
+    print("\n");
+    print("  --help             %s\n", _("Print this help and exit"));
+    print("  --version          %s\n", _("Print version and exit"));
+    print("  --log <number>     %s\n", _("Set log level 0-5. 0 - none 5 - chatty"));
+    print("  --profile <name>   %s\n", _("Use specified profile"));
+    print("  --kiosk-mode       %s\n", _("Enable kiosk mode"));
+    print("\n");
+    print(_("Debug options:"));
+    print("\n");
+    print("  --quit-in-menu     %s\n", _("Display 'quit' command in popup menu"));
+    print("  --colormap <name>  %s\n", _("Force specified colormap (rgba, rgb, system, default)"));
+    print("  --force-compositing-wm-disabled\n"
             "                     %s\n", _("Behave as if no compositing wm avaiable"));
-    g_print("  --force-composite-disabled\n"
+    print("  --force-composite-disabled\n"
             "                     %s\n", _("Behave as if there is no compositing support at all"));
-    g_print("\n");
-    g_print(_("Short options:"));
-    g_print("\n");
-    g_print("  -h                 %s\n", _("same as --help"));
-    g_print("  -p                 %s\n", _("same as --profile"));
-    g_print("  -v                 %s\n", _("same as --version"));
-    g_print("\n");
-    //g_print(_("Visit http://lxde.org/ for detail."));
-    g_print("\n\n");
+    print("\n");
+    print(_("Short options:"));
+    print("\n");
+    print("  -h                 %s\n", _("same as --help"));
+    print("  -p                 %s\n", _("same as --profile"));
+    print("  -v                 %s\n", _("same as --version"));
+    print("\n");
+    if (!error)
+    {
+        print(_("Report bugs to: <%s> or <%s>\nProgram home page: <%s>"),
+            _bugreporting,
+            _email,
+            _website);
+    }
+    print("\n\n");
 }
 
 /******************************************************************************/
@@ -2613,10 +2638,17 @@ int main(int argc, char *argv[], char *env[])
 
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-            usage();
+            usage(FALSE);
             exit(0);
         } else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version")) {
-            printf("%s %s\n", g_get_prgname(), version);
+            printf("%s %s\n\n", g_get_prgname(), version);
+            printf(
+                "Copyright (C) 2011-2013 Vadim Ushakov (<igeekless@gmail.com>)\n"
+                "Copyright (C) 2006 Hong Jen Yee (PCMan)\n"
+                "Copyright (C) 2006 Jim Huang (aka jserv)\n"
+                "Copyright (C) 2002 Anatoly Asviyan (aka Arsen)\n"
+                "Copyright (C) 2000 Peter Zelezny\n");
+            printf("\n%s", _license);
             exit(0);
         } else if (!strcmp(argv[i], "--log")) {
             NEXT_ARGUMENT("missing log level\n")
@@ -2696,6 +2728,6 @@ restart:
     return 0;
 
 print_usage_and_exit:
-    usage();
+    usage(TRUE);
     return 1;
 }

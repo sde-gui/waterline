@@ -23,21 +23,11 @@ template_plugins_taskbar_DATA = \
 template_plugins_taskbardir = $(pkgdatadir)/profile/template/plugins/taskbar/
 
 
+ui_DATA = \
+	ui/panel-pref.ui \
+	ui/launchbar.ui \
+	ui/netstatus.ui
 uidir=$(pkgdatadir)/ui
-ui_in_files= \
-	ui/panel-pref.glade \
-	ui/launchbar.glade \
-	ui/netstatus.glade
-
-ui_DATA = $(ui_in_files:.glade=.ui)
-
-# Generate GtkBuilder UI files from Glade files
-%.ui: %.glade
-	cp $< $@
-	$(top_builddir)/src/xml-purge $@
-
-CLEANFILES = \
-        $(ui_DATA)
 
 
 lxpanelx_images_DATA = \

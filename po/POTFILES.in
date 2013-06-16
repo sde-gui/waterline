@@ -1,7 +1,7 @@
 [encoding: UTF-8]
-data/ui/panel-pref.glade
-data/ui/netstatus.glade
-data/ui/launchbar.glade
+[type: gettext/glade]data/ui/panel-pref.ui
+[type: gettext/glade]data/ui/netstatus.ui
+[type: gettext/glade]data/ui/launchbar.ui
 src/bg.c
 src/configurator.c
 src/commands.c

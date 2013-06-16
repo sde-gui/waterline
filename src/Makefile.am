@@ -82,11 +82,6 @@ lxpanelx_LDADD = \
 lxpanelxctl_SOURCES = lxpanelxctl.c lxpanelxctl.h
 lxpanelxctl_LDADD = $(X11_LIBS) $(INTLLIBS)
 
-noinst_PROGRAMS=xml-purge
-xml_purge_SOURCES=xml-purge.c
-xml_purge_CFLAGS=@PACKAGE_CFLAGS@
-xml_purge_LDADD=@PACKAGE_LIBS@
-
 
 EXTRA_DIST = \
 	plugins/icon.xpm

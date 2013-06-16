@@ -2654,7 +2654,7 @@ int main(int argc, char *argv[], char *env[])
                 force_colormap = g_strdup(argv[i]);
             }
         } else {
-            printf("unknown option - %s\n", argv[i]);
+            ERR("unrecognized option: %s\n", argv[i]);
             usage();
             exit(1);
         }

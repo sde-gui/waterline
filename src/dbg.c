@@ -18,6 +18,8 @@
 
 #include <lxpanelx/dbg.h>
 
+#include <glib.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -100,4 +102,16 @@ void log_message(int level, const char *string, ...)
         free(buffer);
         free(time_buffer);
         va_end(ap);
+}
+
+void print_error_message(const char *string, ...)
+{
+    fprintf(stderr, "%s: ", g_get_prgname());
+
+    va_list ap;
+    va_start(ap, string);
+
+    vfprintf(stderr, string, ap);
+
+    va_end(ap);
 }

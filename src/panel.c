@@ -2552,6 +2552,9 @@ static void usage(void)
     g_print("  --log <number>     %s\n", _("Set log level 0-5. 0 - none 5 - chatty"));
     g_print("  --profile <name>   %s\n", _("Use specified profile"));
     g_print("  --kiosk-mode       %s\n", _("Enable kiosk mode"));
+    g_print("\n");
+    g_print(_("Debug options:"));
+    g_print("\n");
     g_print("  --quit-in-menu     %s\n", _("Display 'quit' command in popup menu"));
     g_print("  --colormap <name>  %s\n", _("Force specified colormap (rgba, rgb, system, default)"));
     g_print("  --force-compositing-wm-disabled\n"

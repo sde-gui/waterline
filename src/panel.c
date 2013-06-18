@@ -2188,17 +2188,8 @@ void panel_set_panel_configuration_changed(Panel *p)
     /* recreate the main layout box */
     if (p->plugin_box != NULL)
     {
-#if GTK_CHECK_VERSION(2,16,0)
         GtkOrientation bo = (p->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
         gtk_orientable_set_orientation(GTK_ORIENTABLE(p->plugin_box), bo);
-#else
-        GtkBox * new_plugin_box = GTK_BOX(recreate_box(GTK_BOX(p->plugin_box), p->orientation));
-        if (GTK_WIDGET(new_plugin_box) != p->plugin_box)
-        {
-            p->plugin_box = GTK_WIDGET(new_plugin_box);
-            gtk_container_add(GTK_CONTAINER(p->toplevel_alignment), p->plugin_box);
-        }
-#endif
         panel_update_toplevel_alignment(p);
     }
 

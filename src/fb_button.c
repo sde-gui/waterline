@@ -92,11 +92,7 @@ void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation)
     GtkWidget * child = gtk_bin_get_child(GTK_BIN(btn));
     if (GTK_IS_BOX(child))
     {
-        GtkBox *  newbox = GTK_BOX(recreate_box(GTK_BOX(child), orientation));
-        if (GTK_WIDGET(newbox) != child)
-        {
-            gtk_container_add(GTK_CONTAINER(btn), GTK_WIDGET(newbox));
-        }
+        gtk_orientable_set_orientation(GTK_ORIENTABLE(child), orientation);
     }
 }
 

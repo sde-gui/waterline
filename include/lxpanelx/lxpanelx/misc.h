@@ -61,16 +61,6 @@ guint32 gcolor2rgb24(GdkColor *color);
 char* translate_exec_to_cmd( const char* exec, const char* icon,
                              const char* title, const char* fpath );
 
-/*
- This function is used to re-create a new box with different
- orientation from the old one, add all children of the old one to
- the new one, and then destroy the old box.
- It's mainly used when we need to change the orientation of the panel or
- any plugin with a layout box. Since GtkHBox cannot be changed to GtkVBox,
- recreating a new box to replace the old one is required.
-*/
-GtkWidget* recreate_box( GtkBox* oldbox, GtkOrientation orientation );
-
 void show_error( GtkWindow* parent_win, const char* msg );
 
 /* Parameters: const char* name, gpointer ret_value, GType type, ....NULL */

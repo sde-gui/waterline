@@ -4679,7 +4679,7 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
                  g_free(classname);
             }
         }
-#if GTK_CHECK_VERSION(2,16,0)
+
         if (tk->wm_class && tk->run_path && tk->run_path != (gchar *)-1)
         {
             gchar * name = g_strdup_printf(_("Run new %s"), tk->wm_class);
@@ -4687,23 +4687,14 @@ static void task_adjust_menu(Task * tk, gboolean from_popup_menu)
             gtk_menu_item_set_label(GTK_MENU_ITEM(tb->run_new_menuitem), name);
             g_free(name);
         }
-#endif
+
         gtk_widget_set_visible(GTK_WIDGET(tb->run_new_menuitem), tk->run_path && tk->run_path != (gchar *)-1);
     }
 
 
     if (from_popup_menu) {
-#if GTK_CHECK_VERSION(2,16,0)
         gtk_menu_item_set_use_underline(GTK_MENU_ITEM(tb->title_menuitem), FALSE);
         gtk_menu_item_set_label(GTK_MENU_ITEM(tb->title_menuitem), tk->name);
-#else
-        if (tb->title_menuitem) {
-            gtk_widget_destroy(tb->title_menuitem);
-            tb->title_menuitem = NULL;
-        }
-        tb->title_menuitem = gtk_menu_item_new_with_label(tk->name);
-        gtk_menu_shell_prepend(GTK_MENU_SHELL(tb->menu), tb->title_menuitem);
-#endif
         gtk_widget_set_sensitive(GTK_WIDGET(tb->title_menuitem), FALSE);
     }
     if (tb->title_menuitem)
@@ -4913,11 +4904,11 @@ static void taskbar_make_menu(TaskbarPlugin * tb)
 
     mi = gtk_separator_menu_item_new();
     gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
-#if GTK_CHECK_VERSION(2,16,0)
+
     mi = gtk_menu_item_new_with_mnemonic("");
     gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), mi);
     tb->title_menuitem = mi;
-#endif
+
     gtk_widget_show_all(menu);
 }
 

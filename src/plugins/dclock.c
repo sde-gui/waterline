@@ -76,8 +76,6 @@ static void dclock_configure(Plugin * p, GtkWindow * parent);
 static void dclock_save_configuration(Plugin * p, FILE * fp);
 static void dclock_panel_configuration_changed(Plugin * p);
 
-#if GTK_CHECK_VERSION(2,16,0)
-
 static gchar ** dclock_get_format_strings(Plugin * plugin)
 {
     gchar ** result = NULL;
@@ -159,8 +157,6 @@ static void dclock_generate_copy_to_clipboard_menu(GtkMenu* lxpanelx_menu, Plugi
         gtk_widget_show_all(menu);
     }
 }
-
-#endif
 
 static char * dclock_get_timezones(DClockPlugin * dc)
 {
@@ -693,10 +689,7 @@ static void dclock_run_command(Plugin * p, char ** argv, int argc)
 static void dclock_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
 {
     //DClockPlugin * dc = PRIV(plugin);
-
-#if GTK_CHECK_VERSION(2,16,0)
     dclock_generate_copy_to_clipboard_menu(menu, plugin);
-#endif
 }
 
 /* Plugin descriptor. */

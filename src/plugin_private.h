@@ -44,6 +44,8 @@ struct _Plugin {
     GtkAllocation pwid_allocation;
     gboolean background_update_scheduled;
     int lock_visible;
+
+    json_t * json;
 };
 
 /* FIXME: optional definitions */

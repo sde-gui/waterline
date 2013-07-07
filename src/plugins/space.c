@@ -34,47 +34,32 @@ typedef struct {
     int size;				/* Size of spacer */
 } SpacePlugin;
 
-static int space_constructor(Plugin * p, char ** fp);
+static int space_constructor(Plugin * p);
 static void space_destructor(Plugin * p);
 static void space_apply_configuration(Plugin * p);
 static void space_configure(Plugin * p, GtkWindow * parent);
-static void space_save_configuration(Plugin * p, FILE * fp);
+static void space_save_configuration(Plugin * p);
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE SpacePlugin
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(int, size),
+    {0,}
+};
+
+/******************************************************************************/
 
 /* Plugin constructor. */
-static int space_constructor(Plugin * p, char ** fp)
+static int space_constructor(Plugin * p)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
     SpacePlugin * sp = g_new0(SpacePlugin, 1);
     plugin_set_priv(p, sp);
 
-    /* Load parameters from the configuration file. */
-    line s;
-    if (fp != NULL)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "space: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "size") == 0)
-                    sp->size = atoi(s.t[1]);
-                else
-                    ERR( "space: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "space: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-    }
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, sp);
 
-    /* Default the size parameter. */
-    if (sp->size == 0)
+    if (sp->size < 1)
         sp->size = 2;
 
     /* Allocate top level widget and set into Plugin widget pointer. */
@@ -129,10 +114,10 @@ static void space_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Callback when the configuration is to be saved. */
-static void space_save_configuration(Plugin * p, FILE * fp)
+static void space_save_configuration(Plugin * p)
 {
     SpacePlugin * sp = PRIV(p);
-    lxpanel_put_int(fp, "Size", sp->size);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, sp);
 }
 
 /* Plugin descriptor. */

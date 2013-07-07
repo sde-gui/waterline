@@ -36,8 +36,6 @@
 
 #include <lxpanelx/dbg.h>
 
-void panel_config_save(Panel* panel);
-
 static void notify_apply_config( GtkWidget* widget )
 {
     GSourceFunc apply_func;
@@ -129,7 +127,7 @@ static void on_browse_btn_clicked(GtkButton* btn, GtkEntry* entry)
 static void generic_config_dlg_save(gpointer panel_gpointer,GObject *where_the_object_was)
 {
     Panel *panel = (Panel *)(panel_gpointer);
-    panel_config_save(panel);
+    panel_save_configuration(panel);
 }
 
 /* Handler for "response" signal from standard configuration dialog. */

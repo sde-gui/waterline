@@ -69,12 +69,28 @@ static GtkWidget * dclock_create_calendar(DClockPlugin * dc);
 static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * evt, Plugin * plugin);
 static void dclock_timer_set(DClockPlugin * dc);
 static gboolean dclock_update_display(DClockPlugin * dc);
-static int dclock_constructor(Plugin * p, char ** fp);
+//static int dclock_constructor(Plugin * p, char ** fp);
 static void dclock_destructor(Plugin * p);
 static void dclock_apply_configuration(Plugin * p);
 static void dclock_configure(Plugin * p, GtkWindow * parent);
-static void dclock_save_configuration(Plugin * p, FILE * fp);
+//static void dclock_save_configuration(Plugin * p, FILE * fp);
 static void dclock_panel_configuration_changed(Plugin * p);
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE DClockPlugin
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(string, clock_format),
+    WTL_JSON_OPTION(string, tooltip_format),
+    WTL_JSON_OPTION(string, action),
+    WTL_JSON_OPTION(bool, bold),
+    WTL_JSON_OPTION(bool, icon_only),
+    WTL_JSON_OPTION(bool, center_text),
+    WTL_JSON_OPTION(string, timezone),
+    {0,}
+};
+
+/******************************************************************************/
 
 static gchar ** dclock_get_format_strings(Plugin * plugin)
 {
@@ -432,50 +448,14 @@ static gboolean dclock_update_display(DClockPlugin * dc)
 }
 
 /* Plugin constructor. */
-static int dclock_constructor(Plugin * p, char ** fp)
+static int dclock_constructor(Plugin * p)
 {
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
     DClockPlugin * dc = g_new0(DClockPlugin, 1);
     plugin_set_priv(p, dc);
     dc->plugin = p;
 
-    /* Load parameters from the configuration file. */
-    line s;
-    if (fp != NULL)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "dclock: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "ClockFmt") == 0)
-                    dc->clock_format = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "TooltipFmt") == 0)
-                    dc->tooltip_format = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "Action") == 0)
-                    dc->action = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "BoldFont") == 0)
-                    dc->bold = str2num(bool_pair, s.t[1], 0);
-                else if (g_ascii_strcasecmp(s.t[0], "IconOnly") == 0)
-                    dc->icon_only = str2num(bool_pair, s.t[1], 0);
-                else if (g_ascii_strcasecmp(s.t[0], "CenterText") == 0)
-                    dc->center_text = str2num(bool_pair, s.t[1], 0);
-                else if (g_ascii_strcasecmp(s.t[0], "TZ") == 0)
-                    dc->timezone = g_strdup(s.t[1]);
-                else
-                    ERR( "dclock: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "dclock: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-    }
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, dc);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
@@ -621,16 +601,10 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Callback when the configuration is to be saved. */
-static void dclock_save_configuration(Plugin * p, FILE * fp)
+static void dclock_save_configuration(Plugin * p)
 {
     DClockPlugin * dc = PRIV(p);
-    lxpanel_put_str(fp, "ClockFmt", dc->clock_format);
-    lxpanel_put_str(fp, "TooltipFmt", dc->tooltip_format);
-    lxpanel_put_str(fp, "Action", dc->action);
-    lxpanel_put_int(fp, "BoldFont", dc->bold);
-    lxpanel_put_int(fp, "IconOnly", dc->icon_only);
-    lxpanel_put_int(fp, "CenterText", dc->center_text);
-    lxpanel_put_str(fp, "TZ", dc->timezone);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, dc);
 }
 
 /* Callback when panel configuration changes. */

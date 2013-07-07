@@ -109,7 +109,7 @@ static void gui_update_visibility(Panel* p)
         p->height_when_hidden);
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->pref_dialog.reserve_space),
-        p->setstrut);
+        p->set_strut);
 
     gtk_widget_set_sensitive(p->pref_dialog.height_when_minimized,
         (p->visibility_mode == VISIBILITY_AUTOHIDE) || (p->visibility_mode == VISIBILITY_GOBELOW));
@@ -127,13 +127,13 @@ static void
 response_event(GtkDialog *widget, gint arg1, Panel* panel )
 {
     switch (arg1) {
-    /* FIXME: what will happen if the user exit lxpanelx without
+    /* FIXME: what will happen if the user exit the program without
               close this config dialog?
               Then the config won't be save, I guess. */
     case GTK_RESPONSE_DELETE_EVENT:
     case GTK_RESPONSE_CLOSE:
     case GTK_RESPONSE_NONE:
-        panel_config_save( panel );
+        panel_save_configuration(panel);
         /* NOTE: NO BREAK HERE*/
         gtk_widget_destroy(GTK_WIDGET(widget));
         break;
@@ -442,15 +442,14 @@ background_disable_toggle( GtkWidget *b, Panel* p )
 static void
 on_font_color_set( GtkColorButton* clr,  Panel* p )
 {
-    gtk_color_button_get_color( clr, &p->gfontcolor );
+    gtk_color_button_get_color( clr, &p->font_color );
     panel_set_panel_configuration_changed(p);
 }
 
 static void
 on_tint_color_set( GtkColorButton* clr,  Panel* p )
 {
-    gtk_color_button_get_color( clr, &p->gtintcolor );
-    p->tintcolor = gcolor2rgb24(&p->gtintcolor);
+    gtk_color_button_get_color( clr, &p->tint_color );
     p->alpha = gtk_color_button_get_alpha( clr ) / 256;
     panel_update_background( p );
 
@@ -466,14 +465,14 @@ on_use_font_color_toggled( GtkToggleButton* btn,   Panel* p )
         gtk_widget_set_sensitive( clr, TRUE );
     else
         gtk_widget_set_sensitive( clr, FALSE );
-    p->usefontcolor = gtk_toggle_button_get_active( btn );
+    p->use_font_color = gtk_toggle_button_get_active( btn );
     panel_set_panel_configuration_changed(p);
 }
 
 static void
 on_font_size_set( GtkSpinButton* spin, Panel* p )
 {
-    p->fontsize = (int)gtk_spin_button_get_value(spin);
+    p->font_size = (int)gtk_spin_button_get_value(spin);
     panel_set_panel_configuration_changed(p);
 }
 
@@ -485,7 +484,7 @@ on_use_font_size_toggled( GtkToggleButton* btn,   Panel* p )
         gtk_widget_set_sensitive( clr, TRUE );
     else
         gtk_widget_set_sensitive( clr, FALSE );
-    p->usefontsize = gtk_toggle_button_get_active( btn );
+    p->use_font_size = gtk_toggle_button_get_active( btn );
     panel_set_panel_configuration_changed(p);
 }
 
@@ -511,7 +510,7 @@ on_use_round_corners_toggled( GtkToggleButton* btn,   Panel* p )
 static void
 set_strut(GtkToggleButton* toggle,  Panel* p )
 {
-    p->setstrut = gtk_toggle_button_get_active(toggle) ? 1 : 0;
+    p->set_strut = gtk_toggle_button_get_active(toggle) ? 1 : 0;
     update_panel_geometry(p);
 }
 
@@ -680,7 +679,7 @@ void panel_initialize_pref_dialog(Panel * p)
 
     /* transparancy */
     tint_clr = w = (GtkWidget*)gtk_builder_get_object( builder, "tint_clr" );
-    gtk_color_button_set_color((GtkColorButton*)w, &p->gtintcolor);
+    gtk_color_button_set_color((GtkColorButton*)w, &p->tint_color);
     gtk_color_button_set_alpha((GtkColorButton*)w, 256 * p->alpha);
     if ( ! p->transparent )
         gtk_widget_set_sensitive( w, FALSE );
@@ -739,27 +738,27 @@ void panel_initialize_pref_dialog(Panel * p)
 
     /* font color */
     w = (GtkWidget*)gtk_builder_get_object( builder, "font_clr" );
-    gtk_color_button_set_color( (GtkColorButton*)w, &p->gfontcolor );
+    gtk_color_button_set_color( (GtkColorButton*)w, &p->font_color );
     g_signal_connect( w, "color-set", G_CALLBACK( on_font_color_set ), p );
 
     w2 = (GtkWidget*)gtk_builder_get_object( builder, "use_font_clr" );
-    gtk_toggle_button_set_active( (GtkToggleButton*)w2, p->usefontcolor );
+    gtk_toggle_button_set_active( (GtkToggleButton*)w2, p->use_font_color );
     g_object_set_data( G_OBJECT(w2), "clr", w );
     g_signal_connect(w2, "toggled", G_CALLBACK(on_use_font_color_toggled), p);
-    if( ! p->usefontcolor )
+    if( ! p->use_font_color )
         gtk_widget_set_sensitive( w, FALSE );
 
     /* font size */
     w = (GtkWidget*)gtk_builder_get_object( builder, "font_size" );
-    gtk_spin_button_set_value( (GtkSpinButton*)w, p->fontsize );
+    gtk_spin_button_set_value( (GtkSpinButton*)w, p->font_size );
     g_signal_connect( w, "value-changed",
                       G_CALLBACK(on_font_size_set), p);
 
     w2 = (GtkWidget*)gtk_builder_get_object( builder, "use_font_size" );
-    gtk_toggle_button_set_active( (GtkToggleButton*)w2, p->usefontsize );
+    gtk_toggle_button_set_active( (GtkToggleButton*)w2, p->use_font_size );
     g_object_set_data( G_OBJECT(w2), "clr", w );
     g_signal_connect(w2, "toggled", G_CALLBACK(on_use_font_size_toggled), p);
-    if( ! p->usefontsize )
+    if( ! p->use_font_size )
         gtk_widget_set_sensitive( w, FALSE );
 
     /* round corners */

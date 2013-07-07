@@ -110,7 +110,7 @@ static void pager_net_active_window(FbEv * ev, PagerPlugin * pg);
 static void pager_net_desktop_names(FbEv * ev, PagerPlugin * pg);
 static void pager_net_number_of_desktops(FbEv * ev, PagerPlugin * pg);
 static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg);
-static int pager_constructor(Plugin * plug, char ** fp);
+static int pager_constructor(Plugin * plug);
 static void pager_destructor(Plugin * p);
 static void pager_panel_configuration_changed(Plugin * p);
 
@@ -730,7 +730,7 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
 }
 
 /* Plugin constructor. */
-static int pager_constructor(Plugin * plug, char ** fp)
+static int pager_constructor(Plugin * plug)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
     PagerPlugin * pg = g_new0(PagerPlugin, 1);

@@ -21,7 +21,8 @@ AM_PROG_CC_C_O
 pkg_modules="gtk+-2.0 >= 2.16.0 \
              gio-unix-2.0 \
              gthread-2.0 \
-             gmodule-2.0"
+             gmodule-2.0 \
+             jansson >= 2.4"
 #             libstartup-notification-1.0"
 PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
 AC_SUBST(PACKAGE_CFLAGS)

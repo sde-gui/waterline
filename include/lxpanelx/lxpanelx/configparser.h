@@ -23,6 +23,8 @@
 #include <gtk/gtk.h>
 #include <stdio.h>
 
+#include <jansson.h>
+
 enum { LINE_NONE, LINE_BLOCK_START, LINE_BLOCK_END, LINE_VAR };
 
 
@@ -47,9 +49,9 @@ extern pair bool_pair[];
 extern pair pos_pair[];
 extern pair panel_visibility_pair[];
 
-int str2num(pair *p, gchar *str, int defval);
-const gchar *num2str(const pair *p, int num, const gchar *defval);
-
+int str2num(const pair *_p, const char * str, int defval);
+const char * num2str(const pair * p, int num, const char * defval);
+/*
 extern int lxpanel_get_line(char **fp, line *s);
 extern int lxpanel_put_line(FILE* fp, const char* format, ...);
 extern int lxpanel_put_str( FILE* fp, const char* name, const char* val );
@@ -58,5 +60,58 @@ extern int lxpanel_put_int( FILE* fp, const char* name, int val );
 extern int lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair);
 
 int get_line_as_is(char **fp, line *s);
+*/
+
+
+int wtl_json_dot_get_enum(json_t * json, const char * key, const pair * pairs, int default_value);
+int wtl_json_dot_get_int(json_t * json, const char * key, int default_value);
+gboolean wtl_json_dot_get_bool(json_t * json, const char * key, gboolean default_value);
+void wtl_json_dot_get_color(json_t * json, const char * key, const GdkColor * default_value, GdkColor * result);
+void wtl_json_dot_get_string(json_t * json, const char * key, const char * default_value, char ** result);
+
+void wtl_json_dot_set_enum(json_t * json, const char * key, const pair * pairs, int value);
+void wtl_json_dot_set_int(json_t * json, const char * key, int value);
+void wtl_json_dot_set_bool(json_t * json, const char * key, gboolean value);
+void wtl_json_dot_set_color(json_t * json, const char * key, const GdkColor * value);
+void wtl_json_dot_set_string(json_t * json, const char * key, const char * value);
+
+
+typedef enum {
+    wtl_json_type_enum,
+    wtl_json_type_int,
+    wtl_json_type_bool,
+    wtl_json_type_color,
+    wtl_json_type_string
+} wtl_json_type_t;
+
+typedef struct {
+    wtl_json_type_t type;
+    void * structure_offset;
+    const char * key;
+    const pair * pairs;
+} wtl_json_option_definition;
+
+#define WTL_JSON_OPTION(type, name) \
+    { wtl_json_type_##type, (void *) &(((WTL_JSON_OPTION_STRUCTURE *) NULL)->name), #name, NULL}
+#define WTL_JSON_OPTION_ENUM(pairs, name) \
+    { wtl_json_type_enum, (void *) &(((WTL_JSON_OPTION_STRUCTURE *) NULL)->name), #name, pairs}
+#define WTL_JSON_OPTION2(type, name, key) \
+    { wtl_json_type_##type, (void *) &(((WTL_JSON_OPTION_STRUCTURE *) NULL)->name), key, NULL}
+#define WTL_JSON_OPTION2_ENUM(pairs, name, key) \
+    { wtl_json_type_enum, (void *) &(((WTL_JSON_OPTION_STRUCTURE *) NULL)->name), key, pairs}
+
+void wtl_json_read_options(json_t * json, wtl_json_option_definition * options, void * structure);
+void wtl_json_write_options(json_t * json, wtl_json_option_definition * options, void * structure);
+
+/******************************************************************************/
+
+#ifndef json_array_foreach
+    #define json_array_foreach(array, index, value) \
+        for(index = 0; \
+            index < json_array_size(array) && (value = json_array_get(array, index)); \
+            index++)
+#endif
+
+/******************************************************************************/
 
 #endif

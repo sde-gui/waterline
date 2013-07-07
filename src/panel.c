@@ -72,7 +72,7 @@ extern void restart(void);
 /* forward declarations */
 
 static void panel_destroy(Panel *p);
-static int panel_start( Panel *p, char **fp );
+static int panel_start(Panel *p, const char * configuration, const char * source);
 static void panel_start_gui(Panel *p);
 static void panel_size_position_changed(Panel *p, gboolean position_changed);
 
@@ -199,7 +199,7 @@ static Panel* panel_allocate(void)
     p->oriented_width = 100;
     p->oriented_height_type = HEIGHT_PIXEL;
     p->oriented_height = PANEL_HEIGHT_DEFAULT;
-    p->setstrut = 1;
+    p->set_strut = 1;
     p->round_corners = 0;
     p->round_corners_radius = 7;
     p->autohide_visible = TRUE;
@@ -208,15 +208,17 @@ static Panel* panel_allocate(void)
     p->height_when_hidden = 1;
     p->transparent = 0;
     p->alpha = 255;
-    gdk_color_parse("white", &p->gtintcolor);
-    p->tintcolor = gcolor2rgb24(&p->gtintcolor);
-    p->usefontcolor = 0;
-    p->fontcolor = 0x00000000;
-    p->usefontsize = 0;
-    p->fontsize = 10;
+    gdk_color_parse("white", &p->tint_color);
+    p->use_font_color = 0;
+    gdk_color_parse("black", &p->font_color);
+    p->use_font_size = 0;
+    p->font_size = 10;
     p->spacing = 0;
     p->preferred_icon_size = PANEL_ICON_SIZE;
     p->visibility_mode = VISIBILITY_ALWAYS;
+
+    p->json = json_object();
+
     return p;
 }
 
@@ -338,7 +340,7 @@ static gboolean panel_set_wm_strut_real(Panel *p)
     {
         strut_size = p->height_when_hidden;
     }
-    else if (!p->setstrut)
+    else if (!p->set_strut)
     {
         strut_size = 0;
         strut_lower = 0;
@@ -950,9 +952,9 @@ static gboolean panel_expose_event(GtkWidget *widget, GdkEventExpose *event, Pan
     cr = gdk_cairo_create(widget->window); /* create cairo context */
 
     float a = (float) p->alpha / 255;
-    float r = (float) p->gtintcolor.red / 65535;
-    float g = (float) p->gtintcolor.green / 65535;
-    float b = (float) p->gtintcolor.blue / 65535;
+    float r = (float) p->tint_color.red / 65535;
+    float g = (float) p->tint_color.green / 65535;
+    float b = (float) p->tint_color.blue / 65535;
 
     if (p->background_pixmap)
     {
@@ -1091,7 +1093,7 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         }
         pixmap = fb_bg_get_xroot_pix_for_win(p->bg, widget);
         if ((pixmap != NULL) && (pixmap != GDK_NO_BG) && (p->alpha != 0))
-            fb_bg_composite(pixmap, widget->style->black_gc, p->tintcolor, p->alpha);
+            fb_bg_composite(pixmap, widget->style->black_gc, gcolor2rgb24(&p->tint_color), p->alpha);
     }
     else if (!p->background && !p->transparent)
     {
@@ -1325,7 +1327,7 @@ void panel_calculate_position(Panel *p)
         for( l = all_panels; l; l = l->next )
         {
             Panel* lp = (Panel*)l->data;
-            if (!lp->visible || lp->visibility_mode == VISIBILITY_AUTOHIDE || !lp->setstrut)
+            if (!lp->visible || lp->visibility_mode == VISIBILITY_AUTOHIDE || !lp->set_strut)
                 continue;
             if (lp->edge == EDGE_TOP && lp->ch > margin_top)
                 margin_top = lp->ch;
@@ -1532,7 +1534,7 @@ static void panel_popupmenu_remove_item( GtkMenuItem* item, Plugin* plugin )
 
     panel->plugins = g_list_remove( panel->plugins, plugin );
     plugin_delete(plugin);
-    panel_config_save(panel);
+    panel_save_configuration(panel);
 }
 
 static char* gen_panel_name( int edge )
@@ -1545,7 +1547,7 @@ static char* gen_panel_name( int edge )
     {
         name =  g_strdup_printf( "%s%d", edge_str, i );
 
-        gchar * file_name = g_strdup_printf("%s.panel", name);
+        gchar * file_name = g_strdup_printf("%s" PANEL_FILE_SUFFIX, name);
 
         gchar * path = g_build_filename( dir, file_name, NULL );
 
@@ -1569,7 +1571,7 @@ static void try_allocate_edge(Panel* p, int edge)
         p->edge = edge;
 }
 
-static void panel_popupmenu_create_panel( GtkMenuItem* item, Panel* panel )
+static void create_empty_panel(void)
 {
     Panel* new_panel = panel_allocate();
 
@@ -1578,8 +1580,8 @@ static void panel_popupmenu_create_panel( GtkMenuItem* item, Panel* panel )
     try_allocate_edge(new_panel, EDGE_TOP);
     try_allocate_edge(new_panel, EDGE_LEFT);
     try_allocate_edge(new_panel, EDGE_RIGHT);
-	if (new_panel->edge == EDGE_NONE)
-	    new_panel->edge = EDGE_BOTTOM;
+    if (new_panel->edge == EDGE_NONE)
+        new_panel->edge = EDGE_BOTTOM;
     new_panel->name = gen_panel_name(new_panel->edge);
 
     panel_configure(new_panel, 0);
@@ -1587,8 +1589,13 @@ static void panel_popupmenu_create_panel( GtkMenuItem* item, Panel* panel )
     panel_start_gui(new_panel);
     gtk_widget_show_all(new_panel->topgwin);
 
-    panel_config_save(new_panel);
+    panel_save_configuration(new_panel);
     all_panels = g_slist_prepend(all_panels, new_panel);
+}
+
+static void panel_popupmenu_create_panel( GtkMenuItem* item, Panel* panel )
+{
+    create_empty_panel();
 }
 
 static void panel_popupmenu_delete_panel( GtkMenuItem* item, Panel* panel )
@@ -1616,7 +1623,7 @@ static void panel_popupmenu_delete_panel( GtkMenuItem* item, Panel* panel )
 
         /* delete the config file of this panel */
         gchar * dir = get_config_path("panels", CONFIG_USER_W);
-        gchar * file_name = g_strdup_printf("%s.panel", panel->name);
+        gchar * file_name = g_strdup_printf("%s" PANEL_FILE_SUFFIX, panel->name);
         gchar * file_path = g_build_filename( dir, file_name, NULL );
 
         g_unlink( file_path );
@@ -2068,10 +2075,10 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned s
     /* Compute an appropriate size so the font will scale with the panel's icon size. */
     int font_desc = 0;
 
-    if (p->usefontsize)
+    if (p->use_font_size)
     {
-        font_desc = p->fontsize;
-        if (p->fontsize == 0)
+        font_desc = p->font_size;
+        if (p->font_size == 0)
         {
             if (panel_get_icon_size(p) < 20)
                font_desc = 9;
@@ -2102,8 +2109,8 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned s
 
     gchar * attr_color = "";
     gchar * attr_color_allocated = NULL;
-    if ((custom_color) && (p->usefontcolor))
-        attr_color_allocated =  attr_color = g_strdup_printf(" color=\"#%06x\"", gcolor2rgb24(&p->gfontcolor));
+    if ((custom_color) && (p->use_font_color))
+        attr_color_allocated =  attr_color = g_strdup_printf(" color=\"#%06x\"", gcolor2rgb24(&p->font_color));
 
     gchar * attr_desc = "";
     gchar * attr_desc_allocated = NULL;
@@ -2208,110 +2215,96 @@ void panel_set_panel_configuration_changed(Panel *p)
 }
 
 static int
-panel_parse_plugin(Panel *p, char **fp)
+panel_parse_plugin(Panel *p, json_t * json_plugin)
 {
-    line s;
-    Plugin *plug = NULL;
-    gchar *type = NULL;
-    int expand , padding, border;
-    char* pconfig = NULL;
+    Plugin * plugin = NULL;
+    gchar * type = NULL;
 
-    ENTER;
-    border = expand = padding = 0;
-    while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "bad line %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "type")) {
-                type = g_strdup(s.t[1]);
-                DBG("plug %s\n", type);
-            } else if (!g_ascii_strcasecmp(s.t[0], "expand"))
-                expand = str2num(bool_pair,  s.t[1], 0);
-            else if (!g_ascii_strcasecmp(s.t[0], "padding"))
-                padding = atoi(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "border"))
-                border = atoi(s.t[1]);
-            else {
-                ERR( "unknown var %s\n", s.t[0]);
-            }
-        } else if (s.type == LINE_BLOCK_START) {
-            if (!g_ascii_strcasecmp(s.t[0], "Config")) {
-                pconfig = *fp;
-                int pno = 1;
-                while (pno) {
-                    get_line_as_is(fp, &s);
-                    if (s.type == LINE_NONE) {
-                        ERR( "unexpected eof\n");
-                        goto error;
-                    } else if (s.type == LINE_BLOCK_START) {
-                        pno++;
-                    } else if (s.type == LINE_BLOCK_END) {
-                        pno--;
-                    }
-                }
-            } else {
-                ERR( "unknown block %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
+    wtl_json_dot_get_string(json_plugin, "type", "", &type);
 
-    if (!type || !(plug = plugin_load(type))) {
-        ERR( "can't load %s plugin\n", type);
+    if (strempty(type) || !(plugin = plugin_load(type))) {
+        ERR( "can't load %s plugin\n", type ? type : "(null)");
         goto error;
     }
 
-    plug->panel = p;
-    if (plug->class->expand_available) plug->expand = expand;
-    plug->padding = padding;
-    plug->border = border;
-    DBG("starting\n");
-    if (!plugin_start(plug, pconfig ? &pconfig : NULL)) {
+    plugin->panel = p;
+    if (plugin->class->expand_available)
+        plugin->expand = wtl_json_dot_get_bool(json_plugin, "expand", FALSE);
+    plugin->padding = wtl_json_dot_get_int(json_plugin, "padding", 0);
+    plugin->border = wtl_json_dot_get_int(json_plugin, "border", 0);
+
+    json_decref(plugin->json);
+    plugin->json = json_incref(json_plugin);
+
+    if (!plugin_start(plugin)) {
         ERR( "can't start plugin %s\n", type);
         goto error;
     }
-    DBG("plug %s\n", type);
-    p->plugins = g_list_append(p->plugins, plug);
 
-    g_free( type );
-    RET(1);
+    p->plugins = g_list_append(p->plugins, plugin);
+
+    g_free(type);
+
+    return 1;
 
  error:
-    if (plug != NULL)
-        plugin_unload(plug);
+    if (plugin != NULL)
+        plugin_unload(plugin);
     g_free(type);
-    RET(0);
+
+    return 0;
 }
 
-int panel_start( Panel *p, char **fp )
+gchar * format_json_error(const json_error_t * error, const char * source)
 {
-    line s;
+    gchar * result = g_strdup_printf("%s:%d:%d: %s",
+        source ? source : error->source,
+        error->line,
+        error->column,
+        error->text);
+    return result;
+}
 
-    /* parse global section */
-    ENTER;
-
-    if ((lxpanel_get_line(fp, &s) != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Global")) {
-        ERR( "config file must start from Global section\n");
-        RET(0);
+int panel_start(Panel *p, const char * configuration, const char * source)
+{
+    json_error_t error;
+    json_t * json = json_loads(configuration, 0, &error);
+    if (!json)
+    {
+        gchar * error_message = format_json_error(&error, source);
+        ERR("%s\n", error_message);
+        g_free(error_message);
+        return 0;
     }
-    if (!panel_parse_global(p, fp))
-        RET(0);
+
+    if (!json_is_object(json))
+    {
+        ERR("%s: toplevel item should be object\n", source);
+        json_decref(json);
+        return 0;
+    }
+
+    json_decref(p->json);
+    p->json = json;
+
+    json_t * json_global = json_object_get(json, "global");
+    if (!json_is_object(json_global))
+    {
+        ERR( "%s: configuration file must contain global section\n", source);
+    }
+
+    panel_read_global_configuration_from_json_object(p);
 
     panel_normalize_configuration(p);
 
     panel_start_gui(p);
 
-    while (lxpanel_get_line(fp, &s) != LINE_NONE) {
-        if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Plugin")) {
-            ERR( "expecting Plugin section\n");
-            RET(0);
-        }
-        panel_parse_plugin(p, fp);
+    json_t * json_plugins = json_object_get(json, "plugins");
+
+    size_t index;
+    json_t * json_plugin;
+    json_array_foreach(json_plugins, index, json_plugin) {
+        panel_parse_plugin(p, json_plugin);
     }
 
     panel_update_toplevel_alignment(p);
@@ -2329,6 +2322,8 @@ delete_plugin(gpointer data, gpointer udata)
 static void panel_destroy(Panel *p)
 {
     ENTER;
+
+    json_decref(p->json);
 
     if (p->set_wm_strut_idle)
         g_source_remove(p->set_wm_strut_idle);
@@ -2358,8 +2353,8 @@ static void panel_destroy(Panel *p)
         g_object_unref(G_OBJECT(p->background_pixmap));
     }
 
-    if( p->config_changed )
-        panel_config_save( p );
+    if (p->config_changed)
+        panel_save_configuration(p);
 
     g_list_foreach(p->plugins, delete_plugin, NULL);
     g_list_free(p->plugins);
@@ -2385,7 +2380,7 @@ static void panel_destroy(Panel *p)
 
 Panel* panel_new( const char* config_file, const char* config_name )
 {
-    char *fp, *pfp; /* point to current position of profile data in memory */
+    gchar * fp;
 
     if (!config_file)
         return NULL;
@@ -2400,9 +2395,7 @@ Panel* panel_new( const char* config_file, const char* config_name )
 
     panel->widget_name = g_strdup("PanelToplevel");
 
-    pfp = fp;
-
-    if (!panel_start(panel, &pfp))
+    if (!panel_start(panel, fp, config_file))
     {
         ERR( "can't start panel\n");
         panel_destroy(panel);
@@ -2430,10 +2423,10 @@ static gboolean start_all_panels(void)
     {
         if (strchr(file_name, '~') == NULL && /* Skip editor backup files in case user has hand edited in this directory. */
             file_name[0] != '.' && /* Skip hidden files. */
-            g_str_has_suffix(file_name, ".panel"))
+            g_str_has_suffix(file_name, PANEL_FILE_SUFFIX))
         {
             char* name = g_strdup(file_name);
-            name[strlen(name) - strlen(".panel")] = 0;
+            name[strlen(name) - strlen(PANEL_FILE_SUFFIX)] = 0;
 
             DBG("panel %s\n", name);
 
@@ -2693,8 +2686,11 @@ restart:
     XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), StructureNotifyMask|SubstructureNotifyMask|PropertyChangeMask);
     gdk_window_add_filter(gdk_get_default_root_window (), (GdkFilterFunc)panel_event_filter, NULL);
 
-    if( G_UNLIKELY( ! start_all_panels() ) )
-        g_warning( "Config files are not found.\n" );
+    if (!start_all_panels())
+    {
+        ERR("No panels started. Creating an empty panel...\n");
+        create_empty_panel();
+    }
 
     gtk_main();
 

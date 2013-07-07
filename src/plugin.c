@@ -82,7 +82,7 @@ static void init_plugin_class_list(void)
 
 #ifndef DISABLE_MENU
 #ifdef STATIC_LAUNCHBAR
-    REGISTER_STATIC_PLUGIN_CLASS(launchbar_plugin_class);
+//    REGISTER_STATIC_PLUGIN_CLASS(launchbar_plugin_class);
 #endif
 #endif
 
@@ -99,7 +99,7 @@ static void init_plugin_class_list(void)
 #endif
 
 #ifdef STATIC_DIRMENU
-    REGISTER_STATIC_PLUGIN_CLASS(dirmenu_plugin_class);
+//    REGISTER_STATIC_PLUGIN_CLASS(dirmenu_plugin_class);
 #endif
 
 #ifdef STATIC_PAGER
@@ -112,7 +112,7 @@ static void init_plugin_class_list(void)
 
 #ifndef DISABLE_MENU
 #ifdef STATIC_MENU
-    REGISTER_STATIC_PLUGIN_CLASS(menu_plugin_class);
+//    REGISTER_STATIC_PLUGIN_CLASS(menu_plugin_class);
 #endif
 #endif
 
@@ -262,6 +262,9 @@ Plugin * plugin_load(char * type)
     Plugin * plug = g_new0(Plugin, 1);
     plug->class = pc;
     pc->internal->count += 1;
+
+    plug->json = json_object();
+
     return plug;
 }
 
@@ -289,11 +292,11 @@ static void plugin_size_allocate(GtkWidget * widget, GtkAllocation * allocation,
 
 
 /* Configure and start a plugin by calling its constructor. */
-int plugin_start(Plugin * pl, char ** fp)
+int plugin_start(Plugin * pl)
 {
     /* Call the constructor.
      * It is responsible for parsing the parameters, and setting "pwid" to the top level widget. */
-    if ( ! pl->class->constructor(pl, fp))
+    if ( ! pl->class->constructor(pl))
         return 0;
 
     /* If this plugin can only be instantiated once, count the instantiation.
@@ -315,17 +318,18 @@ int plugin_start(Plugin * pl, char ** fp)
 }
 
 /* Unload a plugin if initialization fails. */
-void plugin_unload(Plugin * pl)
+void plugin_unload(Plugin * plugin)
 {
-    plugin_class_unref(pl->class);
-    g_free(pl);
+    plugin_class_unref(plugin->class);
+    json_decref(plugin->json);
+    g_free(plugin);
 }
 
 /* Delete a plugin. */
-void plugin_delete(Plugin * pl)
+void plugin_delete(Plugin * plugin)
 {
-    Panel * p = pl->panel;
-    PluginClass * pc = pl->class;
+    Panel * p = plugin->panel;
+    PluginClass * pc = plugin->class;
 
     /* If a plugin configuration dialog is open, close it. */
     if (p->pref_dialog.plugin_pref_dialog != NULL)
@@ -336,16 +340,18 @@ void plugin_delete(Plugin * pl)
 
     /* Run the destructor and then destroy the top level widget.
      * This prevents problems with the plugin destroying child widgets. */
-    pc->destructor(pl);
-    if (pl->pwid != NULL)
-        gtk_widget_destroy(pl->pwid);
+    pc->destructor(plugin);
+    if (plugin->pwid != NULL)
+        gtk_widget_destroy(plugin->pwid);
 
     /* Data structure bookkeeping. */
     pc->one_per_system_instantiated = FALSE;
     plugin_class_unref(pc);
 
+    json_decref(plugin->json);
+
     /* Free the Plugin structure. */
-    g_free(pl);
+    g_free(plugin);
 }
 
 /* Get a list of all available plugin classes.
@@ -670,5 +676,18 @@ void plugin_show_menu(Plugin * plugin, GdkEventButton * event)
 
 void plugin_save_configuration(Plugin * plugin)
 {
-    panel_config_save(plugin_panel(plugin));
+    panel_save_configuration(plugin_panel(plugin));
+}
+
+json_t * plugin_inner_json(Plugin * plugin)
+{
+    json_t * json_inner = json_object_get(plugin->json, "settings");
+    if (!json_is_object(json_inner))
+    {
+        json_inner = json_object();
+        json_object_set_nocheck(plugin->json, "settings", json_inner);
+        json_decref(json_inner);
+    }
+
+    return json_inner;
 }

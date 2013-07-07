@@ -95,7 +95,7 @@ typedef struct _lb_t {
 
     int input_restart_interval;
 
-    gboolean use_pipes;
+    gboolean interactive_update;
 
     guint input_timeout;
 
@@ -105,6 +105,29 @@ typedef struct _lb_t {
 
     int pressed_mouse_button;
 } lb_t;
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE lb_t
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(string, icon_path),
+    WTL_JSON_OPTION(string, title),
+    WTL_JSON_OPTION(string, tooltip),
+    WTL_JSON_OPTION(string, command1),
+    WTL_JSON_OPTION(string, command2),
+    WTL_JSON_OPTION(string, command3),
+    WTL_JSON_OPTION(string, scroll_up_command),
+    WTL_JSON_OPTION(string, scroll_down_command),
+
+    WTL_JSON_OPTION(bool, interactive_update),
+    WTL_JSON_OPTION(bool, input_restart_interval),
+    WTL_JSON_OPTION(string, input_title.command),
+    WTL_JSON_OPTION(string, input_tooltip.command),
+    WTL_JSON_OPTION(string, input_icon.command),
+    WTL_JSON_OPTION(string, input_general.command),
+
+    {0,}
+};
 
 /*****************************************************************************/
 
@@ -659,7 +682,7 @@ static void lb_apply_configuration(Plugin * p)
 
     lb_set_bgcolor(lb, "");
 
-    if (lb->use_pipes)
+    if (lb->interactive_update)
     {
         input_start(&lb->input_title);
         input_start(&lb->input_tooltip);
@@ -680,7 +703,7 @@ static void lb_apply_configuration(Plugin * p)
 
 
 /* Plugin constructor. */
-static int lb_constructor(Plugin *p, char **fp)
+static int lb_constructor(Plugin *p)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
     lb_t * lb = g_new0(lb_t, 1);
@@ -703,60 +726,7 @@ static int lb_constructor(Plugin *p, char **fp)
     lb->img    = NULL;
     lb->label  = NULL;
 
-    /* Load parameters from the configuration file. */
-    line s;
-    if (fp)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "launchbutton: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "IconPath") == 0)
-                    lb->icon_path = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "Title") == 0)
-                    lb->title = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "Tooltip") == 0)
-                    lb->tooltip = g_strdup(s.t[1]);
-
-                else if (g_ascii_strcasecmp(s.t[0], "Command1") == 0)
-                    lb->command1 = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "Command2") == 0)
-                    lb->command2 = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "Command3") == 0)
-                    lb->command3 = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "ScrollUpCommand") == 0)
-                    lb->scroll_up_command = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "ScrollDownCommand") == 0)
-                    lb->scroll_down_command = g_strdup(s.t[1]);
-
-                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdates") == 0)
-                    lb->use_pipes = str2num(bool_pair, s.t[1], lb->use_pipes);
-                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateTitle") == 0)
-                    lb->input_title.command = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateTooltip") == 0)
-                    lb->input_tooltip.command = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateIconPath") == 0)
-                    lb->input_icon.command = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateGeneral") == 0)
-                    lb->input_general.command = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "InteractiveUpdateRestartInterval") == 0)
-                    lb->input_restart_interval = atoi(s.t[1]);
-                else
-                    ERR( "launchbutton: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "launchbutton: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-
-    }
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, lb);
 
     #define DEFAULT_STRING(f, v) \
       if (lb->f == NULL) \
@@ -857,7 +827,7 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
         _("Scroll down command") , &lb->scroll_down_command, (GType)CONF_TYPE_STR,
 
         _("Interactive updates"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
-        _("Enable interactive updates"), (gpointer)&lb->use_pipes, (GType)CONF_TYPE_BOOL,
+        _("Enable interactive updates"), (gpointer)&lb->interactive_update, (GType)CONF_TYPE_BOOL,
         _("Command restart interval"), (gpointer)&lb->input_restart_interval, (GType)CONF_TYPE_INT,
         "int-min-value", (gpointer)&min_input_restart_interval, (GType)CONF_TYPE_SET_PROPERTY,
         "int-max-value", (gpointer)&max_input_restart_interval, (GType)CONF_TYPE_SET_PROPERTY,
@@ -876,24 +846,10 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
 
 
 /* Callback when the configuration is to be saved. */
-static void lb_save_configuration(Plugin * p, FILE * fp)
+static void lb_save_configuration(Plugin * p)
 {
     lb_t * lb = PRIV(p);
-    lxpanel_put_str(fp, "IconPath", lb->icon_path);
-    lxpanel_put_str(fp, "Title", lb->title);
-    lxpanel_put_str(fp, "Tooltip", lb->tooltip);
-    lxpanel_put_str(fp, "Command1", lb->command1);
-    lxpanel_put_str(fp, "Command2", lb->command2);
-    lxpanel_put_str(fp, "Command3", lb->command3);
-    lxpanel_put_str(fp, "ScrollUpCommand", lb->scroll_up_command);
-    lxpanel_put_str(fp, "ScrollDownCommand", lb->scroll_down_command);
-
-    lxpanel_put_bool(fp, "InteractiveUpdates", lb->use_pipes);
-    lxpanel_put_int(fp, "InteractiveUpdateRestartInterval", lb->input_restart_interval);
-    lxpanel_put_str(fp, "InteractiveUpdateTitle", lb->input_title.command);
-    lxpanel_put_str(fp, "InteractiveUpdateTooltip", lb->input_tooltip.command);
-    lxpanel_put_str(fp, "InteractiveUpdateIconPath", lb->input_icon.command);
-    lxpanel_put_str(fp, "InteractiveUpdateGeneral", lb->input_general.command);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, lb);
 }
 
 

@@ -20,6 +20,7 @@
 #ifndef PANEL_PRIVATE_H
 #define PANEL_PRIVATE_H
 
+#include <jansson.h>
 #include <lxpanelx/typedef.h>
 #include "bg.h"
 
@@ -41,10 +42,8 @@ struct _Panel {
 
     FbBg *bg;
     int alpha;
-    guint32 tintcolor;
-    guint32 fontcolor;
-    GdkColor gtintcolor;
-    GdkColor gfontcolor;
+    GdkColor tint_color;
+    GdkColor font_color;
 
     int round_corners_radius;
 
@@ -65,20 +64,20 @@ struct _Panel {
 
     int visibility_mode;
 
-    guint config_changed : 1;
-    guint self_destroy : 1;
-    guint setstrut : 1;
-    guint round_corners : 1;
-    guint usefontcolor : 1;
-    guint usefontsize : 1;
-    guint fontsize;
-    guint transparent : 1;
-    guint background : 1;
+    gboolean config_changed;
+    gboolean self_destroy;
+    gboolean set_strut;
+    gboolean round_corners;
+    gboolean use_font_color;
+    gboolean use_font_size;
+    int font_size;
+    gboolean transparent;
+    gboolean background;
     guint spacing;
 
-    guint gobelow : 1;
-    guint autohide_visible : 1;         /* whether panel is in full-size state. Always true if autohide is false */
-    guint visible : 1;                  /* whether panel is actually visible */
+    gboolean gobelow;
+    gboolean autohide_visible;         /* whether panel is in full-size state. Always true if autohide is false */
+    gboolean visible;                  /* whether panel is actually visible */
     int height_when_hidden;
     guint hide_timeout;
 
@@ -89,16 +88,18 @@ struct _Panel {
 
     char* background_file;
 
-    guint expose_event_connected : 1;
-    guint alpha_channel_support : 1;
-    guint rgba_transparency : 1;
-    guint stretch_background : 1;
+    gboolean expose_event_connected;
+    gboolean alpha_channel_support;
+    gboolean rgba_transparency;
+    gboolean stretch_background;
 
     GdkPixmap * background_pixmap;
 
     int update_background_idle_cb;
 
     GList * plugins;			/* List of all plugins */
+
+    json_t * json;
 
     struct {
         GtkWidget * pref_dialog;
@@ -142,9 +143,9 @@ GKeyFile * global_settings;
 extern void load_global_config(void);
 extern void free_global_config(void);
 extern void enable_kiosk_mode(void);
-extern void panel_config_save(Panel* panel);
-extern int panel_parse_global(Panel *p, char **fp);
+extern void panel_save_configuration(Panel* panel);
 
+extern void panel_read_global_configuration_from_json_object(Panel *p);
 
 /* configurator.c */
 
@@ -152,5 +153,6 @@ extern void panel_configure(Panel* p, int sel_page );
 extern gboolean panel_edge_available(Panel* p, int edge);
 extern void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);
 
+#define PANEL_FILE_SUFFIX ".js"
 
 #endif

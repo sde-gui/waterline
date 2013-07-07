@@ -27,24 +27,13 @@
 
 #include <lxpanelx/gtkcompat.h>
 
-static int separator_constructor(Plugin * p, char ** fp);
+static int separator_constructor(Plugin * p);
 static void separator_destructor(Plugin * p);
 static void separator_panel_configuration_changed(Plugin * p);
 
 /* Plugin constructor. */
-static int separator_constructor(Plugin * p, char ** fp)
+static int separator_constructor(Plugin * p)
 {
-    /* Load parameters from the configuration file. */
-    line s;
-    if (fp != NULL)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            ERR( "separator: illegal in this context %s\n", s.str);
-            return 0;
-        }
-    }
-
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
     plugin_set_widget(p, pwid);

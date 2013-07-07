@@ -517,6 +517,71 @@ typedef struct _taskbar {
 
 /******************************************************************************/
 
+#define WTL_JSON_OPTION_STRUCTURE TaskbarPlugin
+static wtl_json_option_definition option_definitions[] = {
+
+    WTL_JSON_OPTION(bool, tooltips),
+    WTL_JSON_OPTION_ENUM(show_pair, show_icons_titles),
+    WTL_JSON_OPTION(string, custom_fallback_icon),
+    WTL_JSON_OPTION(bool, show_iconified),
+    WTL_JSON_OPTION(bool, show_mapped),
+    WTL_JSON_OPTION(bool, show_all_desks),
+    WTL_JSON_OPTION(bool, show_urgency_all_desks),
+    WTL_JSON_OPTION(bool, use_urgency_hint),
+    WTL_JSON_OPTION(bool, flat_inactive_buttons),
+    WTL_JSON_OPTION(bool, flat_active_button),
+    WTL_JSON_OPTION(bool, colorize_buttons),
+    WTL_JSON_OPTION(bool, use_thumbnails_as_icons),
+    WTL_JSON_OPTION(bool, dim_iconified),
+    WTL_JSON_OPTION(int, task_width_max),
+    WTL_JSON_OPTION(int, spacing),
+
+    WTL_JSON_OPTION(bool, highlight_modified_titles),
+    WTL_JSON_OPTION(bool, highlight_title_of_focused_button),
+    WTL_JSON_OPTION(bool, bold_font_on_mouse_over),
+
+    WTL_JSON_OPTION_ENUM(mode_pair, mode),
+    WTL_JSON_OPTION(int, group_fold_threshold),
+    WTL_JSON_OPTION(int, panel_fold_threshold),
+    WTL_JSON_OPTION_ENUM(group_by_pair, group_by),
+    WTL_JSON_OPTION(bool, manual_grouping),
+    WTL_JSON_OPTION(bool, unfold_focused_group),
+    WTL_JSON_OPTION(bool, show_single_group),
+    WTL_JSON_OPTION(bool, show_close_buttons),
+    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_by[0]),
+    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_by[1]),
+    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_by[2]),
+    WTL_JSON_OPTION(bool, sort_reverse[0]),
+    WTL_JSON_OPTION(bool, sort_reverse[1]),
+    WTL_JSON_OPTION(bool, sort_reverse[2]),
+    WTL_JSON_OPTION(bool, rearrange),
+
+    WTL_JSON_OPTION_ENUM(action_pair, button1_action),
+    WTL_JSON_OPTION_ENUM(action_pair, button2_action),
+    WTL_JSON_OPTION_ENUM(action_pair, button3_action),
+    WTL_JSON_OPTION_ENUM(action_pair, scroll_up_action),
+    WTL_JSON_OPTION_ENUM(action_pair, scroll_down_action),
+    WTL_JSON_OPTION_ENUM(action_pair, shift_button1_action),
+    WTL_JSON_OPTION_ENUM(action_pair, shift_button2_action),
+    WTL_JSON_OPTION_ENUM(action_pair, shift_button3_action),
+    WTL_JSON_OPTION_ENUM(action_pair, shift_scroll_up_action),
+    WTL_JSON_OPTION_ENUM(action_pair, shift_scroll_down_action),
+    WTL_JSON_OPTION_ENUM(action_trigged_by_pair, menu_actions_click_press),
+    WTL_JSON_OPTION_ENUM(action_trigged_by_pair, other_actions_click_press),
+
+    //lxpanel_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
+    WTL_JSON_OPTION_ENUM(mouse_over_action_pair, mouse_over_action),
+
+    WTL_JSON_OPTION(bool, use_group_separators),
+    WTL_JSON_OPTION(int, group_separator_size),
+    WTL_JSON_OPTION(bool, hide_from_launchbar),
+    WTL_JSON_OPTION(bool, use_x_net_wm_icon_geometry),
+    WTL_JSON_OPTION(bool, use_x_window_position),
+    {0,}
+};
+
+/******************************************************************************/
+
 static Atom atom_LXPANEL_TASKBAR_WINDOW_POSITION;
 
 /******************************************************************************/
@@ -624,11 +689,11 @@ static void taskbar_window_manager_changed(GdkScreen * screen, TaskbarPlugin * t
 
 static void taskbar_build_gui(Plugin * p);
 
-static int taskbar_constructor(Plugin * p, char ** fp);
+//static int taskbar_constructor(Plugin * p, char ** fp);
 static void taskbar_destructor(Plugin * p);
 static void taskbar_apply_configuration(Plugin * p);
 static void taskbar_configure(Plugin * p, GtkWindow * parent);
-static void taskbar_save_configuration(Plugin * p, FILE * fp);
+//static void taskbar_save_configuration(Plugin * p, FILE * fp);
 static void taskbar_panel_configuration_changed(Plugin * p);
 
 
@@ -5064,7 +5129,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
 }
 
 /* Plugin constructor. */
-static int taskbar_constructor(Plugin * p, char ** fp)
+static int taskbar_constructor(Plugin * p)
 {
     atom_LXPANEL_TASKBAR_WINDOW_POSITION = XInternAtom( gdk_x11_get_default_xdisplay(), "_LXPANEL_TASKBAR_WINDOW_POSITION", False );
 
@@ -5077,7 +5142,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
     tb->icon_size         = plugin_get_icon_size(p);
     tb->tooltips          = TRUE;
     tb->show_icons_titles = SHOW_BOTH;
-    tb->custom_fallback_icon = "xorg";
+    tb->custom_fallback_icon = g_strdup("xorg");
     tb->show_all_desks    = FALSE;
     tb->show_urgency_all_desks = TRUE;
     tb->show_mapped       = TRUE;
@@ -5142,146 +5207,7 @@ static int taskbar_constructor(Plugin * p, char ** fp)
 
     tb->task_timestamp = 0;
 
-    /* Process configuration file. */
-    line s;
-    if( fp )
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
-            if (s.type == LINE_NONE) {
-                ERR( "taskbar: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "tooltips") == 0)
-                    tb->tooltips = str2num(bool_pair, s.t[1], tb->tooltips);
-                else if (g_ascii_strcasecmp(s.t[0], "IconsOnly") == 0)			/* For backward compatibility */
-                    ;
-                else if (g_ascii_strcasecmp(s.t[0], "AcceptSkipPager") == 0)		/* For backward compatibility */
-                    ;
-                else if (g_ascii_strcasecmp(s.t[0], "FallbackIcon") == 0)
-                    tb->custom_fallback_icon = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowIconified") == 0)
-                    tb->show_iconified = str2num(bool_pair, s.t[1], tb->show_iconified);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowMapped") == 0)
-                    tb->show_mapped = str2num(bool_pair, s.t[1], tb->show_mapped);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowAllDesks") == 0)
-                    tb->show_all_desks = str2num(bool_pair, s.t[1], tb->show_all_desks);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowUrgencyAllDesks") == 0)
-                    tb->show_urgency_all_desks = str2num(bool_pair, s.t[1], tb->show_urgency_all_desks);
-                else if (g_ascii_strcasecmp(s.t[0], "MaxTaskWidth") == 0)
-                    tb->task_width_max = atoi(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "spacing") == 0)
-                    tb->spacing = atoi(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "UseMouseWheel") == 0)              /* For backward compatibility */
-                    ;
-                else if (g_ascii_strcasecmp(s.t[0], "UseUrgencyHint") == 0)
-                    tb->use_urgency_hint = str2num(bool_pair, s.t[1], tb->use_urgency_hint);
-                else if (g_ascii_strcasecmp(s.t[0], "DimIconified") == 0 || g_ascii_strcasecmp(s.t[0], "DimmIconified") == 0)
-                    tb->dim_iconified = str2num(bool_pair, s.t[1], tb->dim_iconified);
-                else if (g_ascii_strcasecmp(s.t[0], "ColorizeButtons") == 0)
-                    tb->colorize_buttons = str2num(bool_pair, s.t[1], tb->colorize_buttons);
-                else if (g_ascii_strcasecmp(s.t[0], "IconThumbnails") == 0)
-                    tb->use_thumbnails_as_icons = str2num(bool_pair, s.t[1], tb->use_thumbnails_as_icons);
-                else if (g_ascii_strcasecmp(s.t[0], "FlatButton") == 0)
-                {
-                    tb->flat_inactive_buttons = str2num(bool_pair, s.t[1], tb->flat_inactive_buttons);
-                    tb->flat_active_button    = str2num(bool_pair, s.t[1], tb->flat_active_button);
-                }
-                else if (g_ascii_strcasecmp(s.t[0], "FlatInactiveButtons") == 0)
-                    tb->flat_inactive_buttons = str2num(bool_pair, s.t[1], tb->flat_inactive_buttons);
-                else if (g_ascii_strcasecmp(s.t[0], "FlatActiveButton") == 0)
-                    tb->flat_active_button = str2num(bool_pair, s.t[1], tb->flat_active_button);
-                else if (g_ascii_strcasecmp(s.t[0], "HighlightModifiedTitles") == 0)
-                    tb->highlight_modified_titles = str2num(bool_pair, s.t[1], tb->highlight_modified_titles);
-                else if (g_ascii_strcasecmp(s.t[0], "HighlightTitleOfFocusedButton") == 0)
-                    tb->highlight_title_of_focused_button = str2num(bool_pair, s.t[1], tb->highlight_title_of_focused_button);
-                else if (g_ascii_strcasecmp(s.t[0], "BoldFontOnMouseOver") == 0)
-                    tb->bold_font_on_mouse_over = str2num(bool_pair, s.t[1], tb->bold_font_on_mouse_over);
-                else if (g_ascii_strcasecmp(s.t[0], "GroupedTasks") == 0)		/* For backward compatibility */
-                    ;
-                else if (g_ascii_strcasecmp(s.t[0], "Mode") == 0)
-                    tb->mode = str2num(mode_pair, s.t[1], tb->mode);
-                else if (g_ascii_strcasecmp(s.t[0], "GroupThreshold") == 0)
-                    tb->group_fold_threshold = atoi(s.t[1]);				/* For backward compatibility */
-                else if (g_ascii_strcasecmp(s.t[0], "GroupFoldThreshold") == 0)
-                    tb->group_fold_threshold = atoi(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "FoldThreshold") == 0)
-                    tb->panel_fold_threshold = atoi(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "GroupBy") == 0)
-                    tb->group_by = str2num(group_by_pair, s.t[1], tb->group_by);
-                else if (g_ascii_strcasecmp(s.t[0], "ManualGrouping") == 0)
-                    tb->manual_grouping = str2num(bool_pair, s.t[1], tb->manual_grouping);
-                else if (g_ascii_strcasecmp(s.t[0], "UnfoldFocusedGroup") == 0)
-                    tb->unfold_focused_group = str2num(bool_pair, s.t[1], tb->unfold_focused_group);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowSingleGroup") == 0)
-                    tb->show_single_group = str2num(bool_pair, s.t[1], tb->show_single_group);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowIconsTitles") == 0)
-                    tb->show_icons_titles = str2num(show_pair, s.t[1], tb->show_icons_titles);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowCloseButtons") == 0)
-                    tb->show_close_buttons = str2num(bool_pair, s.t[1], tb->show_close_buttons);
-                else if (g_ascii_strcasecmp(s.t[0], "SelfGroupSingleWindow") == 0)
-                    tb->group_fold_threshold = str2num(bool_pair, s.t[1], 0) ? 1 : 2;        /* For backward compatibility */
-                else if (g_ascii_strcasecmp(s.t[0], "SortBy1") == 0)
-                    tb->sort_by[0] = str2num(sort_by_pair, s.t[1], tb->sort_by[0]);
-                else if (g_ascii_strcasecmp(s.t[0], "SortBy2") == 0)
-                    tb->sort_by[1] = str2num(sort_by_pair, s.t[1], tb->sort_by[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "SortBy3") == 0)
-                    tb->sort_by[2] = str2num(sort_by_pair, s.t[1], tb->sort_by[2]);
-                else if (g_ascii_strcasecmp(s.t[0], "SortReverse1") == 0)
-                    tb->sort_reverse[0] = str2num(bool_pair, s.t[1], tb->sort_reverse[0]);
-                else if (g_ascii_strcasecmp(s.t[0], "SortReverse2") == 0)
-                    tb->sort_reverse[1] = str2num(bool_pair, s.t[1], tb->sort_reverse[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "SortReverse3") == 0)
-                    tb->sort_reverse[2] = str2num(bool_pair, s.t[1], tb->sort_reverse[2]);
-                else if (g_ascii_strcasecmp(s.t[0], "RearrangeTasks") == 0)
-                    tb->rearrange = str2num(bool_pair, s.t[1], tb->rearrange);
-                else if (g_ascii_strcasecmp(s.t[0], "Button1Action") == 0)
-                    tb->button1_action = str2num(action_pair, s.t[1], tb->button1_action);
-                else if (g_ascii_strcasecmp(s.t[0], "Button2Action") == 0)
-                    tb->button2_action = str2num(action_pair, s.t[1], tb->button2_action);
-                else if (g_ascii_strcasecmp(s.t[0], "Button3Action") == 0)
-                    tb->button3_action = str2num(action_pair, s.t[1], tb->button3_action);
-                else if (g_ascii_strcasecmp(s.t[0], "ScrollUpAction") == 0)
-                    tb->scroll_up_action = str2num(action_pair, s.t[1], tb->scroll_up_action);
-                else if (g_ascii_strcasecmp(s.t[0], "ScrollDownAction") == 0)
-                    tb->scroll_down_action = str2num(action_pair, s.t[1], tb->scroll_down_action);
-                else if (g_ascii_strcasecmp(s.t[0], "ShiftButton1Action") == 0)
-                    tb->shift_button1_action = str2num(action_pair, s.t[1], tb->shift_button1_action);
-                else if (g_ascii_strcasecmp(s.t[0], "ShiftButton2Action") == 0)
-                    tb->shift_button2_action = str2num(action_pair, s.t[1], tb->shift_button2_action);
-                else if (g_ascii_strcasecmp(s.t[0], "ShiftButton3Action") == 0)
-                    tb->shift_button3_action = str2num(action_pair, s.t[1], tb->shift_button3_action);
-                else if (g_ascii_strcasecmp(s.t[0], "ShiftScrollUpAction") == 0)
-                    tb->shift_scroll_up_action = str2num(action_pair, s.t[1], tb->shift_scroll_up_action);
-                else if (g_ascii_strcasecmp(s.t[0], "ShiftScrollDownAction") == 0)
-                    tb->shift_scroll_down_action = str2num(action_pair, s.t[1], tb->shift_scroll_down_action);
-                else if (g_ascii_strcasecmp(s.t[0], "MenuActionsTriggeredBy") == 0)
-                    tb->menu_actions_click_press = str2num(action_trigged_by_pair, s.t[1], tb->menu_actions_click_press);
-                else if (g_ascii_strcasecmp(s.t[0], "OtherActionsTriggeredBy") == 0)
-                    tb->other_actions_click_press = str2num(action_trigged_by_pair, s.t[1], tb->other_actions_click_press);
-                else if (g_ascii_strcasecmp(s.t[0], "UseGroupSeparators") == 0)
-                    tb->use_group_separators = str2num(bool_pair, s.t[1], tb->use_group_separators);
-                else if (g_ascii_strcasecmp(s.t[0], "GroupSeparatorSize") == 0)
-                    tb->group_separator_size = atoi(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "HideVisibleAppsFromLaunchbar") == 0)
-                    tb->hide_from_launchbar = str2num(bool_pair, s.t[1], tb->hide_from_launchbar);
-                else if (g_ascii_strcasecmp(s.t[0], "UseXNetWmIconGeometry") == 0)
-                    tb->use_x_net_wm_icon_geometry = str2num(bool_pair, s.t[1], tb->use_x_net_wm_icon_geometry);
-                else if (g_ascii_strcasecmp(s.t[0], "UseXWindowPosition") == 0)
-                    tb->use_x_window_position = str2num(bool_pair, s.t[1], tb->use_x_window_position);
-                else if (g_ascii_strcasecmp(s.t[0], "MouseOverAction") == 0)
-                    tb->mouse_over_action = str2num(mouse_over_action_pair, s.t[1], tb->mouse_over_action);
-                else
-                    ERR( "taskbar: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "taskbar: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-    }
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, tb);
 
     taskbar_config_updated(tb);
 
@@ -5348,6 +5274,8 @@ static void taskbar_destructor(Plugin * p)
 
     if (tb->menu_config)
         g_strfreev(tb->menu_config);
+
+    g_free(tb->custom_fallback_icon);
 
     /* Deallocate other memory. */
     icon_grid_free(tb->icon_grid);
@@ -5538,63 +5466,10 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Save the configuration to the configuration file. */
-static void taskbar_save_configuration(Plugin * p, FILE * fp)
+static void taskbar_save_configuration(Plugin * p)
 {
     TaskbarPlugin * tb = PRIV(p);
-    lxpanel_put_bool(fp, "tooltips", tb->tooltips);
-    lxpanel_put_enum(fp, "ShowIconsTitles", tb->show_icons_titles, show_pair);
-    lxpanel_put_str(fp, "FallbackIcon", tb->custom_fallback_icon);
-    lxpanel_put_bool(fp, "ShowIconified", tb->show_iconified);
-    lxpanel_put_bool(fp, "ShowMapped", tb->show_mapped);
-    lxpanel_put_bool(fp, "ShowAllDesks", tb->show_all_desks);
-    lxpanel_put_bool(fp, "ShowUrgencyAllDesks", tb->show_urgency_all_desks);
-    lxpanel_put_bool(fp, "UseUrgencyHint", tb->use_urgency_hint);
-    lxpanel_put_bool(fp, "FlatInactiveButtons", tb->flat_inactive_buttons);
-    lxpanel_put_bool(fp, "FlatActiveButton", tb->flat_active_button);
-    lxpanel_put_bool(fp, "ColorizeButtons", tb->colorize_buttons);
-    lxpanel_put_bool(fp, "IconThumbnails", tb->use_thumbnails_as_icons);
-    lxpanel_put_bool(fp, "DimIconified", tb->dim_iconified);
-    lxpanel_put_int(fp, "MaxTaskWidth", tb->task_width_max);
-    lxpanel_put_int(fp, "spacing", tb->spacing);
-
-    lxpanel_put_bool(fp, "HighlightModifiedTitles", tb->highlight_modified_titles);
-    lxpanel_put_bool(fp, "HighlightTitleOfFocusedButton", tb->highlight_title_of_focused_button);
-    lxpanel_put_bool(fp, "BoldFontOnMouseOver", tb->bold_font_on_mouse_over);
-
-    lxpanel_put_enum(fp, "Mode", tb->mode, mode_pair);
-    lxpanel_put_int(fp, "GroupFoldThreshold", tb->group_fold_threshold);
-    lxpanel_put_int(fp, "FoldThreshold", tb->panel_fold_threshold);
-    lxpanel_put_enum(fp, "GroupBy", tb->group_by, group_by_pair);
-    lxpanel_put_bool(fp, "ManualGrouping", tb->manual_grouping);
-    lxpanel_put_bool(fp, "UnfoldFocusedGroup", tb->unfold_focused_group);
-    lxpanel_put_bool(fp, "ShowSingleGroup", tb->show_single_group);
-    lxpanel_put_bool(fp, "ShowCloseButtons", tb->show_close_buttons);
-    lxpanel_put_enum(fp, "SortBy1", tb->sort_by[0], sort_by_pair);
-    lxpanel_put_enum(fp, "SortBy2", tb->sort_by[1], sort_by_pair);
-    lxpanel_put_enum(fp, "SortBy3", tb->sort_by[2], sort_by_pair);
-    lxpanel_put_bool(fp, "SortReverse1", tb->sort_reverse[0]);
-    lxpanel_put_bool(fp, "SortReverse2", tb->sort_reverse[1]);
-    lxpanel_put_bool(fp, "SortReverse3", tb->sort_reverse[2]);
-    lxpanel_put_bool(fp, "RearrangeTasks", tb->rearrange);
-    lxpanel_put_enum(fp, "Button1Action", tb->button1_action, action_pair);
-    lxpanel_put_enum(fp, "Button2Action", tb->button2_action, action_pair);
-    lxpanel_put_enum(fp, "Button3Action", tb->button3_action, action_pair);
-    lxpanel_put_enum(fp, "ScrollUpAction", tb->scroll_up_action, action_pair);
-    lxpanel_put_enum(fp, "ScrollDownAction", tb->scroll_down_action, action_pair);
-    lxpanel_put_enum(fp, "ShiftButton1Action", tb->shift_button1_action, action_pair);
-    lxpanel_put_enum(fp, "ShiftButton2Action", tb->shift_button2_action, action_pair);
-    lxpanel_put_enum(fp, "ShiftButton3Action", tb->shift_button3_action, action_pair);
-    lxpanel_put_enum(fp, "ShiftScrollUpAction", tb->shift_scroll_up_action, action_pair);
-    lxpanel_put_enum(fp, "ShiftScrollDownAction", tb->shift_scroll_down_action, action_pair);
-    lxpanel_put_enum(fp, "MenuActionsTriggeredBy", tb->menu_actions_click_press, action_trigged_by_pair);
-    lxpanel_put_enum(fp, "OtherActionsTriggeredBy", tb->other_actions_click_press, action_trigged_by_pair);
-    //lxpanel_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
-    lxpanel_put_enum(fp, "MouseOverAction", tb->mouse_over_action, mouse_over_action_pair);
-    lxpanel_put_bool(fp, "UseGroupSeparators", tb->use_group_separators);
-    lxpanel_put_int(fp, "GroupSeparatorSize", tb->group_separator_size);
-    lxpanel_put_bool(fp, "HideVisibleAppsFromLaunchbar", tb->hide_from_launchbar);
-    lxpanel_put_bool(fp, "UseXNetWmIconGeometry", tb->use_x_net_wm_icon_geometry);
-    lxpanel_put_bool(fp, "UseXWindowPosition", tb->use_x_window_position);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, tb);
 }
 
 /* Callback when panel configuration changes. */

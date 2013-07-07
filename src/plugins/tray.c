@@ -112,9 +112,19 @@ static void balloon_message_data_event(TrayPlugin * tr, XClientMessageEvent * xe
 static void trayclient_request_dock(TrayPlugin * tr, XClientMessageEvent * xevent);
 static GdkFilterReturn tray_event_filter(XEvent * xev, GdkEvent * event, TrayPlugin * tr);
 static void tray_unmanage_selection(TrayPlugin * tr);
-static int tray_constructor(Plugin * p, char ** fp);
+static int tray_constructor(Plugin * p);
 static void tray_destructor(Plugin * p);
 static void tray_panel_configuration_changed(Plugin * p);
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE TrayPlugin
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(int, spacing),
+    {0,}
+};
+
+/******************************************************************************/
 
 /* Look up a client in the client list. */
 static TrayClient * client_lookup(TrayPlugin * tr, Window window)
@@ -727,7 +737,7 @@ static void tray_choose_visual(TrayPlugin * tr)
 #endif
 
 /* Plugin constructor. */
-static int tray_constructor(Plugin * p, char ** fp)
+static int tray_constructor(Plugin * p)
 {
     /* Allocate plugin context and set into Plugin private data pointer and static variable. */
     TrayPlugin * tr = g_new0(TrayPlugin, 1);
@@ -736,31 +746,7 @@ static int tray_constructor(Plugin * p, char ** fp)
 
     tr->spacing = SPACING;
 
-    /* Read configuration from file. */
-    line s;
-    if (fp != NULL)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "tray: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "Spacing") == 0)
-                    tr->spacing = atoi(s.t[1]);
-                else
-                    ERR( "tray: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "tray: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-    }
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, tr);
 
     if (tr->spacing < 0)
         tr->spacing = 0;
@@ -896,10 +882,10 @@ static void tray_destructor(Plugin * p)
 }
 
 /* Callback when the configuration is to be saved. */
-static void tray_save_configuration(Plugin * p, FILE * fp)
+static void tray_save_configuration(Plugin * p)
 {
     TrayPlugin * tr = PRIV(p);
-    lxpanel_put_int(fp, "Spacing", tr->spacing);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, tr);
 }
 /* Callback when panel configuration changes. */
 static void tray_panel_configuration_changed(Plugin * p)

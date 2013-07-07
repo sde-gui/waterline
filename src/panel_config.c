@@ -42,180 +42,119 @@
 
 static void save_global_config();
 
-void panel_global_config_save( Panel* p, FILE *fp);
-void panel_plugin_config_save( Panel* p, FILE *fp);
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE Panel
+static wtl_json_option_definition option_definitions[] = {
+
+    WTL_JSON_OPTION_ENUM(edge_pair, edge), 
+    WTL_JSON_OPTION_ENUM(align_pair, align),
+    WTL_JSON_OPTION(int, edge_margin),
+    WTL_JSON_OPTION(int, align_margin),
+
+    WTL_JSON_OPTION_ENUM(width_pair, oriented_width_type),
+    WTL_JSON_OPTION(int, oriented_width),
+    WTL_JSON_OPTION(int, oriented_height),
+
+    WTL_JSON_OPTION(bool, round_corners),
+    WTL_JSON_OPTION(int, round_corners_radius),
+
+    WTL_JSON_OPTION(bool, rgba_transparency),
+    WTL_JSON_OPTION(bool, stretch_background),
+
+    WTL_JSON_OPTION(bool, background),
+    WTL_JSON_OPTION(string, background_file),
+
+    WTL_JSON_OPTION(bool, transparent),
+    WTL_JSON_OPTION(int, alpha),
+
+    WTL_JSON_OPTION(color, tint_color),
+
+    WTL_JSON_OPTION2(string, widget_name, "GtkWidgetName"),
+
+    WTL_JSON_OPTION_ENUM(panel_visibility_pair, visibility_mode),
+    WTL_JSON_OPTION(int, height_when_hidden),
+    WTL_JSON_OPTION(int, set_strut),
+
+    WTL_JSON_OPTION(bool, use_font_color),
+    WTL_JSON_OPTION(color, font_color),
+    WTL_JSON_OPTION(bool, use_font_size),
+    WTL_JSON_OPTION(int, font_size),
+
+    WTL_JSON_OPTION2(int, preferred_icon_size, "icon_size"),
+    {0,}
+};
 
 /******************************************************************************/
 
-int
-panel_parse_global(Panel *p, char **fp)
+void panel_read_global_configuration_from_json_object(Panel *p)
 {
-    line s;
+    json_t * json = json_object_get(p->json, "global");
 
-    if (!fp)
-        return 1;
+    if (!json_is_object(json))
+        return;
 
-    while (lxpanel_get_line(fp, &s) != LINE_NONE) {
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "edge")) {
-                p->edge = str2num(edge_pair, s.t[1], EDGE_NONE);
-            } else if (!g_ascii_strcasecmp(s.t[0], "align")) {
-                p->align = str2num(align_pair, s.t[1], ALIGN_NONE);
-            } else if (!g_ascii_strcasecmp(s.t[0], "margin")) {
-                p->align_margin = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "AlignMargin")) {
-                p->align_margin = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "EdgeMargin")) {
-                p->edge_margin = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "widthtype")) {
-                p->oriented_width_type = str2num(width_pair, s.t[1], WIDTH_NONE);
-            } else if (!g_ascii_strcasecmp(s.t[0], "width")) {
-                p->oriented_width = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "heighttype")) {
-                p->oriented_height_type = str2num(height_pair, s.t[1], HEIGHT_NONE);
-            } else if (!g_ascii_strcasecmp(s.t[0], "height")) {
-                p->oriented_height = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "spacing")) {
-                p->spacing = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "SetDockType")) {
-                /* ignore */
-            } else if (!g_ascii_strcasecmp(s.t[0], "SetPartialStrut")) {
-                p->setstrut = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "RoundCorners")) {
-                p->round_corners = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "RoundCornersRadius")) {
-                p->round_corners_radius = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "Transparent")) {
-                p->transparent = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "Alpha")) {
-                p->alpha = atoi(s.t[1]);
-                if (p->alpha > 255)
-                    p->alpha = 255;
-            } else if (!g_ascii_strcasecmp(s.t[0], "AutoHide")) {
-                p->visibility_mode = str2num(bool_pair, s.t[1], 0) ? VISIBILITY_AUTOHIDE : VISIBILITY_ALWAYS;
-            } else if (!g_ascii_strcasecmp(s.t[0], "Visibility")) {
-                p->visibility_mode = str2num(panel_visibility_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "HeightWhenHidden")) {
-                p->height_when_hidden = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "TintColor")) {
-                if (!gdk_color_parse (s.t[1], &p->gtintcolor))
-                    gdk_color_parse ("white", &p->gtintcolor);
-                p->tintcolor = gcolor2rgb24(&p->gtintcolor);
-                DBG("tintcolor=%x\n", p->tintcolor);
-            } else if (!g_ascii_strcasecmp(s.t[0], "UseFontColor")) {
-                p->usefontcolor = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "FontColor")) {
-                if (!gdk_color_parse (s.t[1], &p->gfontcolor))
-                    gdk_color_parse ("black", &p->gfontcolor);
-                p->fontcolor = gcolor2rgb24(&p->gfontcolor);
-                DBG("fontcolor=%x\n", p->fontcolor);
-            } else if (!g_ascii_strcasecmp(s.t[0], "UseFontSize")) {
-                p->usefontsize = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "FontSize")) {
-                p->fontsize = atoi(s.t[1]);   
-            } else if (!g_ascii_strcasecmp(s.t[0], "Background")) {
-                p->background = str2num(bool_pair, s.t[1], 0);
-            } else if( !g_ascii_strcasecmp(s.t[0], "BackgroundFile") ) {
-                p->background_file = g_strdup( s.t[1] );
-            } else if (!g_ascii_strcasecmp(s.t[0], "RGBATransparency")) {
-                p->rgba_transparency = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "StretchBackground")) {
-                p->stretch_background = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "IconSize")) {
-                p->preferred_icon_size = atoi(s.t[1]);
-            } else if( !g_ascii_strcasecmp(s.t[0], "GtkWidgetName") ) {
-                g_free(p->widget_name);
-                p->widget_name = g_strdup( s.t[1] );
-            } else {
-                ERR( "%s - unknown var in Global section\n", s.t[0]);
-            }
-        } else if (s.type == LINE_BLOCK_END) {
-            break;
-        } else {
-            ERR( "illegal in this context %s\n", s.str);
-            return 0;
-        }
-    }
+    wtl_json_read_options(json, option_definitions, p);
 
-    return 1;
+    if (p->alpha > 255)
+        p->alpha = 255;
 }
 
 /******************************************************************************/
 
-void
-panel_global_config_save(Panel* p, FILE *fp)
+static void panel_write_global_configuration_to_json_object(Panel *p)
 {
     if (lxpanel_is_in_kiosk_mode())
         return;
 
-    fprintf(fp, "# lxpanelx <profile> config file. Manually editing is not recommended.\n"
-                "# Use preference dialog in lxpanelx to adjust config when you can.\n\n");
-    lxpanel_put_line(fp, "Global {");
-    lxpanel_put_str(fp, "Edge", num2str(edge_pair, p->edge, "none"));
-    lxpanel_put_str(fp, "Align", num2str(align_pair, p->align, "none"));
-    lxpanel_put_int(fp, "EdgeMargin", p->edge_margin);
-    lxpanel_put_int(fp, "AlignMargin", p->align_margin);
-    lxpanel_put_str(fp, "WidthType", num2str(width_pair, p->oriented_width_type, "none"));
-    lxpanel_put_int(fp, "Width", p->oriented_width);
-    lxpanel_put_int(fp, "Height", p->oriented_height);
-
-    lxpanel_put_bool(fp, "RoundCorners", p->round_corners );
-    lxpanel_put_int(fp, "RoundCornersRadius", p->round_corners_radius );
-
-    lxpanel_put_bool(fp, "RGBATransparency", p->rgba_transparency);
-    lxpanel_put_bool(fp, "StretchBackground", p->stretch_background);
-    lxpanel_put_bool(fp, "Background", p->background );
-    lxpanel_put_str(fp, "BackgroundFile", p->background_file);
-    lxpanel_put_bool(fp, "Transparent", p->transparent );
-    lxpanel_put_line(fp, "TintColor=#%06x", gcolor2rgb24(&p->gtintcolor));
-    lxpanel_put_int(fp, "Alpha", p->alpha);
-
-    lxpanel_put_str(fp, "GtkWidgetName", p->widget_name);
-
-    lxpanel_put_enum(fp, "Visibility", p->visibility_mode, panel_visibility_pair);
-    lxpanel_put_int(fp, "HeightWhenHidden", p->height_when_hidden);
-    lxpanel_put_bool(fp, "SetPartialStrut", p->setstrut);
-
-    lxpanel_put_bool(fp, "UseFontColor", p->usefontcolor);
-    lxpanel_put_line(fp, "FontColor=#%06x", gcolor2rgb24(&p->gfontcolor));
-    lxpanel_put_bool(fp, "UseFontSize", p->usefontsize);    
-    lxpanel_put_int(fp, "FontSize", p->fontsize);
-
-    lxpanel_put_int(fp, "IconSize", p->preferred_icon_size);
-
-    lxpanel_put_line(fp, "}\n");
-}
-
-void
-panel_plugin_config_save( Panel* p, FILE *fp)
-{
-    if (lxpanel_is_in_kiosk_mode())
-        return;
-
-    GList* l;
-    for( l = p->plugins; l; l = l->next )
+    json_t * json = json_incref(json_object_get(p->json, "global"));
+    if (!json)
     {
-        Plugin* pl = (Plugin*)l->data;
-        lxpanel_put_line( fp, "Plugin {" );
-        lxpanel_put_line( fp, "type = %s", pl->class->type );
-        if( pl->expand )
-            lxpanel_put_bool( fp, "expand", TRUE );
-        if( pl->padding > 0 )
-            lxpanel_put_int( fp, "padding", pl->padding );
-        if( pl->border > 0 )
-            lxpanel_put_int( fp, "border", pl->border );
-
-        if( pl->class->save )
-        {
-            lxpanel_put_line( fp, "Config {" );
-            pl->class->save( pl, fp );
-            lxpanel_put_line( fp, "}" );
-        }
-        lxpanel_put_line( fp, "}\n" );
+        json = json_object();
+        json_object_set_nocheck(p->json, "global", json);
     }
+
+    wtl_json_write_options(json, option_definitions, p);
+
+    json_decref(json);
 }
 
-int copyfile(char *src, char *dest)
+static void panel_write_plugins_configuration_to_json_object(Panel* p)
+{
+    if (lxpanel_is_in_kiosk_mode())
+        return;
+
+    json_t * json_plugins = json_array();
+
+    GList * l;
+    for (l = p->plugins; l; l = l->next)
+    {
+        Plugin * plugin = (Plugin *) l->data;
+
+        wtl_json_dot_set_string(plugin->json, "type", plugin->class->type);
+        wtl_json_dot_set_bool(plugin->json, "expand", plugin->expand);
+        wtl_json_dot_set_int(plugin->json, "padding", plugin->padding);
+        wtl_json_dot_set_int(plugin->json, "border", plugin->border);
+
+        if (plugin->class->save)
+            plugin->class->save(plugin);
+
+        json_array_append(json_plugins, plugin->json);
+    }
+
+    json_object_set_nocheck(p->json, "plugins", json_plugins);
+    json_decref(json_plugins);
+}
+
+static void panel_write_configuration_to_json_object(Panel* p)
+{
+    panel_write_global_configuration_to_json_object(p);
+    panel_write_plugins_configuration_to_json_object(p);
+}
+
+/******************************************************************************/
+
+static int copyfile(char *src, char *dest)
 {
     FILE * in = NULL;
     FILE * out = NULL;
@@ -261,7 +200,7 @@ ret:
 }
 
 
-void panel_config_save( Panel* p )
+void panel_save_configuration(Panel* p)
 {
     if (lxpanel_is_in_kiosk_mode())
         return;
@@ -270,10 +209,10 @@ void panel_config_save( Panel* p )
 
     gchar * dir = get_config_path("panels", CONFIG_USER_W);
 
-    gchar * file_name = g_strdup_printf("%s.panel", p->name);
+    gchar * file_name = g_strdup_printf("%s" PANEL_FILE_SUFFIX, p->name);
     gchar * file_path = g_build_filename( dir, file_name, NULL );
 
-    gchar * bak_file_name = g_strdup_printf("%s.panel.bak", p->name);
+    gchar * bak_file_name = g_strdup_printf("%s" PANEL_FILE_SUFFIX ".bak", p->name);
     gchar * bak_file_path = g_build_filename( dir, bak_file_name, NULL );
 
     /* ensure the 'panels' dir exists */
@@ -299,8 +238,13 @@ void panel_config_save( Panel* p )
         goto err;
     }
 
-    panel_global_config_save(p, fp);
-    panel_plugin_config_save(p, fp);
+    panel_write_configuration_to_json_object(p);
+
+    if (json_dumpf(p->json, fp, JSON_INDENT(2) | JSON_PRESERVE_ORDER) != 0)
+    {
+        ERR("failed to write panel configuration: %s\n", file_path);
+        goto err;
+    }
 
     fclose(fp);
 
@@ -316,6 +260,8 @@ void panel_config_save( Panel* p )
     RET();
 
 err:
+    if (fp)
+        fclose(fp);
     g_free( file_path );
     g_free( file_name );
     g_free( bak_file_path );

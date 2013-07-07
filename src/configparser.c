@@ -80,18 +80,18 @@ pair panel_visibility_pair[] = {
 
 
 int
-str2num(pair *_p, gchar *str, int defval)
+str2num(const pair *_p, const char * str, int defval)
 {
     ENTER;
 
-    pair * p;
+    const pair * p;
 
     for (p = _p; p && p->str; p++) {
         if (!g_ascii_strcasecmp(str, p->str))
             RET(p->num);
     }
 
-    gchar * s;
+    const gchar * s;
     for (s = str; *s; s++) {
         if (*s < '0' || *s > '9')
             RET(defval);
@@ -107,8 +107,8 @@ str2num(pair *_p, gchar *str, int defval)
     RET(defval);
 }
 
-const gchar *
-num2str(const pair *p, int num, const gchar *defval)
+const char *
+num2str(const pair * p, int num, const char * defval)
 {
     ENTER;
     for (;p && p->str; p++) {
@@ -327,5 +327,176 @@ get_line_as_is(char** fp, line *s)
     }
     RET(s->type);
 
+}
+
+
+int wtl_json_dot_get_enum(json_t * json, const char * key, const pair * pairs, int default_value)
+{
+    json_t * json_value = json_object_get(json, key);
+    if (!json_value)
+        return default_value;
+
+    if (!json_is_string(json_value))
+        return default_value;
+
+    return str2num(pairs, json_string_value(json_value), default_value);
+}
+
+int wtl_json_dot_get_int(json_t * json, const char * key, int default_value)
+{
+    json_t * json_value = json_object_get(json, key);
+    if (!json_value)
+        return default_value;
+
+    if (json_is_integer(json_value))
+        return json_integer_value(json_value);
+
+    if (json_is_real(json_value))
+        return json_real_value(json_value);
+
+    if (json_is_string(json_value))
+    {
+        return atoi(json_string_value(json_value)); // FIXME: check string format
+    }
+
+    return default_value;
+}
+
+gboolean wtl_json_dot_get_bool(json_t * json, const char * key, gboolean default_value)
+{
+    json_t * json_value = json_object_get(json, key);
+    if (!json_value)
+        return default_value;
+
+    if (json_is_true(json_value))
+        return TRUE;
+
+    if (json_is_false(json_value))
+        return FALSE;
+
+    return wtl_json_dot_get_int(json, key, default_value) ? TRUE : FALSE;
+}
+
+void wtl_json_dot_get_color(json_t * json, const char * key, const GdkColor * default_value, GdkColor * result)
+{
+    json_t * json_value = json_object_get(json, key);
+    if (!json_value)
+        goto def;
+
+    if (!json_is_string(json_value))
+        goto def;
+
+    if (gdk_color_parse(json_string_value(json_value), result))
+        return;
+
+def:
+    *result = *default_value;
+}
+
+void wtl_json_dot_get_string(json_t * json, const char * key, const char * default_value, char ** result)
+{
+    const char * value = default_value;
+
+    json_t * json_value = json_object_get(json, key);
+    if (!json_value)
+        goto end;
+
+    if (!json_is_string(json_value))
+        goto end;
+
+    value = json_string_value(json_value);
+
+end:
+
+    if (value != *result)
+    {
+        char * allocated_value = g_strdup(value);
+        g_free(*result);
+        *result = allocated_value;
+    }
+}
+
+void wtl_json_dot_set_enum(json_t * json, const char * key, const pair * pairs, int value)
+{
+    json_object_set_new_nocheck(json, key, json_string(num2str(pairs, value, "")));
+}
+
+void wtl_json_dot_set_int(json_t * json, const char * key, int value)
+{
+    json_object_set_new_nocheck(json, key, json_integer(value));
+}
+
+void wtl_json_dot_set_bool(json_t * json, const char * key, gboolean value)
+{
+    json_object_set_new_nocheck(json, key, json_boolean(value));
+}
+
+void wtl_json_dot_set_color(json_t * json, const char * key, const GdkColor * value)
+{
+    char s[256];
+    sprintf(s, "#%06x", gcolor2rgb24(value));
+
+    wtl_json_dot_set_string(json, key, s);
+}
+
+void wtl_json_dot_set_string(json_t * json, const char * key, const char * value)
+{
+    json_object_set_new_nocheck(json, key, json_string(value));
+}
+
+void wtl_json_read_options(json_t * json, wtl_json_option_definition * options, void * structure)
+{
+    for (; options->key; options++)
+    {
+        void * p = (void *) ((char *) structure + (unsigned) options->structure_offset);
+        switch (options->type)
+        {
+            case wtl_json_type_enum:
+                *((int *) p) = wtl_json_dot_get_enum(json, options->key, options->pairs, *(int *) p);
+                break;
+            case wtl_json_type_int:
+                *((int *) p) = wtl_json_dot_get_int(json, options->key, *(int *) p);
+                break;
+            case wtl_json_type_bool:
+                *((gboolean *) p) = wtl_json_dot_get_bool(json, options->key, *(gboolean *) p);
+                break;
+            case wtl_json_type_color:
+                wtl_json_dot_get_color(json, options->key, (GdkColor *) p, (GdkColor *) p);
+                break;
+            case wtl_json_type_string:
+                wtl_json_dot_get_string(json, options->key, *(char **) p, (char **) p);
+                break;
+            default:
+                ERR("wtl_json_read_options: invalid option type %d", options->type);
+        }
+    }
+}
+
+void wtl_json_write_options(json_t * json, wtl_json_option_definition * options, void * structure)
+{
+    for (; options->key; options++)
+    {
+        void * p = (void *) ((char *) structure + (unsigned) options->structure_offset);
+        switch (options->type)
+        {
+            case wtl_json_type_enum:
+                wtl_json_dot_set_enum(json, options->key, options->pairs, *(int *) p);
+                break;
+            case wtl_json_type_int:
+                wtl_json_dot_set_int(json, options->key, *(int *) p);
+                break;
+            case wtl_json_type_bool:
+                wtl_json_dot_set_bool(json, options->key, *(gboolean *) p);
+                break;
+            case wtl_json_type_color:
+                wtl_json_dot_set_color(json, options->key, (GdkColor *) p);
+                break;
+            case wtl_json_type_string:
+                wtl_json_dot_set_string(json, options->key, *(char **) p);
+                break;
+            default:
+                ERR("wtl_json_write_options: invalid option type %d", options->type);
+        }
+    }
 }
 

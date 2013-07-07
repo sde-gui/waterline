@@ -188,10 +188,11 @@ static void on_add_plugin_response( GtkDialog* dlg,
                 GtkTreePath* tree_path;
 
                 pl->panel = p;
-                if (pl->class->expand_default) pl->expand = TRUE;
-                plugin_start( pl, NULL );
+                if (pl->class->expand_default)
+                    pl->expand = TRUE;
+                plugin_start(pl);
                 p->plugins = g_list_append(p->plugins, pl);
-                panel_config_save(p);
+                panel_save_configuration(p);
 
                 if (pl->pwid)
                 {
@@ -362,7 +363,7 @@ static void on_remove_plugin( GtkButton* btn, GtkTreeView* view )
 
         p->plugins = g_list_remove( p->plugins, pl );
         plugin_delete(pl);
-        panel_config_save(p);
+        panel_save_configuration(p);
     }
 }
 
@@ -431,7 +432,7 @@ static void on_moveup_plugin(  GtkButton* btn, GtkTreeView* view )
             {
                 gtk_box_reorder_child( GTK_BOX(panel->plugin_box), pl->pwid, get_widget_index( panel, pl ) );
             }
-            panel_config_save(panel);
+            panel_save_configuration(panel);
             return;
         }
         prev = it;
@@ -473,7 +474,7 @@ static void on_movedown_plugin(  GtkButton* btn, GtkTreeView* view )
     {
         gtk_box_reorder_child( GTK_BOX(panel->plugin_box), pl->pwid, get_widget_index( panel, pl ) );
     }
-    panel_config_save(panel);
+    panel_save_configuration(panel);
 }
 
 void initialize_plugin_list(Panel * p, GtkBuilder * builder)

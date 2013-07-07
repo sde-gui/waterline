@@ -20,9 +20,9 @@ INCLUDES = \
 	$(G_CAST_CHECKS)
 
 if ENABLE_MENU_CACHE
-MENU_SOURCES = \
-	menu.c \
-	launchbar.c
+#MENU_SOURCES = \
+#	menu.c \
+#	launchbar.c
 endif
 
 PLUGINS_SOURCES = \
@@ -33,8 +33,8 @@ PLUGINS_SOURCES = \
 	pager.c \
 	space.c \
 	tray.c \
-	wincmd.c \
-	dirmenu.c
+	wincmd.c
+#	dirmenu.c
 
 libbuiltin_plugins_a_SOURCES = \
 	$(PLUGINS_SOURCES)

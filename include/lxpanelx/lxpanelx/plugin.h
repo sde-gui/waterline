@@ -25,13 +25,14 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <stdio.h>
+#include <jansson.h>
 
 #include "typedef.h"
 
 /* Support for external plugin versioning.
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */
 #define PLUGINCLASS_MAGIC ((unsigned long)0x7bd4370f)
-#define PLUGINCLASS_VERSION 1
+#define PLUGINCLASS_VERSION 3
 #define PLUGINCLASS_BASE_SIZE ((unsigned short) (unsigned) & ((PluginClass*)0)->__end_of_required_part)
 #define PLUGINCLASS_VERSIONING \
     structure_magic : PLUGINCLASS_MAGIC, \
@@ -66,13 +67,13 @@ struct _PluginClass {
     char * version;				/* Version of plugin */
     char * description;				/* Brief textual description of plugin for selection UI */
 
-    int  (*constructor)(struct _Plugin * plugin, char ** fp);		/* Create an instance of the plugin */
+    int  (*constructor)(struct _Plugin * plugin);		/* Create an instance of the plugin */
     void (*destructor)(struct _Plugin * plugin);			/* Destroy an instance of the plugin */
 
     void * __end_of_required_part;
 
     void (*config)(struct _Plugin * plugin, GtkWindow * parent);	/* Request the plugin to display its configuration dialog */
-    void (*save)(struct _Plugin * plugin, FILE * fp);			/* Request the plugin to save its configuration to a file */
+    void (*save)(struct _Plugin * plugin);			/* Request the plugin to save its configuration to a file */
     void (*panel_configuration_changed)(struct _Plugin * plugin);	/* Request the plugin to do a full redraw after a panel configuration change */
     void (*run_command)(struct _Plugin * plugin, char ** argv, int argc);
     void (*open_system_menu)(struct _Plugin * plugin);
@@ -126,5 +127,7 @@ extern void plugin_unlock_visible(Plugin * plugin);
 extern void plugin_run_command(Plugin * plugin, char ** argv, int argc);
 
 extern void plugin_save_configuration(Plugin * plugin);
+
+extern json_t * plugin_inner_json(Plugin * plugin);
 
 #endif

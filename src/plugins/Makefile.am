@@ -20,6 +20,8 @@ INCLUDES = \
 	$(G_CAST_CHECKS)
 
 if ENABLE_MENU_CACHE
+MENU_SOURCES = \
+	menu.c
 #MENU_SOURCES = \
 #	menu.c \
 #	launchbar.c

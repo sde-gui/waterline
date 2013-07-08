@@ -112,7 +112,7 @@ static void init_plugin_class_list(void)
 
 #ifndef DISABLE_MENU
 #ifdef STATIC_MENU
-//    REGISTER_STATIC_PLUGIN_CLASS(menu_plugin_class);
+    REGISTER_STATIC_PLUGIN_CLASS(menu_plugin_class);
 #endif
 #endif
 

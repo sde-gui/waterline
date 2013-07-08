@@ -1130,8 +1130,10 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
 }
 
 static int
-menu_constructor(Plugin *p, char **fp)
+menu_constructor(Plugin *p)
 {
+    char **fp = NULL;
+
     char *start;
     menup *m;
     static char default_config[] =
@@ -1197,8 +1199,9 @@ menu_constructor(Plugin *p, char **fp)
 
 }
 
-static void save_config( Plugin* p, FILE* fp )
+static void save_config( Plugin* p)
 {
+#if 0
     menup* menu = PRIV(p);
     int level = 0;
     lxpanel_put_str( fp, "name", menu->caption );
@@ -1226,6 +1229,7 @@ static void save_config( Plugin* p, FILE* fp )
         }
         g_strfreev( lines );
     }
+#endif
 }
 
 static void apply_config(Plugin* p)

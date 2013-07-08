@@ -56,7 +56,7 @@ gchar * expand_tilda(const gchar * file);
 
 GtkWidget *_gtk_image_new_from_file_scaled(const gchar *file, gint width,
                                            gint height, gboolean keep_ratio, gboolean use_dummy_image);
-guint32 gcolor2rgb24(GdkColor *color);
+guint32 gcolor2rgb24(const GdkColor *color);
 
 char* translate_exec_to_cmd( const char* exec, const char* icon,
                              const char* title, const char* fpath );

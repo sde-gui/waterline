@@ -53,7 +53,7 @@ static GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_name, in
 
 /********************************************************************/
 
-guint32 gcolor2rgb24(GdkColor *color)
+guint32 gcolor2rgb24(const GdkColor *color)
 {
     guint32 i;
     guint16 r, g, b;

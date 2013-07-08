@@ -18,6 +18,7 @@
  */
 
 #include <lxpanelx/configparser.h>
+#include <lxpanelx/misc.h>
 #include <lxpanelx/panel.h>
 #include <lxpanelx/dbg.h>
 #include <string.h>

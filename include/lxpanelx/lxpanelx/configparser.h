@@ -51,7 +51,7 @@ extern pair panel_visibility_pair[];
 
 int str2num(const pair *_p, const char * str, int defval);
 const char * num2str(const pair * p, int num, const char * defval);
-/*
+
 extern int lxpanel_get_line(char **fp, line *s);
 extern int lxpanel_put_line(FILE* fp, const char* format, ...);
 extern int lxpanel_put_str( FILE* fp, const char* name, const char* val );
@@ -60,7 +60,7 @@ extern int lxpanel_put_int( FILE* fp, const char* name, int val );
 extern int lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair);
 
 int get_line_as_is(char **fp, line *s);
-*/
+
 
 
 int wtl_json_dot_get_enum(json_t * json, const char * key, const pair * pairs, int default_value);

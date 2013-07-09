@@ -59,9 +59,9 @@ struct cpu_stat {
 /* Private context for CPU plugin. */
 typedef struct {
     double foreground_color_io[3];
-    double foreground_color_n[3];
-    double foreground_color_u[3];
-    double foreground_color_s[3];
+    double foreground_color_nice[3];
+    double foreground_color_user[3];
+    double foreground_color_system[3];
     double background_color[3];
 
     GtkWidget * da;				/* Drawing area */
@@ -75,20 +75,37 @@ typedef struct {
     struct cpu_stat previous_cpu_stat;		/* Previous value of cpu_stat */
 
     char * fg_color_io;
-    char * fg_color_n;
-    char * fg_color_u;
-    char * fg_color_s;
+    char * fg_color_nice;
+    char * fg_color_user;
+    char * fg_color_system;
     char * bg_color;
     int update_interval;
 } CPUPlugin;
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE CPUPlugin
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(string, fg_color_io),
+    WTL_JSON_OPTION(string, fg_color_nice),
+    WTL_JSON_OPTION(string, fg_color_user),
+    WTL_JSON_OPTION(string, fg_color_system),
+    WTL_JSON_OPTION(string, bg_color),
+    WTL_JSON_OPTION(int, update_interval),
+    {0,}
+};
+
+/******************************************************************************/
+
+
 
 static void redraw_pixmap(CPUPlugin * c);
 static gboolean cpu_update(CPUPlugin * c);
 static gboolean configure_event(GtkWidget * widget, GdkEventConfigure * event, CPUPlugin * c);
 static gboolean expose_event(GtkWidget * widget, GdkEventExpose * event, CPUPlugin * c);
-static int cpu_constructor(Plugin * p, char ** fp);
+static int cpu_constructor(Plugin * p);
 static void cpu_destructor(Plugin * p);
-static void cpu_save_configuration(Plugin * p, FILE * fp);
+static void cpu_save_configuration(Plugin * p);
 
 
 static void draw_samples(CPUPlugin * c, cairo_t * cr, double color[3], int index)
@@ -135,9 +152,9 @@ static void redraw_pixmap(CPUPlugin * c)
 
     /* Recompute pixmap. */
     draw_samples(c, cr, c->foreground_color_io, CPU_SAMPLE_IO);
-    draw_samples(c, cr, c->foreground_color_n, CPU_SAMPLE_N);
-    draw_samples(c, cr, c->foreground_color_u, CPU_SAMPLE_U);
-    draw_samples(c, cr, c->foreground_color_s, CPU_SAMPLE_S);
+    draw_samples(c, cr, c->foreground_color_nice, CPU_SAMPLE_N);
+    draw_samples(c, cr, c->foreground_color_user, CPU_SAMPLE_U);
+    draw_samples(c, cr, c->foreground_color_system, CPU_SAMPLE_S);
 
     cairo_destroy(cr);
 
@@ -306,9 +323,9 @@ static void cpu_apply_configuration(Plugin * p)
     }
 
     color_parse_d(c->fg_color_io, c->foreground_color_io);
-    color_parse_d(c->fg_color_n, c->foreground_color_n);
-    color_parse_d(c->fg_color_u, c->foreground_color_u);
-    color_parse_d(c->fg_color_s, c->foreground_color_s);
+    color_parse_d(c->fg_color_nice, c->foreground_color_nice);
+    color_parse_d(c->fg_color_user, c->foreground_color_user);
+    color_parse_d(c->fg_color_system, c->foreground_color_system);
     color_parse_d(c->bg_color, c->background_color);
 
     /* Show the widget.  Connect a timer to refresh the statistics. */
@@ -319,63 +336,20 @@ static void cpu_apply_configuration(Plugin * p)
 }
 
 /* Plugin constructor. */
-static int cpu_constructor(Plugin * p, char ** fp)
+static int cpu_constructor(Plugin * p)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
     CPUPlugin * c = g_new0(CPUPlugin, 1);
     plugin_set_priv(p, c);
 
     c->update_interval = 1500;
+    c->fg_color_io = g_strdup("grey");
+    c->fg_color_nice = g_strdup("blue");
+    c->fg_color_user = g_strdup("green");
+    c->fg_color_system = g_strdup("red");
+    c->bg_color = g_strdup("black");
 
-    /* Load parameters from the configuration file. */
-    line s;
-    if (fp)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "cpu: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "FgColorIOWait") == 0)
-                    c->fg_color_io = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "FgColorNice") == 0)
-                    c->fg_color_n = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "FgColorUser") == 0)
-                    c->fg_color_u = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "FgColorSystem") == 0)
-                    c->fg_color_s = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "BgColor") == 0)
-                    c->bg_color = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "UpdateInterval") == 0)
-                    c->update_interval = atoi(s.t[1]);
-                else
-                    ERR( "cpu: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "cpu: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-
-    }
-
-
-    #define DEFAULT_STRING(f, v) \
-      if (c->f == NULL) \
-          c->f = g_strdup(v);
-
-    DEFAULT_STRING(fg_color_io, "grey");
-    DEFAULT_STRING(fg_color_n, "blue");
-    DEFAULT_STRING(fg_color_u, "green");
-    DEFAULT_STRING(fg_color_s, "red");
-    DEFAULT_STRING(bg_color, "black");
-
-    #undef DEFAULT_STRING
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, c);
 
     cpu_apply_configuration(p);
 
@@ -393,9 +367,9 @@ static void cpu_destructor(Plugin * p)
     /* Deallocate memory. */
     g_object_unref(c->pixmap);
     g_free(c->stats_cpu);
-    g_free(c->fg_color_u);
-    g_free(c->fg_color_n);
-    g_free(c->fg_color_s);
+    g_free(c->fg_color_user);
+    g_free(c->fg_color_nice);
+    g_free(c->fg_color_system);
     g_free(c->bg_color);
     g_free(c);
 }
@@ -418,9 +392,9 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
 
         _("Colors"), 0, (GType)CONF_TYPE_TITLE,
         _("IOWait"), &c->fg_color_io, (GType)CONF_TYPE_COLOR,
-        _("Nice"), &c->fg_color_n, (GType)CONF_TYPE_COLOR,
-        _("User"), &c->fg_color_u, (GType)CONF_TYPE_COLOR,
-        _("System"), &c->fg_color_s, (GType)CONF_TYPE_COLOR,
+        _("Nice"), &c->fg_color_nice, (GType)CONF_TYPE_COLOR,
+        _("User"), &c->fg_color_user, (GType)CONF_TYPE_COLOR,
+        _("System"), &c->fg_color_system, (GType)CONF_TYPE_COLOR,
         _("Idle"), &c->bg_color, (GType)CONF_TYPE_COLOR,
 
         _("Options"), 0, (GType)CONF_TYPE_TITLE,
@@ -435,15 +409,10 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
 
 
 /* Callback when the configuration is to be saved. */
-static void cpu_save_configuration(Plugin * p, FILE * fp)
+static void cpu_save_configuration(Plugin * p)
 {
     CPUPlugin * c = PRIV(p);
-    lxpanel_put_str(fp, "FgColorIOWait", c->fg_color_io);
-    lxpanel_put_str(fp, "FgColorNice", c->fg_color_n);
-    lxpanel_put_str(fp, "FgColorUser", c->fg_color_u);
-    lxpanel_put_str(fp, "FgColorSystem", c->fg_color_s);
-    lxpanel_put_str(fp, "BgColor", c->bg_color);
-    lxpanel_put_int(fp, "UpdateInterval", c->update_interval);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, c);
 }
 
 

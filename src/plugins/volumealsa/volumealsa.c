@@ -74,9 +74,20 @@ static void volumealsa_popup_scale_changed(GtkRange * range, VolumeALSAPlugin * 
 static void volumealsa_popup_scale_scrolled(GtkScale * scale, GdkEventScroll * evt, VolumeALSAPlugin * vol);
 static void volumealsa_popup_mute_toggled(GtkWidget * widget, VolumeALSAPlugin * vol);
 static void volumealsa_build_popup_window(Plugin * p);
-static int volumealsa_constructor(Plugin * p, char ** fp);
+static int volumealsa_constructor(Plugin * p);
 static void volumealsa_destructor(Plugin * p);
 static void volumealsa_panel_configuration_changed(Plugin * p);
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE VolumeALSAPlugin
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(string, volume_control_command),
+    {0,}
+};
+
+/******************************************************************************/
+
 
 /*** ALSA ***/
 
@@ -465,7 +476,7 @@ static void volumealsa_build_popup_window(Plugin * p)
 }
 
 /* Plugin constructor. */
-static int volumealsa_constructor(Plugin * p, char ** fp)
+static int volumealsa_constructor(Plugin * p)
 {
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
     VolumeALSAPlugin * vol = g_new0(VolumeALSAPlugin, 1);
@@ -478,44 +489,7 @@ static int volumealsa_constructor(Plugin * p, char ** fp)
 
     vol->volume_control_command = NULL;
 
-    /* Load parameters from the configuration file. */
-    line s;
-    if (fp)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "volumealsa: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "VolumeControlCommand") == 0)
-                    vol->volume_control_command = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "DoubleClickAction") == 0)
-                    vol->volume_control_command = g_strdup(s.t[1]);
-                else
-                    ERR( "volumealsa: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "volumealsa: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-
-    }
-/*
-    #define DEFAULT_STRING(f, v) \
-      if (vol->f == NULL) \
-          vol->f = g_strdup(v);
-
-    DEFAULT_STRING(volume_control_command, "pavucontrol");
-
-    #undef DEFAULT_STRING
-*/
-
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, vol);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
@@ -593,10 +567,10 @@ static void volumealsa_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Save the configuration to the configuration file. */
-static void volumealsa_save_configuration(Plugin * p, FILE * fp)
+static void volumealsa_save_configuration(Plugin * p)
 {
     VolumeALSAPlugin * vol = PRIV(p);
-    lxpanel_put_str(fp, "VolumeControlCommand", vol->volume_control_command);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, vol);
 }
 
 

@@ -46,18 +46,31 @@ typedef struct {
     int number_of_desktops;		/* Number of desktops */
     char * * desktop_labels;		/* Vector of desktop labels */
     gboolean bold;			/* User preference: True if bold font */
-    gboolean wm_labels;			/* User preference: True to display window manager labels */
+    gboolean display_labels;			/* User preference: True to display window manager labels */
 } DesknoPlugin;
 
 static gboolean deskno_name_update(GtkWidget * widget, DesknoPlugin * dc);
 static void deskno_redraw(GtkWidget * widget, DesknoPlugin * dc);
 static gboolean deskno_button_press_event(GtkWidget * widget, GdkEventButton * event, Plugin * p);
-static int deskno_constructor(Plugin * p, char ** fp);
+static int deskno_constructor(Plugin * p);
 static void deskno_destructor(Plugin * p);
 static void deskno_apply_configuration(Plugin * p);
 static void deskno_configure(Plugin * p, GtkWindow * parent);
-static void deskno_save_configuration(Plugin * p, FILE * fp);
+static void deskno_save_configuration(Plugin * p);
 static void deskno_panel_configuration_changed(Plugin * p);
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE DesknoPlugin
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(bool, display_labels),
+    WTL_JSON_OPTION(bool, bold),
+    {0,}
+};
+
+/******************************************************************************/
+
+
 
 /* Handler for current_desktop event from window manager. */
 static gboolean deskno_name_update(GtkWidget * widget, DesknoPlugin * dc)
@@ -87,7 +100,7 @@ static void deskno_redraw(GtkWidget * widget, DesknoPlugin * dc)
     /* Loop to copy the desktop names to the vector of labels.
      * If there are more desktops than labels, label the extras with a decimal number. */
     int i = 0;
-    if (dc->wm_labels)
+    if (dc->display_labels)
         for ( ; ((desktop_names != NULL) && (i < MIN(dc->number_of_desktops, number_of_desktop_names))); i++)
             dc->desktop_labels[i] = g_strdup(desktop_names[i]);
     for ( ; i < dc->number_of_desktops; i++)
@@ -121,7 +134,7 @@ static gboolean deskno_button_press_event(GtkWidget * widget, GdkEventButton * e
 }
 
 /* Plugin constructor. */
-static int deskno_constructor(Plugin * p, char ** fp)
+static int deskno_constructor(Plugin * p)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
     DesknoPlugin * dc = g_new0(DesknoPlugin, 1);
@@ -130,35 +143,9 @@ static int deskno_constructor(Plugin * p, char ** fp)
     dc->panel = plugin_panel(p);
 
     /* Default parameters. */
-    dc->wm_labels = TRUE;
+    dc->display_labels = TRUE;
 
-    /* Load parameters from the configuration file. */
-    line s;
-    if (fp != NULL)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "deskno: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "BoldFont") == 0)
-                    dc->bold = str2num(bool_pair, s.t[1], 0);
-                else if (g_ascii_strcasecmp(s.t[0], "WMLabels") == 0)
-                    dc->wm_labels = str2num(bool_pair, s.t[1], 0);
-                else
-                    ERR( "deskno: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "deskno: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-    }
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, dc);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
@@ -212,7 +199,7 @@ static void deskno_configure(Plugin * p, GtkWindow * parent)
         GTK_WIDGET(parent),
         (GSourceFunc) deskno_apply_configuration, (gpointer) p,
         _("Bold font"), &dc->bold, CONF_TYPE_BOOL,
-        _("Display desktop names"), &dc->wm_labels, (GType)CONF_TYPE_BOOL,
+        _("Display desktop names"), &dc->display_labels, (GType)CONF_TYPE_BOOL,
         NULL);
     if (dlg)
     {
@@ -222,11 +209,10 @@ static void deskno_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Callback when the configuration is to be saved. */
-static void deskno_save_configuration(Plugin * p, FILE * fp)
+static void deskno_save_configuration(Plugin * p)
 {
     DesknoPlugin * dc = PRIV(p);
-    lxpanel_put_int(fp, "BoldFont", dc->bold);
-    lxpanel_put_int(fp, "WMLabels", dc->wm_labels);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, dc);
 }
 
 /* Callback when panel configuration changes. */

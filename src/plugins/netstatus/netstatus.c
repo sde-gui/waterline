@@ -44,6 +44,18 @@ typedef struct {
 } netstatus;
 
 
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE netstatus
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(string, iface),
+    WTL_JSON_OPTION(string, config_tool),
+    {0,}
+};
+
+/******************************************************************************/
+
+
 static void
 netstatus_destructor(Plugin *p)
 {
@@ -108,10 +120,9 @@ static gboolean on_button_press( GtkWidget* widget, GdkEventButton* evt, Plugin*
 }
 
 static int
-netstatus_constructor(Plugin *p, char** fp)
+netstatus_constructor(Plugin *p)
 {
     netstatus *ns;
-    line s;
     NetstatusIface* iface;
 
     ENTER;
@@ -119,35 +130,14 @@ netstatus_constructor(Plugin *p, char** fp)
     g_return_val_if_fail(ns != NULL, 0);
     plugin_set_priv(p, ns);
     ns->plugin = p;
-    if( fp )
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
-            if (s.type == LINE_NONE) {
-                ERR( "netstatus: illegal token %s\n", s.str);
-                goto error;
-            }
-            if (s.type == LINE_VAR) {
-                if (!g_ascii_strcasecmp(s.t[0], "iface"))
-                    ns->iface = g_strdup(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "configtool"))
-                    ns->config_tool = g_strdup(s.t[1]);
-                else {
-                    ERR( "netstatus: unknown var %s\n", s.t[0]);
-                }
-            } else {
-                ERR( "netstatus: illegal in this context %s\n", s.str);
-                goto error;
-            }
-        }
-    }
-    else
-    {
-        ns->iface = g_strdup("eth0");
-        ns->config_tool = g_strdup("network-admin --configure %i");
-    }
+
+    ns->iface = g_strdup("eth0");
+    ns->config_tool = g_strdup("network-admin --configure %i");
+
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, ns);
 
     iface = netstatus_iface_new(ns->iface);
-    ns->mainw = netstatus_icon_new( iface );
+    ns->mainw = netstatus_icon_new(iface);
 
     gtk_widget_set_has_window(GTK_WIDGET(ns->mainw), FALSE);
 
@@ -162,9 +152,6 @@ netstatus_constructor(Plugin *p, char** fp)
     plugin_set_widget(p, ns->mainw);
 
     RET(1);
-
- error:
-    RET(0);
 }
 
 static void apply_config(Plugin* p)
@@ -191,11 +178,10 @@ static void netstatus_config( Plugin* p, GtkWindow* parent  )
         gtk_window_present( GTK_WINDOW(dlg) );
 }
 
-static void save_config( Plugin* p, FILE* fp )
+static void save_config( Plugin* p)
 {
     netstatus *ns = PRIV(p);
-    lxpanel_put_str( fp, "iface", ns->iface );
-    lxpanel_put_str( fp, "configtool", ns->config_tool );
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, ns);
 }
 
 PluginClass netstatus_plugin_class = {

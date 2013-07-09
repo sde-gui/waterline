@@ -51,13 +51,13 @@ typedef struct _thermal {
     GtkWidget *main;
     GtkWidget *namew;
     int critical;
-    int warning1;
-    int warning2;
-    int auto_levels, auto_sensor;
+    int warning1_temperature;
+    int warning2_temperature;
+    gboolean autoselect_warning_levels, autoselect_sensor;
     char *sensor,
-         *str_cl_normal,
-         *str_cl_warning1,
-         *str_cl_warning2;
+         *normal_color,
+         *warning1_color,
+         *warning2_color;
     unsigned int timer;
     GdkColor cl_normal,
              cl_warning1,
@@ -65,6 +65,25 @@ typedef struct _thermal {
     gint (*get_temperature)(struct _thermal *th);
     gint (*get_critical)(struct _thermal *th);
 } thermal;
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE thermal
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(string, normal_color),
+    WTL_JSON_OPTION(string, warning1_color),
+    WTL_JSON_OPTION(string, warning2_color),
+    WTL_JSON_OPTION(bool, autoselect_warning_levels),
+    WTL_JSON_OPTION(int, warning1_temperature),
+    WTL_JSON_OPTION(int, warning2_temperature),
+    WTL_JSON_OPTION(bool, autoselect_sensor),
+    WTL_JSON_OPTION(string, sensor),
+    {0,}
+};
+
+/******************************************************************************/
+
+
 
 static gint
 proc_get_critical(thermal *th){
@@ -205,9 +224,9 @@ update_display(thermal *th)
     int temp = th->get_temperature(th);
     GdkColor color;
 
-    if(temp >= th->warning2)
+    if (temp >= th->warning2_temperature)
         color = th->cl_warning2;
-    else if(temp >= th->warning1)
+    else if (temp >= th->warning1_temperature)
         color = th->cl_warning1;
     else
         color = th->cl_normal;
@@ -285,20 +304,20 @@ static void
 sensor_changed(thermal *th)
 {
     //if (th->sensor == NULL) th->auto_sensor = TRUE;
-    if (th->auto_sensor) check_sensors(th);
+    if (th->autoselect_sensor) check_sensors(th);
 
     set_get_functions(th);
 
     th->critical = th->get_critical(th);
 
-    if (th->auto_levels && th->critical > 0) {
-        th->warning1 = th->critical - 10;
-        th->warning2 = th->critical - 5;
+    if (th->autoselect_warning_levels && th->critical > 0) {
+        th->warning1_temperature = th->critical - 10;
+        th->warning2_temperature = th->critical - 5;
     }
 }
 
 static int
-thermal_constructor(Plugin *p, char** fp)
+thermal_constructor(Plugin *p)
 {
     thermal *th;
 
@@ -320,58 +339,19 @@ thermal_constructor(Plugin *p, char** fp)
     g_signal_connect (G_OBJECT (pwid), "button_press_event",
           G_CALLBACK (plugin_button_press_event), (gpointer) p);
 
-    th->warning1 = 75;
-    th->warning2 = 80;
-    th->auto_levels = 1;
+    th->warning1_temperature = 75;
+    th->warning2_temperature = 80;
+    th->autoselect_warning_levels = TRUE;
 
-    line s;
+    th->normal_color = g_strdup("#00ff00");
+    th->warning1_color = g_strdup("#fff000");
+    th->warning2_color = g_strdup("#ff0000");
 
-    if (fp) {
-        /* Apply options */
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
-            if (s.type == LINE_NONE) {
-                ERR( "thermal: illegal token %s\n", s.str);
-                goto error;
-            }
-            if (s.type == LINE_VAR) {
-                if (!g_ascii_strcasecmp(s.t[0], "NormalColor")){
-                    th->str_cl_normal = g_strdup(s.t[1]);
-                }else if (!g_ascii_strcasecmp(s.t[0], "Warning1Color")){
-                    th->str_cl_warning1 = g_strdup(s.t[1]);
-                }else if (!g_ascii_strcasecmp(s.t[0], "Warning2Color")){
-                    th->str_cl_warning2 = g_strdup(s.t[1]);
-                }else if (!g_ascii_strcasecmp(s.t[0], "AutomaticSensor")){
-                    th->auto_sensor = atoi(s.t[1]);
-                }else if (!g_ascii_strcasecmp(s.t[0], "AutomaticLevels")){
-                    th->auto_levels = atoi(s.t[1]);
-                }else if (!g_ascii_strcasecmp(s.t[0], "Sensor")){
-                    th->sensor= g_strdup(s.t[1]);
-                }else if (!g_ascii_strcasecmp(s.t[0], "Warning1Temp")){
-                    th->warning1 = atoi(s.t[1]);
-                }else if (!g_ascii_strcasecmp(s.t[0], "Warning2Temp")){
-                    th->warning2 = atoi(s.t[1]);
-                }else {
-                    ERR( "thermal: unknown var %s\n", s.t[0]);
-                }
-            }
-            else {
-                ERR( "thermal: illegal in this context %s\n", s.str);
-                goto error;
-            }
-        }
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, th);
 
-    }
-
-    if(!th->str_cl_normal)
-        th->str_cl_normal = g_strdup("#00ff00");
-    if(!th->str_cl_warning1)
-        th->str_cl_warning1 = g_strdup("#fff000");
-    if(!th->str_cl_warning2)
-        th->str_cl_warning2 = g_strdup("#ff0000");
-
-    gdk_color_parse(th->str_cl_normal,   &(th->cl_normal));
-    gdk_color_parse(th->str_cl_warning1, &(th->cl_warning1));
-    gdk_color_parse(th->str_cl_warning2, &(th->cl_warning2));
+    gdk_color_parse(th->normal_color,   &(th->cl_normal));
+    gdk_color_parse(th->warning1_color, &(th->cl_warning1));
+    gdk_color_parse(th->warning2_color, &(th->cl_warning2));
 
 
     sensor_changed(th);
@@ -382,9 +362,6 @@ thermal_constructor(Plugin *p, char** fp)
     th->timer = g_timeout_add(1000, (GSourceFunc) update_display, (gpointer)th);
 
     RET(TRUE);
-
-error:
-    RET(FALSE);
 }
 
 static void applyConfig(Plugin* p)
@@ -394,9 +371,9 @@ static void applyConfig(Plugin* p)
 
     ENTER;
 
-    if (th->str_cl_normal) gdk_color_parse(th->str_cl_normal, &th->cl_normal);
-    if (th->str_cl_warning1) gdk_color_parse(th->str_cl_warning1, &th->cl_warning1);
-    if (th->str_cl_warning2) gdk_color_parse(th->str_cl_warning2, &th->cl_warning2);
+    if (th->normal_color) gdk_color_parse(th->normal_color, &th->cl_normal);
+    if (th->warning1_color) gdk_color_parse(th->warning1_color, &th->cl_warning1);
+    if (th->warning2_color) gdk_color_parse(th->warning2_color, &th->cl_warning2);
 
     sensor_changed(th);
 
@@ -413,16 +390,16 @@ static void config(Plugin *p, GtkWindow* parent) {
             (GSourceFunc) applyConfig, (gpointer) p,
             "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
             _("Colors"), 0, (GType)CONF_TYPE_TITLE,
-            _("Normal"), &th->str_cl_normal, (GType)CONF_TYPE_COLOR,
-            _("Warning1"), &th->str_cl_warning1, (GType)CONF_TYPE_COLOR,
-            _("Warning2"), &th->str_cl_warning2, (GType)CONF_TYPE_COLOR,
+            _("Normal"), &th->normal_color, (GType)CONF_TYPE_COLOR,
+            _("Warning1"), &th->warning1_color, (GType)CONF_TYPE_COLOR,
+            _("Warning2"), &th->warning2_color, (GType)CONF_TYPE_COLOR,
             "", 0, (GType)CONF_TYPE_END_TABLE,
 
-            _("Automatic sensor location"), &th->auto_sensor, (GType)CONF_TYPE_BOOL,
+            _("Automatic sensor location"), &th->autoselect_sensor, (GType)CONF_TYPE_BOOL,
             _("Sensor"), &th->sensor, (GType)CONF_TYPE_STR,
-            _("Automatic temperature levels"), &th->auto_levels, (GType)CONF_TYPE_BOOL,
-            _("Warning1 Temperature"), &th->warning1, (GType)CONF_TYPE_INT,
-            _("Warning2 Temperature"), &th->warning2, (GType)CONF_TYPE_INT,
+            _("Automatic temperature levels"), &th->autoselect_warning_levels, (GType)CONF_TYPE_BOOL,
+            _("Warning1 Temperature"), &th->warning1_temperature, (GType)CONF_TYPE_INT,
+            _("Warning2 Temperature"), &th->warning2_temperature, (GType)CONF_TYPE_INT,
             NULL);
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));
@@ -438,26 +415,18 @@ thermal_destructor(Plugin *p)
   ENTER;
   th = (thermal *) PRIV(p);
   g_free(th->sensor);
-  g_free(th->str_cl_normal);
-  g_free(th->str_cl_warning1);
-  g_free(th->str_cl_warning2);
+  g_free(th->normal_color);
+  g_free(th->warning1_color);
+  g_free(th->warning2_color);
   g_source_remove(th->timer);
   g_free(th);
   RET();
 }
 
-static void save_config( Plugin* p, FILE* fp )
+static void save_config( Plugin* p)
 {
     thermal *th = (thermal *)PRIV(p);
-
-    lxpanel_put_str( fp, "NormalColor", th->str_cl_normal );
-    lxpanel_put_str( fp, "Warning1Color", th->str_cl_warning1 );
-    lxpanel_put_str( fp, "Warning2Color", th->str_cl_warning2 );
-    lxpanel_put_int( fp, "AutomaticLevels", th->auto_levels );
-    lxpanel_put_int( fp, "Warning1Temp", th->warning1 );
-    lxpanel_put_int( fp, "Warning2Temp", th->warning2 );
-    lxpanel_put_int( fp, "AutomaticSensor", th->auto_sensor );
-    lxpanel_put_str( fp, "Sensor", th->sensor );
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, th);
 }
 
 PluginClass thermal_plugin_class = {

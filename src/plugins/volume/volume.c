@@ -242,10 +242,9 @@ static gboolean on_button_press (GtkWidget* widget, GdkEventButton* evt, Plugin*
 	return FALSE;
 }
 
-static int volume_constructor(Plugin *p, char **fp)
+static int volume_constructor(Plugin *p)
 {
     volume_t *vol;
-//    line s;
 //    GdkPixbuf *icon;
 //    GtkWidget *image;
 //    GtkIconTheme* theme;
@@ -272,7 +271,7 @@ static int volume_constructor(Plugin *p, char **fp)
     gtk_widget_add_events( vol->mainw, GDK_BUTTON_PRESS_MASK );
     g_signal_connect( vol->mainw, "button-press-event",
             G_CALLBACK(on_button_press), p );
-            
+
     g_signal_connect( vol->mainw, "scroll-event",
             G_CALLBACK(on_mouse_scroll), p );
     gtk_widget_set_size_request( vol->mainw, plugin_get_icon_size(p), plugin_get_icon_size(p) );
@@ -280,14 +279,14 @@ static int volume_constructor(Plugin *p, char **fp)
     /* obtain current volume */
     vol->dlg = create_volume_window();
     if (! vol_spin) return 0;
-	GtkAdjustment *vol_adjustment =
-		gtk_spin_button_get_adjustment (vol_spin);
+    GtkAdjustment *vol_adjustment =
+        gtk_spin_button_get_adjustment (vol_spin);
     if (! vol_adjustment) return 0;
     curr_volume = gtk_adjustment_get_value (vol_adjustment);
-    
+
     update_icon(p);
-	gtk_widget_destroy( vol->dlg );
-    vol->dlg = NULL;  
+    gtk_widget_destroy( vol->dlg );
+    vol->dlg = NULL;
 
     /* FIXME: display current level in tooltip. ex: "Volume Control: 80%"  */
     gtk_widget_set_tooltip_text(vol->mainw, _("Volume control"));

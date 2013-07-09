@@ -91,7 +91,7 @@ typedef struct {
 
     int orientation;
     unsigned int alarmTime,
-        border,
+        border_width,
         height,
         length,
         numSamples,
@@ -120,6 +120,27 @@ typedef struct {
 static void destructor(Plugin *p);
 static void update_display(lx_battery *lx_b);
 static void batt_panel_configuration_changed(Plugin *p);
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE lx_battery
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(bool, hide_if_no_battery),
+    WTL_JSON_OPTION(string, alarmCommand),
+    WTL_JSON_OPTION(int, alarmTime),
+    WTL_JSON_OPTION_ENUM(display_as_pair, display_as),
+    WTL_JSON_OPTION(string, backgroundColor),
+    WTL_JSON_OPTION(int, border_width),
+    WTL_JSON_OPTION(string, chargingColor1),
+    WTL_JSON_OPTION(string, chargingColor2),
+    WTL_JSON_OPTION(string, dischargingColor1),
+    WTL_JSON_OPTION(string, dischargingColor2),
+    {0,}
+};
+
+/******************************************************************************/
+
+
 
 /* alarmProcess takes the address of a dynamically allocated alarm struct (which
    it must free). It ensures that alarm commands do not run concurrently. */
@@ -184,7 +205,7 @@ static void update_bar(lx_battery *lx_b)
     background_color1[1] = bar_color[1] * v + lx_b->background_color[1] * (1.0 - v);
     background_color1[2] = bar_color[2] * v + lx_b->background_color[2] * (1.0 - v);
 
-    int border = lx_b->border;
+    int border = lx_b->border_width;
     while (1)
     {
         int barroom = MIN(lx_b->width, lx_b->height) - border * 2;
@@ -502,7 +523,7 @@ static gint exposeEvent(GtkWidget *widget, GdkEventExpose *event, lx_battery *lx
 
 
 static int
-constructor(Plugin *p, char **fp)
+constructor(Plugin *p)
 {
     ENTER;
 
@@ -552,66 +573,16 @@ constructor(Plugin *p, char **fp)
 
     /* Set default values for integers */
     lx_b->alarmTime = 5;
-    lx_b->border = 3;
+    lx_b->border_width = 3;
     lx_b->display_as = DISPLAY_AS_TEXT;
+    lx_b->alarmCommand = g_strdup("xmessage Battery low");
+    lx_b->backgroundColor = g_strdup("black");
+    lx_b->chargingColor1 = g_strdup("#1B3BC6");
+    lx_b->chargingColor2 = g_strdup("#B52FC3");
+    lx_b->dischargingColor1 = g_strdup("#00FF00");
+    lx_b->dischargingColor2 = g_strdup("#FF0000");
 
-    line s;
-
-    if (fp) {
-
-        /* Apply options */
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
-            if (s.type == LINE_NONE) {
-                ERR( "batt: illegal token %s\n", s.str);
-                goto error;
-            }
-            if (s.type == LINE_VAR) {
-                if (!g_ascii_strcasecmp(s.t[0], "HideIfNoBattery"))
-                    lx_b->hide_if_no_battery = atoi(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "AlarmCommand"))
-                    lx_b->alarmCommand = g_strdup(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "BackgroundColor"))
-                    lx_b->backgroundColor = g_strdup(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "ChargingColor1"))
-                    lx_b->chargingColor1 = g_strdup(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "ChargingColor2"))
-                    lx_b->chargingColor2 = g_strdup(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "DischargingColor1"))
-                    lx_b->dischargingColor1 = g_strdup(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "DischargingColor2"))
-                    lx_b->dischargingColor2 = g_strdup(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "AlarmTime"))
-                    lx_b->alarmTime = atoi(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "BorderWidth"))
-                    lx_b->border = MAX(0, atoi(s.t[1]));
-                else if (g_ascii_strcasecmp(s.t[0], "DisplayAs") == 0)
-                    lx_b->display_as = str2num(display_as_pair, s.t[1], lx_b->display_as);
-                else {
-                    ERR( "batt: unknown var %s\n", s.t[0]);
-                    continue;
-                }
-            }
-            else {
-                ERR( "batt: illegal in this context %s\n", s.str);
-                goto error;
-            }
-        }
-
-    }
-
-    /* Apply more default options */
-    if (! lx_b->alarmCommand)
-        lx_b->alarmCommand = g_strdup("xmessage Battery low");
-    if (! lx_b->backgroundColor)
-        lx_b->backgroundColor = g_strdup("black");
-    if (! lx_b->chargingColor1)
-        lx_b->chargingColor1 = g_strdup("#1B3BC6");
-    if (! lx_b->chargingColor2)
-        lx_b->chargingColor2 = g_strdup("#B52FC3");
-    if (! lx_b->dischargingColor1)
-        lx_b->dischargingColor1 = g_strdup("#00FF00");
-    if (! lx_b->dischargingColor2)
-        lx_b->dischargingColor2 = g_strdup("#FF0000");
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, lx_b);
 
     color_parse_d(lx_b->backgroundColor, lx_b->background_color);
     color_parse_d(lx_b->chargingColor1, lx_b->charging1_color);
@@ -626,8 +597,8 @@ constructor(Plugin *p, char **fp)
 
     RET(TRUE);
 
-error:
-    RET(FALSE);
+/*error:
+    RET(FALSE);*/
 }
 
 
@@ -701,7 +672,7 @@ static void applyConfig(Plugin* p)
     color_parse_d(b->dischargingColor2, b->discharging2_color);
 
     /* Make sure the border value is acceptable */
-    b->border = MAX(0, b->border);
+    b->border_width = MAX(0, b->border_width);
 
     update_display(b);
 
@@ -730,7 +701,7 @@ static void config(Plugin *p, GtkWindow* parent) {
             _("Charging color 2"), &b->chargingColor2, (GType)CONF_TYPE_COLOR,
             _("Discharging color 1"), &b->dischargingColor1, (GType)CONF_TYPE_COLOR,
             _("Discharging color 2"), &b->dischargingColor2, (GType)CONF_TYPE_COLOR,
-            _("Border width"), &b->border, (GType)CONF_TYPE_INT,
+            _("Border width"), &b->border_width, (GType)CONF_TYPE_INT,
             NULL);
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));
@@ -739,19 +710,9 @@ static void config(Plugin *p, GtkWindow* parent) {
 }
 
 
-static void save(Plugin* p, FILE* fp) {
+static void save(Plugin* p) {
     lx_battery *lx_b = PRIV(p);
-
-    lxpanel_put_bool(fp, "HideIfNoBattery",lx_b->hide_if_no_battery);
-    lxpanel_put_str(fp, "AlarmCommand", lx_b->alarmCommand);
-    lxpanel_put_int(fp, "AlarmTime", lx_b->alarmTime);
-    lxpanel_put_enum(fp, "DisplayAs", lx_b->display_as, display_as_pair);
-    lxpanel_put_str(fp, "BackgroundColor", lx_b->backgroundColor);
-    lxpanel_put_int(fp, "BorderWidth", lx_b->border);
-    lxpanel_put_str(fp, "ChargingColor1", lx_b->chargingColor1);
-    lxpanel_put_str(fp, "ChargingColor2", lx_b->chargingColor2);
-    lxpanel_put_str(fp, "DischargingColor1", lx_b->dischargingColor1);
-    lxpanel_put_str(fp, "DischargingColor2", lx_b->dischargingColor2);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, lx_b);
 }
 
 

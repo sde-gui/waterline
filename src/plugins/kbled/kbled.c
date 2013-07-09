@@ -67,12 +67,24 @@ typedef struct {
 static void kbled_update_image(KeyboardLEDPlugin * kl, int i, unsigned int state);
 static void kbled_update_display(Plugin * p, unsigned int state);
 static GdkFilterReturn kbled_event_filter(GdkXEvent * gdkxevent, GdkEvent * event, Plugin * p);
-static int kbled_constructor(Plugin * p, char ** fp);
+static int kbled_constructor(Plugin * p);
 static void kbled_destructor(Plugin * p);
 static void kbled_apply_configuration(Plugin * p);
 static void kbled_configure(Plugin * p, GtkWindow * parent);
-static void kbled_save_configuration(Plugin * p, FILE * fp);
+static void kbled_save_configuration(Plugin * p);
 static void kbled_panel_configuration_changed(Plugin * p);
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE KeyboardLEDPlugin
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(bool, visible[0]),
+    WTL_JSON_OPTION(bool, visible[1]),
+    WTL_JSON_OPTION(bool, visible[2]),
+    {0,}
+};
+
+/******************************************************************************/
 
 /* Update image to correspond to current state. */
 static void kbled_update_image(KeyboardLEDPlugin * kl, int i, unsigned int state)
@@ -115,7 +127,7 @@ static GdkFilterReturn kbled_event_filter(GdkXEvent * gdkxevent, GdkEvent * even
 }
 
 /* Plugin constructor. */
-static int kbled_constructor(Plugin * p, char ** fp)
+static int kbled_constructor(Plugin * p)
 {
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
     KeyboardLEDPlugin * kl = g_new0(KeyboardLEDPlugin, 1);
@@ -125,35 +137,7 @@ static int kbled_constructor(Plugin * p, char ** fp)
     kl->visible[2] = TRUE;
     plugin_set_priv(p, kl);
 
-    /* Load parameters from the configuration file. */
-    line s;
-    if (fp != NULL)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "kbled: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "ShowCapsLock") == 0)
-                    kl->visible[0] = str2num(bool_pair, s.t[1], 0);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowNumLock") == 0)
-                    kl->visible[1] = str2num(bool_pair, s.t[1], 0);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowScrollLock") == 0)
-                    kl->visible[2] = str2num(bool_pair, s.t[1], 0);
-                else
-                    ERR("kbled: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR("kbled: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-    }
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, kl);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
@@ -242,12 +226,10 @@ static void kbled_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Callback when the configuration is to be saved. */
-static void kbled_save_configuration(Plugin * p, FILE * fp)
+static void kbled_save_configuration(Plugin * p)
 {
     KeyboardLEDPlugin * kl = PRIV(p);
-    lxpanel_put_int(fp, "ShowCapsLock", kl->visible[0]);
-    lxpanel_put_int(fp, "ShowNumLock", kl->visible[1]);
-    lxpanel_put_int(fp, "ShowScrollLock", kl->visible[2]);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, kl);
 }
 
 /* Callback when panel configuration changes. */

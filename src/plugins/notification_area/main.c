@@ -308,7 +308,7 @@ static void on_container_realized(GtkWidget* widget, NAPlugin * na)
     gtk_widget_show(GTK_WIDGET(na->tray));
 }
 
-static int na_constructor(Plugin * p, char ** fp)
+static int na_constructor(Plugin * p)
 {
     NAPlugin * na = g_new0(NAPlugin, 1);
     plugin_set_priv(p, na);

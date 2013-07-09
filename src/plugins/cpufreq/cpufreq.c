@@ -337,7 +337,7 @@ update_tooltip(cpufreq *cf)
 }
 
 static int
-cpufreq_constructor(Plugin *p, char** fp)
+cpufreq_constructor(Plugin *p)
 {
     cpufreq *cf;
 //    GtkWidget *button;
@@ -401,6 +401,8 @@ cpufreq_constructor(Plugin *p, char** fp)
     RET(FALSE);*/
 }
 
+
+/*
 static void applyConfig(Plugin* p) { }
 
 static void config(Plugin *p, GtkWindow* parent) {
@@ -418,7 +420,7 @@ static void config(Plugin *p, GtkWindow* parent) {
 
     RET();
 }
-
+*/
 static void
 cpufreq_destructor(Plugin *p)
 {
@@ -448,7 +450,7 @@ PluginClass cpufreq_plugin_class = {
 
     constructor : cpufreq_constructor,
     destructor  : cpufreq_destructor,
-    config : config,
+    config : NULL,
     save : NULL,
     panel_configuration_changed : NULL
 };

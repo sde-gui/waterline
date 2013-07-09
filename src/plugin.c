@@ -99,7 +99,7 @@ static void init_plugin_class_list(void)
 #endif
 
 #ifdef STATIC_DIRMENU
-//    REGISTER_STATIC_PLUGIN_CLASS(dirmenu_plugin_class);
+    REGISTER_STATIC_PLUGIN_CLASS(dirmenu_plugin_class);
 #endif
 
 #ifdef STATIC_PAGER

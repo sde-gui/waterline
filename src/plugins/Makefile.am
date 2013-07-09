@@ -33,8 +33,8 @@ PLUGINS_SOURCES = \
 	pager.c \
 	space.c \
 	tray.c \
-	wincmd.c
-#	dirmenu.c
+	wincmd.c \
+	dirmenu.c
 
 libbuiltin_plugins_a_SOURCES = \
 	$(PLUGINS_SOURCES)

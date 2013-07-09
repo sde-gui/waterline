@@ -77,8 +77,8 @@ typedef struct {
     gboolean show_files;
     gboolean show_file_size;
     int max_file_count;
-    int sort_directories;
-    int sort_files;
+    int sort_directories_by;
+    int sort_files_by;
     gboolean plain_view;
     gboolean show_icons;
     gboolean show_tooltips;
@@ -94,13 +94,35 @@ static void dirmenu_popup_set_position(GtkWidget * menu, gint * px, gint * py, g
 static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top, GtkWidget * parent_item);
 static void dirmenu_show_menu(Plugin * p, int btn, guint32 time);
 static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * event, Plugin * p);
-static int dirmenu_constructor(Plugin * p, char ** fp);
+static int dirmenu_constructor(Plugin * p);
 static void dirmenu_destructor(Plugin * p);
 //static void dirmenu_apply_configuration_to_children(GtkWidget * w, DirMenuPlugin * dm);
 static void dirmenu_apply_configuration(Plugin * p);
 static void dirmenu_configure(Plugin * p, GtkWindow * parent);
-static void dirmenu_save_configuration(Plugin * p, FILE * fp);
+static void dirmenu_save_configuration(Plugin * p);
 static void dirmenu_panel_configuration_changed(Plugin * p);
+
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE DirMenuPlugin
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(string, path),
+    WTL_JSON_OPTION(string, name),
+    WTL_JSON_OPTION(string, image),
+    WTL_JSON_OPTION(bool, show_hidden),
+    WTL_JSON_OPTION(bool, show_files),
+    WTL_JSON_OPTION(int, max_file_count),
+    WTL_JSON_OPTION(bool, show_file_size),
+    WTL_JSON_OPTION(bool, show_icons),
+    WTL_JSON_OPTION(bool, show_tooltips),
+    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_directories_by),
+    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_files_by),
+    WTL_JSON_OPTION(bool, plain_view),
+    {0,}
+};
+
+/******************************************************************************/
+
 
 /* Handler for activate event on file menu item. */
 static gchar * dirmenu_get_path(DirMenuPlugin * dm)
@@ -397,11 +419,11 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
             /* Choose list */
             if (directory)
                 plist = &dir_list,
-                sort_by = dm->sort_directories,
+                sort_by = dm->sort_directories_by,
                 dir_list_count++;
             else if (dm->show_files)
                 plist = &file_list,
-                sort_by = dm->sort_files,
+                sort_by = dm->sort_files_by,
                 file_list_count++,
                 total_file_size += stat_data.st_size;
 
@@ -580,7 +602,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
         }
 
         GtkWidget * add_to_menu = NULL;
-        if (dm->sort_files == SORT_BY_NAME && file_list_count > 100 && file_list_count > dm->max_file_count)
+        if (dm->sort_files_by == SORT_BY_NAME && file_list_count > 100 && file_list_count > dm->max_file_count)
         {
             if (!filesubmenu || submenu_item_count < 1)
             {
@@ -795,7 +817,7 @@ static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * 
 }
 
 /* Plugin constructor. */
-static int dirmenu_constructor(Plugin * p, char ** fp)
+static int dirmenu_constructor(Plugin * p)
 {
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
     DirMenuPlugin * dm = g_new0(DirMenuPlugin, 1);
@@ -808,57 +830,11 @@ static int dirmenu_constructor(Plugin * p, char ** fp)
     dm->show_file_size = FALSE;
     dm->show_icons = TRUE;
     dm->show_tooltips = TRUE;
-    dm->sort_directories = SORT_BY_NAME;
-    dm->sort_files = SORT_BY_NAME;
+    dm->sort_directories_by = SORT_BY_NAME;
+    dm->sort_files_by = SORT_BY_NAME;
     dm->plain_view = FALSE;
 
-    /* Load parameters from the configuration file. */
-    line s;
-    if (fp != NULL)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "dirmenu: illegal token %s\n", s.str);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "image") == 0)
-                    dm->image = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "path") == 0)
-                    dm->path = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "name") == 0)
-                    dm->name = g_strdup( s.t[1] );
-                else if (g_ascii_strcasecmp(s.t[0], "ShowHidden") == 0)
-                    dm->show_hidden = str2num(bool_pair, s.t[1], dm->show_hidden);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowFiles") == 0)
-                    dm->show_files = str2num(bool_pair, s.t[1], dm->show_files);
-                else if (g_ascii_strcasecmp(s.t[0], "MaxFileCount") == 0)
-                    dm->max_file_count = atoi(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowFileSize") == 0)
-                    dm->show_file_size = str2num(bool_pair, s.t[1], dm->show_file_size);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowIcons") == 0)
-                    dm->show_icons = str2num(bool_pair, s.t[1], dm->show_icons);
-                else if (g_ascii_strcasecmp(s.t[0], "ShowTooltips") == 0)
-                    dm->show_tooltips = str2num(bool_pair, s.t[1], dm->show_tooltips);
-                else if (g_ascii_strcasecmp(s.t[0], "SortDirectoriesBy") == 0)
-                    dm->sort_directories = str2num(sort_by_pair, s.t[1], dm->sort_directories);
-                else if (g_ascii_strcasecmp(s.t[0], "SortFilesBy") == 0)
-                    dm->sort_files = str2num(sort_by_pair, s.t[1], dm->sort_files);
-                else if (g_ascii_strcasecmp(s.t[0], "PlainView") == 0)
-                    dm->plain_view = str2num(bool_pair, s.t[1], dm->plain_view);
-                else
-                    ERR( "dirmenu: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "dirmenu: illegal in this context %s\n", s.str);
-                return 0;
-            }
-        }
-    }
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, dm);
 
     /* Allocate top level widget and set into Plugin widget pointer.
      * It is not known why, but the button text will not draw if it is edited from empty to non-empty
@@ -962,8 +938,8 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _("Show MIME type icons"), &dm->show_icons, (GType)CONF_TYPE_BOOL,
         _("Show tooltips"), &dm->show_tooltips, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
-        sort_directories, (gpointer)&dm->sort_directories, (GType)CONF_TYPE_ENUM,
-        sort_files, (gpointer)&dm->sort_files, (GType)CONF_TYPE_ENUM,
+        sort_directories, (gpointer)&dm->sort_directories_by, (GType)CONF_TYPE_ENUM,
+        sort_files, (gpointer)&dm->sort_files_by, (GType)CONF_TYPE_ENUM,
         "", 0, (GType)CONF_TYPE_END_TABLE,
         NULL);
 
@@ -975,21 +951,10 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Callback when the configuration is to be saved. */
-static void dirmenu_save_configuration(Plugin * p, FILE * fp)
+static void dirmenu_save_configuration(Plugin * p)
 {
     DirMenuPlugin * dm = PRIV(p);
-    lxpanel_put_str(fp, "path", dm->path);
-    lxpanel_put_str(fp, "name", dm->name);
-    lxpanel_put_str(fp, "image", dm->image);
-    lxpanel_put_bool(fp, "ShowHidden", dm->show_hidden);
-    lxpanel_put_bool(fp, "ShowFiles", dm->show_files);
-    lxpanel_put_int(fp, "MaxFileCount", dm->max_file_count);
-    lxpanel_put_bool(fp, "ShowFileSize", dm->show_file_size);
-    lxpanel_put_bool(fp, "ShowIcons", dm->show_icons);
-    lxpanel_put_bool(fp, "ShowTooltips", dm->show_tooltips);
-    lxpanel_put_enum(fp, "SortDirectoriesBy", dm->sort_directories, sort_by_pair);
-    lxpanel_put_enum(fp, "SortFilesBy", dm->sort_files, sort_by_pair);
-    lxpanel_put_bool(fp, "PlainView", dm->plain_view);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, dm);
 }
 
 /* Callback when panel configuration changes. */

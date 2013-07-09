@@ -16,6 +16,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/*
+    TODO: handle tilda in image and action parameters.
+*/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -107,8 +111,6 @@ typedef struct {
     LaunchButton * bootstrap_button;	/* Bootstrapping button for empty launchbar */
 } LaunchbarPlugin;
 
-void panel_config_save(Panel * panel);  /* defined in configurator.c */
-
 static void launchbutton_free(LaunchButton * btn);
 static gboolean launchbutton_press_event(GtkWidget * widget, GdkEventButton * event, LaunchButton * b);
 static void launchbutton_drag_data_received_event(
@@ -122,8 +124,8 @@ static void launchbutton_drag_data_received_event(
     LaunchButton * b);
 static void launchbutton_build_bootstrap(Plugin * p);
 static void launchbutton_build_gui(Plugin * p, LaunchButton * btn);
-static int launchbutton_constructor(Plugin * p, char ** fp);
-static int launchbar_constructor(Plugin * p, char ** fp);
+static int launchbutton_constructor(Plugin * p, json_t * json_button);
+static int launchbar_constructor(Plugin * p);
 static void launchbar_destructor(Plugin * p);
 static void launchbar_configure_add_button(GtkButton * widget, Plugin * p);
 static void launchbar_configure_remove_button(GtkButton * widget, Plugin * p);
@@ -132,7 +134,7 @@ static void launchbar_configure_move_down_button(GtkButton * widget, Plugin * p)
 static void launchbar_configure_response(GtkDialog * dlg, int response, Plugin * p);
 static void launchbar_configure_initialize_list(Plugin * p, GtkWidget * dlg, GtkTreeView * view, gboolean from_menu);
 static void launchbar_configure(Plugin * p, GtkWindow * parent);
-static void launchbar_save_configuration(Plugin * p, FILE * fp);
+static void launchbar_save_configuration(Plugin * p);
 static void launchbar_panel_configuration_changed(Plugin * p);
 
 /* Deallocate a LaunchButton. */
@@ -383,60 +385,30 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
     launchbar_update_item_visibility(p);
 }
 
-/* Read the configuration file entry for a launchbar button and create it. */
-static int launchbutton_constructor(Plugin * p, char ** fp)
+/* Read the configuration entry for a launchbar button and create it. */
+static int launchbutton_constructor(Plugin * p, json_t * json_button)
 {
     /* Allocate the LaunchButton structure. */
     LaunchButton * btn = g_new0(LaunchButton, 1);
     btn->plugin = p;
 
-    /* Read parameters from the configuration file. */
-    line s;
-    if (fp != NULL)
-    {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "launchbar: illegal token %s\n", s.str);
-                launchbutton_free(btn);
-                return 0;
-            }
-            if (s.type == LINE_VAR)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "id") == 0)
-                    btn->desktop_id = g_strdup(s.t[1]);
-                else if (g_ascii_strcasecmp(s.t[0], "image") == 0)
-                {
-                    btn->customize_image = TRUE;
-                    btn->image = expand_tilda(g_strdup(s.t[1]));
-                }
-                else if (g_ascii_strcasecmp(s.t[0], "tooltip") == 0)
-                {
-                    btn->customize_tooltip = TRUE;
-                    btn->tooltip = g_strdup(s.t[1]);
-                }
-                else if (g_ascii_strcasecmp(s.t[0], "action") == 0)
-                {
-                    btn->customize_action = TRUE;
-                    btn->action = g_strdup(s.t[1]);
-                }
-                else if (g_ascii_strcasecmp(s.t[0], "terminal") == 0)
-                {
-                    btn->customize_terminal = TRUE;
-                    btn->use_terminal = str2num(bool_pair, s.t[1], 0);
-                }
-                else
-                    ERR( "launchbar: unknown var %s\n", s.t[0]);
-            }
-            else
-            {
-                ERR( "launchbar: illegal in this context %s\n", s.str);
-                launchbutton_free(btn);
-                return 0;
-            }
-        }
-    }
+    wtl_json_dot_get_string(json_button, "id", btn->desktop_id, &btn->desktop_id);
+    wtl_json_dot_get_string(json_button, "image", btn->image, &btn->image);
+    wtl_json_dot_get_string(json_button, "tooltip", btn->tooltip, &btn->tooltip);
+    wtl_json_dot_get_string(json_button, "action", btn->action, &btn->action);
+    btn->use_terminal = wtl_json_dot_get_bool(json_button, "terminal", btn->use_terminal);
+
+    if (json_object_get(json_button, "image"))
+        btn->customize_image = TRUE;
+
+    if (json_object_get(json_button, "tooltip"))
+        btn->customize_tooltip = TRUE;
+
+    if (json_object_get(json_button, "action"))
+        btn->customize_action = TRUE;
+
+    if (json_object_get(json_button, "terminal"))
+        btn->customize_terminal = TRUE;
 
     /* Build the structures and return. */
     launchbutton_build_gui(p, btn);
@@ -444,7 +416,7 @@ static int launchbutton_constructor(Plugin * p, char ** fp)
 }
 
 /* Plugin constructor. */
-static int launchbar_constructor(Plugin * p, char ** fp)
+static int launchbar_constructor(Plugin * p)
 {
     static gchar * launchbar_rc = "style 'launchbar-style'\n"
         "{\n"
@@ -472,38 +444,13 @@ static int launchbar_constructor(Plugin * p, char ** fp)
     lb->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 3, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* Read parameters from the configuration file. */
-    if (fp != NULL)
-    {
-        line s;
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END)
-        {
-            if (s.type == LINE_NONE)
-            {
-                ERR( "launchbar: illegal token %s\n", s.str);
-                return FALSE;
-            }
-            if (s.type == LINE_BLOCK_START)
-            {
-                if (g_ascii_strcasecmp(s.t[0], "button") == 0)
-                {
-                    if ( ! launchbutton_constructor(p, fp))
-                    {
-                        ERR( "launchbar: can't init button\n");
-                        return FALSE;
-                    }
-                }
-                else
-                {
-                    ERR( "launchbar: unknown var %s\n", s.t[0]);
-                    return FALSE;
-                }
-            }
-        else
-            {
-                ERR( "launchbar: illegal in this context %s\n", s.str);
-                return FALSE;
-            }
-        }
+
+    json_t * json_buttons = json_object_get(plugin_inner_json(p), "buttons");
+
+    size_t index;
+    json_t * json_button;
+    json_array_foreach(json_buttons, index, json_button) {
+        launchbutton_constructor(p, json_button);
     }
 
     if (lb->buttons == NULL)
@@ -899,7 +846,7 @@ static void launchbar_configure(Plugin * p, GtkWindow * parent)
         lb->config_dlg = dlg;
 
         /* Establish a callback when the dialog completes. */
-        g_object_weak_ref(G_OBJECT(dlg), (GWeakNotify) panel_config_save, plugin_panel(p));
+        g_object_weak_ref(G_OBJECT(dlg), (GWeakNotify) plugin_save_configuration, p);
 
         /* Initialize the tree view contents. */
         launchbar_configure_initialize_list(p, dlg, GTK_TREE_VIEW(defined_view), FALSE);
@@ -911,26 +858,34 @@ static void launchbar_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Callback when the configuration is to be saved. */
-static void launchbar_save_configuration(Plugin * p, FILE * fp)
+static void launchbar_save_configuration(Plugin * p)
 {
     LaunchbarPlugin * lb = PRIV(p);
+
+    json_t * json_buttons = json_array();
+
     GSList * l;
     for (l = lb->buttons; l != NULL; l = l->next)
     {
         LaunchButton * btn = (LaunchButton *) l->data;
-        lxpanel_put_line(fp, "Button {");
-        if (btn->desktop_id != NULL)
-            lxpanel_put_str(fp, "id", btn->desktop_id);
+        json_t * json_button = json_object();
+        if (!strempty(btn->desktop_id))
+            wtl_json_dot_set_string(json_button, "id", btn->desktop_id);
         if (btn->customize_image)
-            lxpanel_put_str(fp, "image", btn->image);
+            wtl_json_dot_set_string(json_button, "id", btn->image);
         if(btn->customize_tooltip)
-            lxpanel_put_str(fp, "tooltip", btn->tooltip);
+            wtl_json_dot_set_string(json_button, "id", btn->tooltip);
         if (btn->customize_action)
-            lxpanel_put_str(fp, "action", btn->action);
+            wtl_json_dot_set_string(json_button, "id", btn->action);
         if (btn->customize_terminal)
-            lxpanel_put_bool(fp, "terminal", btn->use_terminal);
-        lxpanel_put_line(fp, "}");
+            wtl_json_dot_set_bool(json_button, "id", btn->use_terminal);
+
+        json_array_append(json_buttons, json_button);
+        json_decref(json_button);
     }
+
+    json_object_set_nocheck(plugin_inner_json(p), "buttons", json_buttons);
+    json_decref(json_buttons);
 }
 
 /* Callback when panel configuration changes. */

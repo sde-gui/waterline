@@ -21,10 +21,8 @@ INCLUDES = \
 
 if ENABLE_MENU_CACHE
 MENU_SOURCES = \
-	menu.c
-#MENU_SOURCES = \
-#	menu.c \
-#	launchbar.c
+	menu.c \
+	launchbar.c
 endif
 
 PLUGINS_SOURCES = \

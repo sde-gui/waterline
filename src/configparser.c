@@ -394,6 +394,22 @@ def:
     *result = *default_value;
 }
 
+void wtl_json_dot_get_rgba(json_t * json, const char * key, const GdkRGBA * default_value, GdkRGBA * result)
+{
+    json_t * json_value = json_object_get(json, key);
+    if (!json_value)
+        goto def;
+
+    if (!json_is_string(json_value))
+        goto def;
+
+    if (gdk_rgba_parse(result, json_string_value(json_value)))
+        return;
+
+def:
+    *result = *default_value;
+}
+
 void wtl_json_dot_get_string(json_t * json, const char * key, const char * default_value, char ** result)
 {
     const char * value = default_value;
@@ -438,6 +454,13 @@ void wtl_json_dot_set_color(json_t * json, const char * key, const GdkColor * va
     sprintf(s, "#%06x", gcolor2rgb24(value));
 
     wtl_json_dot_set_string(json, key, s);
+}
+
+void wtl_json_dot_set_rgba(json_t * json, const char * key, const GdkRGBA * value)
+{
+    gchar * s = gdk_rgba_to_string(value);
+    wtl_json_dot_set_string(json, key, s);
+    g_free(s);
 }
 
 void wtl_json_dot_set_string(json_t * json, const char * key, const char * value)

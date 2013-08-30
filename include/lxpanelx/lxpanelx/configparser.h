@@ -25,6 +25,8 @@
 
 #include <jansson.h>
 
+#include "gtkcompat.h"
+
 enum { LINE_NONE, LINE_BLOCK_START, LINE_BLOCK_END, LINE_VAR };
 
 
@@ -67,12 +69,14 @@ int wtl_json_dot_get_enum(json_t * json, const char * key, const pair * pairs, i
 int wtl_json_dot_get_int(json_t * json, const char * key, int default_value);
 gboolean wtl_json_dot_get_bool(json_t * json, const char * key, gboolean default_value);
 void wtl_json_dot_get_color(json_t * json, const char * key, const GdkColor * default_value, GdkColor * result);
+void wtl_json_dot_get_rgba(json_t * json, const char * key, const GdkRGBA * default_value, GdkRGBA * result);
 void wtl_json_dot_get_string(json_t * json, const char * key, const char * default_value, char ** result);
 
 void wtl_json_dot_set_enum(json_t * json, const char * key, const pair * pairs, int value);
 void wtl_json_dot_set_int(json_t * json, const char * key, int value);
 void wtl_json_dot_set_bool(json_t * json, const char * key, gboolean value);
 void wtl_json_dot_set_color(json_t * json, const char * key, const GdkColor * value);
+void wtl_json_dot_set_rgba(json_t * json, const char * key, const GdkRGBA * value);
 void wtl_json_dot_set_string(json_t * json, const char * key, const char * value);
 
 
@@ -81,6 +85,7 @@ typedef enum {
     wtl_json_type_int,
     wtl_json_type_bool,
     wtl_json_type_color,
+    wtl_json_type_rgba,
     wtl_json_type_string
 } wtl_json_type_t;
 

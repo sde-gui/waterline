@@ -198,4 +198,11 @@ void gdk_pixmap_get_size(GdkPixmap *pixmap, gint *width, gint *height)
 #endif // !GTK_CHECK_VERSION(2,24,0)
 
 
+#if !GTK_CHECK_VERSION(3,0,0)
+
+#include "gdkrgba.h"
+
+#endif // !GTK_CHECK_VERSION(3,0,0)
+
+
 #endif

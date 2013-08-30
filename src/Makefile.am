@@ -25,6 +25,7 @@ MENU_SOURCES = \
 endif
 
 lxpanelx_SOURCES = \
+	gdkrgba.c \
 	misc.c \
 	fb_button.c \
 	defaultapplications.c \
@@ -59,6 +60,7 @@ lxpanelx_include_HEADERS = \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/ev.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/fb_button.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/global.h \
+	$(top_srcdir)/include/lxpanelx/lxpanelx/gdkrgba.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/gtkcompat.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/menu-cache-compat.h \
 	$(top_srcdir)/include/lxpanelx/lxpanelx/icon-grid.h \

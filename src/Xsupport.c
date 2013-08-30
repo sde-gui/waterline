@@ -592,7 +592,7 @@ get_net_wm_state(Window win, NetWMState *nws)
 
     ENTER;
 
-    bzero(nws, sizeof(nws));
+    bzero(nws, sizeof(&nws));
     if (!(state = get_xaproperty(win, a_NET_WM_STATE, XA_ATOM, &num3)))
         RET();
 

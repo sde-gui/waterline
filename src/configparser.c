@@ -487,6 +487,9 @@ void wtl_json_read_options(json_t * json, wtl_json_option_definition * options, 
             case wtl_json_type_color:
                 wtl_json_dot_get_color(json, options->key, (GdkColor *) p, (GdkColor *) p);
                 break;
+            case wtl_json_type_rgba:
+                wtl_json_dot_get_rgba(json, options->key, (GdkRGBA *) p, (GdkRGBA *) p);
+                break;
             case wtl_json_type_string:
                 wtl_json_dot_get_string(json, options->key, *(char **) p, (char **) p);
                 break;
@@ -514,6 +517,9 @@ void wtl_json_write_options(json_t * json, wtl_json_option_definition * options,
                 break;
             case wtl_json_type_color:
                 wtl_json_dot_set_color(json, options->key, (GdkColor *) p);
+                break;
+            case wtl_json_type_rgba:
+                wtl_json_dot_set_rgba(json, options->key, (GdkRGBA *) p);
                 break;
             case wtl_json_type_string:
                 wtl_json_dot_set_string(json, options->key, *(char **) p);

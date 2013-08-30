@@ -27,7 +27,9 @@
     (module##_MAJOR_VERSION == (major) && module##_MINOR_VERSION == (minor) && \
      module##_MICRO_VERSION >= (micro)))
 
+#ifndef MENU_CACHE_CHECK_VERSION
 #define MENU_CACHE_CHECK_VERSION(major,minor,micro) MODULE_CHECK_VERSION(MENU_CACHE,major,minor,micro)
+#endif
 
 #ifndef MENU_CACHE_MAJOR_VERSION
 #warning "MENU_CACHE_MAJOR_VERSION not defined"

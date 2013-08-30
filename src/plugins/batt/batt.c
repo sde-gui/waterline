@@ -68,18 +68,13 @@ static pair display_as_pair[] = {
 };
 
 typedef struct {
-    char *alarmCommand,
-        *backgroundColor,
-        *chargingColor1,
-        *chargingColor2,
-        *dischargingColor1,
-        *dischargingColor2;
+    char *alarmCommand;
 
-    double background_color[3];
-    double charging1_color[3];
-    double charging2_color[3];
-    double discharging1_color[3];
-    double discharging2_color[3];
+    GdkRGBA background_color,
+            charging_color1,
+            charging_color2,
+            discharging_color1,
+            discharging_color2;
 
     GtkWidget *vbox;
     GtkWidget *hbox;
@@ -129,12 +124,12 @@ static wtl_json_option_definition option_definitions[] = {
     WTL_JSON_OPTION(string, alarmCommand),
     WTL_JSON_OPTION(int, alarmTime),
     WTL_JSON_OPTION_ENUM(display_as_pair, display_as),
-    WTL_JSON_OPTION(string, backgroundColor),
+    WTL_JSON_OPTION(rgba, background_color),
     WTL_JSON_OPTION(int, border_width),
-    WTL_JSON_OPTION(string, chargingColor1),
-    WTL_JSON_OPTION(string, chargingColor2),
-    WTL_JSON_OPTION(string, dischargingColor1),
-    WTL_JSON_OPTION(string, dischargingColor2),
+    WTL_JSON_OPTION(rgba, charging_color1),
+    WTL_JSON_OPTION(rgba, charging_color2),
+    WTL_JSON_OPTION(rgba, discharging_color1),
+    WTL_JSON_OPTION(rgba, discharging_color2),
     {0,}
 };
 
@@ -155,13 +150,14 @@ static void * alarmProcess(void *arg) {
     return NULL;
 }
 
-static void get_status_color(BatteryPlugin *iplugin, double color[3])
+static void get_status_color(BatteryPlugin *iplugin, GdkRGBA * color)
 {
     if (!iplugin->b)
     {
-       color[0] = 0;
-       color[1] = 0;
-       color[2] = 0;
+       color->red = 0;
+       color->green = 0;
+       color->blue = 0;
+       color->alpha = 0;
     }
 
     gboolean isCharging = battery_is_charging(iplugin->b);
@@ -170,18 +166,16 @@ static void get_status_color(BatteryPlugin *iplugin, double color[3])
 
     if (isCharging)
     {
-        color[0] = iplugin->charging1_color[0] * v + iplugin->charging2_color[0] * (1.0 - v);
-        color[1] = iplugin->charging1_color[1] * v + iplugin->charging2_color[1] * (1.0 - v);
-        color[2] = iplugin->charging1_color[2] * v + iplugin->charging2_color[2] * (1.0 - v);
+        mix_rgba(color, &iplugin->charging_color1, &iplugin->charging_color2, v);
     }
     else
     {
-        color[0] = iplugin->discharging1_color[0] * v + iplugin->discharging2_color[0] * (1.0 - v);
-        color[1] = iplugin->discharging1_color[1] * v + iplugin->discharging2_color[1] * (1.0 - v);
-        color[2] = iplugin->discharging1_color[2] * v + iplugin->discharging2_color[2] * (1.0 - v);
+        mix_rgba(color, &iplugin->discharging_color1, &iplugin->discharging_color2, v);
     }
 
 }
+
+/* FIXME: алгоритм требует переделки для работы с полупрозрачными цветами. */
 
 static void update_bar(BatteryPlugin *iplugin)
 {
@@ -194,16 +188,13 @@ static void update_bar(BatteryPlugin *iplugin)
 
     /* Bar color */
 
-    double bar_color[3];
-    get_status_color(iplugin, bar_color);
+    GdkRGBA bar_color;
+    get_status_color(iplugin, &bar_color);
 
     double v = 0.3;
 
-    double background_color1[3];
-
-    background_color1[0] = bar_color[0] * v + iplugin->background_color[0] * (1.0 - v);
-    background_color1[1] = bar_color[1] * v + iplugin->background_color[1] * (1.0 - v);
-    background_color1[2] = bar_color[2] * v + iplugin->background_color[2] * (1.0 - v);
+    GdkRGBA background_color1;
+    mix_rgba(&background_color1, &bar_color, &iplugin->background_color, 0.3);
 
     int border = iplugin->border_width;
     while (1)
@@ -222,21 +213,21 @@ static void update_bar(BatteryPlugin *iplugin)
     cairo_set_line_width (cr, 1.0);
     cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
 
-    cairo_set_source_rgb(cr, background_color1[0], background_color1[1], background_color1[2]);
+    cairo_set_source_gdkrgba(cr, &background_color1);
     cairo_rectangle(cr, 0, 0, iplugin->width, iplugin->height);
     cairo_fill(cr);
 
     /* Draw border. */
 
     cairo_set_line_width (cr, border);
-    cairo_set_source_rgb(cr, iplugin->background_color[0], iplugin->background_color[1], iplugin->background_color[2]);
+    cairo_set_source_gdkrgba(cr, &iplugin->background_color);
     cairo_rectangle(cr, border / 2.0, border / 2.0, iplugin->width - border, iplugin->height - border);
     cairo_stroke(cr);
 
 
     /* Draw bar. */
 
-    cairo_set_source_rgb(cr, bar_color[0], bar_color[1], bar_color[2]);
+    cairo_set_source_gdkrgba(cr, &bar_color);
 
     int chargeLevel = iplugin->b->percentage * (iplugin->length - 2 * border) / 100;
 
@@ -280,12 +271,12 @@ void update_label(BatteryPlugin *iplugin) {
     else
         text = g_strdup_printf(_("%d%%↓"), iplugin->b->percentage);
 
-    double status_color[3];
-    get_status_color(iplugin, status_color);
-    int color = (((int) (status_color[0] * 255)) << 16) +
-                (((int) (status_color[1] * 255)) << 8) +
-                 ((int) (status_color[2] * 255));
-    
+    GdkRGBA status_color;
+    get_status_color(iplugin, &status_color);
+    int color = (((int) (status_color.red * 255)) << 16) +
+                (((int) (status_color.green * 255)) << 8) +
+                 ((int) (status_color.blue * 255));
+
     gchar * markup = g_strdup_printf("<span color=\"#%06x\">%s</span>", color, text);
 
     gtk_label_set_markup(GTK_LABEL(iplugin->label), markup);
@@ -568,27 +559,18 @@ constructor(Plugin *p)
 
     sem_init(&(iplugin->alarmProcessLock), 0, 1);
 
-    iplugin->alarmCommand = iplugin->backgroundColor = iplugin->chargingColor1 = iplugin->chargingColor2
-            = iplugin->dischargingColor1 = iplugin->dischargingColor2 = NULL;
-
-    /* Set default values for integers */
+    /* Set default values. */
     iplugin->alarmTime = 5;
     iplugin->border_width = 3;
     iplugin->display_as = DISPLAY_AS_TEXT;
     iplugin->alarmCommand = g_strdup("xmessage Battery low");
-    iplugin->backgroundColor = g_strdup("black");
-    iplugin->chargingColor1 = g_strdup("#1B3BC6");
-    iplugin->chargingColor2 = g_strdup("#B52FC3");
-    iplugin->dischargingColor1 = g_strdup("#00FF00");
-    iplugin->dischargingColor2 = g_strdup("#FF0000");
+    gdk_rgba_parse(&iplugin->background_color, "black");
+    gdk_rgba_parse(&iplugin->charging_color1, "#1B3BC6");
+    gdk_rgba_parse(&iplugin->charging_color2, "#B52FC3");
+    gdk_rgba_parse(&iplugin->discharging_color1, "#00FF00");
+    gdk_rgba_parse(&iplugin->discharging_color2, "#FF0000");
 
     wtl_json_read_options(plugin_inner_json(p), option_definitions, iplugin);
-
-    color_parse_d(iplugin->backgroundColor, iplugin->background_color);
-    color_parse_d(iplugin->chargingColor1, iplugin->charging1_color);
-    color_parse_d(iplugin->chargingColor2, iplugin->charging2_color);
-    color_parse_d(iplugin->dischargingColor1, iplugin->discharging1_color);
-    color_parse_d(iplugin->dischargingColor2, iplugin->discharging2_color);
 
     batt_panel_configuration_changed(p);
 
@@ -613,11 +595,6 @@ destructor(Plugin *p)
         g_object_unref(iplugin->pixmap);
 
     g_free(iplugin->alarmCommand);
-    g_free(iplugin->backgroundColor);
-    g_free(iplugin->chargingColor1);
-    g_free(iplugin->chargingColor2);
-    g_free(iplugin->dischargingColor1);
-    g_free(iplugin->dischargingColor2);
 
     g_free(iplugin->rateSamples);
     sem_destroy(&(iplugin->alarmProcessLock));
@@ -664,13 +641,6 @@ static void applyConfig(Plugin* p)
 
     BatteryPlugin *b = PRIV(p);
 
-    /* Update colors */
-    color_parse_d(b->backgroundColor, b->background_color);
-    color_parse_d(b->chargingColor1, b->charging1_color);
-    color_parse_d(b->chargingColor2, b->charging2_color);
-    color_parse_d(b->dischargingColor1, b->discharging1_color);
-    color_parse_d(b->dischargingColor2, b->discharging2_color);
-
     /* Make sure the border value is acceptable */
     b->border_width = MAX(0, b->border_width);
 
@@ -696,11 +666,11 @@ static void config(Plugin *p, GtkWindow* parent) {
             _("Alarm time (minutes left)"), &b->alarmTime, (GType)CONF_TYPE_INT,
 
             _("|Display as:|Bar|Text"), &b->display_as, (GType)CONF_TYPE_ENUM,
-            _("Background color"), &b->backgroundColor, (GType)CONF_TYPE_COLOR,
-            _("Charging color 1"), &b->chargingColor1, (GType)CONF_TYPE_COLOR,
-            _("Charging color 2"), &b->chargingColor2, (GType)CONF_TYPE_COLOR,
-            _("Discharging color 1"), &b->dischargingColor1, (GType)CONF_TYPE_COLOR,
-            _("Discharging color 2"), &b->dischargingColor2, (GType)CONF_TYPE_COLOR,
+            _("Background color"), &b->background_color, (GType)CONF_TYPE_RGBA,
+            _("Charging color 1"), &b->charging_color1, (GType)CONF_TYPE_RGBA,
+            _("Charging color 2"), &b->charging_color2, (GType)CONF_TYPE_RGBA,
+            _("Discharging color 1"), &b->discharging_color1, (GType)CONF_TYPE_RGBA,
+            _("Discharging color 2"), &b->discharging_color2, (GType)CONF_TYPE_RGBA,
             _("Border width"), &b->border_width, (GType)CONF_TYPE_INT,
             NULL);
     if (dialog)

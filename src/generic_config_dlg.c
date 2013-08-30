@@ -98,6 +98,16 @@ static void on_color_chooser_btn_color_set(GtkColorButton* btn, char** val)
     notify_apply_config( GTK_WIDGET(btn) );
 }
 
+static void on_color_chooser_btn_rgba_set(GtkColorButton* button, GdkRGBA * rgba)
+{
+    GdkColor color; guint16  alpha;
+    gtk_color_button_get_color(button, &color);
+    alpha = gtk_color_button_get_alpha(button);
+    color_to_rgba(rgba, &color, &alpha);
+    notify_apply_config(GTK_WIDGET(button));
+}
+
+
 static void on_browse_btn_clicked(GtkButton* btn, GtkEntry* entry)
 {
     char* file;
@@ -403,6 +413,18 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                 g_signal_connect( entry, "color-set",
                   G_CALLBACK(on_color_chooser_btn_color_set), val );
                 break;
+            case CONF_TYPE_RGBA:
+            {
+                entry = gtk_color_button_new();
+                GdkRGBA * rgba = (GdkRGBA *) val;
+                GdkColor color; guint16 alpha;
+                rgba_to_color(rgba, &color, &alpha);
+                gtk_color_button_set_color(GTK_COLOR_BUTTON(entry), &color);
+                gtk_color_button_set_alpha(GTK_COLOR_BUTTON(entry), alpha);
+                gtk_color_button_set_use_alpha(GTK_COLOR_BUTTON(entry), TRUE);
+                g_signal_connect(entry, "color-set", G_CALLBACK(on_color_chooser_btn_rgba_set), rgba);
+                break;
+            }
             case CONF_TYPE_TRIM:
             case CONF_TYPE_TITLE:
             {

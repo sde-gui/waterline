@@ -1002,3 +1002,70 @@ void color_parse_d(const char * src, double dst[3])
 
 /********************************************************************/
 
+void rgba_to_color(GdkRGBA * rgba, GdkColor * color, guint16 * alpha)
+{
+    if (!rgba)
+        return;
+
+    if (color)
+    {
+        int r = rgba->red * 65535;
+        if (r < 0)
+            color->red = 0;
+        else if (r > 65535)
+            color->red = 65535;
+        else
+            color->red = r;
+
+        int g = rgba->green * 65535;
+        if (g < 0)
+            color->green = 0;
+        else if (g > 65535)
+            color->green = 65535;
+        else
+            color->green = g;
+
+        int b = rgba->blue * 65535;
+        if (b < 0)
+            color->blue = 0;
+        else if (b > 65535)
+            color->blue = 65535;
+        else
+            color->blue = b;
+    }
+
+    if (alpha)
+    {
+        int a = rgba->alpha * 65535;
+        if (a < 0)
+            *alpha = 0;
+        else if (a > 65535)
+            *alpha = 65535;
+        else
+            *alpha = a;
+    }
+
+}
+
+/********************************************************************/
+
+void color_to_rgba(GdkRGBA * rgba, GdkColor * color, guint16 * alpha)
+{
+    if (!rgba)
+        return;
+
+    if (color)
+    {
+        rgba->red   = ((double) color->red) / 65535.0;
+        rgba->green = ((double) color->green) / 65535.0;
+        rgba->blue  = ((double) color->blue) / 65535.0;
+    }
+
+    if (alpha)
+    {
+        rgba->alpha = ((double) *alpha) / 65535.0;
+    }
+
+}
+
+/********************************************************************/

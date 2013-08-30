@@ -49,6 +49,7 @@ enum {
     CONF_TYPE_BEGIN_PAGE,
     CONF_TYPE_END_PAGE,
     CONF_TYPE_COLOR,
+    CONF_TYPE_RGBA,
     CONF_TYPE_SET_PROPERTY
 };
 
@@ -117,5 +118,22 @@ void color_parse_d(const char * src, double dst[3]);
 gchar ** read_list_from_config(gchar * file_name);
 
 const char * get_de_name(void);
+
+
+static inline void cairo_set_source_gdkrgba(cairo_t * cr, GdkRGBA * rgba)
+{
+    cairo_set_source_rgba(cr, rgba->red, rgba->green, rgba->blue, rgba->alpha);
+}
+
+static inline void mix_rgba(GdkRGBA * result, GdkRGBA * a, GdkRGBA * b, double v)
+{
+    result->red   = a->red   * v + a->red   * (1.0 - v);
+    result->green = a->green * v + a->green * (1.0 - v);
+    result->blue  = a->blue  * v + a->blue  * (1.0 - v);
+    result->alpha = a->alpha * v + a->alpha * (1.0 - v);
+}
+
+void rgba_to_color(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
+void color_to_rgba(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
 
 #endif

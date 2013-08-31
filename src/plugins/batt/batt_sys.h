@@ -35,7 +35,7 @@
 typedef struct battery {
     int battery_num;
     /* path to battery dir */
-    const gchar *path;			
+    const gchar * path;			
     /* sysfs file contents */
     int charge_now;
     int energy_now;
@@ -49,15 +49,16 @@ typedef struct battery {
     /* extra info */
     int seconds;
     int percentage;
-    char *state, *poststr;
-    char* capacity_unit;
+    gchar * state;
+    gchar * poststr;
+    gchar * capacity_unit;
     int type_battery;
 } battery;
 
-battery *battery_get();
-void battery_update( battery *b );
-void battery_print(battery *b, int show_capacity);
-gboolean battery_is_charging( battery *b );
-gint battery_get_remaining( battery *b );
+battery * battery_get();
+void      battery_update(battery * b);
+void      battery_print(battery * b, int show_capacity);
+gboolean  battery_is_charging(battery * b);
+gint      battery_get_remaining(battery * b);
 
 #endif

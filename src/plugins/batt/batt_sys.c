@@ -116,7 +116,7 @@ static gchar * get_gchar_from_infofile(battery * b, const char * sys_file)
 void battery_print(battery * b, int show_capacity)
 {
     if (!b)
-        return NULL;
+        return;
 
     if (b->type_battery)
     {
@@ -174,8 +174,6 @@ void battery_update(battery * b)
     if (!b)
         return;
 
-    gchar * gctmp;
-
     /* read from sysfs */
     b->charge_now  = get_gint_from_infofile(b, "charge_now");
     b->energy_now  = get_gint_from_infofile(b, "energy_now");
@@ -200,9 +198,11 @@ void battery_update(battery * b)
 
     b->voltage_now = get_gint_from_infofile(b, "voltage_now");
 
-    gctmp = get_gchar_from_infofile(b, "type");
-    b->type_battery = gctmp ? (strcasecmp(gctmp, "battery") == 0) : TRUE;
+    gchar * type_value = get_gchar_from_infofile(b, "type");
+    b->type_battery = type_value ? (strcasecmp(type_value, "battery") == 0) : TRUE;
+    g_free(type_value);
 
+    g_free(b->state);
     b->state = get_gchar_from_infofile(b, "status");
     if (!b->state)
         b->state = get_gchar_from_infofile(b, "state");
@@ -211,11 +211,11 @@ void battery_update(battery * b)
         if (b->charge_now != -1 || b->energy_now != -1
             || b->charge_full != -1 || b->energy_full != -1)
         {
-            b->state = "available";
+            b->state = g_strdup("available");
         }
         else
         {
-            b->state = "unavailable";
+            b->state = g_strdup("unavailable");
         }
     }
 

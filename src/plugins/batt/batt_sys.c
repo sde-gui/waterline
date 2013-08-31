@@ -1,22 +1,22 @@
 /*
  *      batt_sys.h
- *      
+ *
  *      Copyright 2009 Juergen Hötzel <juergen@archlinux.org>
- * 		
+ *
  * 	Parts shameless stolen and glibified from acpi package  
  * 	Copyright (C) 2001  Grahame Bowland <grahame@angrygoats.net>
  *	(C) 2008-2009  Michael Meskes  <meskes@debian.org> 
- *      
+ *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
  *      the Free Software Foundation; either version 2 of the License, or
  *      (at your option) any later version.
- *      
+ *
  *      This program is distributed in the hope that it will be useful,
  *      but WITHOUT ANY WARRANTY; without even the implied warranty of
  *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *      GNU General Public License for more details.
- *      
+ *
  *      You should have received a copy of the GNU General Public License
  *      along with this program; if not, write to the Free Software
  *      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -36,9 +36,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-battery* battery_new() {
+battery * battery_new()
+{
     static int battery_num = 1;
-    battery * b = g_new0 ( battery, 1 );
+
+    battery * b = g_new0 (battery, 1);
+
     b->type_battery = TRUE;
     b->capacity_unit = "mAh";
     b->energy_full = -1;
@@ -51,27 +54,30 @@ battery* battery_new() {
     b->current_now = -1;
     b->power_now = -1;
     b->state = NULL;
-    b->battery_num = battery_num;
+    b->battery_num = battery_num++;
     b->seconds = -1;
     b->percentage = -1;
     b->poststr = NULL;
-    battery_num++;
+
     return b;
 }
 
 
-static gchar* parse_info_file(battery *b, char *sys_file)
+static gchar* parse_info_file(battery * b, const char * sys_file)
 {
-    char *buf = NULL;
-    gchar *value = NULL;
-    GString *filename = g_string_new(ACPI_PATH_SYS_POWER_SUPPY);
+    if (!b)
+        return NULL;
 
-    g_string_append_printf (filename, "/%s/%s", b->path, sys_file);
+    gchar * buf = NULL;
+    gchar * value = NULL;
+    GString * filename = g_string_new(ACPI_PATH_SYS_POWER_SUPPY);
 
-    if (g_file_get_contents(filename->str, &buf, NULL, NULL) == TRUE) {
-	value = g_strdup( buf );
-	value = g_strstrip( value );
-	g_free( buf );
+    g_string_append_printf(filename, "/%s/%s", b->path, sys_file);
+
+    if (g_file_get_contents(filename->str, &buf, NULL, NULL) == TRUE)
+    {
+        value = buf;
+        value = g_strstrip(value);
     }
 
     g_string_free(filename, TRUE);
@@ -83,17 +89,26 @@ static gchar* parse_info_file(battery *b, char *sys_file)
  * 	If the sys_file exists, then its value is converted to an int,
  * 	divided by 1000, and returned.
  * 	Failure is indicated by returning -1. */
-static gint get_gint_from_infofile(battery *b, gchar *sys_file)
+static gint get_gint_from_infofile(battery * b, const char * sys_file)
 {
-    gchar *file_content = parse_info_file(b, sys_file);
+    gint value = -1;
 
-    if (file_content != NULL)
-	return atoi(file_content) / 1000;
+    if (!b)
+        goto end;
 
-    return -1;
+    gchar * file_content = parse_info_file(b, sys_file);
+
+    if (file_content)
+    {
+        value = atoi(file_content) / 1000;
+        g_free(file_content);
+    }
+
+end:
+    return value;
 }
 
-static gchar* get_gchar_from_infofile(battery *b, gchar *sys_file)
+static gchar * get_gchar_from_infofile(battery * b, const char * sys_file)
 {
     return parse_info_file(b, sys_file);
 }

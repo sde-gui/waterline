@@ -203,6 +203,16 @@ static void launchbutton_drag_data_received_event(
     guint time,
     LaunchButton * b)
 {
+    if (!b)
+        return;
+
+    if (!b->action)
+    {
+        if (b->desktop_id)
+            LOG_WARN("launchbar: Button '%s' has no action\n", b->desktop_id);
+        return;
+    }
+
     if (sd->length > 0)
     {
         if (info == TARGET_URILIST)

@@ -670,7 +670,7 @@ static void lb_apply_configuration(Plugin * p)
                 }
             }
         }
-        gtk_widget_set_tooltip_markup(lb->button, tooltip);
+        gtk_widget_set_tooltip_text(lb->button, tooltip);
         g_free(tooltip);
     }
 

@@ -39,7 +39,7 @@
 
 #include <lxpanelx/dbg.h>
 
-typedef unsigned long CPUTick;			/* Value from /proc/stat */
+typedef unsigned long long CPUTick;			/* Value from /proc/stat */
 
 enum {
     CPU_SAMPLE_S,
@@ -171,7 +171,7 @@ static gboolean cpu_update(CPUPlugin * c)
         FILE * stat = fopen("/proc/stat", "r");
         if (stat == NULL)
             return TRUE;
-        int fscanf_result = fscanf(stat, "cpu %lu %lu %lu %lu %lu", &cpu.u, &cpu.n, &cpu.s, &cpu.i, &cpu.io);
+        int fscanf_result = fscanf(stat, "cpu %llu %llu %llu %llu %llu", &cpu.u, &cpu.n, &cpu.s, &cpu.i, &cpu.io);
         fclose(stat);
 
         /* Ensure that fscanf succeeded. */

@@ -221,6 +221,12 @@ LXPANELX_MODULE="-avoid-version \
 -no-undefined "'-export-symbols-regex "^[[^_]].*"'
 AC_SUBST(LXPANELX_MODULE)
 
+LXPANELX_INTERNAL_MODULE="-avoid-version \
+-rpath \$(pkglibdir)/internals \
+-no-undefined "'-export-symbols-regex "^[[^_]].*"'
+AC_SUBST(LXPANELX_INTERNAL_MODULE)
+
+
 AC_ARG_ENABLE([alsa],
     AS_HELP_STRING([--disable-alsa],
                     [compile ALSA providers (default: enable)]),
@@ -381,6 +387,7 @@ AC_CONFIG_FILES([
     lxpanelx.pc
     Makefile
     src/Makefile
+    src/libconfigurator/Makefile
     src/libexec/Makefile
     src/plugins/Makefile
     src/plugins/taskbar/Makefile

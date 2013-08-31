@@ -22,7 +22,7 @@
 
 #include <lxpanelx/plugin.h>
 
-#pragma GCC visibility push(hidden)
+//#pragma GCC visibility push(hidden)
 
 extern Plugin * plugin_load(char * type);		/* Create an instance of a plugin, loading it if necessary */
 extern int plugin_start(Plugin * this);	/* Configure and start a plugin by calling its constructor */
@@ -33,7 +33,7 @@ extern void plugin_class_list_free(GList * list);	/* Free the list allocated by 
 extern void plugin_widget_set_background(GtkWidget * w, Panel * p);
 							/* Recursively set the background of all widgets on a panel background configuration change */
 
-#pragma GCC visibility pop
+//#pragma GCC visibility pop
 
 
 #endif

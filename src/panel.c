@@ -1469,6 +1469,22 @@ static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e,
 
 /******************************************************************************/
 
+/* If there is a panel on this edge and it is not the panel being configured, set the edge unavailable. */
+gboolean panel_edge_available(Panel* p, int edge)
+{
+    GSList* l;
+    for (l = get_all_panels(); l != NULL; l = l->next)
+    {
+        Panel* pl = (Panel*) l->data;
+        if ((pl != p) && (pl->edge == edge))
+            return FALSE;
+    }
+    return TRUE;
+}
+
+
+/******************************************************************************/
+
 static gint
 panel_popupmenu_configure(GtkWidget *widget, gpointer user_data)
 {

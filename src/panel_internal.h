@@ -31,7 +31,7 @@
 #define PANEL_HEIGHT_MIN              16	/* Minimum height of panel */
 #define PANEL_ICON_HIGHLIGHT          0x202020	/* Constant to pass to icon loader */
 
-#pragma GCC visibility push(hidden)
+//#pragma GCC visibility push(hidden)
 
 extern void panel_calculate_position(Panel *p);
 extern void update_panel_geometry(Panel* p);
@@ -53,6 +53,6 @@ extern int panel_get_orientation(Panel * p);
 extern GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_menu);
 extern void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event);
 
-#pragma GCC visibility pop
+//#pragma GCC visibility pop
 
 #endif

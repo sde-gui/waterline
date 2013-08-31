@@ -209,7 +209,7 @@ static void launchbutton_drag_data_received_event(
     if (!b->action)
     {
         if (b->desktop_id)
-            LOG_WARN("launchbar: Button '%s' has no action\n", b->desktop_id);
+            LOG(LOG_WARN, "launchbar: Button '%s' has no action\n", b->desktop_id);
         return;
     }
 

@@ -35,7 +35,7 @@
 #include <lxpanelx/panel.h>
 #include <lxpanelx/misc.h>
 
-#define BORDER_SIZE 2
+#define BORDER_SIZE 0
 
 #include <lxpanelx/dbg.h>
 
@@ -64,6 +64,7 @@ typedef struct {
     double foreground_color_system[3];
     double background_color[3];
 
+    GtkWidget * frame;
     GtkWidget * da;				/* Drawing area */
     GdkPixmap * pixmap;				/* Pixmap to be drawn on drawing area */
 
@@ -303,9 +304,13 @@ static void cpu_apply_configuration(Plugin * p)
     if (!plugin_widget(p))
     {
         GtkWidget * pwid = gtk_event_box_new();
-	plugin_set_widget(p, pwid);
+        plugin_set_widget(p, pwid);
         gtk_container_set_border_width(GTK_CONTAINER(pwid), 1);
         gtk_widget_set_has_window(pwid, FALSE);
+
+        c->frame = gtk_frame_new(NULL);
+        gtk_container_add(GTK_CONTAINER(plugin_widget(p)), c->frame);
+        gtk_frame_set_shadow_type(GTK_FRAME(c->frame), GTK_SHADOW_IN);
     }
 
     /* Allocate drawing area as a child of top level widget.  Enable button press events. */
@@ -314,7 +319,7 @@ static void cpu_apply_configuration(Plugin * p)
         c->da = gtk_drawing_area_new();
         gtk_widget_set_size_request(c->da, 40, plugin_get_icon_size(p));
         gtk_widget_add_events(c->da, GDK_BUTTON_PRESS_MASK);
-        gtk_container_add(GTK_CONTAINER(plugin_widget(p)), c->da);
+        gtk_container_add(GTK_CONTAINER(c->frame), c->da);
 
         /* Connect signals. */
         g_signal_connect(G_OBJECT(c->da), "configure_event", G_CALLBACK(configure_event), (gpointer) c);
@@ -328,8 +333,8 @@ static void cpu_apply_configuration(Plugin * p)
     color_parse_d(c->fg_color_system, c->foreground_color_system);
     color_parse_d(c->bg_color, c->background_color);
 
-    /* Show the widget.  Connect a timer to refresh the statistics. */
-    gtk_widget_show(c->da);
+    gtk_widget_show_all(c->frame);
+
     if (c->timer)
         g_source_remove(c->timer);
     c->timer = g_timeout_add(c->update_interval, (GSourceFunc) cpu_update, (gpointer) c);

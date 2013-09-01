@@ -106,10 +106,6 @@ static void init_plugin_class_list(void)
     REGISTER_STATIC_PLUGIN_CLASS(pager_plugin_class);
 #endif
 
-#ifdef STATIC_TRAY
-    REGISTER_STATIC_PLUGIN_CLASS(tray_plugin_class);
-#endif
-
 #ifndef DISABLE_MENU
 #ifdef STATIC_MENU
     REGISTER_STATIC_PLUGIN_CLASS(menu_plugin_class);

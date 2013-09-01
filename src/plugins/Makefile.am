@@ -32,7 +32,6 @@ PLUGINS_SOURCES = \
 	separator.c \
 	pager.c \
 	space.c \
-	tray.c \
 	wincmd.c \
 	dirmenu.c
 

@@ -56,7 +56,6 @@ struct _Plugin {
 #define STATIC_WINCMD
 #define STATIC_DIRMENU
 #define STATIC_PAGER
-#define STATIC_TRAY
 #define STATIC_MENU
 #define STATIC_SPACE
 #define STATIC_ICONS

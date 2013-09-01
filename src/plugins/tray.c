@@ -437,11 +437,6 @@ static void balloon_message_data_event(TrayPlugin * tr, XClientMessageEvent * xe
     }
 }
 
-/* FIXME: implement tray_icon class and emulate gdk_window_get_composited() for gtk < 2.22 */
-#if !GTK_CHECK_VERSION(2,22,0)
-#define DISABLE_COMPOSITING
-#endif
-
 /* Handler for request dock message. */
 static void trayclient_request_dock(TrayPlugin * tr, XClientMessageEvent * xevent)
 {
@@ -537,9 +532,7 @@ static void trayclient_request_dock(TrayPlugin * tr, XClientMessageEvent * xeven
     depth = gdk_visual_get_depth (visual);
 
     visual_has_alpha = red_prec + blue_prec + green_prec < depth;
-#ifndef DISABLE_COMPOSITING
     composited = (visual_has_alpha && gdk_display_supports_composite (gdk_screen_get_display (screen)));
-#endif
     //g_print("has_alpha = %d\n", (int)has_alpha);
 
     if (new_colormap)
@@ -662,8 +655,6 @@ static void tray_unmanage_selection(TrayPlugin * tr)
     }
 }
 
-#ifndef DISABLE_COMPOSITING
-
 static void tray_expose_icon(GtkWidget * widget, gpointer data)
 {
     cairo_t * cr = data;
@@ -734,7 +725,6 @@ static void tray_choose_visual(TrayPlugin * tr)
                     PropModeReplace,
                     (guchar *) &data, 1);
 }
-#endif
 
 /* Plugin constructor. */
 static int tray_constructor(Plugin * p)
@@ -781,9 +771,8 @@ static int tray_constructor(Plugin * p)
     tr->invisible = invisible;
     tr->invisible_window = GDK_WINDOW_XWINDOW(invisible->window);
     g_object_ref(G_OBJECT(invisible));
-#ifndef DISABLE_COMPOSITING
     tray_choose_visual(tr);
-#endif
+
     /* Try to claim the _NET_SYSTEM_TRAY_Sn selection. */
     guint32 timestamp = gdk_x11_get_server_time(invisible->window);
     if (gdk_selection_owner_set_for_display(
@@ -838,9 +827,8 @@ static int tray_constructor(Plugin * p)
     /* Create an icon grid to manage the container. */
     GtkOrientation bo = (plugin_get_orientation(p) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     tr->icon_grid = icon_grid_new(plugin_panel(p), pwid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), tr->spacing, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
-#ifndef DISABLE_COMPOSITING
     g_signal_connect (tr->icon_grid->widget, "expose-event", G_CALLBACK (tray_expose_box), tr);
-#endif
+
     return 1;
 }
 

@@ -18,7 +18,7 @@ AC_PROG_INTLTOOL(, [no-xml])
 AM_PROG_CC_C_O
 
 # Checks for libraries.
-pkg_modules="gtk+-2.0 >= 2.16.0 \
+pkg_modules="gtk+-2.0 >= 2.24.0 \
              gio-unix-2.0 \
              gthread-2.0 \
              gmodule-2.0 \

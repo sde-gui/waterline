@@ -2077,8 +2077,12 @@ void panel_adjust_geometry_terminology(Panel * p)
     }
 }
 
-/* Draw text into a label, with the user preference color and optionally bold. */
 void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned style)
+{
+    panel_draw_label_text_with_font(p, label, text, style, NULL);
+}
+
+void panel_draw_label_text_with_font(Panel * p, GtkWidget * label, char * text, unsigned style, const char * custom_font_desc)
 {
     gboolean bold = style & STYLE_BOLD;
     gboolean italic  = style & STYLE_ITALIC;
@@ -2093,19 +2097,19 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned s
     }
 
     /* Compute an appropriate size so the font will scale with the panel's icon size. */
-    int font_desc = 0;
+    int font_size = 0;
 
     if (p->use_font_size)
     {
-        font_desc = p->font_size;
+        font_size = p->font_size;
         if (p->font_size == 0)
         {
             if (panel_get_icon_size(p) < 20)
-               font_desc = 9;
+               font_size = 9;
             else if (panel_get_icon_size(p) >= 20 && panel_get_icon_size(p) < 36)
-               font_desc = 10;
+               font_size = 10;
             else
-               font_desc = 12;
+               font_size = 12;
         }
     }
 
@@ -2134,8 +2138,16 @@ void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned s
 
     gchar * attr_desc = "";
     gchar * attr_desc_allocated = NULL;
-    if (font_desc > 0)
-        attr_desc_allocated = attr_desc = g_strdup_printf(" font_desc=\"%d\"", font_desc);
+    if (!strempty(custom_font_desc))
+    {
+        gchar * custom_font_desc_escaped = g_markup_escape_text(custom_font_desc, -1);
+        attr_desc_allocated = attr_desc = g_strdup_printf(" font_desc=\"%s\"", custom_font_desc_escaped);
+        g_free(custom_font_desc_escaped);
+    }
+    else if (font_size > 0)
+    {
+        attr_desc_allocated = attr_desc = g_strdup_printf(" font_desc=\"%d\"", font_size);
+    }
 
     gchar * markup_text = g_strdup_printf("<span%s%s>%s%s%s%s%s%s%s</span>",
             attr_desc, attr_color,

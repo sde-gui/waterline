@@ -41,20 +41,9 @@ typedef enum {
 /* Private context for window command plugin. */
 typedef struct {
     char * image;				/* Main icon */
-    WindowCommand button_1_command;		/* Command for mouse button 1 */
-    WindowCommand button_2_command;		/* Command for mouse button 2 */
-    gboolean toggle;			/* User preference: toggle iconify/shade and map */
     gboolean toggle_state;			/* State of toggle */
 } WinCmdPlugin;
 
-static pair wincmd_pair [] = {
-    { WC_NONE,    "none" },
-    { WC_ICONIFY, "iconify" },
-    { WC_SHADE,   "shade" },
-    { 0, NULL },
-};
-
-static void wincmd_adjust_toggle_state(WinCmdPlugin * wc);
 static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command);
 static gboolean wincmd_button_clicked(GtkWidget * widget, GdkEventButton * event, Plugin * plugin);
 static int wincmd_constructor(Plugin * p);
@@ -67,23 +56,10 @@ static void wincmd_panel_configuration_changed(Plugin * p);
 #define WTL_JSON_OPTION_STRUCTURE WinCmdPlugin
 static wtl_json_option_definition option_definitions[] = {
     WTL_JSON_OPTION(string, image),
-    WTL_JSON_OPTION(bool, toggle),
-    WTL_JSON_OPTION_ENUM(wincmd_pair, button_1_command),
-    WTL_JSON_OPTION_ENUM(wincmd_pair, button_2_command),
     {0,}
 };
 
 /******************************************************************************/
-
-/* Adjust the toggle state after a window command. */
-static void wincmd_adjust_toggle_state(WinCmdPlugin * wc)
-{
-    /* Ensure that if the user changes the preference from "unconditional" to "toggle", we do a raise on the next click. */
-    if (wc->toggle)
-        wc->toggle_state = !wc->toggle_state;
-    else
-        wc->toggle_state = TRUE;
-}
 
 /* Execute a window command. */
 static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
@@ -114,7 +90,7 @@ static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
                         break;
 
                     case WC_ICONIFY:
-                        if (( ! wc->toggle) || ( ! wc->toggle_state))
+                        if (! wc->toggle_state)
                             XIconifyWindow(GDK_DISPLAY(), client_list[i], DefaultScreen(GDK_DISPLAY()));
                         else
                             XMapWindow (GDK_DISPLAY(), client_list[i]);
@@ -122,7 +98,7 @@ static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
 
                     case WC_SHADE:
                         Xclimsg(client_list[i], a_NET_WM_STATE,
-                            ((( ! wc->toggle) || ( ! wc->toggle_state)) ? a_NET_WM_STATE_ADD : a_NET_WM_STATE_REMOVE),
+                            ((( ! wc->toggle_state)) ? a_NET_WM_STATE_ADD : a_NET_WM_STATE_REMOVE),
                             a_NET_WM_STATE_SHADED, 0, 0, 0);
                         break;
                 }
@@ -130,8 +106,8 @@ static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
         }
         XFree(client_list);
 
-	/* Adjust toggle state. */
-        wincmd_adjust_toggle_state(wc);
+        /* Adjust toggle state. */
+        wc->toggle_state = !wc->toggle_state;
     }
 }
 
@@ -156,9 +132,9 @@ static gboolean wincmd_button_clicked(GtkWidget * widget, GdkEventButton * event
          * Otherwise, fall back to iconifying windows individually. */
         if (gdk_x11_screen_supports_net_wm_hint(screen, atom))
         {
-            int showing_desktop = ((( ! wc->toggle) || ( ! wc->toggle_state)) ? 1 : 0);
+            int showing_desktop = (( ( ! wc->toggle_state)) ? 1 : 0);
             Xclimsg(DefaultRootWindow(GDK_DISPLAY()), a_NET_SHOWING_DESKTOP, showing_desktop, 0, 0, 0, 0);
-            wincmd_adjust_toggle_state(wc);
+            wc->toggle_state = !wc->toggle_state;
         }
         else
             wincmd_execute(wc, WC_ICONIFY);
@@ -178,14 +154,9 @@ static int wincmd_constructor(Plugin * p)
     WinCmdPlugin * wc = g_new0(WinCmdPlugin, 1);
     plugin_set_priv(p, wc);
 
-    /* Initialize to defaults. */
-    wc->button_1_command = WC_ICONIFY;
-    wc->button_2_command = WC_SHADE;
-    wc->toggle = TRUE;
-
     wtl_json_read_options(plugin_inner_json(p), option_definitions, wc);
 
-    /* Default the image if unspecified. */
+    /* Default image. */
     if (strempty(wc->image))
     {
         g_free(wc->image);

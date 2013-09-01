@@ -59,8 +59,6 @@ static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command);
 static gboolean wincmd_button_clicked(GtkWidget * widget, GdkEventButton * event, Plugin * plugin);
 static int wincmd_constructor(Plugin * p);
 static void wincmd_destructor(Plugin * p);
-static void wincmd_apply_configuration(Plugin * p);
-static void wincmd_configure(Plugin * p, GtkWindow * parent);
 static void wincmd_save_configuration(Plugin * p);
 static void wincmd_panel_configuration_changed(Plugin * p);
 
@@ -183,6 +181,7 @@ static int wincmd_constructor(Plugin * p)
     /* Initialize to defaults. */
     wc->button_1_command = WC_ICONIFY;
     wc->button_2_command = WC_SHADE;
+    wc->toggle = TRUE;
 
     wtl_json_read_options(plugin_inner_json(p), option_definitions, wc);
 
@@ -213,25 +212,6 @@ static void wincmd_destructor(Plugin * p)
     g_free(wc);
 }
 
-/* Callback when the configuration dialog has recorded a configuration change. */
-static void wincmd_apply_configuration(Plugin * p)
-{
-}
-
-/* Callback when the configuration dialog is to be shown. */
-static void wincmd_configure(Plugin * p, GtkWindow * parent)
-{
-    WinCmdPlugin * wc = PRIV(p);
-    GtkWidget * dlg = create_generic_config_dlg(
-        _(plugin_class(p)->name),
-        GTK_WIDGET(parent),
-        (GSourceFunc) wincmd_apply_configuration, (gpointer) p,
-        _("Alternately iconify/shade and raise"), &wc->toggle, (GType)CONF_TYPE_BOOL,
-        NULL);
-    if (dlg)
-        gtk_window_present(GTK_WINDOW(dlg));
-}
-
 
 /* Save the configuration to the configuration file. */
 static void wincmd_save_configuration(Plugin * p)
@@ -259,7 +239,6 @@ PluginClass wincmd_plugin_class = {
 
     constructor : wincmd_constructor,
     destructor  : wincmd_destructor,
-    config : wincmd_configure,
     save : wincmd_save_configuration,
     panel_configuration_changed : wincmd_panel_configuration_changed
 

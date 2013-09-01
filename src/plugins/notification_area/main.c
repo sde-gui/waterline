@@ -292,9 +292,29 @@ static gboolean applet_factory(MatePanelApplet* applet, const gchar* iid, gpoint
 typedef struct {
     Plugin * plugin;
     GtkWidget * widget;
+    GtkWidget * frame;
     NaTray * tray;
+
+    gboolean display_in_frame;
+    gboolean use_custom_icon_size;
+    int icon_size;
 } NAPlugin;
 
+/******************************************************************************/
+
+#define WTL_JSON_OPTION_STRUCTURE NAPlugin
+static wtl_json_option_definition option_definitions[] = {
+    WTL_JSON_OPTION(bool, display_in_frame),
+    WTL_JSON_OPTION(bool, use_custom_icon_size),
+    WTL_JSON_OPTION(int, icon_size),
+    {0,}
+};
+
+/******************************************************************************/
+
+static void na_panel_configuration_changed(Plugin * p);
+
+/******************************************************************************/
 
 static void on_container_realized(GtkWidget* widget, NAPlugin * na)
 {
@@ -302,9 +322,10 @@ static void on_container_realized(GtkWidget* widget, NAPlugin * na)
         return;
 
     na->tray = na_tray_new_for_screen(gtk_widget_get_screen(GTK_WIDGET(na->widget)), plugin_get_orientation(na->plugin));
-    na_tray_set_icon_size(na->tray, plugin_get_icon_size(na->plugin));
+    gtk_container_add(GTK_CONTAINER(na->frame), GTK_WIDGET(na->tray));
 
-    gtk_container_add(GTK_CONTAINER(na->widget), GTK_WIDGET(na->tray));
+    na_panel_configuration_changed(na->plugin);
+
     gtk_widget_show(GTK_WIDGET(na->tray));
 }
 
@@ -318,9 +339,20 @@ static int na_constructor(Plugin * p)
     plugin_set_widget(p, na->widget);
     GTK_WIDGET_SET_FLAGS(na->widget, GTK_NO_WINDOW);
     gtk_widget_set_name(na->widget, "notification_area");
-    gtk_container_set_border_width(GTK_CONTAINER(na->widget), 1);
+    gtk_container_set_border_width(GTK_CONTAINER(na->widget), 0);
 
-    g_signal_connect(GTK_WIDGET(na->widget), "realize", G_CALLBACK(on_container_realized), na);
+    na->frame = gtk_frame_new(NULL);
+    gtk_container_add(GTK_CONTAINER(na->widget), na->frame);
+    gtk_widget_show(GTK_WIDGET(na->frame));
+
+    g_signal_connect(GTK_WIDGET(na->frame), "realize", G_CALLBACK(on_container_realized), na);
+
+    na->display_in_frame = TRUE;
+    na->icon_size = 16;
+
+    wtl_json_read_options(plugin_inner_json(p), option_definitions, na);
+
+    na_panel_configuration_changed(p);
 
     return 1;
 }
@@ -339,8 +371,35 @@ static void na_panel_configuration_changed(Plugin * p)
     if (na->tray)
     {
         na_tray_set_orientation(na->tray, plugin_get_orientation(na->plugin));
-        na_tray_set_icon_size(na->tray, plugin_get_icon_size(na->plugin));
+        na_tray_set_icon_size(na->tray,
+            na->use_custom_icon_size ? na->icon_size : plugin_get_icon_size(na->plugin));
     }
+
+    gtk_frame_set_shadow_type(GTK_FRAME(na->frame), na->display_in_frame ? GTK_SHADOW_IN : GTK_SHADOW_NONE);
+}
+
+static void na_configure(Plugin * p, GtkWindow * parent)
+{
+    NAPlugin * iplugin = PRIV(p);
+
+    GtkWidget * dialog = create_generic_config_dlg(_(plugin_class(p)->name),
+            GTK_WIDGET(parent),
+            (GSourceFunc) na_panel_configuration_changed, (gpointer) p,
+            _("Display in Frame"), &iplugin->display_in_frame, (GType)CONF_TYPE_BOOL,
+            _("Custom icon size:"), &iplugin->use_custom_icon_size, (GType)CONF_TYPE_BOOL,
+            "", &iplugin->icon_size, (GType)CONF_TYPE_INT,
+
+            NULL);
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
+
+}
+
+
+static void na_save_configuration(Plugin* p)
+{
+    NAPlugin * iplugin = PRIV(p);
+    wtl_json_write_options(plugin_inner_json(p), option_definitions, iplugin);
 }
 
 /* Plugin descriptor. */
@@ -360,7 +419,7 @@ PluginClass notification_area_plugin_class = {
 
     constructor : na_constructor,
     destructor  : na_destructor,
-/*    config : na_configure,
-    save : na_save_configuration,*/
+    config : na_configure,
+    save : na_save_configuration,
     panel_configuration_changed : na_panel_configuration_changed
 };

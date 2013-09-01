@@ -191,8 +191,6 @@ static void update_bar(BatteryPlugin *iplugin)
     GdkRGBA bar_color;
     get_status_color(iplugin, &bar_color);
 
-    double v = 0.3;
-
     GdkRGBA background_color1;
     mix_rgba(&background_color1, &bar_color, &iplugin->background_color, 0.3);
 

@@ -1999,6 +1999,10 @@ panel_start_gui(Panel *p)
     gtk_widget_show(p->plugin_box);
     panel_update_toplevel_alignment(p);
 
+    gtk_alignment_set_padding(GTK_ALIGNMENT(p->toplevel_alignment),
+        p->padding_top, p->padding_bottom, p->padding_left, p->padding_right);
+    gtk_box_set_spacing(GTK_BOX(p->plugin_box), p->applet_spacing);
+
     make_round_corners(p);
 
     p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
@@ -2183,6 +2187,10 @@ void panel_update_toplevel_alignment(Panel *p)
 void panel_set_panel_configuration_changed(Panel *p)
 {
     GList* l;
+
+    gtk_alignment_set_padding(GTK_ALIGNMENT(p->toplevel_alignment),
+        p->padding_top, p->padding_bottom, p->padding_left, p->padding_right);
+    gtk_box_set_spacing(GTK_BOX(p->plugin_box), p->applet_spacing);
 
     int previous_orientation = p->orientation;
     p->orientation = (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)

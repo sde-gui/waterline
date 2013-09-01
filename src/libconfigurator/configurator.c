@@ -516,6 +516,17 @@ set_icon_size( GtkSpinButton* spin,  Panel* p  )
 }
 
 static void
+on_paddings_value_changed(GtkSpinButton* spin, Panel* p)
+{
+    p->padding_top = gtk_spin_button_get_value(p->pref_dialog.padding_top);
+    p->padding_bottom = gtk_spin_button_get_value(p->pref_dialog.padding_bottom);
+    p->padding_left = gtk_spin_button_get_value(p->pref_dialog.padding_left);
+    p->padding_right = gtk_spin_button_get_value(p->pref_dialog.padding_right);
+    p->applet_spacing = gtk_spin_button_get_value(p->pref_dialog.applet_spacing);
+    panel_set_panel_configuration_changed(p);
+}
+
+static void
 update_opt_menu(GtkWidget *w, int ind)
 {
     int i;
@@ -548,6 +559,25 @@ update_toggle_button(GtkWidget *w, gboolean n)
     RET();
 }
 #endif
+
+static GtkSpinButton * connect_spinbutton(GtkBuilder * builder, const char * name, int value, GCallback value_changed, void * p)
+{
+    GtkSpinButton * w = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, name));
+    if (!w)
+        return NULL;
+
+    gtk_spin_button_set_value(w, value);
+
+    if (value_changed)
+        g_signal_connect(w, "value-changed", value_changed, p);
+
+    return w;
+}
+
+#define CONNECT_SPINBUTTON(name, value_changed) \
+    p->pref_dialog.name = connect_spinbutton(builder, #name, p->name, G_CALLBACK(value_changed), p);
+
+
 static
 void panel_initialize_pref_dialog(Panel * p)
 {
@@ -761,6 +791,11 @@ void panel_initialize_pref_dialog(Panel * p)
     if( ! p->round_corners )
         gtk_widget_set_sensitive( w, FALSE );
 
+    CONNECT_SPINBUTTON(padding_top, on_paddings_value_changed);
+    CONNECT_SPINBUTTON(padding_bottom, on_paddings_value_changed);
+    CONNECT_SPINBUTTON(padding_left, on_paddings_value_changed);
+    CONNECT_SPINBUTTON(padding_right, on_paddings_value_changed);
+    CONNECT_SPINBUTTON(applet_spacing, on_paddings_value_changed);
 
     /* plugin list */
     initialize_plugin_list(p, builder);

@@ -82,6 +82,13 @@ static wtl_json_option_definition option_definitions[] = {
     WTL_JSON_OPTION(int, font_size),
 
     WTL_JSON_OPTION2(int, preferred_icon_size, "icon_size"),
+
+    WTL_JSON_OPTION(int, padding_top),
+    WTL_JSON_OPTION(int, padding_bottom),
+    WTL_JSON_OPTION(int, padding_left),
+    WTL_JSON_OPTION(int, padding_right),
+    WTL_JSON_OPTION(int, applet_spacing),
+
     {0,}
 };
 

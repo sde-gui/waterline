@@ -54,6 +54,12 @@ struct _Panel {
     int oriented_width_type, oriented_width;
     int oriented_height_type, oriented_height;
 
+    int padding_top;
+    int padding_bottom;
+    int padding_left;
+    int padding_right;
+    int applet_spacing;
+
     int preferred_icon_size;
 
     gulong strut_size;			/* Values for WM_STRUT_PARTIAL */
@@ -123,6 +129,12 @@ struct _Panel {
         GtkWidget * gobelow;
         GtkWidget * height_when_minimized;
         GtkWidget * reserve_space;
+
+        GtkSpinButton * padding_top;
+        GtkSpinButton * padding_bottom;
+        GtkSpinButton * padding_left;
+        GtkSpinButton * padding_right;
+        GtkSpinButton * applet_spacing;
 
         gboolean doing_update;
     } pref_dialog;

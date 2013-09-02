@@ -92,7 +92,7 @@ static GtkWindowGroup* window_group; /* window group used to limit the scope of 
 
 FbEv *fbev = NULL;
 
-GSList* all_panels = NULL;  /* a single-linked list storing all panels */
+static GSList* all_panels = NULL;  /* a single-linked list storing all panels */
 
 gboolean is_restarting = FALSE;
 

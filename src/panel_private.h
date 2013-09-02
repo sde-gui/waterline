@@ -165,6 +165,18 @@ extern void panel_configure(Panel* p, int sel_page );
 extern gboolean panel_edge_available(Panel* p, int edge);
 extern void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);
 
+extern void create_empty_panel(void);
+extern void delete_panel(Panel * panel);
+extern int panel_count(void);
+
+extern gboolean quit_in_menu;
+
+extern const char * __license;
+extern const char * __website;
+extern const char * __email ;
+extern const char * __bugreporting;
+
+
 #define PANEL_FILE_SUFFIX ".js"
 
 #endif

@@ -39,10 +39,11 @@ lxpanelx_SOURCES = \
 	Xsupport.c \
 	pixbuf-stuff.c \
 	configurator.c \
-	panel_config.c \
 	dbg.c \
 	ev.c \
 	icon-grid.c \
+	panel_config.c \
+	panel_menu.c \
 	panel.c panel_internal.h panel_private.h \
 	plugin.c plugin_internal.h plugin_private.h \
 	paths.c \

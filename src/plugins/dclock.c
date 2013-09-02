@@ -48,7 +48,7 @@ typedef struct {
     char * tooltip_format;			/* Format string for tooltip value */
     char * action;				/* Command to execute on a click */
     char * timezone;				/* Timezone */
-    gboolean bold;				/* True if bold font */
+    char * font;
     gboolean icon_only;				/* True if icon only (no clock value) */
     gboolean center_text;
     guint timer;				/* Timer for periodic update */
@@ -83,7 +83,7 @@ static wtl_json_option_definition option_definitions[] = {
     WTL_JSON_OPTION(string, clock_format),
     WTL_JSON_OPTION(string, tooltip_format),
     WTL_JSON_OPTION(string, action),
-    WTL_JSON_OPTION(bool, bold),
+    WTL_JSON_OPTION(string, font),
     WTL_JSON_OPTION(bool, icon_only),
     WTL_JSON_OPTION(bool, center_text),
     WTL_JSON_OPTION(string, timezone),
@@ -378,7 +378,8 @@ static gboolean dclock_update_display(DClockPlugin * dc)
         gchar * utf8 = g_locale_to_utf8(((newlines_converted != NULL) ? newlines_converted : clock_value), -1, NULL, NULL, NULL);
         if (utf8 != NULL)
         {
-            panel_draw_label_text(plugin_panel(dc->plugin), dc->clock_label, utf8, (dc->bold ? STYLE_BOLD : 0) | STYLE_CUSTOM_COLOR);
+            panel_draw_label_text_with_font(
+                plugin_panel(dc->plugin), dc->clock_label, utf8, STYLE_CUSTOM_COLOR, dc->font);
             g_free(utf8);
         }
         g_free(newlines_converted);
@@ -511,6 +512,7 @@ static void dclock_destructor(Plugin * p)
     g_free(dc->clock_format);
     g_free(dc->tooltip_format);
     g_free(dc->action);
+    g_free(dc->font);
     g_free(dc->prev_clock_value);
     g_free(dc->prev_tooltip_value);
     g_free(dc->timezone);
@@ -585,11 +587,11 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         "tooltip-text", _("Format codes: man 3 strftime; \\n for line break"), (GType)CONF_TYPE_SET_PROPERTY,
         _("Tooltip Format"), &dc->tooltip_format, (GType)CONF_TYPE_STR,
         "tooltip-text", _("Format codes: man 3 strftime; \\n for line break"), (GType)CONF_TYPE_SET_PROPERTY,
+        _("Font")          , &dc->font          , (GType)CONF_TYPE_STR,
         _("Action when clicked"), &dc->action, (GType)CONF_TYPE_STR,
         "tooltip-text", _("Default action: display calendar"), (GType)CONF_TYPE_SET_PROPERTY,
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
-        _("Bold font"), &dc->bold, (GType)CONF_TYPE_BOOL,
         _("Tooltip only"), &dc->icon_only, (GType)CONF_TYPE_BOOL,
         _("Center text"), &dc->center_text, CONF_TYPE_BOOL,
 

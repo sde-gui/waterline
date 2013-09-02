@@ -2077,12 +2077,12 @@ void panel_adjust_geometry_terminology(Panel * p)
     }
 }
 
-void panel_draw_label_text(Panel * p, GtkWidget * label, char * text, unsigned style)
+void panel_draw_label_text(Panel * p, GtkWidget * label, const char * text, unsigned style)
 {
     panel_draw_label_text_with_font(p, label, text, style, NULL);
 }
 
-void panel_draw_label_text_with_font(Panel * p, GtkWidget * label, char * text, unsigned style, const char * custom_font_desc)
+void panel_draw_label_text_with_font(Panel * p, GtkWidget * label, const char * text, unsigned style, const char * custom_font_desc)
 {
     gboolean bold = style & STYLE_BOLD;
     gboolean italic  = style & STYLE_ITALIC;
@@ -2115,11 +2115,11 @@ void panel_draw_label_text_with_font(Panel * p, GtkWidget * label, char * text, 
 
     /* Check the string for characters that need to be escaped.
      * If any are found, create the properly escaped string and use it instead. */
-    char * valid_markup = text;
+    const char * valid_markup = text;
     char * escaped_text = NULL;
     if (!allow_markup)
     {
-        char * q;
+        const char * q;
         for (q = text; *q != '\0'; q += 1)
         {
             if ((*q == '<') || (*q == '>') || (*q == '&'))

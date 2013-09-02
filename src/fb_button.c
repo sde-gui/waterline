@@ -96,7 +96,7 @@ void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation)
     }
 }
 
-static void fb_button_set_label_text2(GtkWidget * btn, gchar * label, unsigned style)
+static void fb_button_set_label_text2(GtkWidget * btn, const char * label, unsigned style)
 {
     Plugin * plugin = (Plugin *) g_object_get_qdata(G_OBJECT(btn), plugin_pointer_id);
 
@@ -141,12 +141,12 @@ static void fb_button_set_label_text2(GtkWidget * btn, gchar * label, unsigned s
         panel_draw_label_text(plugin_panel(plugin), lbl, label, STYLE_CUSTOM_COLOR | style);
 }
 
-void fb_button_set_label_text(GtkWidget * btn, gchar * label)
+void fb_button_set_label_text(GtkWidget * btn, const char * label)
 {
     fb_button_set_label_text2(btn, label, 0);
 }
 
-void fb_button_set_label_markup(GtkWidget * btn, gchar * label)
+void fb_button_set_label_markup(GtkWidget * btn, const char * label)
 {
     fb_button_set_label_text2(btn, label, STYLE_MARKUP);
 }
@@ -331,7 +331,7 @@ GtkWidget * fb_button_new_from_file(gchar * image_file, int width, int height, P
     return fb_button_new_from_file_with_text(image_file, width, height, plugin, NULL);
 }
 
-static GtkWidget * fb_button_new_from_file_with_label(gchar * image_file, int width, int height, Plugin * plugin, gchar * label, unsigned style)
+static GtkWidget * fb_button_new_from_file_with_label(gchar * image_file, int width, int height, Plugin * plugin, const char * label, unsigned style)
 {
     gulong highlight_color = (TRUE /* TODO: read setting from plugin object */) ? PANEL_ICON_HIGHLIGHT : 0;
 
@@ -387,12 +387,12 @@ static GtkWidget * fb_button_new_from_file_with_label(gchar * image_file, int wi
 }
 
 
-GtkWidget * fb_button_new_from_file_with_text(gchar * image_file, int width, int height, Plugin * plugin, gchar * label)
+GtkWidget * fb_button_new_from_file_with_text(gchar * image_file, int width, int height, Plugin * plugin, const char * label)
 {
     return fb_button_new_from_file_with_label(image_file, width, height, plugin, label, 0);
 }
 
-GtkWidget * fb_button_new_from_file_with_markup(gchar * image_file, int width, int height, Plugin * plugin, gchar * label)
+GtkWidget * fb_button_new_from_file_with_markup(gchar * image_file, int width, int height, Plugin * plugin, const char * label)
 {
     return fb_button_new_from_file_with_label(image_file, width, height, plugin, label, STYLE_MARKUP);
 }

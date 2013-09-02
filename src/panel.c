@@ -2200,9 +2200,11 @@ void panel_set_panel_configuration_changed(Panel *p)
 {
     GList* l;
 
-    gtk_alignment_set_padding(GTK_ALIGNMENT(p->toplevel_alignment),
-        p->padding_top, p->padding_bottom, p->padding_left, p->padding_right);
-    gtk_box_set_spacing(GTK_BOX(p->plugin_box), p->applet_spacing);
+    if (p->toplevel_alignment)
+        gtk_alignment_set_padding(GTK_ALIGNMENT(p->toplevel_alignment),
+            p->padding_top, p->padding_bottom, p->padding_left, p->padding_right);
+    if (p->plugin_box)
+        gtk_box_set_spacing(GTK_BOX(p->plugin_box), p->applet_spacing);
 
     int previous_orientation = p->orientation;
     p->orientation = (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)

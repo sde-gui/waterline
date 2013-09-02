@@ -25,37 +25,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-pair align_pair[] = {
-    { ALIGN_NONE, "none" },
-    { ALIGN_LEFT, "left" },
-    { ALIGN_RIGHT, "right" },
-    { ALIGN_CENTER, "center"},
-    { 0, NULL },
-};
-
-pair edge_pair[] = {
-    { EDGE_NONE, "none" },
-    { EDGE_LEFT, "left" },
-    { EDGE_RIGHT, "right" },
-    { EDGE_TOP, "top" },
-    { EDGE_BOTTOM, "bottom" },
-    { 0, NULL },
-};
-
-pair width_pair[] = {
-    { WIDTH_NONE, "none" },
-    { WIDTH_REQUEST, "request" },
-    { WIDTH_PIXEL, "pixel" },
-    { WIDTH_PERCENT, "percent" },
-    { 0, NULL },
-};
-
-pair height_pair[] = {
-    { HEIGHT_NONE, "none" },
-    { HEIGHT_PIXEL, "pixel" },
-    { 0, NULL },
-};
-
 pair bool_pair[] = {
     { 0, "false" },
     { 1, "true" },
@@ -63,22 +32,6 @@ pair bool_pair[] = {
     { 1, "1" },
     { 0, NULL },
 };
-
-pair pos_pair[] = {
-    { POS_NONE, "none" },
-    { POS_START, "start" },
-    { POS_END,  "end" },
-    { 0, NULL},
-};
-
-pair panel_visibility_pair[] = {
-    { VISIBILITY_ALWAYS, "always" },
-    { VISIBILITY_BELOW, "below" },
-    { VISIBILITY_AUTOHIDE,  "autohide" },
-    { VISIBILITY_GOBELOW,  "gobelow" },
-    { 0, NULL},
-};
-
 
 int
 str2num(const pair *_p, const char * str, int defval)

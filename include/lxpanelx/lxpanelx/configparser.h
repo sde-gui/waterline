@@ -43,13 +43,7 @@ typedef struct {
     gchar *str;
 } pair;
 
-extern pair align_pair[];
-extern pair edge_pair[];
-extern pair width_pair[];
-extern pair height_pair[];
 extern pair bool_pair[];
-extern pair pos_pair[];
-extern pair panel_visibility_pair[];
 
 int str2num(const pair *_p, const char * str, int defval);
 const char * num2str(const pair * p, int num, const char * defval);

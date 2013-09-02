@@ -22,6 +22,7 @@
 
 #include <jansson.h>
 #include <lxpanelx/typedef.h>
+#include <lxpanelx/configparser.h>
 #include "bg.h"
 
 
@@ -176,6 +177,7 @@ extern const char * __website;
 extern const char * __email ;
 extern const char * __bugreporting;
 
+extern pair edge_pair[];
 
 #define PANEL_FILE_SUFFIX ".js"
 

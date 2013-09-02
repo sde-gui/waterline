@@ -24,8 +24,6 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
-#include "config.h"
-
 #include "typedef.h"
 
 enum { ALIGN_NONE, ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT  };

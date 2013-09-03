@@ -3115,6 +3115,9 @@ static gboolean taskbar_button_motion_notify_event(GtkWidget * widget, GdkEventM
     if (tk->tb->button_pressed_task != tk)
         return FALSE;
 
+    if (!tk->tb->rearrange)
+        return FALSE;
+
     int old_manual_order = tk->manual_order;
 
     Task* tk_cursor;

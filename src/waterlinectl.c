@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static Display* dpy;
+static Display * dpy;
 
 static const char usage[] =
     "\nwaterlinectl - Waterline Panel Controller\n"

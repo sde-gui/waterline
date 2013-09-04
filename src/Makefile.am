@@ -81,7 +81,7 @@ waterline_LDADD = \
 		$(X11_LIBS) \
 		$(INTLLIBS)
 
-waterlinectl_SOURCES = lxpanelxctl.c lxpanelxctl.h
+waterlinectl_SOURCES = waterlinectl.c
 waterlinectl_LDADD = $(X11_LIBS) $(INTLLIBS)
 
 

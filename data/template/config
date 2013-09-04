@@ -1,4 +1,4 @@
 [Command]
-FileManager=pcmanfm %s
-Terminal=lxterminal
+FileManager=stuurman %s
+Terminal=lilyterm
 

@@ -372,7 +372,6 @@ AC_CONFIG_FILES([
     src/plugins/cpufreq/Makefile
     po/Makefile.in
     data/Makefile
-    data/template/panels/panel.panel
 ])
 AC_OUTPUT
 

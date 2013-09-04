@@ -5,7 +5,7 @@ template_config_DATA = \
 template_configdir = $(pkgdatadir)/profile/template
 
 template_config_panel_DATA = \
-	template/panels/panel.panel
+	template/panels/bottom1.js
 template_config_paneldir = $(pkgdatadir)/profile/template/panels
 
 template_applications_DATA = \
@@ -71,7 +71,7 @@ waterline_imagesdir = $(pkgdatadir)/images
 
 
 EXTRA_DIST = \
-	template/panels/panel.panel.in \
+	template/panels/bottom1.js \
 	$(waterline_DATA) \
 	$(waterline_images_DATA) \
 	$(ui_DATA) \

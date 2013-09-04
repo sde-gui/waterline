@@ -32,6 +32,8 @@
 #include <string.h>
 #include <gdk/gdkx.h>
 
+#include <sde-utils.h>
+
 #include <waterline/global.h>
 #include "plugin_internal.h"
 #include "plugin_private.h"
@@ -1834,7 +1836,7 @@ void panel_draw_label_text_with_font(Panel * p, GtkWidget * label, const char * 
 
     gchar * attr_desc = "";
     gchar * attr_desc_allocated = NULL;
-    if (!strempty(custom_font_desc))
+    if (!su_str_empty(custom_font_desc))
     {
         gchar * custom_font_desc_escaped = g_markup_escape_text(custom_font_desc, -1);
         attr_desc_allocated = attr_desc = g_strdup_printf(" font_desc=\"%s\"", custom_font_desc_escaped);
@@ -1956,7 +1958,7 @@ panel_parse_plugin(Panel *p, json_t * json_plugin)
 
     wtl_json_dot_get_string(json_plugin, "type", "", &type);
 
-    if (strempty(type) || !(plugin = plugin_load(type))) {
+    if (su_str_empty(type) || !(plugin = plugin_load(type))) {
         ERR( "can't load %s plugin\n", type ? type : "(null)");
         goto error;
     }

@@ -36,6 +36,8 @@
 #include <waterline/plugin.h>
 #include <waterline/dbg.h>
 
+#include <sde-utils.h>
+
 typedef struct {
 
     /* Graphics. */
@@ -244,7 +246,7 @@ static void asound_set_volume(VolumeALSAPlugin * vol, int volume)
 /* Handler for "button-press-event" signal on main widget. */
 static gchar * volumealsa_get_volume_control_command(VolumeALSAPlugin * vol)
 {
-    if (strempty(vol->volume_control_command))
+    if (su_str_empty(vol->volume_control_command))
         return get_default_application("volume-control");
     else
         return vol->volume_control_command;

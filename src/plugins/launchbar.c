@@ -37,6 +37,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
+#include <sde-utils.h>
+
 #include <waterline/menu-cache-compat.h>
 
 #define PLUGIN_PRIV_TYPE LaunchbarPlugin
@@ -333,7 +335,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
 
             if ( ! btn->customize_tooltip)
             {
-                btn->tooltip = strempty(comment) ? g_strdup(title) : g_strdup_printf("%s\n%s", title, comment);
+                btn->tooltip = su_str_empty(comment) ? g_strdup(title) : g_strdup_printf("%s\n%s", title, comment);
                 if (comment)
                 {
                     gchar * escaped_title = g_markup_escape_text(title, -1);
@@ -879,7 +881,7 @@ static void launchbar_save_configuration(Plugin * p)
     {
         LaunchButton * btn = (LaunchButton *) l->data;
         json_t * json_button = json_object();
-        if (!strempty(btn->desktop_id))
+        if (!su_str_empty(btn->desktop_id))
             wtl_json_dot_set_string(json_button, "id", btn->desktop_id);
         if (btn->customize_image)
             wtl_json_dot_set_string(json_button, "id", btn->image);

@@ -35,6 +35,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <sde-utils.h>
+
 #define PLUGIN_PRIV_TYPE menup
 
 #include <waterline/gtkcompat.h>
@@ -379,7 +381,7 @@ static GtkWidget* create_item( MenuCacheItem* item )
             const gchar * tooltip = menu_cache_item_get_comment(item);
 /*
             FIXME: to be implemented in menu-cache
-            if (strempty(tooltip))
+            if (su_str_empty(tooltip))
                 tooltip = menu_cache_item_get_generic_name(item);
 */
             gchar * additional_tooltip = NULL;
@@ -408,7 +410,7 @@ static GtkWidget* create_item( MenuCacheItem* item )
 
             if (executable)
             {
-                if (strempty(tooltip))
+                if (su_str_empty(tooltip))
                 {
                     additional_tooltip = g_strdup(executable);
                 }
@@ -694,7 +696,7 @@ read_item(Plugin *p, char** fp)
         while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
             if (s.type == LINE_VAR) {
                 if (!g_ascii_strcasecmp(s.t[0], "image"))
-                    fname = expand_tilda(s.t[1]);
+                    fname = su_path_expand_tilda(s.t[1]);
                 else if (!g_ascii_strcasecmp(s.t[0], "name"))
                     name = g_strdup(s.t[1]);
                 else if (!g_ascii_strcasecmp(s.t[0], "action"))
@@ -1012,7 +1014,7 @@ read_include(Plugin *p, char **fp)
         while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
             if (s.type == LINE_VAR) {
                 if (!g_ascii_strcasecmp(s.t[0], "name"))
-                    name = expand_tilda(s.t[1]);
+                    name = su_path_expand_tilda(s.t[1]);
                 else  {
                     ERR( "menu/include: unknown var %s\n", s.t[0]);
                     RET();
@@ -1079,7 +1081,7 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
         } else if (s.type == LINE_VAR) {
             m->config_start = *fp;
             if (!g_ascii_strcasecmp(s.t[0], "image"))
-                fname = expand_tilda(s.t[1]);
+                fname = su_path_expand_tilda(s.t[1]);
             else if (!g_ascii_strcasecmp(s.t[0], "name"))
                 name = g_strdup(s.t[1]);
         /* FIXME: tintcolor will not be saved.  */

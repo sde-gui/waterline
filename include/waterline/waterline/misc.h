@@ -53,8 +53,6 @@ enum {
     CONF_TYPE_SET_PROPERTY
 };
 
-gchar * expand_tilda(const gchar * file);
-
 GtkWidget *_gtk_image_new_from_file_scaled(const gchar *file, gint width,
                                            gint height, gboolean keep_ratio, gboolean use_dummy_image);
 guint32 gcolor2rgb24(const GdkColor *color);
@@ -86,8 +84,6 @@ typedef void (*EntryDialogCallback)(char * value, gpointer payload);
 GtkWidget* create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload);
 
 gchar * panel_translate_directory_name(const gchar * name);
-
-int strempty(const char* s);
 
 void bring_to_current_desktop(GtkWidget * win);
 

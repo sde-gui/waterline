@@ -20,6 +20,8 @@
 #include <config.h>
 #endif
 
+#include <sde-utils.h>
+
 #include <waterline/defaultapplications.h>
 #include <waterline/paths.h>
 #include <waterline/dbg.h>
@@ -55,7 +57,7 @@ gchar ** read_list_from_config(gchar * file_name)
     if (lines) for (l = lines; *l; l++)
     {
         gchar * line = *l;
-        if (strempty(line) || line[0] == '#')
+        if (su_str_empty(line) || line[0] == '#')
         {
             g_free(line);
         }

@@ -27,6 +27,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sde-utils.h>
+
 #include <waterline/Xsupport.h>
 #include <waterline/misc.h>
 #include <waterline/menu-cache-compat.h>
@@ -304,7 +306,7 @@ static void reload_apps(MenuCache* cache, gpointer user_data)
 
 static gboolean run_command(gchar * command, GtkDialog* dialog)
 {
-    if (strempty(command))
+    if (su_str_empty(command))
         return FALSE;
 
     if (g_str_has_prefix(command, "http://") || g_str_has_prefix(command, "https://"))
@@ -366,7 +368,7 @@ static void on_response( GtkDialog* dlg, gint response, gpointer user_data )
     GtkEntry* entry = (GtkEntry*)user_data;
     if( G_LIKELY(response == GTK_RESPONSE_OK) )
     {
-        gchar * command = expand_tilda(gtk_entry_get_text(entry));
+        gchar * command = su_path_expand_tilda(gtk_entry_get_text(entry));
         gboolean result = run_command(command, dlg);
         g_free(command);
         if (!result)

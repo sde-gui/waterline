@@ -32,6 +32,8 @@
 #include <string.h>
 #include <gio/gio.h>
 
+#include <sde-utils.h>
+
 #define PLUGIN_PRIV_TYPE DirMenuPlugin
 
 #include <waterline/panel.h>
@@ -127,7 +129,7 @@ static wtl_json_option_definition option_definitions[] = {
 /* Handler for activate event on file menu item. */
 static gchar * dirmenu_get_path(DirMenuPlugin * dm)
 {
-        return expand_tilda(strempty(dm->path) ? "~" : dm->path);
+        return su_path_expand_tilda(su_str_empty(dm->path) ? "~" : dm->path);
 }
 
 /* Handler for activate event on file menu item. */

@@ -33,6 +33,8 @@
 #include <fcntl.h>
 #include <pty.h>
 
+#include <sde-utils.h>
+
 #define PLUGIN_PRIV_TYPE lb_t
 
 #include <waterline/panel.h>
@@ -293,7 +295,7 @@ static void input_start(input_t * input)
 
     input->eof = TRUE;
 
-    if (strempty(input->command))
+    if (su_str_empty(input->command))
         return;
 
     gboolean use_pty = TRUE;
@@ -370,7 +372,7 @@ static void _modify_bg_recursive(GtkWidget * w, GdkColor * c)
 
 static void lb_set_bgcolor(lb_t * lb, gchar * color_s)
 {
-    if (strempty(color_s))
+    if (su_str_empty(color_s))
     {
         _modify_bg_recursive(plugin_widget(lb->plug), NULL);
 
@@ -390,7 +392,7 @@ static void lb_set_bgcolor(lb_t * lb, gchar * color_s)
     if (!lb->color_map)
         lb->color_map = panel_get_color_map(plugin_panel(lb->plug));
 
-    if (!strempty(lb->bg_color_s) && strcmp(lb->bg_color_s, color_s) == 0)
+    if (!su_str_empty(lb->bg_color_s) && strcmp(lb->bg_color_s, color_s) == 0)
         return;
 
     if (lb->bg_color_s)
@@ -513,13 +515,13 @@ static gboolean lb_release_event(GtkWidget * widget, GdkEventButton * event, lb_
     const char* command = NULL;
 
     if (event->button == 1)
-       command = strempty(lb->command1_override) ? lb->command1 : lb->command1_override;
+       command = su_str_empty(lb->command1_override) ? lb->command1 : lb->command1_override;
     else if (event->button == 2)
-       command = strempty(lb->command2_override) ? lb->command2 : lb->command2_override;
+       command = su_str_empty(lb->command2_override) ? lb->command2 : lb->command2_override;
     else if (event->button == 3)
-       command = strempty(lb->command3_override) ? lb->command3 : lb->command3_override;
+       command = su_str_empty(lb->command3_override) ? lb->command3 : lb->command3_override;
 
-    if (!strempty(command))
+    if (!su_str_empty(command))
     {
         wtl_launch(command, NULL);
     }
@@ -536,11 +538,11 @@ static gboolean lb_scroll_event(GtkWidget * widget, GdkEventScroll * event, lb_t
     char * command = NULL;
 
     if ((event->direction == GDK_SCROLL_UP) || (event->direction == GDK_SCROLL_LEFT))
-        command = strempty(lb->scroll_up_command_override) ? lb->scroll_up_command : lb->scroll_up_command_override;
+        command = su_str_empty(lb->scroll_up_command_override) ? lb->scroll_up_command : lb->scroll_up_command_override;
     else
-        command = strempty(lb->scroll_down_command_override) ? lb->scroll_down_command : lb->scroll_down_command_override;
+        command = su_str_empty(lb->scroll_down_command_override) ? lb->scroll_down_command : lb->scroll_down_command_override;
 
-    if (!strempty(command))
+    if (!su_str_empty(command))
     {
         wtl_launch(command, NULL);
     }
@@ -596,20 +598,20 @@ static void lb_apply_configuration(Plugin * p)
 
     fb_button_set_orientation(lb->button, plugin_get_orientation(p));
 
-    if (!strempty(lb->tooltip)) {
+    if (!su_str_empty(lb->tooltip)) {
         gtk_widget_set_tooltip_markup(lb->button, lb->tooltip);
     } else {
         gchar * tooltip = NULL;
-        if (strempty(lb->command2)
-        &&  strempty(lb->command3)
-        &&  strempty(lb->scroll_up_command)
-        &&  strempty(lb->scroll_down_command)) {
-            if (strempty(lb->command1))
+        if (su_str_empty(lb->command2)
+        &&  su_str_empty(lb->command3)
+        &&  su_str_empty(lb->scroll_up_command)
+        &&  su_str_empty(lb->scroll_down_command)) {
+            if (su_str_empty(lb->command1))
                 tooltip = g_strdup("");
             else
                 tooltip = g_strdup_printf(_("%s"), lb->command1);
         } else {
-            if (!strempty(lb->command1))
+            if (!su_str_empty(lb->command1))
             {
                 gchar * t1 = g_strdup_printf(_("Left click: %s"), lb->command1);
                 if (tooltip) {
@@ -621,7 +623,7 @@ static void lb_apply_configuration(Plugin * p)
                     tooltip = t1;
                 }
             }
-            if (!strempty(lb->command2))
+            if (!su_str_empty(lb->command2))
             {
                 gchar * t1 = g_strdup_printf(_("Middle click: %s"), lb->command2);
                 if (tooltip) {
@@ -633,7 +635,7 @@ static void lb_apply_configuration(Plugin * p)
                     tooltip = t1;
                 }
             }
-            if (!strempty(lb->command3))
+            if (!su_str_empty(lb->command3))
             {
                 gchar * t1 = g_strdup_printf(_("Right click: %s"), lb->command3);
                 if (tooltip) {
@@ -645,7 +647,7 @@ static void lb_apply_configuration(Plugin * p)
                     tooltip = t1;
                 }
             }
-            if (!strempty(lb->scroll_up_command))
+            if (!su_str_empty(lb->scroll_up_command))
             {
                 gchar * t1 = g_strdup_printf(_("Scroll up: %s"), lb->scroll_up_command);
                 if (tooltip) {
@@ -657,7 +659,7 @@ static void lb_apply_configuration(Plugin * p)
                     tooltip = t1;
                 }
             }
-            if (!strempty(lb->scroll_down_command))
+            if (!su_str_empty(lb->scroll_down_command))
             {
                 gchar * t1 = g_strdup_printf(_("Scroll down: %s"), lb->scroll_down_command);
                 if (tooltip) {

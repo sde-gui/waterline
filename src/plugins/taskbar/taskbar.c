@@ -38,6 +38,8 @@
 #include <gdk/gdk.h>
 #include <glib/gi18n.h>
 
+#include <sde-utils.h>
+
 #define PLUGIN_PRIV_TYPE TaskbarPlugin
 
 #include <waterline/gtkcompat.h>
@@ -1842,7 +1844,7 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
     if (!pixbuf)
     {
          /* custom fallback icon */
-         if (!tb->custom_fallback_pixbuf && !strempty(tb->custom_fallback_icon))
+         if (!tb->custom_fallback_pixbuf && !su_str_empty(tb->custom_fallback_icon))
          {
              tb->custom_fallback_pixbuf = wtl_load_icon(tb->custom_fallback_icon, tb->icon_size, tb->icon_size, TRUE);
          }

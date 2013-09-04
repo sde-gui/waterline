@@ -21,6 +21,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
+#include <sde-utils.h>
+
 #define PLUGIN_PRIV_TYPE WinCmdPlugin
 
 #include <waterline/panel.h>
@@ -157,7 +159,7 @@ static int wincmd_constructor(Plugin * p)
     wtl_json_read_options(plugin_inner_json(p), option_definitions, wc);
 
     /* Default image. */
-    if (strempty(wc->image))
+    if (su_str_empty(wc->image))
     {
         g_free(wc->image);
         wc->image = g_strdup("window-manager");

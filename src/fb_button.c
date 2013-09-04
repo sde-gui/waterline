@@ -38,6 +38,8 @@
 #include <pwd.h>
 #include <grp.h>
 
+#include <sde-utils.h>
+
 #include <waterline/fb_button.h>
 #include <waterline/global.h>
 #include <waterline/misc.h>
@@ -179,11 +181,11 @@ void fb_button_set_from_file(GtkWidget * btn, const char * img_file, gint width,
         data->fname = g_strdup(img_file);
         data->dw = width;
         data->dh = height;
-        data->use_dummy_image = label && !strempty(gtk_label_get_text(GTK_LABEL(label)));
+        data->use_dummy_image = label && !su_str_empty(gtk_label_get_text(GTK_LABEL(label)));
         _gtk_image_set_from_file_scaled(image,
             data->fname, data->dw, data->dh, TRUE, data->use_dummy_image);
 
-        gtk_widget_set_visible(image, !(strempty(img_file) && data->use_dummy_image));
+        gtk_widget_set_visible(image, !(su_str_empty(img_file) && data->use_dummy_image));
     }
 }
 

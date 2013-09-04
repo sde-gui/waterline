@@ -76,33 +76,6 @@ guint32 gcolor2rgb24(const GdkColor *color)
 
 /********************************************************************/
 
-int strempty(const char* s) {
-    if (!s)
-        return 1;
-    while (*s == ' ' || *s == '\t')
-        s++;
-    return strlen(s) == 0;
-}
-
-/********************************************************************/
-
-gchar *
-expand_tilda(const gchar * file)
-{
-    if (file[0] != '~')
-        return g_strdup(file);
-
-    const char * homedir = g_getenv("HOME");
-    if (!homedir)
-        homedir = g_get_home_dir();
-    if (!homedir)
-        homedir = g_get_tmp_dir();
-
-    return g_strdup_printf("%s%s", homedir, file + 1);
-}
-
-/********************************************************************/
-
 char* translate_exec_to_cmd(const char * exec, const char * icon,
                             const char * title, const char * fpath)
 {

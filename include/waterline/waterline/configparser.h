@@ -48,12 +48,12 @@ extern pair bool_pair[];
 int str2num(const pair *_p, const char * str, int defval);
 const char * num2str(const pair * p, int num, const char * defval);
 
-extern int lxpanel_get_line(char **fp, line *s);
-extern int lxpanel_put_line(FILE* fp, const char* format, ...);
-extern int lxpanel_put_str( FILE* fp, const char* name, const char* val );
-extern int lxpanel_put_bool( FILE* fp, const char* name, gboolean val );
-extern int lxpanel_put_int( FILE* fp, const char* name, int val );
-extern int lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair);
+extern int wtl_get_line(char **fp, line *s);
+extern int wtl_put_line(FILE* fp, const char* format, ...);
+extern int wtl_put_str( FILE* fp, const char* name, const char* val );
+extern int wtl_put_bool( FILE* fp, const char* name, gboolean val );
+extern int wtl_put_int( FILE* fp, const char* name, int val );
+extern int wtl_put_enum( FILE* fp, const char* name, int val, const pair* pair);
 
 int get_line_as_is(char **fp, line *s);
 

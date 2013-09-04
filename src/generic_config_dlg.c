@@ -186,7 +186,7 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                                       GSourceFunc apply_func, Plugin * plugin,
                                       const char* nm, ... )
 {
-    if (lxpanel_is_in_kiosk_mode())
+    if (wtl_is_in_kiosk_mode())
         return NULL;
 
     va_list args;

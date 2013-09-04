@@ -309,7 +309,7 @@ static gboolean run_command(gchar * command, GtkDialog* dialog)
 
     if (g_str_has_prefix(command, "http://") || g_str_has_prefix(command, "https://"))
     {
-        lxpanel_open_web_link(command);
+        wtl_open_web_link(command);
         return TRUE;
     }
 
@@ -318,7 +318,7 @@ static gboolean run_command(gchar * command, GtkDialog* dialog)
         if (g_file_test(command, G_FILE_TEST_IS_DIR) ||
             (g_file_test(command, G_FILE_TEST_EXISTS) && !g_file_test(command, G_FILE_TEST_IS_EXECUTABLE)))
         {
-            lxpanel_open_in_file_manager(command);
+            wtl_open_in_file_manager(command);
             return TRUE;
         }
     }
@@ -328,7 +328,7 @@ static gboolean run_command(gchar * command, GtkDialog* dialog)
         {
             if (g_str_has_prefix(command, "www."))
             {
-                lxpanel_open_web_link(command);
+                wtl_open_web_link(command);
                 return TRUE;
             }
 
@@ -341,7 +341,7 @@ static gboolean run_command(gchar * command, GtkDialog* dialog)
                     if (g_str_has_suffix(command, *l))
                     {
                         g_free(domain_list);
-                        lxpanel_open_web_link(command);
+                        wtl_open_web_link(command);
                         return TRUE;
                     }
                 }
@@ -416,7 +416,7 @@ static void on_entry_changed( GtkEntry* entry, GtkImage* widget )
             int w, h;
             GdkPixbuf* pix;
             gtk_icon_size_lookup(GTK_ICON_SIZE_DIALOG, &w, &h);
-            pix = lxpanel_load_icon(menu_cache_item_get_icon(MENU_CACHE_ITEM(app)), w, h, TRUE);
+            pix = wtl_load_icon(menu_cache_item_get_icon(MENU_CACHE_ITEM(app)), w, h, TRUE);
             gtk_image_set_from_pixbuf(img, pix);
             g_object_unref(pix);
         }

@@ -48,7 +48,7 @@ static GtkMenu* (*__fm_file_menu_get_menu)(FmFileMenu* menu) = NULL;
 static gboolean libfm_initialized = FALSE;
 static gboolean libfm_initialization_failed = FALSE;
 
-gboolean lxpanel_fm_init(void)
+gboolean wtl_fm_init(void)
 {
     if (libfm_initialization_failed)
         return FALSE;
@@ -103,12 +103,12 @@ fail:
      return FALSE;
 }
 
-GtkMenu * lxpanel_fm_file_menu_for_path(const char * path)
+GtkMenu * wtl_fm_file_menu_for_path(const char * path)
 {
     if (!path)
         return NULL;
 
-    if (!lxpanel_fm_init())
+    if (!wtl_fm_init())
         return NULL;
 
     GFile * gfile = NULL;
@@ -159,9 +159,9 @@ out:
 
 #else
 
-void lxpanel_fm_init(void) {}
+void wtl_fm_init(void) {}
 
-GtkMenu * lxpanel_fm_file_menu_for_path(const char * path)
+GtkMenu * wtl_fm_file_menu_for_path(const char * path)
 {
     return NULL;
 }

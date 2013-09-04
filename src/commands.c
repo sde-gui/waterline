@@ -64,7 +64,7 @@ void restart(void)
 
 void logout(void)
 {
-    const char* l_logout_cmd = lxpanel_get_logout_command();
+    const char* l_logout_cmd = wtl_get_logout_command();
     /* If LXSession is running, _LXSESSION_PID will be set */
     if( ! l_logout_cmd && getenv("_LXSESSION_PID") )
         l_logout_cmd = "lxsession-logout";

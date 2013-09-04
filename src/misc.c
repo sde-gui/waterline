@@ -299,7 +299,7 @@ _finish:
     return result;
 }
 
-gboolean lxpanel_launch(const char* command, GList* files)
+gboolean wtl_launch(const char* command, GList* files)
 {
     if (!command)
         return FALSE;
@@ -316,10 +316,10 @@ gboolean lxpanel_launch(const char* command, GList* files)
     if (!*command)
         return FALSE;
 
-    return lxpanel_launch_app(command, files, use_terminal);
+    return wtl_launch_app(command, files, use_terminal);
 }
 
-gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal)
+gboolean wtl_launch_app(const char* exec, GList* files, gboolean in_terminal)
 {
     GError *error = NULL;
     char* cmd;
@@ -329,7 +329,7 @@ gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal
     if( in_terminal )
     {
         char* term_cmd;
-        const char* term = lxpanel_get_terminal();
+        const char* term = wtl_get_terminal();
         if (!term)
         {
             g_free(cmd);
@@ -390,10 +390,10 @@ gchar * panel_translate_directory_name(const gchar * name)
 /********************************************************************/
 
 /* Open a specified path in a file manager. */
-void lxpanel_open_in_file_manager(const char * path)
+void wtl_open_in_file_manager(const char * path)
 {
     char * quote = g_shell_quote(path);
-    const char * fm = lxpanel_get_file_manager();
+    const char * fm = wtl_get_file_manager();
     char * cmd = ((strstr(fm, "%s") != NULL) ? g_strdup_printf(fm, quote) : g_strdup_printf("%s %s", fm, quote));
     g_free(quote);
     g_spawn_command_line_async(cmd, NULL);
@@ -401,9 +401,9 @@ void lxpanel_open_in_file_manager(const char * path)
 }
 
 /* Open a specified path in a terminal. */
-void lxpanel_open_in_terminal(const char * path)
+void wtl_open_in_terminal(const char * path)
 {
-    const char * term = lxpanel_get_terminal();
+    const char * term = wtl_get_terminal();
     char * argv[2];
     char * sp = strchr(term, ' ');
     argv[0] = ((sp != NULL) ? g_strndup(term, sp - term) : (char *) term);
@@ -413,7 +413,7 @@ void lxpanel_open_in_terminal(const char * path)
         g_free(argv[0]);
 }
 
-void lxpanel_open_web_link(const char * link)
+void wtl_open_web_link(const char * link)
 {
     gchar * addr = NULL;
     if (strchr(link, ':'))
@@ -421,7 +421,7 @@ void lxpanel_open_web_link(const char * link)
     else
         addr = g_strdup_printf("http://%s", link);
 
-    lxpanel_open_in_file_manager(addr);
+    wtl_open_in_file_manager(addr);
     g_free(addr);
 }
 
@@ -517,12 +517,12 @@ static GdkPixbuf * load_icon_from_theme(GtkIconTheme * theme, const char * icon_
     return icon;
 }
 
-GdkPixbuf * lxpanel_load_icon(const char * name, int width, int height, gboolean use_fallback)
+GdkPixbuf * wtl_load_icon(const char * name, int width, int height, gboolean use_fallback)
 {
-    return lxpanel_load_icon2(name, width, height, use_fallback, NULL);
+    return wtl_load_icon2(name, width, height, use_fallback, NULL);
 }
 
-GdkPixbuf* lxpanel_load_icon2(const char* name, int width, int height, gboolean use_fallback, gboolean * themed)
+GdkPixbuf* wtl_load_icon2(const char* name, int width, int height, gboolean use_fallback, gboolean * themed)
 {
     GdkPixbuf * icon = NULL;
 
@@ -674,7 +674,7 @@ static char * human_access (struct stat const *statbuf)
 }
 
 
-gchar * lxpanel_tooltip_for_file_stat(struct stat * stat_data)
+gchar * wtl_tooltip_for_file_stat(struct stat * stat_data)
 {
     setpwent ();
     struct passwd * pw_ent = getpwuid (stat_data->st_uid);

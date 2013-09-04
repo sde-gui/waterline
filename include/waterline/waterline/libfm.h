@@ -21,6 +21,6 @@
 
 #include <gtk/gtk.h>
 
-GtkMenu * lxpanel_fm_file_menu_for_path(const char * path);
+GtkMenu * wtl_fm_file_menu_for_path(const char * path);
 
 #endif

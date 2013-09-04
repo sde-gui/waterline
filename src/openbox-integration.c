@@ -69,7 +69,7 @@ GdkPixbuf * ob_load_icon_from_theme(const char * name, int w, int h)
     if (theme)
         file_name = ob_find_file_for_theme(theme, name);
     if (file_name)
-        result = lxpanel_load_icon(file_name, w, h, FALSE);
+        result = wtl_load_icon(file_name, w, h, FALSE);
     g_free(file_name);
     g_free(theme);
     return result;

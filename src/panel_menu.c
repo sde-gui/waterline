@@ -180,7 +180,7 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_
 
     gboolean display_icons = FALSE;
 
-    if (!lxpanel_is_in_kiosk_mode())
+    if (!wtl_is_in_kiosk_mode())
     {
 
         /*********************/

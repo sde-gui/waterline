@@ -521,7 +521,7 @@ static gboolean lb_release_event(GtkWidget * widget, GdkEventButton * event, lb_
 
     if (!strempty(command))
     {
-        lxpanel_launch(command, NULL);
+        wtl_launch(command, NULL);
     }
     else
     {
@@ -542,7 +542,7 @@ static gboolean lb_scroll_event(GtkWidget * widget, GdkEventScroll * event, lb_t
 
     if (!strempty(command))
     {
-        lxpanel_launch(command, NULL);
+        wtl_launch(command, NULL);
     }
 
     return TRUE;

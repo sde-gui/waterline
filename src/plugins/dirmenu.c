@@ -133,19 +133,19 @@ static gchar * dirmenu_get_path(DirMenuPlugin * dm)
 /* Handler for activate event on file menu item. */
 static void dirmenu_menuitem_open_file(GtkWidget * item, Plugin * p)
 {
-    lxpanel_open_in_file_manager(g_object_get_data(G_OBJECT(item), "path"));
+    wtl_open_in_file_manager(g_object_get_data(G_OBJECT(item), "path"));
 }
 
 /* Handler for activate event on popup Open menu item. */
 static void dirmenu_menuitem_open_directory(GtkWidget * item, Plugin * p)
 {
-    lxpanel_open_in_file_manager(g_object_get_data(G_OBJECT(gtk_widget_get_parent(item)), "path"));
+    wtl_open_in_file_manager(g_object_get_data(G_OBJECT(gtk_widget_get_parent(item)), "path"));
 }
 
 /* Handler for activate event on popup Open In Terminal menu item. */
 static void dirmenu_menuitem_open_in_terminal(GtkWidget * item, Plugin * p)
 {
-    lxpanel_open_in_terminal(g_object_get_data(G_OBJECT(gtk_widget_get_parent(item)), "path"));
+    wtl_open_in_terminal(g_object_get_data(G_OBJECT(gtk_widget_get_parent(item)), "path"));
 }
 
 /* Handler for select event on popup menu item. */
@@ -156,7 +156,7 @@ static void dirmenu_menuitem_open_directory_plain(GtkWidget * item, Plugin * p)
         (char *) g_object_get_data(G_OBJECT(parent), "path"),
         (char *) g_object_get_data(G_OBJECT(item), "name"),
         NULL);
-    lxpanel_open_in_file_manager(path);
+    wtl_open_in_file_manager(path);
     g_free(path);
 }
 
@@ -166,7 +166,7 @@ static gboolean dirmenu_menuitem_button_press(GtkWidget * item, GdkEventButton* 
 
     if (evt->button == 3)  /* right */
     {
-        /*if (lxpanel_is_in_kiosk_mode())
+        /*if (wtl_is_in_kiosk_mode())
             return TRUE;*/
 
         gchar * path = g_object_get_data(G_OBJECT(item), "path");
@@ -190,7 +190,7 @@ static gboolean dirmenu_menuitem_button_press(GtkWidget * item, GdkEventButton* 
                 goto out;
         }
 
-        GtkMenu * popup = lxpanel_fm_file_menu_for_path(path);
+        GtkMenu * popup = wtl_fm_file_menu_for_path(path);
 
         if (popup)
         {
@@ -332,7 +332,7 @@ static gboolean dirmenu_query_tooltip(GtkWidget * item, gint x, gint y, gboolean
     if (stat(path, &stat_data) !=0)
         return FALSE;
 
-    gchar * tooltip_text = lxpanel_tooltip_for_file_stat(&stat_data);
+    gchar * tooltip_text = wtl_tooltip_for_file_stat(&stat_data);
 
     if (link_content_size > 0)
     {
@@ -724,7 +724,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
         struct stat stat_data;
         stat(path, &stat_data);
-        s1 = lxpanel_tooltip_for_file_stat(&stat_data);
+        s1 = wtl_tooltip_for_file_stat(&stat_data);
 
         int link_content_size = 0;
         gchar link_content[1024];
@@ -810,7 +810,7 @@ static gboolean dirmenu_button_press_event(GtkWidget * widget, GdkEventButton * 
     else
     {
         gchar * path = dirmenu_get_path(dm);
-        lxpanel_open_in_terminal(path);
+        wtl_open_in_terminal(path);
         g_free(path);
     }
     return TRUE;
@@ -989,7 +989,7 @@ static void dirmenu_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
     DirMenuPlugin * dm = PRIV(plugin);
 
     gchar * path = dirmenu_get_path(dm);
-    GtkMenu * file_menu = lxpanel_fm_file_menu_for_path(path);
+    GtkMenu * file_menu = wtl_fm_file_menu_for_path(path);
     if (file_menu)
     {
         GtkWidget * item = gtk_separator_menu_item_new();

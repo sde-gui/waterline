@@ -76,7 +76,7 @@ static gboolean load_window_action_icon_xfce(GtkImage * image, const char * name
 
     if (xfce_icon_name)
     {
-        GdkPixbuf * icon = lxpanel_load_icon(xfce_icon_name, w, h, FALSE);
+        GdkPixbuf * icon = wtl_load_icon(xfce_icon_name, w, h, FALSE);
         if (icon)
         {
             gtk_image_set_from_pixbuf(image, icon);
@@ -102,7 +102,7 @@ static gboolean load_window_action_icon_gnome2(GtkImage * image, const char * na
 
     if (gnome2_icon_name)
     {
-        GdkPixbuf * icon = lxpanel_load_icon(gnome2_icon_name, w, h, FALSE);
+        GdkPixbuf * icon = wtl_load_icon(gnome2_icon_name, w, h, FALSE);
         if (icon)
         {
             gtk_image_set_from_pixbuf(image, icon);

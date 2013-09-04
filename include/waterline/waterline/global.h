@@ -39,10 +39,10 @@ extern int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErro
 
 extern GSList * get_all_panels(void);
 
-extern const char* lxpanel_get_logout_command();
-extern const char* lxpanel_get_file_manager();
-extern const char* lxpanel_get_terminal();
+extern const char* wtl_get_logout_command(void);
+extern const char* wtl_get_file_manager(void);
+extern const char* wtl_get_terminal(void);
 
-int lxpanel_is_in_kiosk_mode(void);
+int wtl_is_in_kiosk_mode(void);
 
 #endif

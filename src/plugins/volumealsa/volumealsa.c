@@ -329,7 +329,7 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
                 gtk_widget_hide(vol->popup_window);
                 vol->show_popup = FALSE;
             }
-            lxpanel_launch(volumealsa_get_volume_control_command(vol), NULL);
+            wtl_launch(volumealsa_get_volume_control_command(vol), NULL);
         }
         else
         {
@@ -583,7 +583,7 @@ static void volumealsa_panel_configuration_changed(Plugin * p)
 
 static void volumealsa_on_volume_control_activate(GtkMenuItem * item, VolumeALSAPlugin * vol)
 {
-    lxpanel_launch(volumealsa_get_volume_control_command(vol), NULL);
+    wtl_launch(volumealsa_get_volume_control_command(vol), NULL);
 }
 
 static void volumealsa_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)

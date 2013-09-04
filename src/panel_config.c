@@ -68,7 +68,7 @@ static pair width_pair[] = {
     { WIDTH_PERCENT, "percent" },
     { 0, NULL },
 };
-
+/*
 static pair height_pair[] = {
     { HEIGHT_NONE, "none" },
     { HEIGHT_PIXEL, "pixel" },
@@ -81,7 +81,7 @@ static pair pos_pair[] = {
     { POS_END,  "end" },
     { 0, NULL},
 };
-
+*/
 static pair panel_visibility_pair[] = {
     { VISIBILITY_ALWAYS, "always" },
     { VISIBILITY_BELOW, "below" },
@@ -159,7 +159,7 @@ void panel_read_global_configuration_from_json_object(Panel *p)
 
 static void panel_write_global_configuration_to_json_object(Panel *p)
 {
-    if (lxpanel_is_in_kiosk_mode())
+    if (wtl_is_in_kiosk_mode())
         return;
 
     json_t * json = json_incref(json_object_get(p->json, "global"));
@@ -176,7 +176,7 @@ static void panel_write_global_configuration_to_json_object(Panel *p)
 
 static void panel_write_plugins_configuration_to_json_object(Panel* p)
 {
-    if (lxpanel_is_in_kiosk_mode())
+    if (wtl_is_in_kiosk_mode())
         return;
 
     json_t * json_plugins = json_array();
@@ -257,7 +257,7 @@ ret:
 
 void panel_save_configuration(Panel* p)
 {
-    if (lxpanel_is_in_kiosk_mode())
+    if (wtl_is_in_kiosk_mode())
         return;
 
     FILE * fp = NULL;
@@ -355,7 +355,7 @@ void load_global_config()
 
 static void save_global_config()
 {
-    if (lxpanel_is_in_kiosk_mode())
+    if (wtl_is_in_kiosk_mode())
         return;
 
     gchar * file = get_config_path("config", CONFIG_USER_W);
@@ -389,24 +389,24 @@ void free_global_config()
 
 /******************************************************************************/
 
-extern const char* lxpanel_get_logout_command()
+extern const char* wtl_get_logout_command()
 {
     return global_config.logout_cmd;
 }
 
-extern const char* lxpanel_get_file_manager()
+extern const char* wtl_get_file_manager()
 {
     return global_config.file_manager_cmd ?
         global_config.file_manager_cmd : get_default_application("file-manager");
 }
 
-extern const char* lxpanel_get_terminal()
+extern const char* wtl_get_terminal()
 {
     return global_config.terminal_cmd ?
         global_config.terminal_cmd : get_default_application("terminal-emulator");
 }
 
-extern int lxpanel_is_in_kiosk_mode(void)
+extern int wtl_is_in_kiosk_mode(void)
 {
     return global_config.kiosk_mode || global_config.arg_kiosk_mode;
 }

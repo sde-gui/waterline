@@ -164,7 +164,7 @@ menu_pos(GtkWidget *menu, gint *px, gint *py, gboolean *push_in, Plugin * p)
 
 static void on_menu_item( GtkMenuItem* mi, MenuCacheItem* item )
 {
-    lxpanel_launch_app( menu_cache_app_get_exec(MENU_CACHE_APP(item)),
+    wtl_launch_app( menu_cache_app_get_exec(MENU_CACHE_APP(item)),
             NULL, menu_cache_app_get_use_terminal(MENU_CACHE_APP(item)));
 }
 
@@ -181,7 +181,7 @@ static void on_menu_item_map(GtkWidget* mi, MenuCacheItem* item)
             /* FIXME: this is inefficient */
             gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &w, &h);
             item = g_object_get_qdata(G_OBJECT(mi), SYS_MENU_ITEM_ID);
-            icon = lxpanel_load_icon(menu_cache_item_get_icon(item), w, h, TRUE);
+            icon = wtl_load_icon(menu_cache_item_get_icon(item), w, h, TRUE);
             if (icon)
             {
                 gtk_image_set_from_pixbuf(img, icon);
@@ -314,7 +314,7 @@ static gboolean on_menu_button_press(GtkWidget* mi, GdkEventButton* evt, MenuCac
 {
     if( evt->button == 3)  /* right */
     {
-        if (lxpanel_is_in_kiosk_mode())
+        if (wtl_is_in_kiosk_mode())
             return TRUE;
 
         char* tmp;
@@ -691,7 +691,7 @@ read_item(Plugin *p, char** fp)
 
     if( fp )
     {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
+        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
             if (s.type == LINE_VAR) {
                 if (!g_ascii_strcasecmp(s.t[0], "image"))
                     fname = expand_tilda(s.t[1]);
@@ -761,7 +761,7 @@ read_separator(Plugin *p, char **fp)
     ENTER;
     if( fp )
     {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
+        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
             ERR("menu: error - separator can not have paramteres\n");
             RET(NULL);
         }
@@ -789,7 +789,7 @@ read_recently_used_menu(GtkMenu* menu, Plugin *p, char** fp)
     line s;
     if( fp )
     {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
+        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
             ERR("menu: error - system can not have paramteres\n");
             return;
         }
@@ -878,7 +878,7 @@ recent_documents_activate_cb (GtkRecentChooser *chooser, Plugin * p)
     GtkRecentInfo * recent_info = gtk_recent_chooser_get_current_item (chooser);
     const char    * uri = gtk_recent_info_get_uri (recent_info);
 
-    lxpanel_open_in_file_manager(uri);
+    wtl_open_in_file_manager(uri);
 
     gtk_recent_info_unref (recent_info);
 }
@@ -896,7 +896,7 @@ read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
     line s;
     if( fp )
     {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
+        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
             if (s.type == LINE_VAR) {
 		m->config_start = *fp;
 		if (!g_ascii_strcasecmp(s.t[0], "limit"))
@@ -926,7 +926,7 @@ read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
     recent_menu = gtk_recent_chooser_menu_new_for_manager(rm);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), recent_menu);
 
-    GdkPixbuf * pixbuf = lxpanel_load_icon("document-open-recent", m->iconsize, m->iconsize, FALSE);
+    GdkPixbuf * pixbuf = wtl_load_icon("document-open-recent", m->iconsize, m->iconsize, FALSE);
     if (pixbuf)
     {
         GtkWidget* img = gtk_image_new_from_pixbuf(pixbuf);
@@ -986,7 +986,7 @@ read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
 
     if( fp )
     {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
+        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
             ERR("menu: error - system can not have parameters\n");
             return;
         }
@@ -1009,7 +1009,7 @@ read_include(Plugin *p, char **fp)
     name = NULL;
     if( fp )
     {
-        while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
+        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
             if (s.type == LINE_VAR) {
                 if (!g_ascii_strcasecmp(s.t[0], "name"))
                     name = expand_tilda(s.t[1]);
@@ -1048,7 +1048,7 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
 
     fname = NULL;
     name = NULL;
-    while (lxpanel_get_line(fp, &s) != LINE_BLOCK_END) {
+    while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_BLOCK_START) {
             mi = NULL;
             if (!g_ascii_strcasecmp(s.t[0], "item")) {
@@ -1204,8 +1204,8 @@ static void save_config( Plugin* p)
 #if 0
     menup* menu = PRIV(p);
     int level = 0;
-    lxpanel_put_str( fp, "name", menu->caption );
-    lxpanel_put_str( fp, "image", menu->fname );
+    wtl_put_str( fp, "name", menu->caption );
+    wtl_put_str( fp, "image", menu->fname );
     if( menu->config_data ) {
         char** lines = g_strsplit( menu->config_data, "\n", 0 );
         char** line;
@@ -1224,7 +1224,7 @@ static void save_config( Plugin* p)
                     ++level;
                 else if( g_str_has_suffix( *line, "}" ) )
                     --level;
-                lxpanel_put_line( fp, *line );
+                wtl_put_line( fp, *line );
             }
         }
         g_strfreev( lines );

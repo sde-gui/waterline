@@ -569,7 +569,7 @@ static wtl_json_option_definition option_definitions[] = {
     WTL_JSON_OPTION_ENUM(action_trigged_by_pair, menu_actions_click_press),
     WTL_JSON_OPTION_ENUM(action_trigged_by_pair, other_actions_click_press),
 
-    //lxpanel_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
+    //wtl_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
     WTL_JSON_OPTION_ENUM(mouse_over_action_pair, mouse_over_action),
 
     WTL_JSON_OPTION(bool, use_group_separators),
@@ -1834,7 +1834,7 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
     {
         /* try to guess an icon from window class name */
         gchar* classname = g_utf8_strdown(tk->wm_class, -1);
-        pixbuf = lxpanel_load_icon(classname,
+        pixbuf = wtl_load_icon(classname,
                                    icon_size, icon_size, FALSE);
         g_free(classname);
     }
@@ -1844,7 +1844,7 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
          /* custom fallback icon */
          if (!tb->custom_fallback_pixbuf && !strempty(tb->custom_fallback_icon))
          {
-             tb->custom_fallback_pixbuf = lxpanel_load_icon(tb->custom_fallback_icon, tb->icon_size, tb->icon_size, TRUE);
+             tb->custom_fallback_pixbuf = wtl_load_icon(tb->custom_fallback_icon, tb->icon_size, tb->icon_size, TRUE);
          }
          if (tb->custom_fallback_pixbuf)
          {
@@ -4545,7 +4545,7 @@ static void menu_run_new(GtkWidget * widget, TaskbarPlugin * tb)
 {
     gchar * p = tb->menutask->run_path;
     if (p && p != (gchar *)-1)
-        lxpanel_launch_app(p, NULL, FALSE);
+        wtl_launch_app(p, NULL, FALSE);
     taskbar_group_menu_destroy(tb);
 }
 

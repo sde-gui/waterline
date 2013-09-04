@@ -187,7 +187,7 @@ static gboolean launchbutton_press_event(GtkWidget * widget, GdkEventButton * ev
         if (b->desktop_id == NULL)	/* The bootstrap button */
             launchbar_configure(b->plugin, NULL);
         else if (b->action != NULL)
-            lxpanel_launch_app(b->action, NULL, b->use_terminal);
+            wtl_launch_app(b->action, NULL, b->use_terminal);
     }
     return TRUE;
 }
@@ -269,7 +269,7 @@ static void launchbutton_build_bootstrap(Plugin * p)
 
         /* Create an image containing the stock "Add" icon as a child of the event box. */
         lb->bootstrap_button->image_widget = gtk_image_new_from_pixbuf(
-            lxpanel_load_icon(GTK_STOCK_ADD, plugin_get_icon_size(p), plugin_get_icon_size(p), FALSE));
+            wtl_load_icon(GTK_STOCK_ADD, plugin_get_icon_size(p), plugin_get_icon_size(p), FALSE));
         gtk_misc_set_padding(GTK_MISC(lb->bootstrap_button->image_widget), 0, 0);
         gtk_misc_set_alignment(GTK_MISC(lb->bootstrap_button->image_widget), 0, 0);
         gtk_container_add(GTK_CONTAINER(event_box), lb->bootstrap_button->image_widget);
@@ -516,7 +516,7 @@ static void launchbar_configure_add_button(GtkButton * widget, Plugin * p)
         GtkTreeIter it;
         GdkPixbuf* pix;
         gtk_list_store_append(list, &it);
-        pix = lxpanel_load_icon(btn->image, PANEL_ICON_SIZE, PANEL_ICON_SIZE, TRUE);
+        pix = wtl_load_icon(btn->image, PANEL_ICON_SIZE, PANEL_ICON_SIZE, TRUE);
         gtk_list_store_set(list, &it,
             COL_ICON, pix,
             COL_TITLE, ((btn->tooltip != NULL) ? btn->tooltip : btn->action),
@@ -662,7 +662,7 @@ static void launchbar_configure_update_icons(GtkTreeStore* tree, GtkTreeIter* pa
             if(!pix)
             {
                 gtk_tree_model_get(GTK_TREE_MODEL(tree), &it, COL_ICON_NAME, &name, -1);
-                pix = lxpanel_load_icon(name, PANEL_ICON_SIZE, PANEL_ICON_SIZE, TRUE);
+                pix = wtl_load_icon(name, PANEL_ICON_SIZE, PANEL_ICON_SIZE, TRUE);
                 gtk_tree_store_set(tree, &it, COL_ICON, pix, -1);
                 g_free(name);
             }
@@ -803,7 +803,7 @@ static void launchbar_configure_initialize_list(Plugin * p, GtkWidget * dlg, Gtk
             GtkTreeIter it;
             gtk_list_store_append(list, &it);
             gtk_list_store_set(list, &it,
-                COL_ICON, lxpanel_load_icon(btn->image, PANEL_ICON_SIZE, PANEL_ICON_SIZE, TRUE),
+                COL_ICON, wtl_load_icon(btn->image, PANEL_ICON_SIZE, PANEL_ICON_SIZE, TRUE),
                 COL_TITLE, ((btn->tooltip != NULL) ? btn->tooltip : btn->action),
                 COL_BTN, btn,
                 -1);
@@ -815,7 +815,7 @@ static void launchbar_configure_initialize_list(Plugin * p, GtkWidget * dlg, Gtk
 /* Callback when the configuration dialog is to be shown. */
 static void launchbar_configure(Plugin * p, GtkWindow * parent)
 {
-    if (lxpanel_is_in_kiosk_mode())
+    if (wtl_is_in_kiosk_mode())
         return;
 
     LaunchbarPlugin * lb = PRIV(p);
@@ -917,7 +917,7 @@ static void launchbar_panel_configuration_changed(Plugin * p)
     /* Reset the bootstrap button. */
     if (lb->bootstrap_button != NULL)
         gtk_image_set_from_pixbuf(GTK_IMAGE(lb->bootstrap_button->image_widget),
-            lxpanel_load_icon(GTK_STOCK_ADD, plugin_get_icon_size(p), plugin_get_icon_size(p), FALSE));
+            wtl_load_icon(GTK_STOCK_ADD, plugin_get_icon_size(p), plugin_get_icon_size(p), FALSE));
 }
 
 static void launchbar_add_launch_item(struct _Plugin * plugin, const char * name)

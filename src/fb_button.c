@@ -217,7 +217,7 @@ static void _gtk_image_set_from_file_scaled(GtkWidget * img, const gchar * file,
             data->fname = g_strdup(file);
         }
 
-        data->pixbuf = lxpanel_load_icon2(file, width, height, FALSE, &themed);
+        data->pixbuf = wtl_load_icon2(file, width, height, FALSE, &themed);
     }
 
     if (data->pixbuf != NULL)

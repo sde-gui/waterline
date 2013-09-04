@@ -101,7 +101,7 @@ int buf_gets( char* buf, int len, char **fp )
 }
 
 extern int
-lxpanel_put_line(FILE* fp, const char* format, ...)
+wtl_put_line(FILE* fp, const char* format, ...)
 {
     static int indent = 0;
     int i, ret;
@@ -126,7 +126,7 @@ lxpanel_put_line(FILE* fp, const char* format, ...)
 #define VARNAME_ALIGN 24
 
 extern int
-lxpanel_put_str( FILE* fp, const char* name, const char* val )
+wtl_put_str( FILE* fp, const char* name, const char* val )
 {
     if( G_UNLIKELY( !val || !*val ) )
         return 0;
@@ -148,11 +148,11 @@ lxpanel_put_str( FILE* fp, const char* name, const char* val )
         name = s;
     }
 
-    return lxpanel_put_line( fp, "%s = %s", name, val );
+    return wtl_put_line( fp, "%s = %s", name, val );
 }
 
 extern int
-lxpanel_put_bool( FILE* fp, const char* name, gboolean val )
+wtl_put_bool( FILE* fp, const char* name, gboolean val )
 {
     char s[VARNAME_ALIGN+1];
     int l = strlen(name);
@@ -165,11 +165,11 @@ lxpanel_put_bool( FILE* fp, const char* name, gboolean val )
         name = s;
     }
 
-    return lxpanel_put_line( fp, "%s = %s", name, val ? "true" : "false" );
+    return wtl_put_line( fp, "%s = %s", name, val ? "true" : "false" );
 }
 
 extern int
-lxpanel_put_int( FILE* fp, const char* name, int val )
+wtl_put_int( FILE* fp, const char* name, int val )
 {
     char s[VARNAME_ALIGN+1];
     int l = strlen(name);
@@ -182,11 +182,11 @@ lxpanel_put_int( FILE* fp, const char* name, int val )
         name = s;
     }
 
-    return lxpanel_put_line( fp, "%s = %d", name, val );
+    return wtl_put_line( fp, "%s = %d", name, val );
 }
 
 extern int
-lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair)
+wtl_put_enum( FILE* fp, const char* name, int val, const pair* pair)
 {
     char s[VARNAME_ALIGN+1];
     int l = strlen(name);
@@ -199,11 +199,11 @@ lxpanel_put_enum( FILE* fp, const char* name, int val, const pair* pair)
         name = s;
     }
 
-    return lxpanel_put_str(fp, name, num2str(pair, val, NULL));
+    return wtl_put_str(fp, name, num2str(pair, val, NULL));
 }
 
 extern  int
-lxpanel_get_line(char**fp, line *s)
+wtl_get_line(char**fp, line *s)
 {
     gchar *tmp, *tmp2;
 

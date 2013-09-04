@@ -70,16 +70,16 @@ GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
                       const char* name, ... );
 
 
-extern GdkPixbuf* lxpanel_load_icon(const char* name, int width, int height, gboolean use_fallback);
-extern GdkPixbuf* lxpanel_load_icon2(const char* name, int width, int height, gboolean use_fallback, gboolean * themed);
+extern GdkPixbuf* wtl_load_icon(const char* name, int width, int height, gboolean use_fallback);
+extern GdkPixbuf* wtl_load_icon2(const char* name, int width, int height, gboolean use_fallback, gboolean * themed);
 
 extern void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size);
 
-gboolean lxpanel_launch_app(const char* exec, GList* files, gboolean in_terminal);
-gboolean lxpanel_launch(const char* exec, GList* files);
-void lxpanel_open_in_file_manager(const char * path);
-void lxpanel_open_in_terminal(const char * path);
-void lxpanel_open_web_link(const char * link);
+gboolean wtl_launch_app(const char* exec, GList* files, gboolean in_terminal);
+gboolean wtl_launch(const char* exec, GList* files);
+void wtl_open_in_file_manager(const char * path);
+void wtl_open_in_terminal(const char * path);
+void wtl_open_web_link(const char * link);
 
 typedef void (*EntryDialogCallback)(char * value, gpointer payload);
 
@@ -91,7 +91,7 @@ int strempty(const char* s);
 
 void bring_to_current_desktop(GtkWidget * win);
 
-gchar * lxpanel_tooltip_for_file_stat(struct stat * stat_data);
+gchar * wtl_tooltip_for_file_stat(struct stat * stat_data);
 
 
 extern void filemodestring (struct stat const *statp, char *str);

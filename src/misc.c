@@ -103,9 +103,17 @@ expand_tilda(const gchar * file)
 
 /********************************************************************/
 
-char* translate_exec_to_cmd( const char* exec, const char* icon,
-                             const char* title, const char* fpath )
+char* translate_exec_to_cmd(const char * exec, const char * icon,
+                            const char * title, const char * fpath)
 {
+    if (!exec)
+        return NULL;
+
+    if (!title)
+        title = "";
+    if (!fpath)
+        fpath = "";
+
     GString* cmd = g_string_sized_new( 256 );
     for( ; *exec; ++exec )
     {

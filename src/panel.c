@@ -60,7 +60,7 @@ extern void gtk_run(void);
 
 /* defined in misc.c */
 
-extern void lxpanel_fm_init(void);
+extern void wtl_fm_init(void);
 
 /* defined in commands.c */
 
@@ -104,9 +104,9 @@ static gboolean force_composite_disabled = FALSE;
 
 const char * __license = "This program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n";
 
-const char * __website = "http://code.google.com/p/lxpanelx/";
+const char * __website = "http://dev.make-linux.org/projects/waterline";
 const char * __email = "igeekless@gmail.com";
-const char * __bugreporting = "http://code.google.com/p/lxpanelx/issues/list";
+const char * __bugreporting = "http://dev.make-linux.org/projects/waterline/issues";
 
 /******************************************************************************/
 
@@ -2189,7 +2189,7 @@ int panel_handle_x_error(Display * d, XErrorEvent * ev)
 
     if (log_level >= LOG_WARN) {
         XGetErrorText(GDK_DISPLAY(), ev->error_code, buf, 256);
-        LOG(LOG_WARN, "lxpanel : X error: %s\n", buf);
+        LOG(LOG_WARN, "waterline : X error: %s\n", buf);
     }
     return 0;	/* Ignored */
 }
@@ -2278,9 +2278,9 @@ static void usage(gboolean error)
     void (*print)(const char *string, ...) = error ? print_stderr : g_print;
 
     if (!error)
-        print(_("LXPanelX %s - lightweight GTK2+ panel for UNIX desktops"), version);
+        print(_("waterline %s - A lightweight framework for desktop widgets and applets"), version);
     print("\n\n");
-    print(_("Syntax: %s [options]"), "lxpanelx");
+    print(_("Syntax: %s [options]"), "waterline");
     print("\n\n");
     print(_("Options:"));
     print("\n");
@@ -2395,7 +2395,7 @@ int main(int argc, char *argv[], char *env[])
 
 #undef NEXT_ARGUMENT
 
-    /* Check for duplicated lxpanel instances */
+    /* Check for duplicated instances */
     if (!check_main_lock()) {
         printf("There is already an instance of LXPanelX.  Now to exit\n");
         exit(2);

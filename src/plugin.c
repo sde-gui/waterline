@@ -154,13 +154,13 @@ static PluginClass * plugin_load_dynamic(const char * type, const gchar * path)
     if (( ! g_module_symbol(m, class_name, &tmpsym))
     || ((pc = tmpsym) == NULL))
     {
-        ERR("%s.so is not a lxpanelx plugin: symbol %s not found\n", type, class_name);
+        ERR("%s.so is not a waterline plugin: symbol %s not found\n", type, class_name);
         goto err;
     }
 
     if (pc->structure_magic != PLUGINCLASS_MAGIC)
     {
-        ERR("%s.so is not a lxpanelx plugin: invalid magic value 0x%lx (should be 0x%lx)\n", type, pc->structure_magic, PLUGINCLASS_MAGIC);
+        ERR("%s.so is not a waterline plugin: invalid magic value 0x%lx (should be 0x%lx)\n", type, pc->structure_magic, PLUGINCLASS_MAGIC);
         goto err;
     }
 

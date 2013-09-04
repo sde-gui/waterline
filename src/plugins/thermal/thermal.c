@@ -1,5 +1,5 @@
 /**
- * Thermal plugin to lxpanel
+ * Thermal plugin
  *
  * Copyright (C) 2007 by Daniel Kesler <kesler.daniel@gmail.com>
  *

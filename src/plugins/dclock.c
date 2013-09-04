@@ -120,7 +120,7 @@ static void dclock_copy_to_clipboard_menu_item_activate(GtkMenuItem *item)
     gtk_clipboard_set_text(clipboard, gtk_menu_item_get_label(item), -1);
 }
 
-static void dclock_generate_copy_to_clipboard_menu(GtkMenu* lxpanelx_menu, Plugin * plugin)
+static void dclock_generate_copy_to_clipboard_menu(GtkMenu* panel_menu, Plugin * plugin)
 {
     time_t now;
     time(&now);
@@ -167,7 +167,7 @@ static void dclock_generate_copy_to_clipboard_menu(GtkMenu* lxpanelx_menu, Plugi
     else
     {
         GtkWidget * copy_to_clipboard = gtk_menu_item_new_with_label(_("Copy to Clipboard..."));
-        gtk_menu_shell_prepend(GTK_MENU_SHELL(lxpanelx_menu), copy_to_clipboard);
+        gtk_menu_shell_prepend(GTK_MENU_SHELL(panel_menu), copy_to_clipboard);
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(copy_to_clipboard), menu);
         gtk_widget_show(copy_to_clipboard);
         gtk_widget_show_all(menu);

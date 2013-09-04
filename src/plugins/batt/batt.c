@@ -1,5 +1,5 @@
 /*
- * ACPI battery monitor plugin for LXPanel
+ * ACPI battery monitor plugin
  *
  * Copyright (C) 2007 by Greg McNew <gmcnew@gmail.com>
  * Copyright (C) 2008 by Hong Jen Yee <pcman.tw@gmail.com>

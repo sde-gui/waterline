@@ -1,5 +1,5 @@
 /**
- * CPUFreq plugin to lxpanel
+ * CPUFreq plugin
  *
  * Copyright (C) 2009 by Daniel Kesler <kesler.daniel@gmail.com>
  *

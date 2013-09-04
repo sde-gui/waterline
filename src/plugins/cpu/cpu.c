@@ -1,5 +1,5 @@
 /**
- * CPU usage plugin to lxpanel
+ * CPU usage plugin
  *
  * Copyright (c) 2008 LxDE Developers, see the file AUTHORS for details.
  * Copyright (C) 2004 by Alexandre Pereira da Silva <alexandre.pereira@poli.usp.br>

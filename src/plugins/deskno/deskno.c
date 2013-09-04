@@ -1,5 +1,5 @@
 /**
- * Desktop number plugin to lxpanel
+ * Desktop number plugin
  *
  * Copyright (c) 2008 LxDE Developers, see the file AUTHORS for details.
  *

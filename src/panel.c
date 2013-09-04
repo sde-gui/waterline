@@ -32,21 +32,21 @@
 #include <string.h>
 #include <gdk/gdkx.h>
 
-#include <lxpanelx/global.h>
+#include <waterline/global.h>
 #include "plugin_internal.h"
 #include "plugin_private.h"
-#include <lxpanelx/paths.h>
-#include <lxpanelx/panel.h>
+#include <waterline/paths.h>
+#include <waterline/panel.h>
 #include "panel_internal.h"
 #include "panel_private.h"
-#include <lxpanelx/misc.h>
+#include <waterline/misc.h>
 #include "bg.h"
-#include <lxpanelx/Xsupport.h>
+#include <waterline/Xsupport.h>
 
 #include "lxpanelxctl.h"
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
 /******************************************************************************/
 
@@ -930,15 +930,15 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
                 /* print_wmdata(p); */
             }
         }
-        else if (at == a_LXPANELX_TEXT_CMD)
+        else if (at == a_WATERLINE_TEXT_CMD)
         {
             int remote_command_argc = 0;;
             char ** remote_command_argv = NULL;
-            remote_command_argv = get_utf8_property_list(GDK_ROOT_WINDOW(), a_LXPANELX_TEXT_CMD, &remote_command_argc);
+            remote_command_argv = get_utf8_property_list(GDK_ROOT_WINDOW(), a_WATERLINE_TEXT_CMD, &remote_command_argc);
             if (remote_command_argc > 0 && remote_command_argv)
             {
                 unsigned char b[1];
-                XChangeProperty (GDK_DISPLAY(), GDK_ROOT_WINDOW(), a_LXPANELX_TEXT_CMD, XA_STRING, 8, PropModeReplace, b, 0);
+                XChangeProperty (GDK_DISPLAY(), GDK_ROOT_WINDOW(), a_WATERLINE_TEXT_CMD, XA_STRING, 8, PropModeReplace, b, 0);
                 process_command(remote_command_argv, remote_command_argc);
             }
             g_strfreev(remote_command_argv);
@@ -2236,7 +2236,7 @@ int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent 
 
 /*= Lightweight lock related functions - X clipboard hacks =*/
 
-#define CLIPBOARD_NAME "LXPANELX_SELECTION"
+#define CLIPBOARD_NAME "WATERLINE_SELECTION"
 
 /*
  * clipboard_get_func - dummy get_func for gtk_clipboard_set_with_data ()

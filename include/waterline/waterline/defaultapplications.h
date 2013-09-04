@@ -16,19 +16,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELX_TYPEDEF_H
-#define _LXPANELX_TYPEDEF_H
+#ifndef __WATERLINE__DEFAULT_APPLICATIONS_H
+#define __WATERLINE__DEFAULT_APPLICATIONS_H
 
-struct _Plugin;
-typedef struct _Plugin Plugin;
-
-struct _PluginClass;
-typedef struct _PluginClass PluginClass;
-
-struct _PluginClassInternal;
-typedef struct _PluginClassInternal PluginClassInternal;
-
-struct _Panel;
-typedef struct _Panel Panel;
+char * get_default_application(char * type);
 
 #endif

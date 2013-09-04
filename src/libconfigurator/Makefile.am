@@ -18,4 +18,4 @@ libconfigurator_la_LIBADD = \
 
 libconfigurator_la_LDFLAGS = \
 	-module \
-	@LXPANELX_INTERNAL_MODULE@
+	@WATERLINE_INTERNAL_MODULE@

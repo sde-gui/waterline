@@ -22,15 +22,15 @@
 #include "config.h"
 #endif
 
-#include <lxpanelx/global.h>
+#include <waterline/global.h>
 #include "plugin_internal.h"
 #include "plugin_private.h"
-#include <lxpanelx/panel.h>
+#include <waterline/panel.h>
 #include "panel_internal.h"
 #include "panel_private.h"
-#include <lxpanelx/paths.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/defaultapplications.h>
+#include <waterline/paths.h>
+#include <waterline/misc.h>
+#include <waterline/defaultapplications.h>
 #include "bg.h"
 #include <stdlib.h>
 #include <sys/types.h>
@@ -39,7 +39,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 enum{
     COL_NAME,

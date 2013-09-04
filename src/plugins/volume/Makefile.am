@@ -21,6 +21,6 @@ volume_la_LIBADD = \
 
 volume_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+    @WATERLINE_MODULE@
 
 #endif

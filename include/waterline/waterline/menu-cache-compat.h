@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MENU_CACHE_COMPAT_H
-#define MENU_CACHE_COMPAT_H
+#ifndef __WATERLINE__MENU_CACHE_COMPAT_H
+#define __WATERLINE__MENU_CACHE_COMPAT_H
 
 #include <menu-cache.h>
 

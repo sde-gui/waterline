@@ -26,14 +26,14 @@
 
 #define PLUGIN_PRIV_TYPE DClockPlugin
 
-#include <lxpanelx/paths.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
+#include <waterline/paths.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
 #define DEFAULT_TIP_FORMAT    "%A %x"
 #define DEFAULT_CLOCK_FORMAT  "%R"

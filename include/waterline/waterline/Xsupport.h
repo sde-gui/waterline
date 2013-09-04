@@ -17,8 +17,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELX_XSUPPORT_H
-#define _LXPANELX_XSUPPORT_H
+#ifndef __WATERLINE__XSUPPORT_H
+#define __WATERLINE__XSUPPORT_H
 
 #include <X11/X.h>
 
@@ -149,7 +149,7 @@ extern Atom a_MANAGER;
 extern Atom a_MOTIF_WM_HINTS;
 
 extern Atom a_LXPANELX_CMD; /* for private client message */
-extern Atom a_LXPANELX_TEXT_CMD;
+extern Atom a_WATERLINE_TEXT_CMD;
 
 extern Atom a_OB_THEME;
 

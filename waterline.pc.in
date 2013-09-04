@@ -4,8 +4,8 @@ libdir=@libdir@
 includedir=@includedir@
 datadir=@datadir@
 
-Name: lxpanelx
-Description: A lightweight X11 desktop panel
+Name: waterline
+Description: A framework for dektop widgets
 Requires: glib-2.0 libmenu-cache
 Version: @VERSION@
-Cflags: -I${includedir}/lxpanelx 
+Cflags: -I${includedir}/waterline 

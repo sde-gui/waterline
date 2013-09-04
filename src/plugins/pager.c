@@ -30,14 +30,14 @@
 
 #define PLUGIN_PRIV_TYPE PagerPlugin
 
-#include <lxpanelx/global.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/Xsupport.h>
-#include <lxpanelx/icon-grid.h>
+#include <waterline/global.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
+#include <waterline/Xsupport.h>
+#include <waterline/icon-grid.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 struct _task;
 struct _desk;

@@ -37,22 +37,22 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
 
-#include <lxpanelx/menu-cache-compat.h>
+#include <waterline/menu-cache-compat.h>
 
 #define PLUGIN_PRIV_TYPE LaunchbarPlugin
 
-#include <lxpanelx/global.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/paths.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/fb_button.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/icon-grid.h>
+#include <waterline/global.h>
+#include <waterline/panel.h>
+#include <waterline/paths.h>
+#include <waterline/misc.h>
+#include <waterline/fb_button.h>
+#include <waterline/plugin.h>
+#include <waterline/icon-grid.h>
 #include "menu-policy.h"
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
 #define PANEL_ICON_SIZE 24 /* icons size in configuration dialog. FIXME: read icon size from gtk */
 

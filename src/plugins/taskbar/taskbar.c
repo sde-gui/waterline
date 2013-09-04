@@ -40,18 +40,18 @@
 
 #define PLUGIN_PRIV_TYPE TaskbarPlugin
 
-#include <lxpanelx/gtkcompat.h>
-#include <lxpanelx/global.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/Xsupport.h>
+#include <waterline/gtkcompat.h>
+#include <waterline/global.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
+#include <waterline/Xsupport.h>
 #include "icon.xpm"
-#include <lxpanelx/icon-grid.h>
+#include <waterline/icon-grid.h>
 
 //#define DEBUG
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 /******************************************************************************/
 
@@ -582,7 +582,7 @@ static wtl_json_option_definition option_definitions[] = {
 
 /******************************************************************************/
 
-static Atom atom_LXPANEL_TASKBAR_WINDOW_POSITION;
+static Atom atom_WATERLINE_TASKBAR_WINDOW_POSITION;
 
 /******************************************************************************/
 
@@ -1043,7 +1043,7 @@ static void taskbar_update_x_window_position(TaskbarPlugin * tb)
             {
                 gint32 data = p;
                 XChangeProperty(gdk_x11_get_default_xdisplay(), tk->win,
-                    atom_LXPANEL_TASKBAR_WINDOW_POSITION,
+                    atom_WATERLINE_TASKBAR_WINDOW_POSITION,
                     XA_CARDINAL, 32, PropModeReplace, (guchar *) &data, 1);
             }
         }
@@ -5134,7 +5134,7 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
 /* Plugin constructor. */
 static int taskbar_constructor(Plugin * p)
 {
-    atom_LXPANEL_TASKBAR_WINDOW_POSITION = XInternAtom( gdk_x11_get_default_xdisplay(), "_LXPANEL_TASKBAR_WINDOW_POSITION", False );
+    atom_WATERLINE_TASKBAR_WINDOW_POSITION = XInternAtom( gdk_x11_get_default_xdisplay(), "_WATERLINE_TASKBAR_WINDOW_POSITION", False );
 
     /* Allocate plugin context and set into Plugin private data pointer. */
     TaskbarPlugin * tb = g_new0(TaskbarPlugin, 1);
@@ -5443,7 +5443,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 
         _("Hide buttons of visible applications from launchbar"), (gpointer)&tb->hide_from_launchbar, (GType)CONF_TYPE_BOOL,
         _("_NET_WM_ICON_GEOMETRY"), (gpointer)&tb->use_x_net_wm_icon_geometry, (GType)CONF_TYPE_BOOL,
-        _("_LXPANEL_TASKBAR_WINDOW_POSITION"), (gpointer)&tb->use_x_window_position, (GType)CONF_TYPE_BOOL,
+        _("_WATERLINE_TASKBAR_WINDOW_POSITION"), (gpointer)&tb->use_x_window_position, (GType)CONF_TYPE_BOOL,
 
         NULL);
 

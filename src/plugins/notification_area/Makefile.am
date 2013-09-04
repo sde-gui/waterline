@@ -28,7 +28,7 @@ notification_area_la_LIBADD = \
 
 notification_area_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+    @WATERLINE_MODULE@
 
 
 #noinst_PROGRAMS = testtray

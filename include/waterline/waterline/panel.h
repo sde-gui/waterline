@@ -17,8 +17,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELX_PANEL_H
-#define _LXPANELX_PANEL_H
+#ifndef __WATERLINE__PANEL_H
+#define __WATERLINE__PANEL_H
 
 #include <X11/Xlib.h>
 #include <gtk/gtk.h>

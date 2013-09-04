@@ -119,7 +119,7 @@ int main( int argc, char** argv )
             exit(1);
         }
         root = DefaultRootWindow(dpy);
-        cmd_atom = XInternAtom(dpy, "_LXPANELX_TEXT_CMD", False);
+        cmd_atom = XInternAtom(dpy, "_WATERLINE_TEXT_CMD", False);
 
         Atom type_atom = XInternAtom(dpy, "UTF8_STRING", False);
 

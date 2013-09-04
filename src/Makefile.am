@@ -2,7 +2,7 @@
 
 SUBDIRS = plugins libexec libconfigurator
 
-bin_PROGRAMS = lxpanelx lxpanelxctl
+bin_PROGRAMS = waterline waterlinectl
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -24,7 +24,7 @@ MENU_SOURCES = \
 	menu-policy.h menu-policy.c
 endif
 
-lxpanelx_SOURCES = \
+waterline_SOURCES = \
 	gdkrgba.c \
 	misc.c \
 	fb_button.c \
@@ -52,37 +52,37 @@ lxpanelx_SOURCES = \
 
 if BUILD_PLUGIN_LOADER
 DYNAMIC_FLAGS = -export-dynamic
-lxpanelx_includedir = $(pkgincludedir)/lxpanelx
-lxpanelx_include_HEADERS = \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/configparser.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/dbg.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/defaultapplications.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/ev.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/fb_button.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/global.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/gdkrgba.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/gtkcompat.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/menu-cache-compat.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/icon-grid.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/libfm.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/misc.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/panel.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/paths.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/pixbuf-stuff.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/plugin.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/typedef.h \
-	$(top_srcdir)/include/lxpanelx/lxpanelx/Xsupport.h
+waterline_includedir = $(pkgincludedir)/waterline
+waterline_include_HEADERS = \
+	$(top_srcdir)/include/waterline/waterline/configparser.h \
+	$(top_srcdir)/include/waterline/waterline/dbg.h \
+	$(top_srcdir)/include/waterline/waterline/defaultapplications.h \
+	$(top_srcdir)/include/waterline/waterline/ev.h \
+	$(top_srcdir)/include/waterline/waterline/fb_button.h \
+	$(top_srcdir)/include/waterline/waterline/global.h \
+	$(top_srcdir)/include/waterline/waterline/gdkrgba.h \
+	$(top_srcdir)/include/waterline/waterline/gtkcompat.h \
+	$(top_srcdir)/include/waterline/waterline/menu-cache-compat.h \
+	$(top_srcdir)/include/waterline/waterline/icon-grid.h \
+	$(top_srcdir)/include/waterline/waterline/libfm.h \
+	$(top_srcdir)/include/waterline/waterline/misc.h \
+	$(top_srcdir)/include/waterline/waterline/panel.h \
+	$(top_srcdir)/include/waterline/waterline/paths.h \
+	$(top_srcdir)/include/waterline/waterline/pixbuf-stuff.h \
+	$(top_srcdir)/include/waterline/waterline/plugin.h \
+	$(top_srcdir)/include/waterline/waterline/typedef.h \
+	$(top_srcdir)/include/waterline/waterline/Xsupport.h
 endif
-lxpanelx_LDFLAGS = $(DYNAMIC_FLAGS)
+waterline_LDFLAGS = $(DYNAMIC_FLAGS)
 
-lxpanelx_LDADD = \
+waterline_LDADD = \
 		$(BUILTIN_PLUGINS) \
 		$(PACKAGE_LIBS) \
 		$(X11_LIBS) \
 		$(INTLLIBS)
 
-lxpanelxctl_SOURCES = lxpanelxctl.c lxpanelxctl.h
-lxpanelxctl_LDADD = $(X11_LIBS) $(INTLLIBS)
+waterlinectl_SOURCES = lxpanelxctl.c lxpanelxctl.h
+waterlinectl_LDADD = $(X11_LIBS) $(INTLLIBS)
 
 
 EXTRA_DIST = \

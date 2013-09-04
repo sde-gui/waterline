@@ -16,4 +16,4 @@ cpufreq_la_LIBADD = \
 
 cpufreq_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+	@WATERLINE_MODULE@

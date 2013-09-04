@@ -31,14 +31,14 @@
 
 #define PLUGIN_PRIV_TYPE KeyboardLEDPlugin
 
-#include <lxpanelx/dbg.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/paths.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/icon-grid.h>
+#include <waterline/dbg.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/paths.h>
+#include <waterline/plugin.h>
+#include <waterline/icon-grid.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
 static const char * on_icons[] = {
     "capslock-on.png",

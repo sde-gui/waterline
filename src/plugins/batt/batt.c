@@ -45,12 +45,12 @@
 
 #define PLUGIN_PRIV_TYPE BatteryPlugin
 
-#include <lxpanelx/gtkcompat.h>
-#include <lxpanelx/dbg.h>
+#include <waterline/gtkcompat.h>
+#include <waterline/dbg.h>
 #include "batt_sys.h"
-#include <lxpanelx/misc.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/plugin.h>
+#include <waterline/misc.h>
+#include <waterline/panel.h>
+#include <waterline/plugin.h>
 
 /* The last MAX_SAMPLES samples are averaged when charge rates are evaluated.
    This helps prevent spikes in the "time left" values the user sees. */

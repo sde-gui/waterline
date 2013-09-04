@@ -28,7 +28,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
-#include <lxpanelx/menu-cache-compat.h>
+#include <waterline/menu-cache-compat.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -37,17 +37,17 @@
 
 #define PLUGIN_PRIV_TYPE menup
 
-#include <lxpanelx/gtkcompat.h>
-#include <lxpanelx/global.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/fb_button.h>
+#include <waterline/gtkcompat.h>
+#include <waterline/global.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
+#include <waterline/fb_button.h>
 #include "bg.h"
 #include "menu-policy.h"
 #include "commands.h"
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 extern void gtk_run(void); /* FIXME! */
 

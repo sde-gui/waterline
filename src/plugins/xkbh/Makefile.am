@@ -2,13 +2,13 @@ xkbh_la_CFLAGS = \
 	-I. \
 	-I$(top_srcdir)/src \
 	$(PACKAGE_CFLAGS) \
-	-DFLAGSDIR=\"$(datadir)/lxpanelx/images/xkb-flags\" \
-	-DFLAGSCUSTDIR=\"$(datadir)/lxpanelx/images/xkb-flags-cust\" \
-	-DXKBCONFDIR=\"$(datadir)/lxpanelx/xkeyboardconfig\" \
+	-DFLAGSDIR=\"$(datadir)/waterline/images/xkb-flags\" \
+	-DFLAGSCUSTDIR=\"$(datadir)/waterline/images/xkb-flags-cust\" \
+	-DXKBCONFDIR=\"$(datadir)/waterline/xkeyboardconfig\" \
 	$(G_CAST_CHECKS)
 
 module_LTLIBRARIES = xkbh.la
-moduledir = $(libdir)/lxpanelx/plugins
+moduledir = $(libdir)/waterline/plugins
 
 xkbh_la_SOURCES = \
 	xkbh-plugin.c \
@@ -20,14 +20,14 @@ xkbh_la_LIBADD = \
 
 xkbh_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+    @WATERLINE_MODULE@
 
-xkeyboardconfigdir=$(datadir)/lxpanelx/xkeyboardconfig
+xkeyboardconfigdir=$(datadir)/waterline/xkeyboardconfig
 xkeyboardconfig_DATA=xkeyboardconfig/models.cfg \
 	xkeyboardconfig/layouts.cfg \
 	xkeyboardconfig/toggle.cfg
 
-flagsdir=$(datadir)/lxpanelx/images/xkb-flags
+flagsdir=$(datadir)/waterline/images/xkb-flags
 flags_DATA= \
 	flags/ad.png \
 	flags/ae.png \

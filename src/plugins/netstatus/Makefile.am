@@ -29,7 +29,7 @@ netstatus_la_LIBADD = \
 
 netstatus_la_LDFLAGS = \
 	-module \
-	$(LXPANELX_MODULE)
+    @WATERLINE_MODULE@
 
 #install-exec-hook:
 #	rm -f "$(moduledir)\*.la" *.a

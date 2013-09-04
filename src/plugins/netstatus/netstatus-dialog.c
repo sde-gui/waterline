@@ -25,8 +25,8 @@
 #  include <config.h>
 #endif
 
-#include <lxpanelx/paths.h>
-#include <lxpanelx/misc.h>
+#include <waterline/paths.h>
+#include <waterline/misc.h>
 
 #include <gtk/gtk.h>
 

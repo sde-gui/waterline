@@ -16,6 +16,6 @@ volumealsa_la_LIBADD = -lasound $(PACKAGE_LIBS)
 
 volumealsa_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+    @WATERLINE_MODULE@
 
 endif

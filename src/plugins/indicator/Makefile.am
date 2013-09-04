@@ -20,4 +20,4 @@ indicator_la_LIBADD = \
 
 indicator_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+	@WATERLINE_MODULE@

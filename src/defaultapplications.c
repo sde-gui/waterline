@@ -20,10 +20,10 @@
 #include <config.h>
 #endif
 
-#include <lxpanelx/defaultapplications.h>
-#include <lxpanelx/paths.h>
-#include <lxpanelx/dbg.h>
-#include <lxpanelx/misc.h>
+#include <waterline/defaultapplications.h>
+#include <waterline/paths.h>
+#include <waterline/dbg.h>
+#include <waterline/misc.h>
 
 /********************************************************************/
 

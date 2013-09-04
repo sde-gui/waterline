@@ -277,11 +277,11 @@ static gboolean applet_factory(MatePanelApplet* applet, const gchar* iid, gpoint
 
 #define PLUGIN_PRIV_TYPE NAPlugin
 
-#include <lxpanelx/gtkcompat.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/Xsupport.h>
+#include <waterline/gtkcompat.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
+#include <waterline/Xsupport.h>
 //#include "bg.h"
 
 #include "na-tray-manager.h"

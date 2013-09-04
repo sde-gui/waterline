@@ -16,16 +16,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <lxpanelx/global.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
+#include <waterline/global.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
 
 #include <glib/gi18n.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
 static int separator_constructor(Plugin * p);
 static void separator_destructor(Plugin * p);

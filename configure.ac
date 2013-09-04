@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(lxpanelx, 0.6.0-alpha, http://code.google.com/p/lxpanelx/)
+AC_INIT(waterline, 0.6.0-alpha, http://dev.make-linux.org/projects/waterline)
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE([enable])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
@@ -95,7 +95,7 @@ AC_DEFINE_UNQUOTED([MENU_CACHE_MAJOR_VERSION],[$MENU_CACHE_MAJOR_VERSION], [-])
 AC_DEFINE_UNQUOTED([MENU_CACHE_MINOR_VERSION],[$MENU_CACHE_MINOR_VERSION], [-])
 AC_DEFINE_UNQUOTED([MENU_CACHE_MICRO_VERSION],[$MENU_CACHE_MICRO_VERSION], [-])
 
-PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"' -I$(top_srcdir)/include/lxpanelx/'
+PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"' -I$(top_srcdir)/include/waterline/'
 PACKAGE_LIBS="$PACKAGE_LIBS $MENU_CACHE_LIBS -lutil"
 
 # libfm
@@ -216,15 +216,15 @@ if test ! -z "$LDFLAGS"; then
     LDFLAGS=`echo "$LDFLAGS" | sed -e 's/-Wl,-z,defs//'`
 fi
 
-LXPANELX_MODULE="-avoid-version \
+WATERLINE_MODULE="-avoid-version \
 -rpath \$(pkglibdir)/plugins \
 -no-undefined "'-export-symbols-regex "^[[^_]].*"'
-AC_SUBST(LXPANELX_MODULE)
+AC_SUBST(WATERLINE_MODULE)
 
-LXPANELX_INTERNAL_MODULE="-avoid-version \
+WATERLINE_INTERNAL_MODULE="-avoid-version \
 -rpath \$(pkglibdir)/internals \
 -no-undefined "'-export-symbols-regex "^[[^_]].*"'
-AC_SUBST(LXPANELX_INTERNAL_MODULE)
+AC_SUBST(WATERLINE_INTERNAL_MODULE)
 
 
 AC_ARG_ENABLE([alsa],
@@ -359,7 +359,7 @@ AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([bzero memset mkdir setlocale strchr])
 
 
-GETTEXT_PACKAGE=lxpanelx
+GETTEXT_PACKAGE=waterline
 #AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.14.1)
 AC_SUBST(GETTEXT_PACKAGE)
@@ -384,7 +384,7 @@ fi
 AM_CONDITIONAL(ENABLE_REGENERATE_MAN, test "x$enable_man" != "xno")
 
 AC_CONFIG_FILES([
-    lxpanelx.pc
+    waterline.pc
     Makefile
     src/Makefile
     src/libconfigurator/Makefile
@@ -407,13 +407,12 @@ AC_CONFIG_FILES([
     po/Makefile.in
     data/Makefile
     data/template/panels/panel.panel
-    man/Makefile
 ])
 AC_OUTPUT
 
 
 echo
-echo lxpanelx ........................ : Version $VERSION
+echo waterline........................ : Version $VERSION
 echo
 echo Prefix........................... : $prefix
 if test x$plugins_loading = xyes; then
@@ -475,10 +474,4 @@ echo "X11_LIBS           =  $X11_LIBS"
 echo "MENU_CACHE_VERSION =  $MENU_CACHE_VERSION"
 echo "LDFLAGS            =  $LDFLAGS"
 echo "CFLAGS             =  $CFLAGS"
-
-#echo
-#echo 'LXPanelX requires menu-cache and lxmenu-data packages since'
-#echo 'version 0.4.0. Please make sure they are correctly installed.'
-#echo 'Otherwise, you will not be able to use applications menu.'
-#echo
 

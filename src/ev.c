@@ -31,13 +31,13 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
-#include <lxpanelx/Xsupport.h>
+#include <waterline/Xsupport.h>
 
-#include <lxpanelx/ev.h>
-#include <lxpanelx/misc.h>
+#include <waterline/ev.h>
+#include <waterline/misc.h>
 
 //#define DEBUG
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 
 struct _FbEvClass {

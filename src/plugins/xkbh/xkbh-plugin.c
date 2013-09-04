@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 #include "xkbh.h"
 
 

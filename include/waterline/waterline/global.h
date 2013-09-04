@@ -1,5 +1,6 @@
 /**
- * Copyright (c) 2012 Vadim Ushakov
+ * Copyright (c) 2011-2012 Vadim Ushakov
+ * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +17,32 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELX_DEFAULT_APPLICATIONS_H
-#define _LXPANELX_DEFAULT_APPLICATIONS_H
+#ifndef __WATERLINE__GLOBAL_H
+#define __WATERLINE__GLOBAL_H
 
-char * get_default_application(char * type);
+#include <X11/Xlib.h>
+#include <gtk/gtk.h>
+#include <gdk/gdk.h>
+
+#include "config.h"
+
+#include "ev.h"
+
+extern int verbose;
+
+extern FbEv *fbev;
+
+extern void panel_apply_icon(GtkWindow *w);
+
+extern int panel_handle_x_error(Display * d, XErrorEvent * ev);
+extern int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent * ev);
+
+extern GSList * get_all_panels(void);
+
+extern const char* lxpanel_get_logout_command();
+extern const char* lxpanel_get_file_manager();
+extern const char* lxpanel_get_terminal();
+
+int lxpanel_is_in_kiosk_mode(void);
 
 #endif

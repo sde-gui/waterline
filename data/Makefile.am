@@ -30,7 +30,7 @@ ui_DATA = \
 uidir=$(pkgdatadir)/ui
 
 
-lxpanelx_images_DATA = \
+waterline_images_DATA = \
 	images/my-computer.png \
 	images/stock_volume.png \
 	images/file-manager.png \
@@ -66,14 +66,14 @@ lxpanelx_images_DATA = \
 	images/cpufreq-icon.png
 
 
-lxpanelx_imagesdir = $(pkgdatadir)/images
+waterline_imagesdir = $(pkgdatadir)/images
 
 
 
 EXTRA_DIST = \
 	template/panels/panel.panel.in \
-	$(lxpanelx_DATA) \
-	$(lxpanelx_images_DATA) \
+	$(waterline_DATA) \
+	$(waterline_images_DATA) \
 	$(ui_DATA) \
 	$(template_config_DATA) \
 	$(template_applications_DATA) \

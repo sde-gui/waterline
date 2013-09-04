@@ -19,4 +19,4 @@ batt_la_LIBADD = \
 
 batt_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+	@WATERLINE_MODULE@

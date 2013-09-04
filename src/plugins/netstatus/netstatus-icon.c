@@ -22,8 +22,8 @@
 
 #include <config.h>
 
-#include <lxpanelx/misc.h>
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/misc.h>
+#include <waterline/gtkcompat.h>
 #include "netstatus-icon.h"
 
 #include <gtk/gtk.h>

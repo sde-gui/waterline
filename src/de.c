@@ -20,7 +20,7 @@
 #include <config.h>
 #endif
 
-#include <lxpanelx/misc.h>
+#include <waterline/misc.h>
 #include <glib.h>
 
 static char * de_name = NULL;

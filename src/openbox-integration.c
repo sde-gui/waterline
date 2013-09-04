@@ -21,8 +21,8 @@
 #endif
 
 #include <gtk/gtk.h>
-#include <lxpanelx/Xsupport.h>
-#include <lxpanelx/misc.h>
+#include <waterline/Xsupport.h>
+#include <waterline/misc.h>
 
 gchar * ob_get_current_theme(void)
 {

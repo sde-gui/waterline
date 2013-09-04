@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 #include "xkb.h"
 
 void panel_config_save(Panel * panel);   /* defined in configurator.c */

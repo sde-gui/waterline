@@ -27,9 +27,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <lxpanelx/Xsupport.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/menu-cache-compat.h>
+#include <waterline/Xsupport.h>
+#include <waterline/misc.h>
+#include <waterline/menu-cache-compat.h>
 
 static GtkWidget* win = NULL; /* the run dialog */
 static MenuCache* menu_cache = NULL;

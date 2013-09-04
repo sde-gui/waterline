@@ -26,14 +26,14 @@
 
 #define PLUGIN_PRIV_TYPE XkbPlugin
 
-#include <lxpanelx/global.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/paths.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/ev.h>
+#include <waterline/global.h>
+#include <waterline/plugin.h>
+#include <waterline/misc.h>
+#include <waterline/paths.h>
+#include <waterline/panel.h>
+#include <waterline/ev.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 
 typedef enum {

@@ -17,10 +17,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELX_PLUGIN_PRIVATE_H
-#define _LXPANELX_PLUGIN_PRIVATE_H
+#ifndef __WATERLINE__PLUGIN_PRIVATE_H
+#define __WATERLINE__PLUGIN_PRIVATE_H
 
-#include <lxpanelx/plugin.h>
+#include <waterline/plugin.h>
 
 struct _PluginClassInternal {
     char * fname;				/* Plugin file pathname */

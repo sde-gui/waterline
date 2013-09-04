@@ -17,10 +17,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <lxpanelx/configparser.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/dbg.h>
+#include <waterline/configparser.h>
+#include <waterline/misc.h>
+#include <waterline/panel.h>
+#include <waterline/dbg.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>

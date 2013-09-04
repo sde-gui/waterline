@@ -30,14 +30,14 @@
 
 #define PLUGIN_PRIV_TYPE CPUPlugin
 
-#include <lxpanelx/gtkcompat.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
+#include <waterline/gtkcompat.h>
+#include <waterline/plugin.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
 
 #define BORDER_SIZE 0
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 typedef unsigned long long CPUTick;			/* Value from /proc/stat */
 

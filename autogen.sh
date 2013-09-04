@@ -10,7 +10,7 @@ if [   "$AM_INSTALLED_VERSION" != "1.10" \
     -a "$AM_INSTALLED_VERSION" != "1.13" \
     -a "$AM_INSTALLED_VERSION" != "1.14" ] ; then
 	echo
-	echo "You must have automake 1.10..1.14 installed to compile lxpanelx."
+	echo "You must have automake 1.10..1.14 installed to compile waterline."
 	echo "Install the appropriate package for your distribution,"
 	echo "or get the source tarball at http://ftp.gnu.org/gnu/automake/"
 	exit 1

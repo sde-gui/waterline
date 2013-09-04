@@ -17,8 +17,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELX_FBBUTTON_H
-#define _LXPANELX_FBBUTTON_H
+#ifndef __WATERLINE__FBBUTTON_H
+#define __WATERLINE__FBBUTTON_H
 
 #include "typedef.h"
 

@@ -29,15 +29,15 @@
 
 #define PLUGIN_PRIV_TYPE DesknoPlugin
 
-#include <lxpanelx/global.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/Xsupport.h>
+#include <waterline/global.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
+#include <waterline/Xsupport.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 /* Private context for desktop number plugin. */
 typedef struct {

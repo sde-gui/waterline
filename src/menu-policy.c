@@ -19,10 +19,10 @@
 #include <menu-cache.h>
 #include <glib.h>
 
-#include <lxpanelx/global.h>
+#include <waterline/global.h>
 #include "menu-policy.h"
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
 
 guint32 visibility_flags = 0;
 

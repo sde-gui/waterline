@@ -16,4 +16,4 @@ deskno_la_LIBADD = \
 
 deskno_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+	@WATERLINE_MODULE@

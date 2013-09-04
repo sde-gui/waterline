@@ -28,13 +28,13 @@
 
 #define PLUGIN_PRIV_TYPE VolumeALSAPlugin
 
-#include <lxpanelx/defaultapplications.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/gtkcompat.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/paths.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/dbg.h>
+#include <waterline/defaultapplications.h>
+#include <waterline/panel.h>
+#include <waterline/gtkcompat.h>
+#include <waterline/misc.h>
+#include <waterline/paths.h>
+#include <waterline/plugin.h>
+#include <waterline/dbg.h>
 
 typedef struct {
 

@@ -16,7 +16,7 @@ taskbar_la_LIBADD = \
 
 taskbar_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+    @WATERLINE_MODULE@
 
 EXTRA_DIST = \
 	icon.xpm

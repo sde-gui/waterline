@@ -24,13 +24,13 @@
 
 #define PLUGIN_PRIV_TYPE netstatus
 
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 #include "netstatus-icon.h"
 #include "netstatus-dialog.h"

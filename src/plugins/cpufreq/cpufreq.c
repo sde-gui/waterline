@@ -29,12 +29,12 @@
 
 #define PLUGIN_PRIV_TYPE cpufreq
 
-#include <lxpanelx/panel.h>
-#include <lxpanelx/paths.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/gtkcompat.h>
-#include <lxpanelx/dbg.h>
+#include <waterline/panel.h>
+#include <waterline/paths.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
+#include <waterline/gtkcompat.h>
+#include <waterline/dbg.h>
 
 #define SYSFS_CPU_DIRECTORY "/sys/devices/system/cpu"
 #define SCALING_GOV         "scaling_governor"

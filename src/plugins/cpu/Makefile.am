@@ -16,4 +16,4 @@ cpu_la_LIBADD = \
 
 cpu_la_LDFLAGS = \
 	-module \
-	@LXPANELX_MODULE@
+	@WATERLINE_MODULE@

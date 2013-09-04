@@ -22,15 +22,15 @@
 #include "config.h"
 #endif
 
-#include <lxpanelx/global.h>
+#include <waterline/global.h>
 #include "plugin_internal.h"
 #include "plugin_private.h"
-#include <lxpanelx/panel.h>
+#include <waterline/panel.h>
 #include "panel_internal.h"
 #include "panel_private.h"
-#include <lxpanelx/paths.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/defaultapplications.h>
+#include <waterline/paths.h>
+#include <waterline/misc.h>
+#include <waterline/defaultapplications.h>
 #include "bg.h"
 #include <stdlib.h>
 #include <sys/types.h>
@@ -39,7 +39,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 static gboolean initialized = FALSE;
 
@@ -68,12 +68,12 @@ static void load_implementation(void)
 
     if (!g_module_symbol(m, "panel_configure", (gpointer*) &_panel_configure))
     {
-        ERR("%s.so is not a lxpanelx plugin: symbol %s not found\n", path, "panel_configure");
+        ERR("%s: symbol %s not found\n", path, "panel_configure");
     }
 
     if (!g_module_symbol(m, "configurator_remove_plugin_from_list", (gpointer*) &_configurator_remove_plugin_from_list))
     {
-        ERR("%s.so is not a lxpanelx plugin: symbol %s not found\n", path, "configurator_remove_plugin_from_list");
+        ERR("%s: symbol %s not found\n", path, "configurator_remove_plugin_from_list");
     }
 
 err:

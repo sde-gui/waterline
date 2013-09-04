@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = src data po man
+SUBDIRS = src data po
 
 EXTRA_DIST = \
 	autogen.sh \
@@ -8,10 +8,10 @@ EXTRA_DIST = \
         intltool-extract.in \
         intltool-merge.in \
         intltool-update.in \
-        lxpanelx.pc.in
+        waterline.pc.in
 
 pkgconfigdir   = $(libdir)/pkgconfig
-pkgconfig_DATA = lxpanelx.pc
+pkgconfig_DATA = waterline.pc
 
 ##desktopdir = $(datadir)/applications
 ##desktop_DATA = pcmanfm.desktop

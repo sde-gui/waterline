@@ -17,15 +17,15 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELX_PANEL_INTERNAL_H
-#define _LXPANELX_PANEL_INTERNAL_H
+#ifndef __WATERLINE__PANEL_INTERNAL_H
+#define __WATERLINE__PANEL_INTERNAL_H
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
 #include "config.h"
 
-#include <lxpanelx/typedef.h>
+#include <waterline/typedef.h>
 
 #define PANEL_HEIGHT_MAX              200	/* Maximum height of panel */
 #define PANEL_HEIGHT_MIN              16	/* Minimum height of panel */

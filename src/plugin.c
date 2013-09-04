@@ -29,8 +29,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <lxpanelx/paths.h>
-#include <lxpanelx/misc.h>
+#include <waterline/paths.h>
+#include <waterline/misc.h>
 #include "bg.h"
 #include "panel_internal.h"
 #include "panel_private.h"
@@ -38,7 +38,7 @@
 #include <glib-object.h>
 
 //#define DEBUG
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 static GList * pcl = NULL;			/* List of PluginClass structures */
 

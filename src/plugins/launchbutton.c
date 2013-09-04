@@ -35,13 +35,13 @@
 
 #define PLUGIN_PRIV_TYPE lb_t
 
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/fb_button.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/fb_button.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 struct _lb_t;
 

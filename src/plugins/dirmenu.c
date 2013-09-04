@@ -34,14 +34,14 @@
 
 #define PLUGIN_PRIV_TYPE DirMenuPlugin
 
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/fb_button.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/libfm.h>
-#include <lxpanelx/dbg.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/fb_button.h>
+#include <waterline/plugin.h>
+#include <waterline/libfm.h>
+#include <waterline/dbg.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
 enum {
     SORT_BY_NAME,

@@ -20,8 +20,8 @@
 #include <config.h>
 #endif
 
-#include <lxpanelx/dbg.h>
-#include <lxpanelx/libfm.h>
+#include <waterline/dbg.h>
+#include <waterline/libfm.h>
 
 #include <gtk/gtk.h>
 

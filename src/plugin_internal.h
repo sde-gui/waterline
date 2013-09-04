@@ -17,10 +17,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELX_PLUGIN_INTERNAL_H
-#define _LXPANELX_PLUGIN_INTERNAL_H
+#ifndef __WATERLINE__PLUGIN_INTERNAL_H
+#define __WATERLINE__PLUGIN_INTERNAL_H
 
-#include <lxpanelx/plugin.h>
+#include <waterline/plugin.h>
 
 //#pragma GCC visibility push(hidden)
 

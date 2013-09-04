@@ -27,11 +27,11 @@
 
 #define PLUGIN_PRIV_TYPE volume_t
 
-#include <lxpanelx/panel.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/plugin.h>
+#include <waterline/panel.h>
+#include <waterline/misc.h>
+#include <waterline/plugin.h>
 
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 #include "volume-impl.h"
 

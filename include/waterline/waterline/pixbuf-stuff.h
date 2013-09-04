@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PIXBUF_STUFF_H
-#define PIXBUF_STUFF_H
+#ifndef __WATERLINE__PIXBUF_STUFF_H
+#define __WATERLINE__PIXBUF_STUFF_H
 
 #include <gdk/gdk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>

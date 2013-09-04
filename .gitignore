@@ -5,8 +5,8 @@
 *.deps/
 *.libs/
 Makefile
-/src/lxpanelx
-/src/lxpanelxctl
+/src/waterline
+/src/waterlinectl
 /src/plugins/libbuiltin_plugins.a
 /data/template/panels/panel.panel
 /po/*.gmo
@@ -18,7 +18,7 @@ Makefile
 /config.log
 /config.status
 /libtool
-/lxpanelx.pc
+/waterline.pc
 
 Makefile.in
 /aclocal.m4

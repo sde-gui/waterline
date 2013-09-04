@@ -16,36 +16,19 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LXPANELX_PATHS_H
-#define _LXPANELX_PATHS_H
+#ifndef __WATERLINE__TYPEDEF_H
+#define __WATERLINE__TYPEDEF_H
 
-#include <gtk/gtk.h>
+struct _Plugin;
+typedef struct _Plugin Plugin;
 
-typedef enum _RESOURCE_TYPE
-{
-    RESOURCE_LIB,
-    RESOURCE_LIBEXEC,
-    RESOURCE_DATA,
-    RESOURCE_LOCALE
-} RESOURCE_TYPE;
+struct _PluginClass;
+typedef struct _PluginClass PluginClass;
 
-extern gchar * get_resource_path(RESOURCE_TYPE restype, ...);
-extern gchar * get_private_resource_path(RESOURCE_TYPE restype, ...);
+struct _PluginClassInternal;
+typedef struct _PluginClassInternal PluginClassInternal;
 
-
-typedef enum _CONFIG_TYPE
-{
-    CONFIG_SYSTEM,
-    CONFIG_USER,
-    CONFIG_USER_W
-} CONFIG_TYPE;
-
-extern gchar * get_config_path(const char * file_name, CONFIG_TYPE config_type);
-
-#include "typedef.h"
-
-/* Placed here to minimize dependencies between headers. */
-extern gchar * plugin_get_config_path(Plugin * plugin, const char * file_name, CONFIG_TYPE config_type);
-
+struct _Panel;
+typedef struct _Panel Panel;
 
 #endif

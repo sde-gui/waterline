@@ -22,8 +22,8 @@
 
 #include <string.h>
 
-#include <lxpanelx/paths.h>
-#include <lxpanelx/dbg.h>
+#include <waterline/paths.h>
+#include <waterline/dbg.h>
 
 /********************************************************************/
 

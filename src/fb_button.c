@@ -38,15 +38,15 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include <lxpanelx/fb_button.h>
-#include <lxpanelx/global.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/panel.h>
+#include <waterline/fb_button.h>
+#include <waterline/global.h>
+#include <waterline/misc.h>
+#include <waterline/panel.h>
 #include "panel_internal.h"
-#include <lxpanelx/Xsupport.h>
-#include <lxpanelx/dbg.h>
+#include <waterline/Xsupport.h>
+#include <waterline/dbg.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
 /********************************************************************/
 

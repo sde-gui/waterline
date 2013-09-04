@@ -21,8 +21,8 @@
 #define PANEL_PRIVATE_H
 
 #include <jansson.h>
-#include <lxpanelx/typedef.h>
-#include <lxpanelx/configparser.h>
+#include <waterline/typedef.h>
+#include <waterline/configparser.h>
 #include "bg.h"
 
 

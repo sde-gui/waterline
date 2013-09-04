@@ -23,7 +23,7 @@
  */
 
 //#include "config.h"
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 #include <string.h>
 #include <errno.h>
 #include <math.h>

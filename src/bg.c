@@ -34,7 +34,7 @@
 #include "bg.h"
 
 //#define DEBUG
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
 
 enum {

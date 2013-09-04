@@ -22,21 +22,21 @@
 
 #include <glib/gi18n.h>
 
-#include <lxpanelx/global.h>
+#include <waterline/global.h>
 #include "plugin_internal.h"
 #include "plugin_private.h"
-#include <lxpanelx/paths.h>
-#include <lxpanelx/panel.h>
+#include <waterline/paths.h>
+#include <waterline/panel.h>
 #include "panel_internal.h"
 #include "panel_private.h"
-#include <lxpanelx/misc.h>
+#include <waterline/misc.h>
 #include "bg.h"
-#include <lxpanelx/Xsupport.h>
+#include <waterline/Xsupport.h>
 
 #include "lxpanelxctl.h"
-#include <lxpanelx/dbg.h>
+#include <waterline/dbg.h>
 
-#include <lxpanelx/gtkcompat.h>
+#include <waterline/gtkcompat.h>
 
 /******************************************************************************/
 

@@ -24,7 +24,7 @@
 
 #include <gtk/gtk.h>
 
-#include <lxpanelx/icon-grid.h>
+#include <waterline/icon-grid.h>
 
 #include "na-tray-manager.h"
 #include "fixedtip.h"

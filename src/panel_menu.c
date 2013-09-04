@@ -33,7 +33,6 @@
 #include "bg.h"
 #include <waterline/Xsupport.h>
 
-#include "lxpanelxctl.h"
 #include <waterline/dbg.h>
 
 #include <waterline/gtkcompat.h>

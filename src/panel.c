@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011 Vadim Ushakov
+ * Copyright (c) 2011-2013 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,6 @@
 #include "bg.h"
 #include <waterline/Xsupport.h>
 
-#include "lxpanelxctl.h"
 #include <waterline/dbg.h>
 
 #include <waterline/gtkcompat.h>
@@ -821,31 +820,6 @@ static void process_command(char ** argv, int argc)
         g_mem_profile();
 }
 
-#if 0
-static void process_client_msg ( XClientMessageEvent* ev )
-{
-    int cmd = ev->data.b[0];
-    switch( cmd )
-    {
-        case LXPANELX_CMD_SYS_MENU:
-            cmd_menu(0, 0);
-            break;
-        case LXPANELX_CMD_RUN:
-            cmd_run(0, 0);
-            break;
-        case LXPANELX_CMD_CONFIG:
-            cmd_config(0, 0);
-            break;
-        case LXPANELX_CMD_RESTART:
-            cmd_restart(0, 0);
-            break;
-        case LXPANELX_CMD_EXIT:
-            cmd_exit(0, 0);
-            break;
-    }
-}
-#endif
-
 /******************************************************************************/
 
 /*= panel's handlers for WM events =*/
@@ -863,12 +837,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
 
     if (ev->type != PropertyNotify )
     {
-        /* private client message from lxpanelxctl */
-/*        if( ev->type == ClientMessage && ev->xproperty.atom == a_LXPANELX_CMD )
-        {
-            process_client_msg( (XClientMessageEvent*)ev );
-        }
-        else*/ if( ev->type == DestroyNotify )
+        if( ev->type == DestroyNotify )
         {
             fb_ev_emit_destroy( fbev, ((XDestroyWindowEvent*)ev)->window );
         }

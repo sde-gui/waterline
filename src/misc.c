@@ -185,7 +185,8 @@ static char* translate_app_exec_to_command_line( const char* pexec,
                     file = g_shell_quote( tmp );
                     g_free( tmp );
                     g_string_append( cmd, file );
-                    g_string_append_c( cmd, ' ' );
+                    if (l->next)
+                        g_string_append_c( cmd, ' ' );
                     g_free( file );
                 }
                 add_files = TRUE;
@@ -209,7 +210,8 @@ static char* translate_app_exec_to_command_line( const char* pexec,
                     file = (char*)l->data;
                     tmp = g_shell_quote( file );
                     g_string_append( cmd, tmp );
-                    g_string_append_c( cmd, ' ' );
+                    if (l->next)
+                        g_string_append_c( cmd, ' ' );
                     g_free( tmp );
                 }
                 add_files = TRUE;
@@ -232,7 +234,8 @@ static char* translate_app_exec_to_command_line( const char* pexec,
                     file = g_shell_quote( tmp );
                     g_free( tmp );
                     g_string_append( cmd, file );
-                    g_string_append_c( cmd, ' ' );
+                    if (l->next)
+                        g_string_append_c( cmd, ' ' );
                     g_free( file );
                 }
                 add_files = TRUE;
@@ -285,13 +288,12 @@ static char* translate_app_exec_to_command_line( const char* pexec,
 _finish:
     if( ! add_files )
     {
-        g_string_append_c ( cmd, ' ' );
         for( l = file_list; l; l = l->next )
         {
+            g_string_append_c( cmd, ' ' );
             file = (char*)l->data;
             tmp = g_shell_quote( file );
             g_string_append( cmd, tmp );
-            g_string_append_c( cmd, ' ' );
             g_free( tmp );
         }
     }

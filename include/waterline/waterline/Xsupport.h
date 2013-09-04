@@ -148,7 +148,6 @@ extern Atom a_MANAGER;
 
 extern Atom a_MOTIF_WM_HINTS;
 
-extern Atom a_LXPANELX_CMD; /* for private client message */
 extern Atom a_WATERLINE_TEXT_CMD;
 
 extern Atom a_OB_THEME;

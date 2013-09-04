@@ -94,7 +94,6 @@ Atom a_MANAGER;
 
 Atom a_MOTIF_WM_HINTS;
 
-Atom a_LXPANELX_CMD; /* for private client message */
 Atom a_WATERLINE_TEXT_CMD;
 
 Atom a_OB_THEME;
@@ -162,7 +161,6 @@ enum{
 
     I_MOTIF_WM_HINTS,
 
-    I_LXPANELX_CMD,
     I_WATERLINE_TEXT_CMD,
 
     I_OB_THEME,
@@ -234,7 +232,6 @@ void resolve_atoms()
 
     atom_names[ I_MOTIF_WM_HINTS ] = "_MOTIF_WM_HINTS";
 
-    atom_names[ I_LXPANELX_CMD ] = "_LXPANELX_CMD";
     atom_names[ I_WATERLINE_TEXT_CMD ] = "_WATERLINE_TEXT_CMD";
 
     atom_names[ I_OB_THEME ] = "_OB_THEME";
@@ -322,7 +319,6 @@ void resolve_atoms()
 
     a_MOTIF_WM_HINTS = atoms[ I_MOTIF_WM_HINTS ];
 
-    a_LXPANELX_CMD = atoms[ I_LXPANELX_CMD ];
     a_WATERLINE_TEXT_CMD = atoms[ I_WATERLINE_TEXT_CMD ];
 
     a_OB_THEME = atoms[ I_OB_THEME ];

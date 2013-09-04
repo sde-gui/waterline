@@ -456,6 +456,10 @@ static int dclock_constructor(Plugin * p)
     plugin_set_priv(p, dc);
     dc->plugin = p;
 
+    /* Initialize the clock display. */
+    dc->clock_format = g_strdup(_(DEFAULT_CLOCK_FORMAT));
+    dc->tooltip_format = g_strdup(_(DEFAULT_TIP_FORMAT));
+
     wtl_json_read_options(plugin_inner_json(p), option_definitions, dc);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
@@ -483,11 +487,6 @@ static int dclock_constructor(Plugin * p)
     /* Connect signals. */
     g_signal_connect(G_OBJECT (pwid), "button_press_event", G_CALLBACK(dclock_button_press_event), (gpointer) p);
 
-    /* Initialize the clock display. */
-    if (dc->clock_format == NULL)
-        dc->clock_format = g_strdup(DEFAULT_CLOCK_FORMAT);
-    if (dc->tooltip_format == NULL)
-        dc->tooltip_format = g_strdup(DEFAULT_TIP_FORMAT);
     dclock_apply_configuration(p);
 
     /* Show the widget and return. */

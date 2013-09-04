@@ -2397,7 +2397,7 @@ int main(int argc, char *argv[], char *env[])
 
     /* Check for duplicated instances */
     if (!check_main_lock()) {
-        printf("There is already an instance of LXPanelX.  Now to exit\n");
+        printf("There is already an instance of waterline.  Now to exit\n");
         exit(2);
     }
 

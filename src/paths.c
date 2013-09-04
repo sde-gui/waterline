@@ -101,7 +101,7 @@ again:
 
     if (config_type == CONFIG_USER || config_type == CONFIG_USER_W)
     {
-        gchar * result = g_build_filename(g_get_user_config_dir(), "lxpanelx" , profile, file_name, NULL);
+        gchar * result = g_build_filename(g_get_user_config_dir(), "sde", "waterline" , profile, file_name, NULL);
         if (config_type == CONFIG_USER_W)
         {
             gchar * dirname = g_path_get_dirname(result);
@@ -119,7 +119,7 @@ again:
 
     for (; *dirs; dirs++)
     {
-        gchar * result = g_build_filename(*dirs, "lxpanelx", profile, file_name, NULL);
+        gchar * result = g_build_filename(*dirs, "sde", "waterline" , profile, file_name, NULL);
         if (g_file_test(result, G_FILE_TEST_EXISTS))
             return result;
         g_free(result);

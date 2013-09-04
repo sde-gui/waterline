@@ -1,13 +1,13 @@
-LXPanelX - Lightweight X11 desktop panel
-  http://code.google.com/p/lxpanelx/
+Waterline - A lightweight framework for desktop widgets and applets
+  http://dev.make-linux.org/projects/waterline
 
 [Developers]
   Vadim Ushakov (geekless)  <igeekless@gmail.com>
 
 [History]
-LXPanelX is a derivative work from LXPanel [1].
+Waterline is a derivative work from LXPanel [1].
 LXPanel, in turn, is a fork of fbpanel [2] written by Anatoly Asviyan,
-and fbpanel is derived from another project, fspanel [3], originally 
+and fbpanel is derived from another project, fspanel [3], originally
 written by Peter Zelezny.
 
 [Credits]
@@ -20,12 +20,6 @@ written by Peter Zelezny.
   Daniel Kesler <kesler.daniel@gmail.com>
   Juergen Hoetzel <juergen@archlinux.org>
   Marty Jack <martyj19@comcast.net>
-
-* src/plugins/menu.c contains few pieces of code from menu.c of gnome-panel.
-
-* gtk-builder-convert is a fixed version of the original program included in
-  gtk+ package. It's originally developed by gtk+ developers, but it contains
-  some bugs. So a fixed version is included here.
 
 Window commands plugin icon from http://www.oxygen-icons.org/ (licensed under LGPL)
 

@@ -1,7 +1,7 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Disable libfm related routines */
-#undef DISABLE_LIBFM
+/* Disable libsmfm related routines */
+#undef DISABLE_LIBSMFM
 
 /* Disable menu related routines */
 #undef DISABLE_MENU

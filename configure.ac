@@ -73,28 +73,28 @@ AC_DEFINE_UNQUOTED([MENU_CACHE_MICRO_VERSION],[$MENU_CACHE_MICRO_VERSION], [-])
 PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"' -I$(top_srcdir)/include/waterline/'
 PACKAGE_LIBS="$PACKAGE_LIBS $MENU_CACHE_LIBS -lutil"
 
-# libfm
+# libsmfm
 
-AC_ARG_WITH(libfm, [  --without-libfm             Compile without libfm support])
-if test "x$with_libfm" != "xno"; then
-	pkg_modules="libfm-gtk libfm"
-	PKG_CHECK_MODULES(LIBFM, [$pkg_modules],
-			  enable_libfm=yes, enable_libfm=no)
-	if test x"$enable_libfm" = "xno"; then
-		AC_WARN([No libfm found.  All libfm related routines are not built.])
-		AC_DEFINE(DISABLE_LIBFM, [1], [Disable libfm related routines])
+AC_ARG_WITH(libsmfm, [  --without-libsmfm           Compile without libsmfm support])
+if test "x$with_libsmfm" != "xno"; then
+	pkg_modules="libsmfm-gtk2 libsmfm-core"
+	PKG_CHECK_MODULES(LIBSMFM, [$pkg_modules],
+			  enable_libsmfm=yes, enable_libsmfm=no)
+	if test x"$enable_libsmfm" = "xno"; then
+		AC_WARN([libsmfm not found.  All libsmfm related routines are not built.])
+		AC_DEFINE(DISABLE_LIBSMFM, [1], [Disable libsmfm related routines])
 	fi
-	AC_SUBST(LIBFM_CFLAGS)
-	AC_SUBST(LIBFM_LIBS)
+	AC_SUBST(LIBSMFM_CFLAGS)
+	AC_SUBST(LIBSMFM_LIBS)
 else
-	enable_libfm=no
-	AC_WARN([libfm disabled.  All libfm related routines are not built.])
-	AC_DEFINE(DISABLE_LIBFM, [1], [Disable libfm related routines])
+	enable_libsmfm=no
+	AC_WARN([libsmfm disabled.  All libsmfm related routines are not built.])
+	AC_DEFINE(DISABLE_LIBSMFM, [1], [Disable libsmfm related routines])
 fi
-AM_CONDITIONAL(ENABLE_LIBFM, test x"$enable_libfm" = x"yes")
+AM_CONDITIONAL(ENABLE_LIBSMFM, test x"$enable_libsmfm" = x"yes")
 
-PACKAGE_CFLAGS="$PACKAGE_CFLAGS $LIBFM_CFLAGS"
-#PACKAGE_LIBS="$PACKAGE_LIBS $LIBFM_LIBS"
+PACKAGE_CFLAGS="$PACKAGE_CFLAGS $LIBSMFM_CFLAGS"
+#PACKAGE_LIBS="$PACKAGE_LIBS $LIBSMFM_LIBS"
 
 # man
 

@@ -26,9 +26,9 @@
 #include <gtk/gtk.h>
 
 #ifndef DISABLE_LIBFM
-#include <libfm/fm-file-info.h>
-#include <libfm/fm-file-menu.h>
-#include <libfm/fm-config.h>
+#include <libsmfm-core/fm-file-info.h>
+#include <libsmfm-gtk/fm-file-menu.h>
+#include <libsmfm-core/fm-config.h>
 #endif
 
 
@@ -56,8 +56,8 @@ gboolean wtl_fm_init(void)
     if (libfm_initialized)
         return TRUE;
 
-    GModule * libfm = g_module_open("libfm-gtk.so.4", 0);
-
+    GModule * libfm = g_module_open("libsmfm-gtk2.so.4", 0);
+/*
     if (!libfm)
     {
         libfm = g_module_open("libfm-gtk.so.3", 0);
@@ -67,10 +67,10 @@ gboolean wtl_fm_init(void)
     {
         libfm = g_module_open("libfm-gtk.so.2", 0);
     }
-
+*/
     if (!libfm)
     {
-        ERR("Failed load libfm-gtk.so.4, libfm-gtk.so.3 or libfm-gtk.so.2");
+        ERR("Failed load libsmfm-gtk2.so.4");
         goto fail;
     }
 

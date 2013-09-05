@@ -22,6 +22,8 @@
 
 #include <config.h>
 
+#include <sde-utils.h>
+
 #include <waterline/misc.h>
 #include <waterline/gtkcompat.h>
 #include "netstatus-icon.h"
@@ -426,8 +428,8 @@ netstatus_update_tooltip (NetstatusIface *iface __attribute__((unused)),
          NetstatusStats  stats = { 0, };
          netstatus_iface_get_statistics (icon->priv->iface, &stats);
 
-         char * s_in = format_bytes_with_suffix(stats.in_bytes);
-         char * s_out = format_bytes_with_suffix(stats.out_bytes);
+         char * s_in = su_str_format_bytes_with_suffix(stats.in_bytes);
+         char * s_out = su_str_format_bytes_with_suffix(stats.out_bytes);
 
          if (s_in && s_out)
          {

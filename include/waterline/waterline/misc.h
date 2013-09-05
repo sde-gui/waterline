@@ -106,9 +106,6 @@ void restore_grabs(GtkWidget *w, gpointer data);
 
 gboolean is_my_own_window(Window window);
 
-void get_format_for_bytes_with_suffix(guint64  bytes, const char ** format, guint64 * b1, guint64 * b2);
-char * format_bytes_with_suffix(guint64  bytes);
-
 void color_parse_d(const char * src, double dst[3]);
 
 gchar ** read_list_from_config(gchar * file_name);

@@ -29,8 +29,8 @@
 #include <waterline/misc.h>
 
 #include <gtk/gtk.h>
-
 #include <glib/gi18n.h>
+#include <sde-utils.h>
 #include "netstatus-dialog.h"
 
 #include <string.h>
@@ -165,7 +165,7 @@ print_bytes_string (GString *str,
   guint64 b1;
   guint64 b2;
 
-  get_format_for_bytes_with_suffix(bytes, &format, &b1, &b2);
+  su_str_get_format_for_bytes_with_suffix(bytes, &format, &b1, &b2);
 
   if (format)
   {

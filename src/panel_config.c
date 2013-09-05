@@ -44,7 +44,7 @@ static void save_global_config();
 
 /******************************************************************************/
 
-static pair align_pair[] = {
+static su_enum_pair align_pair[] = {
     { ALIGN_NONE, "none" },
     { ALIGN_LEFT, "left" },
     { ALIGN_RIGHT, "right" },
@@ -52,7 +52,7 @@ static pair align_pair[] = {
     { 0, NULL },
 };
 
-pair edge_pair[] = {
+su_enum_pair edge_pair[] = {
     { EDGE_NONE, "none" },
     { EDGE_LEFT, "left" },
     { EDGE_RIGHT, "right" },
@@ -61,7 +61,7 @@ pair edge_pair[] = {
     { 0, NULL },
 };
 
-static pair width_pair[] = {
+static su_enum_pair width_pair[] = {
     { WIDTH_NONE, "none" },
     { WIDTH_REQUEST, "request" },
     { WIDTH_PIXEL, "pixel" },
@@ -69,20 +69,20 @@ static pair width_pair[] = {
     { 0, NULL },
 };
 /*
-static pair height_pair[] = {
+static su_enum_pair height_pair[] = {
     { HEIGHT_NONE, "none" },
     { HEIGHT_PIXEL, "pixel" },
     { 0, NULL },
 };
 
-static pair pos_pair[] = {
+static su_enum_pair pos_pair[] = {
     { POS_NONE, "none" },
     { POS_START, "start" },
     { POS_END,  "end" },
     { 0, NULL},
 };
 */
-static pair panel_visibility_pair[] = {
+static su_enum_pair panel_visibility_pair[] = {
     { VISIBILITY_ALWAYS, "always" },
     { VISIBILITY_BELOW, "below" },
     { VISIBILITY_AUTOHIDE,  "autohide" },
@@ -92,50 +92,50 @@ static pair panel_visibility_pair[] = {
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE Panel
-static wtl_json_option_definition option_definitions[] = {
+#define SU_JSON_OPTION_STRUCTURE Panel
+static su_json_option_definition option_definitions[] = {
 
-    WTL_JSON_OPTION_ENUM(edge_pair, edge), 
-    WTL_JSON_OPTION_ENUM(align_pair, align),
-    WTL_JSON_OPTION(int, edge_margin),
-    WTL_JSON_OPTION(int, align_margin),
+    SU_JSON_OPTION_ENUM(edge_pair, edge), 
+    SU_JSON_OPTION_ENUM(align_pair, align),
+    SU_JSON_OPTION(int, edge_margin),
+    SU_JSON_OPTION(int, align_margin),
 
-    WTL_JSON_OPTION_ENUM(width_pair, oriented_width_type),
-    WTL_JSON_OPTION(int, oriented_width),
-    WTL_JSON_OPTION(int, oriented_height),
+    SU_JSON_OPTION_ENUM(width_pair, oriented_width_type),
+    SU_JSON_OPTION(int, oriented_width),
+    SU_JSON_OPTION(int, oriented_height),
 
-    WTL_JSON_OPTION(bool, round_corners),
-    WTL_JSON_OPTION(int, round_corners_radius),
+    SU_JSON_OPTION(bool, round_corners),
+    SU_JSON_OPTION(int, round_corners_radius),
 
-    WTL_JSON_OPTION(bool, rgba_transparency),
-    WTL_JSON_OPTION(bool, stretch_background),
+    SU_JSON_OPTION(bool, rgba_transparency),
+    SU_JSON_OPTION(bool, stretch_background),
 
-    WTL_JSON_OPTION(bool, background),
-    WTL_JSON_OPTION(string, background_file),
+    SU_JSON_OPTION(bool, background),
+    SU_JSON_OPTION(string, background_file),
 
-    WTL_JSON_OPTION(bool, transparent),
-    WTL_JSON_OPTION(int, alpha),
+    SU_JSON_OPTION(bool, transparent),
+    SU_JSON_OPTION(int, alpha),
 
-    WTL_JSON_OPTION(color, tint_color),
+    SU_JSON_OPTION(color, tint_color),
 
-    WTL_JSON_OPTION2(string, widget_name, "GtkWidgetName"),
+    SU_JSON_OPTION2(string, widget_name, "GtkWidgetName"),
 
-    WTL_JSON_OPTION_ENUM(panel_visibility_pair, visibility_mode),
-    WTL_JSON_OPTION(int, height_when_hidden),
-    WTL_JSON_OPTION(int, set_strut),
+    SU_JSON_OPTION_ENUM(panel_visibility_pair, visibility_mode),
+    SU_JSON_OPTION(int, height_when_hidden),
+    SU_JSON_OPTION(int, set_strut),
 
-    WTL_JSON_OPTION(bool, use_font_color),
-    WTL_JSON_OPTION(color, font_color),
-    WTL_JSON_OPTION(bool, use_font_size),
-    WTL_JSON_OPTION(int, font_size),
+    SU_JSON_OPTION(bool, use_font_color),
+    SU_JSON_OPTION(color, font_color),
+    SU_JSON_OPTION(bool, use_font_size),
+    SU_JSON_OPTION(int, font_size),
 
-    WTL_JSON_OPTION2(int, preferred_icon_size, "icon_size"),
+    SU_JSON_OPTION2(int, preferred_icon_size, "icon_size"),
 
-    WTL_JSON_OPTION(int, padding_top),
-    WTL_JSON_OPTION(int, padding_bottom),
-    WTL_JSON_OPTION(int, padding_left),
-    WTL_JSON_OPTION(int, padding_right),
-    WTL_JSON_OPTION(int, applet_spacing),
+    SU_JSON_OPTION(int, padding_top),
+    SU_JSON_OPTION(int, padding_bottom),
+    SU_JSON_OPTION(int, padding_left),
+    SU_JSON_OPTION(int, padding_right),
+    SU_JSON_OPTION(int, applet_spacing),
 
     {0,}
 };
@@ -149,7 +149,7 @@ void panel_read_global_configuration_from_json_object(Panel *p)
     if (!json_is_object(json))
         return;
 
-    wtl_json_read_options(json, option_definitions, p);
+    su_json_read_options(json, option_definitions, p);
 
     if (p->alpha > 255)
         p->alpha = 255;
@@ -169,7 +169,7 @@ static void panel_write_global_configuration_to_json_object(Panel *p)
         json_object_set_nocheck(p->json, "global", json);
     }
 
-    wtl_json_write_options(json, option_definitions, p);
+    su_json_write_options(json, option_definitions, p);
 
     json_decref(json);
 }
@@ -186,10 +186,10 @@ static void panel_write_plugins_configuration_to_json_object(Panel* p)
     {
         Plugin * plugin = (Plugin *) l->data;
 
-        wtl_json_dot_set_string(plugin->json, "type", plugin->class->type);
-        wtl_json_dot_set_bool(plugin->json, "expand", plugin->expand);
-        wtl_json_dot_set_int(plugin->json, "padding", plugin->padding);
-        wtl_json_dot_set_int(plugin->json, "border", plugin->border);
+        su_json_dot_set_string(plugin->json, "type", plugin->class->type);
+        su_json_dot_set_bool(plugin->json, "expand", plugin->expand);
+        su_json_dot_set_int(plugin->json, "padding", plugin->padding);
+        su_json_dot_set_int(plugin->json, "border", plugin->border);
 
         if (plugin->class->save)
             plugin->class->save(plugin);

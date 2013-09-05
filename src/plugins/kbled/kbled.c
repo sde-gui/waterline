@@ -76,11 +76,11 @@ static void kbled_panel_configuration_changed(Plugin * p);
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE KeyboardLEDPlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(bool, visible[0]),
-    WTL_JSON_OPTION(bool, visible[1]),
-    WTL_JSON_OPTION(bool, visible[2]),
+#define SU_JSON_OPTION_STRUCTURE KeyboardLEDPlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(bool, visible[0]),
+    SU_JSON_OPTION(bool, visible[1]),
+    SU_JSON_OPTION(bool, visible[2]),
     {0,}
 };
 
@@ -137,7 +137,7 @@ static int kbled_constructor(Plugin * p)
     kl->visible[2] = TRUE;
     plugin_set_priv(p, kl);
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, kl);
+    su_json_read_options(plugin_inner_json(p), option_definitions, kl);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
@@ -229,7 +229,7 @@ static void kbled_configure(Plugin * p, GtkWindow * parent)
 static void kbled_save_configuration(Plugin * p)
 {
     KeyboardLEDPlugin * kl = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, kl);
+    su_json_write_options(plugin_inner_json(p), option_definitions, kl);
 }
 
 /* Callback when panel configuration changes. */

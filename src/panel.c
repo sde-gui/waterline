@@ -1965,7 +1965,7 @@ panel_parse_plugin(Panel *p, json_t * json_plugin)
     Plugin * plugin = NULL;
     gchar * type = NULL;
 
-    wtl_json_dot_get_string(json_plugin, "type", "", &type);
+    su_json_dot_get_string(json_plugin, "type", "", &type);
 
     if (su_str_empty(type) || !(plugin = plugin_load(type))) {
         ERR( "can't load %s plugin\n", type ? type : "(null)");
@@ -1974,9 +1974,9 @@ panel_parse_plugin(Panel *p, json_t * json_plugin)
 
     plugin->panel = p;
     if (plugin->class->expand_available)
-        plugin->expand = wtl_json_dot_get_bool(json_plugin, "expand", FALSE);
-    plugin->padding = wtl_json_dot_get_int(json_plugin, "padding", 0);
-    plugin->border = wtl_json_dot_get_int(json_plugin, "border", 0);
+        plugin->expand = su_json_dot_get_bool(json_plugin, "expand", FALSE);
+    plugin->padding = su_json_dot_get_int(json_plugin, "padding", 0);
+    plugin->border = su_json_dot_get_int(json_plugin, "border", 0);
 
     json_decref(plugin->json);
     plugin->json = json_incref(json_plugin);

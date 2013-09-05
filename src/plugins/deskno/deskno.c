@@ -61,10 +61,10 @@ static void deskno_panel_configuration_changed(Plugin * p);
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE DesknoPlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(bool, display_labels),
-    WTL_JSON_OPTION(bool, bold),
+#define SU_JSON_OPTION_STRUCTURE DesknoPlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(bool, display_labels),
+    SU_JSON_OPTION(bool, bold),
     {0,}
 };
 
@@ -145,7 +145,7 @@ static int deskno_constructor(Plugin * p)
     /* Default parameters. */
     dc->display_labels = TRUE;
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, dc);
+    su_json_read_options(plugin_inner_json(p), option_definitions, dc);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
@@ -212,7 +212,7 @@ static void deskno_configure(Plugin * p, GtkWindow * parent)
 static void deskno_save_configuration(Plugin * p)
 {
     DesknoPlugin * dc = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, dc);
+    su_json_write_options(plugin_inner_json(p), option_definitions, dc);
 }
 
 /* Callback when panel configuration changes. */

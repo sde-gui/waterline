@@ -26,7 +26,6 @@ MENU_SOURCES = \
 endif
 
 waterline_SOURCES = \
-	gdkrgba.c \
 	misc.c \
 	fb_button.c \
 	defaultapplications.c \
@@ -61,7 +60,6 @@ waterline_include_HEADERS = \
 	$(top_srcdir)/include/waterline/waterline/ev.h \
 	$(top_srcdir)/include/waterline/waterline/fb_button.h \
 	$(top_srcdir)/include/waterline/waterline/global.h \
-	$(top_srcdir)/include/waterline/waterline/gdkrgba.h \
 	$(top_srcdir)/include/waterline/waterline/gtkcompat.h \
 	$(top_srcdir)/include/waterline/waterline/menu-cache-compat.h \
 	$(top_srcdir)/include/waterline/waterline/icon-grid.h \

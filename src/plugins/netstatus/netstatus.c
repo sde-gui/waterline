@@ -46,10 +46,10 @@ typedef struct {
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE netstatus
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(string, iface),
-    WTL_JSON_OPTION(string, config_tool),
+#define SU_JSON_OPTION_STRUCTURE netstatus
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(string, iface),
+    SU_JSON_OPTION(string, config_tool),
     {0,}
 };
 
@@ -134,7 +134,7 @@ netstatus_constructor(Plugin *p)
     ns->iface = g_strdup("eth0");
     ns->config_tool = g_strdup("network-admin --configure %i");
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, ns);
+    su_json_read_options(plugin_inner_json(p), option_definitions, ns);
 
     iface = netstatus_iface_new(ns->iface);
     ns->mainw = netstatus_icon_new(iface);
@@ -181,7 +181,7 @@ static void netstatus_config( Plugin* p, GtkWindow* parent  )
 static void save_config( Plugin* p)
 {
     netstatus *ns = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, ns);
+    su_json_write_options(plugin_inner_json(p), option_definitions, ns);
 }
 
 PluginClass netstatus_plugin_class = {

@@ -110,23 +110,23 @@ typedef struct _lb_t {
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE lb_t
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(string, icon_path),
-    WTL_JSON_OPTION(string, title),
-    WTL_JSON_OPTION(string, tooltip),
-    WTL_JSON_OPTION(string, command1),
-    WTL_JSON_OPTION(string, command2),
-    WTL_JSON_OPTION(string, command3),
-    WTL_JSON_OPTION(string, scroll_up_command),
-    WTL_JSON_OPTION(string, scroll_down_command),
+#define SU_JSON_OPTION_STRUCTURE lb_t
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(string, icon_path),
+    SU_JSON_OPTION(string, title),
+    SU_JSON_OPTION(string, tooltip),
+    SU_JSON_OPTION(string, command1),
+    SU_JSON_OPTION(string, command2),
+    SU_JSON_OPTION(string, command3),
+    SU_JSON_OPTION(string, scroll_up_command),
+    SU_JSON_OPTION(string, scroll_down_command),
 
-    WTL_JSON_OPTION(bool, interactive_update),
-    WTL_JSON_OPTION(bool, input_restart_interval),
-    WTL_JSON_OPTION(string, input_title.command),
-    WTL_JSON_OPTION(string, input_tooltip.command),
-    WTL_JSON_OPTION(string, input_icon.command),
-    WTL_JSON_OPTION(string, input_general.command),
+    SU_JSON_OPTION(bool, interactive_update),
+    SU_JSON_OPTION(bool, input_restart_interval),
+    SU_JSON_OPTION(string, input_title.command),
+    SU_JSON_OPTION(string, input_tooltip.command),
+    SU_JSON_OPTION(string, input_icon.command),
+    SU_JSON_OPTION(string, input_general.command),
 
     {0,}
 };
@@ -728,7 +728,7 @@ static int lb_constructor(Plugin *p)
     lb->img    = NULL;
     lb->label  = NULL;
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, lb);
+    su_json_read_options(plugin_inner_json(p), option_definitions, lb);
 
     #define DEFAULT_STRING(f, v) \
       if (lb->f == NULL) \
@@ -851,7 +851,7 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
 static void lb_save_configuration(Plugin * p)
 {
     lb_t * lb = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, lb);
+    su_json_write_options(plugin_inner_json(p), option_definitions, lb);
 }
 
 

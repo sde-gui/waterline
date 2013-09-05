@@ -302,11 +302,11 @@ typedef struct {
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE NAPlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(bool, display_in_frame),
-    WTL_JSON_OPTION(bool, use_custom_icon_size),
-    WTL_JSON_OPTION(int, icon_size),
+#define SU_JSON_OPTION_STRUCTURE NAPlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(bool, display_in_frame),
+    SU_JSON_OPTION(bool, use_custom_icon_size),
+    SU_JSON_OPTION(int, icon_size),
     {0,}
 };
 
@@ -350,7 +350,7 @@ static int na_constructor(Plugin * p)
     na->display_in_frame = TRUE;
     na->icon_size = 16;
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, na);
+    su_json_read_options(plugin_inner_json(p), option_definitions, na);
 
     na_panel_configuration_changed(p);
 
@@ -399,7 +399,7 @@ static void na_configure(Plugin * p, GtkWindow * parent)
 static void na_save_configuration(Plugin* p)
 {
     NAPlugin * iplugin = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, iplugin);
+    su_json_write_options(plugin_inner_json(p), option_definitions, iplugin);
 }
 
 /* Plugin descriptor. */

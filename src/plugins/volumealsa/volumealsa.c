@@ -82,9 +82,9 @@ static void volumealsa_panel_configuration_changed(Plugin * p);
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE VolumeALSAPlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(string, volume_control_command),
+#define SU_JSON_OPTION_STRUCTURE VolumeALSAPlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(string, volume_control_command),
     {0,}
 };
 
@@ -491,7 +491,7 @@ static int volumealsa_constructor(Plugin * p)
 
     vol->volume_control_command = NULL;
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, vol);
+    su_json_read_options(plugin_inner_json(p), option_definitions, vol);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
@@ -572,7 +572,7 @@ static void volumealsa_configure(Plugin * p, GtkWindow * parent)
 static void volumealsa_save_configuration(Plugin * p)
 {
     VolumeALSAPlugin * vol = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, vol);
+    su_json_write_options(plugin_inner_json(p), option_definitions, vol);
 }
 
 

@@ -55,9 +55,9 @@ static void wincmd_panel_configuration_changed(Plugin * p);
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE WinCmdPlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(string, image),
+#define SU_JSON_OPTION_STRUCTURE WinCmdPlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(string, image),
     {0,}
 };
 
@@ -156,7 +156,7 @@ static int wincmd_constructor(Plugin * p)
     WinCmdPlugin * wc = g_new0(WinCmdPlugin, 1);
     plugin_set_priv(p, wc);
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, wc);
+    su_json_read_options(plugin_inner_json(p), option_definitions, wc);
 
     /* Default image. */
     if (su_str_empty(wc->image))
@@ -190,7 +190,7 @@ static void wincmd_destructor(Plugin * p)
 static void wincmd_save_configuration(Plugin * p)
 {
     WinCmdPlugin * wc = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, wc);
+    su_json_write_options(plugin_inner_json(p), option_definitions, wc);
 }
 
 /* Callback when panel configuration changes. */

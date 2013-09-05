@@ -177,7 +177,7 @@ extern const char * __website;
 extern const char * __email ;
 extern const char * __bugreporting;
 
-extern pair edge_pair[];
+extern su_enum_pair edge_pair[];
 
 #define PANEL_FILE_SUFFIX ".js"
 

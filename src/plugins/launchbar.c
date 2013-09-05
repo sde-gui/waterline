@@ -404,11 +404,11 @@ static int launchbutton_constructor(Plugin * p, json_t * json_button)
     LaunchButton * btn = g_new0(LaunchButton, 1);
     btn->plugin = p;
 
-    wtl_json_dot_get_string(json_button, "id", btn->desktop_id, &btn->desktop_id);
-    wtl_json_dot_get_string(json_button, "image", btn->image, &btn->image);
-    wtl_json_dot_get_string(json_button, "tooltip", btn->tooltip, &btn->tooltip);
-    wtl_json_dot_get_string(json_button, "action", btn->action, &btn->action);
-    btn->use_terminal = wtl_json_dot_get_bool(json_button, "terminal", btn->use_terminal);
+    su_json_dot_get_string(json_button, "id", btn->desktop_id, &btn->desktop_id);
+    su_json_dot_get_string(json_button, "image", btn->image, &btn->image);
+    su_json_dot_get_string(json_button, "tooltip", btn->tooltip, &btn->tooltip);
+    su_json_dot_get_string(json_button, "action", btn->action, &btn->action);
+    btn->use_terminal = su_json_dot_get_bool(json_button, "terminal", btn->use_terminal);
 
     if (json_object_get(json_button, "image"))
         btn->customize_image = TRUE;
@@ -882,15 +882,15 @@ static void launchbar_save_configuration(Plugin * p)
         LaunchButton * btn = (LaunchButton *) l->data;
         json_t * json_button = json_object();
         if (!su_str_empty(btn->desktop_id))
-            wtl_json_dot_set_string(json_button, "id", btn->desktop_id);
+            su_json_dot_set_string(json_button, "id", btn->desktop_id);
         if (btn->customize_image)
-            wtl_json_dot_set_string(json_button, "id", btn->image);
+            su_json_dot_set_string(json_button, "id", btn->image);
         if(btn->customize_tooltip)
-            wtl_json_dot_set_string(json_button, "id", btn->tooltip);
+            su_json_dot_set_string(json_button, "id", btn->tooltip);
         if (btn->customize_action)
-            wtl_json_dot_set_string(json_button, "id", btn->action);
+            su_json_dot_set_string(json_button, "id", btn->action);
         if (btn->customize_terminal)
-            wtl_json_dot_set_bool(json_button, "id", btn->use_terminal);
+            su_json_dot_set_bool(json_button, "id", btn->use_terminal);
 
         json_array_append(json_buttons, json_button);
         json_decref(json_button);

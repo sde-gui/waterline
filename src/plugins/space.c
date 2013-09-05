@@ -42,9 +42,9 @@ static void space_save_configuration(Plugin * p);
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE SpacePlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(int, size),
+#define SU_JSON_OPTION_STRUCTURE SpacePlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(int, size),
     {0,}
 };
 
@@ -57,7 +57,7 @@ static int space_constructor(Plugin * p)
     SpacePlugin * sp = g_new0(SpacePlugin, 1);
     plugin_set_priv(p, sp);
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, sp);
+    su_json_read_options(plugin_inner_json(p), option_definitions, sp);
 
     if (sp->size < 1)
         sp->size = 2;
@@ -117,7 +117,7 @@ static void space_configure(Plugin * p, GtkWindow * parent)
 static void space_save_configuration(Plugin * p)
 {
     SpacePlugin * sp = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, sp);
+    su_json_write_options(plugin_inner_json(p), option_definitions, sp);
 }
 
 /* Plugin descriptor. */

@@ -61,7 +61,7 @@ enum {
     DISPLAY_AS_TEXT
 };
 
-static pair display_as_pair[] = {
+static su_enum_pair display_as_pair[] = {
     { DISPLAY_AS_BAR, "Bar"},
     { DISPLAY_AS_TEXT, "Text"},
     { 0, NULL},
@@ -118,18 +118,18 @@ static void batt_panel_configuration_changed(Plugin *p);
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE BatteryPlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(bool, hide_if_no_battery),
-    WTL_JSON_OPTION(string, alarmCommand),
-    WTL_JSON_OPTION(int, alarmTime),
-    WTL_JSON_OPTION_ENUM(display_as_pair, display_as),
-    WTL_JSON_OPTION(rgba, background_color),
-    WTL_JSON_OPTION(int, border_width),
-    WTL_JSON_OPTION(rgba, charging_color1),
-    WTL_JSON_OPTION(rgba, charging_color2),
-    WTL_JSON_OPTION(rgba, discharging_color1),
-    WTL_JSON_OPTION(rgba, discharging_color2),
+#define SU_JSON_OPTION_STRUCTURE BatteryPlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(bool, hide_if_no_battery),
+    SU_JSON_OPTION(string, alarmCommand),
+    SU_JSON_OPTION(int, alarmTime),
+    SU_JSON_OPTION_ENUM(display_as_pair, display_as),
+    SU_JSON_OPTION(rgba, background_color),
+    SU_JSON_OPTION(int, border_width),
+    SU_JSON_OPTION(rgba, charging_color1),
+    SU_JSON_OPTION(rgba, charging_color2),
+    SU_JSON_OPTION(rgba, discharging_color1),
+    SU_JSON_OPTION(rgba, discharging_color2),
     {0,}
 };
 
@@ -568,7 +568,7 @@ constructor(Plugin *p)
     gdk_rgba_parse(&iplugin->discharging_color1, "#00FF00");
     gdk_rgba_parse(&iplugin->discharging_color2, "#FF0000");
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, iplugin);
+    su_json_read_options(plugin_inner_json(p), option_definitions, iplugin);
 
     batt_panel_configuration_changed(p);
 
@@ -680,7 +680,7 @@ static void config(Plugin *p, GtkWindow* parent) {
 
 static void save(Plugin* p) {
     BatteryPlugin *iplugin = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, iplugin);
+    su_json_write_options(plugin_inner_json(p), option_definitions, iplugin);
 }
 
 

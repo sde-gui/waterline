@@ -85,14 +85,14 @@ typedef struct {
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE CPUPlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(string, fg_color_io),
-    WTL_JSON_OPTION(string, fg_color_nice),
-    WTL_JSON_OPTION(string, fg_color_user),
-    WTL_JSON_OPTION(string, fg_color_system),
-    WTL_JSON_OPTION(string, bg_color),
-    WTL_JSON_OPTION(int, update_interval),
+#define SU_JSON_OPTION_STRUCTURE CPUPlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(string, fg_color_io),
+    SU_JSON_OPTION(string, fg_color_nice),
+    SU_JSON_OPTION(string, fg_color_user),
+    SU_JSON_OPTION(string, fg_color_system),
+    SU_JSON_OPTION(string, bg_color),
+    SU_JSON_OPTION(int, update_interval),
     {0,}
 };
 
@@ -354,7 +354,7 @@ static int cpu_constructor(Plugin * p)
     c->fg_color_system = g_strdup("red");
     c->bg_color = g_strdup("black");
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, c);
+    su_json_read_options(plugin_inner_json(p), option_definitions, c);
 
     cpu_apply_configuration(p);
 
@@ -417,7 +417,7 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
 static void cpu_save_configuration(Plugin * p)
 {
     CPUPlugin * c = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, c);
+    su_json_write_options(plugin_inner_json(p), option_definitions, c);
 }
 
 

@@ -68,16 +68,16 @@ typedef struct _thermal {
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE thermal
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(string, normal_color),
-    WTL_JSON_OPTION(string, warning1_color),
-    WTL_JSON_OPTION(string, warning2_color),
-    WTL_JSON_OPTION(bool, autoselect_warning_levels),
-    WTL_JSON_OPTION(int, warning1_temperature),
-    WTL_JSON_OPTION(int, warning2_temperature),
-    WTL_JSON_OPTION(bool, autoselect_sensor),
-    WTL_JSON_OPTION(string, sensor),
+#define SU_JSON_OPTION_STRUCTURE thermal
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(string, normal_color),
+    SU_JSON_OPTION(string, warning1_color),
+    SU_JSON_OPTION(string, warning2_color),
+    SU_JSON_OPTION(bool, autoselect_warning_levels),
+    SU_JSON_OPTION(int, warning1_temperature),
+    SU_JSON_OPTION(int, warning2_temperature),
+    SU_JSON_OPTION(bool, autoselect_sensor),
+    SU_JSON_OPTION(string, sensor),
     {0,}
 };
 
@@ -347,7 +347,7 @@ thermal_constructor(Plugin *p)
     th->warning1_color = g_strdup("#fff000");
     th->warning2_color = g_strdup("#ff0000");
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, th);
+    su_json_read_options(plugin_inner_json(p), option_definitions, th);
 
     gdk_color_parse(th->normal_color,   &(th->cl_normal));
     gdk_color_parse(th->warning1_color, &(th->cl_warning1));
@@ -426,7 +426,7 @@ thermal_destructor(Plugin *p)
 static void save_config( Plugin* p)
 {
     thermal *th = (thermal *)PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, th);
+    su_json_write_options(plugin_inner_json(p), option_definitions, th);
 }
 
 PluginClass thermal_plugin_class = {

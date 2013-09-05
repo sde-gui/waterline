@@ -51,7 +51,7 @@ enum {
     SORT_BY_SIZE
 };
 
-static pair sort_by_pair[] = {
+static su_enum_pair sort_by_pair[] = {
     { SORT_BY_NAME , "Name"  },
     { SORT_BY_MTIME, "MTime" },
     { SORT_BY_SIZE , "Size"  },
@@ -106,20 +106,20 @@ static void dirmenu_panel_configuration_changed(Plugin * p);
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE DirMenuPlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(string, path),
-    WTL_JSON_OPTION(string, name),
-    WTL_JSON_OPTION(string, image),
-    WTL_JSON_OPTION(bool, show_hidden),
-    WTL_JSON_OPTION(bool, show_files),
-    WTL_JSON_OPTION(int, max_file_count),
-    WTL_JSON_OPTION(bool, show_file_size),
-    WTL_JSON_OPTION(bool, show_icons),
-    WTL_JSON_OPTION(bool, show_tooltips),
-    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_directories_by),
-    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_files_by),
-    WTL_JSON_OPTION(bool, plain_view),
+#define SU_JSON_OPTION_STRUCTURE DirMenuPlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(string, path),
+    SU_JSON_OPTION(string, name),
+    SU_JSON_OPTION(string, image),
+    SU_JSON_OPTION(bool, show_hidden),
+    SU_JSON_OPTION(bool, show_files),
+    SU_JSON_OPTION(int, max_file_count),
+    SU_JSON_OPTION(bool, show_file_size),
+    SU_JSON_OPTION(bool, show_icons),
+    SU_JSON_OPTION(bool, show_tooltips),
+    SU_JSON_OPTION_ENUM(sort_by_pair, sort_directories_by),
+    SU_JSON_OPTION_ENUM(sort_by_pair, sort_files_by),
+    SU_JSON_OPTION(bool, plain_view),
     {0,}
 };
 
@@ -836,7 +836,7 @@ static int dirmenu_constructor(Plugin * p)
     dm->sort_files_by = SORT_BY_NAME;
     dm->plain_view = FALSE;
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, dm);
+    su_json_read_options(plugin_inner_json(p), option_definitions, dm);
 
     /* Allocate top level widget and set into Plugin widget pointer.
      * It is not known why, but the button text will not draw if it is edited from empty to non-empty
@@ -956,7 +956,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
 static void dirmenu_save_configuration(Plugin * p)
 {
     DirMenuPlugin * dm = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, dm);
+    su_json_write_options(plugin_inner_json(p), option_definitions, dm);
 }
 
 /* Callback when panel configuration changes. */

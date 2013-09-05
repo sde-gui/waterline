@@ -121,21 +121,21 @@ enum {
 
 /******************************************************************************/
 
-static pair show_pair[] = {
+static su_enum_pair show_pair[] = {
     { SHOW_ICONS, "Icons"},
     { SHOW_TITLES, "Titles"},
     { SHOW_BOTH, "Both"},
     { 0, NULL},
 };
 
-static pair mode_pair[] = {
+static su_enum_pair mode_pair[] = {
     { MODE_CLASSIC, "Classic"},
     { MODE_GROUP, "Group"},
     { MODE_SINGLE_WINDOW, "SingleWindow"},
     { 0, NULL},
 };
 
-static pair action_pair[] = {
+static su_enum_pair action_pair[] = {
     { ACTION_NONE, "None"},
     { ACTION_MENU, "Menu"},
     { ACTION_CLOSE, "Close"},
@@ -159,19 +159,19 @@ static pair action_pair[] = {
     { 0, NULL},
 };
 
-static pair mouse_over_action_pair[] = {
+static su_enum_pair mouse_over_action_pair[] = {
     { MOUSE_OVER_ACTION_NONE, "None"},
     { MOUSE_OVER_ACTION_GROUP_MENU, "ShowGroupedWindowList"},
     { MOUSE_OVER_ACTION_PREVIEW, "ShowPreview"},
 };
 
-static pair action_trigged_by_pair[] = {
+static su_enum_pair action_trigged_by_pair[] = {
     { TRIGGERED_BY_CLICK, "Click"},
     { TRIGGERED_BY_PRESS, "Press"},
     { 0, NULL},
 };
 
-static pair group_by_pair[] = {
+static su_enum_pair group_by_pair[] = {
     { GROUP_BY_NONE, "None" },
     { GROUP_BY_CLASS, "Class" },
     { GROUP_BY_WORKSPACE,  "Workspace" },
@@ -179,7 +179,7 @@ static pair group_by_pair[] = {
     { 0, NULL},
 };
 
-static pair sort_by_pair[] = {
+static su_enum_pair sort_by_pair[] = {
     { SORT_BY_TIMESTAMP, "Timestamp" },
     { SORT_BY_TITLE, "Title" },
     { SORT_BY_FOCUS, "Focus" },
@@ -519,66 +519,66 @@ typedef struct _taskbar {
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE TaskbarPlugin
-static wtl_json_option_definition option_definitions[] = {
+#define SU_JSON_OPTION_STRUCTURE TaskbarPlugin
+static su_json_option_definition option_definitions[] = {
 
-    WTL_JSON_OPTION(bool, tooltips),
-    WTL_JSON_OPTION_ENUM(show_pair, show_icons_titles),
-    WTL_JSON_OPTION(string, custom_fallback_icon),
-    WTL_JSON_OPTION(bool, show_iconified),
-    WTL_JSON_OPTION(bool, show_mapped),
-    WTL_JSON_OPTION(bool, show_all_desks),
-    WTL_JSON_OPTION(bool, show_urgency_all_desks),
-    WTL_JSON_OPTION(bool, use_urgency_hint),
-    WTL_JSON_OPTION(bool, flat_inactive_buttons),
-    WTL_JSON_OPTION(bool, flat_active_button),
-    WTL_JSON_OPTION(bool, colorize_buttons),
-    WTL_JSON_OPTION(bool, use_thumbnails_as_icons),
-    WTL_JSON_OPTION(bool, dim_iconified),
-    WTL_JSON_OPTION(int, task_width_max),
-    WTL_JSON_OPTION(int, spacing),
+    SU_JSON_OPTION(bool, tooltips),
+    SU_JSON_OPTION_ENUM(show_pair, show_icons_titles),
+    SU_JSON_OPTION(string, custom_fallback_icon),
+    SU_JSON_OPTION(bool, show_iconified),
+    SU_JSON_OPTION(bool, show_mapped),
+    SU_JSON_OPTION(bool, show_all_desks),
+    SU_JSON_OPTION(bool, show_urgency_all_desks),
+    SU_JSON_OPTION(bool, use_urgency_hint),
+    SU_JSON_OPTION(bool, flat_inactive_buttons),
+    SU_JSON_OPTION(bool, flat_active_button),
+    SU_JSON_OPTION(bool, colorize_buttons),
+    SU_JSON_OPTION(bool, use_thumbnails_as_icons),
+    SU_JSON_OPTION(bool, dim_iconified),
+    SU_JSON_OPTION(int, task_width_max),
+    SU_JSON_OPTION(int, spacing),
 
-    WTL_JSON_OPTION(bool, highlight_modified_titles),
-    WTL_JSON_OPTION(bool, highlight_title_of_focused_button),
-    WTL_JSON_OPTION(bool, bold_font_on_mouse_over),
+    SU_JSON_OPTION(bool, highlight_modified_titles),
+    SU_JSON_OPTION(bool, highlight_title_of_focused_button),
+    SU_JSON_OPTION(bool, bold_font_on_mouse_over),
 
-    WTL_JSON_OPTION_ENUM(mode_pair, mode),
-    WTL_JSON_OPTION(int, group_fold_threshold),
-    WTL_JSON_OPTION(int, panel_fold_threshold),
-    WTL_JSON_OPTION_ENUM(group_by_pair, group_by),
-    WTL_JSON_OPTION(bool, manual_grouping),
-    WTL_JSON_OPTION(bool, unfold_focused_group),
-    WTL_JSON_OPTION(bool, show_single_group),
-    WTL_JSON_OPTION(bool, show_close_buttons),
-    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_by[0]),
-    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_by[1]),
-    WTL_JSON_OPTION_ENUM(sort_by_pair, sort_by[2]),
-    WTL_JSON_OPTION(bool, sort_reverse[0]),
-    WTL_JSON_OPTION(bool, sort_reverse[1]),
-    WTL_JSON_OPTION(bool, sort_reverse[2]),
-    WTL_JSON_OPTION(bool, rearrange),
+    SU_JSON_OPTION_ENUM(mode_pair, mode),
+    SU_JSON_OPTION(int, group_fold_threshold),
+    SU_JSON_OPTION(int, panel_fold_threshold),
+    SU_JSON_OPTION_ENUM(group_by_pair, group_by),
+    SU_JSON_OPTION(bool, manual_grouping),
+    SU_JSON_OPTION(bool, unfold_focused_group),
+    SU_JSON_OPTION(bool, show_single_group),
+    SU_JSON_OPTION(bool, show_close_buttons),
+    SU_JSON_OPTION_ENUM(sort_by_pair, sort_by[0]),
+    SU_JSON_OPTION_ENUM(sort_by_pair, sort_by[1]),
+    SU_JSON_OPTION_ENUM(sort_by_pair, sort_by[2]),
+    SU_JSON_OPTION(bool, sort_reverse[0]),
+    SU_JSON_OPTION(bool, sort_reverse[1]),
+    SU_JSON_OPTION(bool, sort_reverse[2]),
+    SU_JSON_OPTION(bool, rearrange),
 
-    WTL_JSON_OPTION_ENUM(action_pair, button1_action),
-    WTL_JSON_OPTION_ENUM(action_pair, button2_action),
-    WTL_JSON_OPTION_ENUM(action_pair, button3_action),
-    WTL_JSON_OPTION_ENUM(action_pair, scroll_up_action),
-    WTL_JSON_OPTION_ENUM(action_pair, scroll_down_action),
-    WTL_JSON_OPTION_ENUM(action_pair, shift_button1_action),
-    WTL_JSON_OPTION_ENUM(action_pair, shift_button2_action),
-    WTL_JSON_OPTION_ENUM(action_pair, shift_button3_action),
-    WTL_JSON_OPTION_ENUM(action_pair, shift_scroll_up_action),
-    WTL_JSON_OPTION_ENUM(action_pair, shift_scroll_down_action),
-    WTL_JSON_OPTION_ENUM(action_trigged_by_pair, menu_actions_click_press),
-    WTL_JSON_OPTION_ENUM(action_trigged_by_pair, other_actions_click_press),
+    SU_JSON_OPTION_ENUM(action_pair, button1_action),
+    SU_JSON_OPTION_ENUM(action_pair, button2_action),
+    SU_JSON_OPTION_ENUM(action_pair, button3_action),
+    SU_JSON_OPTION_ENUM(action_pair, scroll_up_action),
+    SU_JSON_OPTION_ENUM(action_pair, scroll_down_action),
+    SU_JSON_OPTION_ENUM(action_pair, shift_button1_action),
+    SU_JSON_OPTION_ENUM(action_pair, shift_button2_action),
+    SU_JSON_OPTION_ENUM(action_pair, shift_button3_action),
+    SU_JSON_OPTION_ENUM(action_pair, shift_scroll_up_action),
+    SU_JSON_OPTION_ENUM(action_pair, shift_scroll_down_action),
+    SU_JSON_OPTION_ENUM(action_trigged_by_pair, menu_actions_click_press),
+    SU_JSON_OPTION_ENUM(action_trigged_by_pair, other_actions_click_press),
 
     //wtl_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
-    WTL_JSON_OPTION_ENUM(mouse_over_action_pair, mouse_over_action),
+    SU_JSON_OPTION_ENUM(mouse_over_action_pair, mouse_over_action),
 
-    WTL_JSON_OPTION(bool, use_group_separators),
-    WTL_JSON_OPTION(int, group_separator_size),
-    WTL_JSON_OPTION(bool, hide_from_launchbar),
-    WTL_JSON_OPTION(bool, use_x_net_wm_icon_geometry),
-    WTL_JSON_OPTION(bool, use_x_window_position),
+    SU_JSON_OPTION(bool, use_group_separators),
+    SU_JSON_OPTION(int, group_separator_size),
+    SU_JSON_OPTION(bool, hide_from_launchbar),
+    SU_JSON_OPTION(bool, use_x_net_wm_icon_geometry),
+    SU_JSON_OPTION(bool, use_x_window_position),
     {0,}
 };
 
@@ -5212,7 +5212,7 @@ static int taskbar_constructor(Plugin * p)
 
     tb->task_timestamp = 0;
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, tb);
+    su_json_read_options(plugin_inner_json(p), option_definitions, tb);
 
     taskbar_config_updated(tb);
 
@@ -5474,7 +5474,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
 static void taskbar_save_configuration(Plugin * p)
 {
     TaskbarPlugin * tb = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, tb);
+    su_json_write_options(plugin_inner_json(p), option_definitions, tb);
 }
 
 /* Callback when panel configuration changes. */

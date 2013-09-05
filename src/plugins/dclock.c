@@ -78,15 +78,15 @@ static void dclock_panel_configuration_changed(Plugin * p);
 
 /******************************************************************************/
 
-#define WTL_JSON_OPTION_STRUCTURE DClockPlugin
-static wtl_json_option_definition option_definitions[] = {
-    WTL_JSON_OPTION(string, clock_format),
-    WTL_JSON_OPTION(string, tooltip_format),
-    WTL_JSON_OPTION(string, action),
-    WTL_JSON_OPTION(string, font),
-    WTL_JSON_OPTION(bool, icon_only),
-    WTL_JSON_OPTION(bool, center_text),
-    WTL_JSON_OPTION(string, timezone),
+#define SU_JSON_OPTION_STRUCTURE DClockPlugin
+static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(string, clock_format),
+    SU_JSON_OPTION(string, tooltip_format),
+    SU_JSON_OPTION(string, action),
+    SU_JSON_OPTION(string, font),
+    SU_JSON_OPTION(bool, icon_only),
+    SU_JSON_OPTION(bool, center_text),
+    SU_JSON_OPTION(string, timezone),
     {0,}
 };
 
@@ -460,7 +460,7 @@ static int dclock_constructor(Plugin * p)
     dc->clock_format = g_strdup(_(DEFAULT_CLOCK_FORMAT));
     dc->tooltip_format = g_strdup(_(DEFAULT_TIP_FORMAT));
 
-    wtl_json_read_options(plugin_inner_json(p), option_definitions, dc);
+    su_json_read_options(plugin_inner_json(p), option_definitions, dc);
 
     /* Allocate top level widget and set into Plugin widget pointer. */
     GtkWidget * pwid = gtk_event_box_new();
@@ -605,7 +605,7 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
 static void dclock_save_configuration(Plugin * p)
 {
     DClockPlugin * dc = PRIV(p);
-    wtl_json_write_options(plugin_inner_json(p), option_definitions, dc);
+    su_json_write_options(plugin_inner_json(p), option_definitions, dc);
 }
 
 /* Callback when panel configuration changes. */

@@ -1016,7 +1016,7 @@ void panel_apply_icon( GtkWindow *w )
     }
     else
     {
-        gchar * icon_path = get_private_resource_path(RESOURCE_DATA, "images", "my-computer.png", 0);
+        gchar * icon_path = wtl_resolve_own_resource("", "images", "my-computer.png", 0);
         gtk_window_set_icon_from_file(w, icon_path, NULL);
         g_free(icon_path);
     }
@@ -2353,11 +2353,14 @@ int main(int argc, char *argv[], char *env[])
     gtk_init(&argc, &argv);
 
 #ifdef ENABLE_NLS
-    gchar * locale_dir = get_resource_path(RESOURCE_LOCALE, 0);
-    bindtextdomain(GETTEXT_PACKAGE, locale_dir);
+    gchar * locale_dir = su_path_resolve_resource(_wtl_agent_id, "locale", NULL);
+    if (locale_dir)
+    {
+        bindtextdomain(GETTEXT_PACKAGE, locale_dir);
+        g_free(locale_dir);
+    }
     bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
     textdomain(GETTEXT_PACKAGE);
-    g_free(locale_dir);
 #endif
 
     XSetLocaleModifiers("");
@@ -2416,7 +2419,7 @@ int main(int argc, char *argv[], char *env[])
     }
 
     /* Add our own icons to the search path of icon theme */
-    gchar * images_path = get_private_resource_path(RESOURCE_DATA, "images", 0);
+    gchar * images_path = wtl_resolve_own_resource("", "images", 0);
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), images_path);
     g_free(images_path);
 

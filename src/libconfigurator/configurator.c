@@ -584,7 +584,7 @@ void panel_initialize_pref_dialog(Panel * p)
     GtkBuilder * builder;
     GtkWidget *w, *w2, *tint_clr;
 
-    gchar * panel_perf_ui_path = get_private_resource_path(RESOURCE_DATA, "ui", "panel-pref.ui", 0);
+    gchar * panel_perf_ui_path = wtl_resolve_own_resource("", "ui", "panel-pref.ui", 0);
     builder = gtk_builder_new();
     if( !gtk_builder_add_from_file(builder, panel_perf_ui_path, NULL) )
     {
@@ -742,7 +742,7 @@ void panel_initialize_pref_dialog(Panel * p)
 
         w = (GtkWidget*)gtk_builder_get_object( builder, "img_file" );
         g_object_set_data(G_OBJECT(button_bg_img), "img_file", w);
-        gchar * default_backgroud_path = get_private_resource_path(RESOURCE_DATA, "images", "background.png", 0);
+        gchar * default_backgroud_path = wtl_resolve_own_resource("", "images", "background.png", 0);
         gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(w),
             ((p->background_file != NULL) ? p->background_file : default_backgroud_path));
         g_free(default_backgroud_path);

@@ -354,7 +354,7 @@ cpufreq_constructor(Plugin *p)
     gtk_widget_set_has_window(pwid, FALSE);
     gtk_container_set_border_width( GTK_CONTAINER(pwid), 2 );
 
-    gchar * proc_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "cpufreq-icon.png", 0);
+    gchar * proc_icon_path = wtl_resolve_own_resource("", "images", "cpufreq-icon.png", 0);
     cf->namew = gtk_image_new_from_file(proc_icon_path);
     g_free(proc_icon_path);
     gtk_container_add(GTK_CONTAINER(pwid), cf->namew);

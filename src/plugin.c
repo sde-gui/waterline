@@ -243,7 +243,7 @@ Plugin * plugin_load(char * type)
     if ((pc == NULL) && (g_module_supported()))
     {
         gchar * soname = g_strdup_printf("%s.so", type);
-        gchar * path = get_private_resource_path(RESOURCE_LIB, "plugins", soname, 0);
+        gchar * path = wtl_resolve_own_resource("lib", "plugins", soname, 0);
         pc = plugin_load_dynamic(type, path);
         g_free(path);
         g_free(soname);
@@ -370,7 +370,7 @@ GList * plugin_get_available_classes(void)
     }
 
 #ifndef DISABLE_PLUGINS_LOADING
-    gchar * plugin_dir = get_private_resource_path(RESOURCE_LIB, "plugins", 0);
+    gchar * plugin_dir = wtl_resolve_own_resource("lib", "plugins", 0);
     GDir * dir = g_dir_open(plugin_dir, 0, NULL);
     g_free(plugin_dir);
 
@@ -385,7 +385,7 @@ GList * plugin_get_available_classes(void)
                 if (plugin_find_class(type) == NULL)
                 {
                     /* If it has not been loaded, do it.  If successful, add it to the result. */
-                    char * path = get_private_resource_path(RESOURCE_LIB, "plugins", file, 0);
+                    char * path = wtl_resolve_own_resource("lib", "plugins", file, 0);
                     PluginClass * pc = plugin_load_dynamic(type, path);
                     if (pc != NULL)
                     {

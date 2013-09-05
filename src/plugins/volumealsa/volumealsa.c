@@ -266,7 +266,7 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
          icon_updated = panel_image_set_icon_theme(plugin_panel(vol->plugin), vol->tray_icon, "audio-volume-muted");
          if (!icon_updated)
          {
-             gchar * mute_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "mute.png", 0);
+             gchar * mute_icon_path = wtl_resolve_own_resource("", "images", "mute.png", 0);
              panel_image_set_from_file(plugin_panel(vol->plugin), vol->tray_icon, mute_icon_path);
              g_free(mute_icon_path);
          }
@@ -290,7 +290,7 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
 
     if (!icon_updated)
     {
-        gchar * volume_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "volume.png", 0);
+        gchar * volume_icon_path = wtl_resolve_own_resource("", "images", "volume.png", 0);
         panel_image_set_from_file(plugin_panel(vol->plugin), vol->tray_icon, volume_icon_path);
         g_free(volume_icon_path);
     }

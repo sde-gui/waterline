@@ -32,60 +32,36 @@ extern gchar *cprofile;
 
 /********************************************************************/
 
-static gchar * _get_resource_path(RESOURCE_TYPE restype, gboolean private, va_list ap)
+static gchar * _wtl_resolve_resource(const char * first_part, gboolean private, va_list ap)
 {
-    if (private && restype == RESOURCE_LOCALE)
-        return NULL;
-
-    gchar * prefix = NULL;
-    switch (restype)
-    {
-        case RESOURCE_LIB     : prefix = PACKAGE_LIB_DIR;     break;
-        case RESOURCE_LIBEXEC : prefix = PACKAGE_LIBEXEC_DIR; break;
-        case RESOURCE_DATA    : prefix = PACKAGE_DATA_DIR;    break;
-        case RESOURCE_LOCALE  : prefix = PACKAGE_LOCALE_DIR;  break;
-    };
-
-    if (!prefix)
-        return NULL;
-
-    char * args[16];
-    int i = 0;
-
-    args[i++] = prefix;
+    gchar * result = NULL;
+    gchar * suffix = su_build_filename_va(ap);
 
     if (private)
-        args[i++] = "waterline";
+        result = su_path_resolve_resource(wtl_agent_id(), first_part, "waterline", suffix, NULL);
+    else
+        result = su_path_resolve_resource(wtl_agent_id(), first_part, suffix, NULL);
 
-    char * arg;
-    do {
-        arg = va_arg(ap, char*);
-        args[i++] = arg;
-        if (i >= 15)
-            return NULL;
-    } while (arg);
-
-    gchar * result = g_build_filenamev(args);
-//g_print("%s\n", result);
+    g_free(suffix);
     return result;
 }
 
-gchar * get_resource_path(RESOURCE_TYPE restype, ...)
+gchar * wtl_resolve_resource(const char * first_part, ...)
 {
     gchar * result;
     va_list ap;
-    va_start(ap, restype);
-    result = _get_resource_path(restype, FALSE, ap);
+    va_start(ap, first_part);
+    result = _wtl_resolve_resource(first_part, FALSE, ap);
     va_end(ap);
     return result;
 }
 
-gchar * get_private_resource_path(RESOURCE_TYPE restype, ...)
+gchar * wtl_resolve_own_resource(const char * first_part, ...)
 {
     gchar * result;
     va_list ap;
-    va_start(ap, restype);
-    result = _get_resource_path(restype, TRUE, ap);
+    va_start(ap, first_part);
+    result = _wtl_resolve_resource(first_part, TRUE, ap);
     va_end(ap);
     return result;
 }

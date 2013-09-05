@@ -55,7 +55,7 @@ static void load_implementation(void)
 
     initialized = TRUE;
 
-    gchar * path = get_private_resource_path(RESOURCE_LIB, "internals", "libconfigurator.so", 0);
+    gchar * path = wtl_resolve_own_resource("lib", "internals", "libconfigurator.so", 0);
     if (!path)
         return;
 

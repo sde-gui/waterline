@@ -89,7 +89,7 @@ static wtl_json_option_definition option_definitions[] = {
 /* Update image to correspond to current state. */
 static void kbled_update_image(KeyboardLEDPlugin * kl, int i, unsigned int state)
 {
-    gchar * file = get_private_resource_path(RESOURCE_DATA, "images", ((state) ? on_icons[i] : off_icons[i]), 0);
+    gchar * file = wtl_resolve_own_resource("", "images", ((state) ? on_icons[i] : off_icons[i]), 0);
     panel_image_set_from_file(plugin_panel(kl->plugin), kl->indicator_image[i], file);
     g_free(file);
 }

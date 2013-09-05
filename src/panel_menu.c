@@ -139,7 +139,7 @@ static void panel_popupmenu_about( GtkMenuItem* item, Panel* panel )
     /* TRANSLATORS: Replace this string with your names, one name per line. */
     gchar *translators = _("translator-credits");
 
-    gchar * logo_path = get_private_resource_path(RESOURCE_DATA, "images", "my-computer.png", 0);
+    gchar * logo_path = wtl_resolve_own_resource("", "images", "my-computer.png", 0);
 
     about = gtk_about_dialog_new();
     panel_apply_icon(GTK_WINDOW(about));

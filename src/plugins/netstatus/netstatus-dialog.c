@@ -793,7 +793,7 @@ netstatus_dialog_new (NetstatusIface *iface)
   if (!data)
       return NULL;
 
-  gchar * netstatus_ui_path = get_private_resource_path(RESOURCE_DATA, "ui", "netstatus.ui", 0);
+  gchar * netstatus_ui_path = wtl_resolve_own_resource("", "ui", "netstatus.ui", 0);
 
   data->builder = gtk_builder_new();
   gtk_builder_add_from_file(data->builder, netstatus_ui_path, NULL);

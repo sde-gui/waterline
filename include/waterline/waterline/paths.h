@@ -22,16 +22,8 @@
 #include <gtk/gtk.h>
 #include <sde-utils.h>
 
-typedef enum _RESOURCE_TYPE
-{
-    RESOURCE_LIB,
-    RESOURCE_LIBEXEC,
-    RESOURCE_DATA,
-    RESOURCE_LOCALE
-} RESOURCE_TYPE;
-
-extern gchar * get_resource_path(RESOURCE_TYPE restype, ...);
-extern gchar * get_private_resource_path(RESOURCE_TYPE restype, ...);
+extern gchar * wtl_resolve_resource(const char * first_part, ...);
+extern gchar * wtl_resolve_own_resource(const char * first_part, ...);
 
 
 extern gchar * wtl_get_config_path(const char * file_name, SU_PATH_CONFIG_TYPE config_type);

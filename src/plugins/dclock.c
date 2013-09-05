@@ -527,7 +527,7 @@ static void dclock_apply_configuration(Plugin * p)
     /* Set up the icon or the label as the displayable widget. */
     if (dc->icon_only)
     {
-        gchar * clock_icon_path = get_private_resource_path(RESOURCE_DATA, "images", "clock.png", 0);
+        gchar * clock_icon_path = wtl_resolve_own_resource("", "images", "clock.png", 0);
         panel_image_set_from_file(plugin_panel(p), dc->clock_icon, clock_icon_path);
         g_free(clock_icon_path);
         gtk_widget_show(dc->clock_icon);

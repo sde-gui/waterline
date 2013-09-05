@@ -904,11 +904,11 @@ read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
 		if (!g_ascii_strcasecmp(s.t[0], "limit"))
 		    limit = atoi(s.t[1]);
 		else if (!g_ascii_strcasecmp(s.t[0], "showprivate"))
-		    show_private = str2num(bool_pair, s.t[1], show_private);
+		    show_private = su_str_to_enum(bool_pair, s.t[1], show_private);
 		else if (!g_ascii_strcasecmp(s.t[0], "localonly"))
-		    local_only = str2num(bool_pair, s.t[1], local_only);
+		    local_only = su_str_to_enum(bool_pair, s.t[1], local_only);
 		else if (!g_ascii_strcasecmp(s.t[0], "showtips"))
-		    show_tips = str2num(bool_pair, s.t[1], show_tips);
+		    show_tips = su_str_to_enum(bool_pair, s.t[1], show_tips);
 		else {
 		    ERR("menu: unknown var %s\n", s.t[0]);
 		}

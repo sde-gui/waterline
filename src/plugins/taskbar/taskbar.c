@@ -5536,7 +5536,7 @@ static void taskbar_run_command_position(Plugin * p, char ** argv, int argc)
 
     int action = ACTION_RAISE;
     if (argc > 1)
-        action = str2num(action_pair, argv[1], -1);
+        action = su_str_to_enum(action_pair, argv[1], -1);
     if (action > 0)
         task_action(tk, action, NULL, tk, FALSE);
 }
@@ -5548,7 +5548,7 @@ static void taskbar_run_command(Plugin * p, char ** argv, int argc)
 
     TaskbarPlugin * tb = PRIV(p);
 
-    int action = str2num(action_pair, argv[0], -1);
+    int action = su_str_to_enum(action_pair, argv[0], -1);
     if (action > 0)
     {
         Task * tk = tb->focused;

@@ -1508,7 +1508,7 @@ gboolean panel_edge_available(Panel* p, int edge)
 
 static char* gen_panel_name( int edge )
 {
-    const char * edge_str = num2str( edge_pair, edge, "" );
+    const char * edge_str = su_enum_to_str(edge_pair, edge, "");
     gchar * name = NULL;
     gchar * dir = wtl_get_config_path("panels", SU_PATH_CONFIG_USER_W);
     int i;

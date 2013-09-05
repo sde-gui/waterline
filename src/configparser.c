@@ -152,7 +152,7 @@ wtl_put_enum( FILE* fp, const char* name, int val, const su_enum_pair* pair)
         name = s;
     }
 
-    return wtl_put_str(fp, name, num2str(pair, val, NULL));
+    return wtl_put_str(fp, name, su_enum_to_str(pair, val, NULL));
 }
 
 extern  int

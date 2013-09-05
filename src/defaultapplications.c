@@ -35,7 +35,7 @@ static GHashTable * default_applications = NULL;
 
 gchar ** read_list_from_config(gchar * file_name)
 {
-    gchar * path = get_config_path(file_name, CONFIG_USER);
+    gchar * path = wtl_get_config_path(file_name, SU_PATH_CONFIG_USER);
     if (!path)
         return NULL;
 

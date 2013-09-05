@@ -20,6 +20,7 @@
 #define __WATERLINE__PATHS_H
 
 #include <gtk/gtk.h>
+#include <sde-utils.h>
 
 typedef enum _RESOURCE_TYPE
 {
@@ -33,19 +34,12 @@ extern gchar * get_resource_path(RESOURCE_TYPE restype, ...);
 extern gchar * get_private_resource_path(RESOURCE_TYPE restype, ...);
 
 
-typedef enum _CONFIG_TYPE
-{
-    CONFIG_SYSTEM,
-    CONFIG_USER,
-    CONFIG_USER_W
-} CONFIG_TYPE;
-
-extern gchar * get_config_path(const char * file_name, CONFIG_TYPE config_type);
+extern gchar * wtl_get_config_path(const char * file_name, SU_PATH_CONFIG_TYPE config_type);
 
 #include "typedef.h"
 
 /* Placed here to minimize dependencies between headers. */
-extern gchar * plugin_get_config_path(Plugin * plugin, const char * file_name, CONFIG_TYPE config_type);
+extern gchar * plugin_get_config_path(Plugin * plugin, const char * file_name, SU_PATH_CONFIG_TYPE config_type);
 
 
 #endif

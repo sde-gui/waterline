@@ -98,7 +98,7 @@ static gchar ** dclock_get_format_strings(Plugin * plugin)
     gchar * filename = NULL;
     gchar * contents = NULL;
 
-    filename = plugin_get_config_path(plugin, "formats", CONFIG_USER);
+    filename = plugin_get_config_path(plugin, "formats", SU_PATH_CONFIG_USER);
     if (!filename)
         goto ret;
 

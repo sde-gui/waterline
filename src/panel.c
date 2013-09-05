@@ -97,6 +97,8 @@ static GSList* all_panels = NULL;  /* a single-linked list storing all panels */
 
 gboolean is_restarting = FALSE;
 
+gchar * _wtl_agent_id = NULL;
+
 /******************************************************************************/
 
 static gboolean force_compositing_wm_disabled = FALSE;
@@ -109,6 +111,13 @@ const char * __license = "This program is free software; you can redistribute it
 const char * __website = "http://dev.make-linux.org/projects/waterline";
 const char * __email = "igeekless@gmail.com";
 const char * __bugreporting = "http://dev.make-linux.org/projects/waterline/issues";
+
+/******************************************************************************/
+
+const char* wtl_agent_id(void)
+{
+    return _wtl_agent_id;
+}
 
 /******************************************************************************/
 
@@ -1501,7 +1510,7 @@ static char* gen_panel_name( int edge )
 {
     const char * edge_str = num2str( edge_pair, edge, "" );
     gchar * name = NULL;
-    gchar * dir = get_config_path("panels", CONFIG_USER_W);
+    gchar * dir = wtl_get_config_path("panels", SU_PATH_CONFIG_USER_W);
     int i;
     for( i = 1; i < G_MAXINT; ++i )
     {
@@ -1560,7 +1569,7 @@ void delete_panel(Panel * panel)
     all_panels = g_slist_remove( all_panels, panel );
 
     /* delete the config file of this panel */
-    gchar * dir = get_config_path("panels", CONFIG_USER_W);
+    gchar * dir = wtl_get_config_path("panels", SU_PATH_CONFIG_USER_W);
     gchar * file_name = g_strdup_printf("%s" PANEL_FILE_SUFFIX, panel->name);
     gchar * file_path = g_build_filename( dir, file_name, NULL );
 
@@ -2145,7 +2154,7 @@ Panel* panel_new( const char* config_file, const char* config_name )
 
 static gboolean start_all_panels(void)
 {
-    gchar * panel_dir = get_config_path("panels", CONFIG_USER);
+    gchar * panel_dir = wtl_get_config_path("panels", SU_PATH_CONFIG_USER);
 
     GDir* dir = g_dir_open(panel_dir, 0, NULL);
 
@@ -2329,6 +2338,9 @@ int main(int argc, char *argv[], char *env[])
            break;
         }
     }
+
+    _wtl_agent_id = su_path_resolve_agent_id_by_pointer(main, "waterline");
+    su_path_register_default_agent_prefix(_wtl_agent_id, PACKAGE_INSTALLATION_PREFIX);
 
     setlocale(LC_CTYPE, "");
 

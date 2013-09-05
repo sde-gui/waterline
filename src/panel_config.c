@@ -262,7 +262,7 @@ void panel_save_configuration(Panel* p)
 
     FILE * fp = NULL;
 
-    gchar * dir = get_config_path("panels", CONFIG_USER_W);
+    gchar * dir = wtl_get_config_path("panels", SU_PATH_CONFIG_USER_W);
 
     gchar * file_name = g_strdup_printf("%s" PANEL_FILE_SUFFIX, p->name);
     gchar * file_path = g_build_filename( dir, file_name, NULL );
@@ -329,7 +329,7 @@ const char command_group[] = "Command";
 void load_global_config()
 {
     GKeyFile* kf = g_key_file_new();
-    gchar * file = get_config_path("config", CONFIG_USER);
+    gchar * file = wtl_get_config_path("config", SU_PATH_CONFIG_USER);
     gboolean loaded = g_key_file_load_from_file(kf, file, 0, NULL);
     g_free(file);
 
@@ -347,7 +347,7 @@ void load_global_config()
     g_key_file_free(kf);
 
     global_settings = g_key_file_new();
-    file = get_config_path("settings", CONFIG_USER);
+    file = wtl_get_config_path("settings", SU_PATH_CONFIG_USER);
     if (file)
         g_key_file_load_from_file(global_settings, file, 0, NULL);
 	g_free(file);
@@ -358,7 +358,7 @@ static void save_global_config()
     if (wtl_is_in_kiosk_mode())
         return;
 
-    gchar * file = get_config_path("config", CONFIG_USER_W);
+    gchar * file = wtl_get_config_path("config", SU_PATH_CONFIG_USER_W);
 
     FILE * f = fopen( file, "w" );
     if (f)

@@ -43,6 +43,8 @@ extern const char* wtl_get_logout_command(void);
 extern const char* wtl_get_file_manager(void);
 extern const char* wtl_get_terminal(void);
 
+extern const char* wtl_agent_id(void);
+
 int wtl_is_in_kiosk_mode(void);
 
 #endif

@@ -2,25 +2,25 @@ template_config_DATA = \
 	template/config \
 	template/settings \
 	template/top-level-domain-names
-template_configdir = $(pkgdatadir)/profile/template
+template_configdir = $(datadir)/sde-config/sde/waterline/template
 
 template_config_panel_DATA = \
 	template/panels/bottom1.js
-template_config_paneldir = $(pkgdatadir)/profile/template/panels
+template_config_paneldir = $(datadir)/sde-config/sde/waterline/template/panels
 
 template_applications_DATA = \
 	template/applications/file-manager \
 	template/applications/terminal-emulator \
 	template/applications/volume-control
-template_applicationsdir = $(pkgdatadir)/profile/template/applications
+template_applicationsdir = $(datadir)/sde-config/sde/waterline/template/applications
 
 template_plugins_dclock_DATA = \
 	template/plugins/dclock/formats
-template_plugins_dclockdir = $(pkgdatadir)/profile/template/plugins/dclock/
+template_plugins_dclockdir = $(datadir)/sde-config/sde/waterline/template/plugins/dclock/
 
 template_plugins_taskbar_DATA = \
 	template/plugins/taskbar/task-menu
-template_plugins_taskbardir = $(pkgdatadir)/profile/template/plugins/taskbar/
+template_plugins_taskbardir = $(datadir)/sde-config/sde/waterline/template/plugins/taskbar/
 
 
 ui_DATA = \

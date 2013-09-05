@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include <waterline/paths.h>
+#include <waterline/global.h>
 #include <waterline/dbg.h>
 
 /********************************************************************/
@@ -93,50 +94,9 @@ gchar * get_private_resource_path(RESOURCE_TYPE restype, ...)
 
 #define TEMPLATE_PROFILE "template"
 
-gchar * get_config_path(const char* file_name, CONFIG_TYPE config_type)
+gchar * wtl_get_config_path(const char* file_name, SU_PATH_CONFIG_TYPE config_type)
 {
-    gchar * profile = cprofile;
-
-again:
-
-    if (config_type == CONFIG_USER || config_type == CONFIG_USER_W)
-    {
-        gchar * result = g_build_filename(g_get_user_config_dir(), "sde", "waterline" , profile, file_name, NULL);
-        if (config_type == CONFIG_USER_W)
-        {
-            gchar * dirname = g_path_get_dirname(result);
-            if (!g_file_test(dirname, G_FILE_TEST_EXISTS))
-                g_mkdir_with_parents(dirname, 0755);
-            g_free(dirname);
-            return result;
-        }
-        if (g_file_test(result, G_FILE_TEST_EXISTS))
-            return result;
-        g_free(result);
-    }
-
-    const gchar * const * dirs = g_get_system_config_dirs();
-
-    for (; *dirs; dirs++)
-    {
-        gchar * result = g_build_filename(*dirs, "sde", "waterline" , profile, file_name, NULL);
-        if (g_file_test(result, G_FILE_TEST_EXISTS))
-            return result;
-        g_free(result);
-    }
-
-    gchar * result = get_private_resource_path(RESOURCE_DATA, "profile", profile, file_name, NULL);
-    if (g_file_test(result, G_FILE_TEST_EXISTS))
-        return result;
-    g_free(result);
-
-    if (strcmp(profile, TEMPLATE_PROFILE) != 0)
-    {
-        profile = TEMPLATE_PROFILE;
-        goto again;
-    }
-
-    return NULL;
+    return su_path_resolve_config(wtl_agent_id(), config_type, "sde/waterline" , cprofile, file_name, NULL);
 }
 
 /********************************************************************/

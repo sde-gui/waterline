@@ -12,6 +12,7 @@ INCLUDES = \
 	-DPACKAGE_LIBEXEC_DIR=\""$(libexecdir)"\" \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
+	-DPACKAGE_INSTALLATION_PREFIX=\""$(prefix)"\" \
 	$(PACKAGE_CFLAGS) \
 	$(XLIB_CFLAGS) \
 	$(G_CAST_CHECKS)

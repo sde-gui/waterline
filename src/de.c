@@ -24,20 +24,20 @@
 #include <glib.h>
 
 static char * de_name = NULL;
-static gboolean initialized = FALSE;
 
 const char * get_de_name(void)
 {
-    if (initialized)
+    if (de_name)
         return de_name;
 
     const char * name = g_getenv("XDG_CURRENT_DESKTOP");
     if (!name)
         name = g_getenv("DESKTOP_SESSION");
 
-    if (name)
-        de_name = g_ascii_strup(name, -1);
-    initialized = TRUE;
+    if (!name)
+        name = "";
+
+    de_name = g_ascii_strup(name, -1);
 
     return de_name;
 }

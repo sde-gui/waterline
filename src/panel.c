@@ -2155,6 +2155,9 @@ Panel* panel_new( const char* config_file, const char* config_name )
 static gboolean start_all_panels(void)
 {
     gchar * panel_dir = wtl_get_config_path("panels", SU_PATH_CONFIG_USER);
+    gchar * panel_dir_w = wtl_get_config_path("panels", SU_PATH_CONFIG_USER_W);
+
+    gboolean save_panels = (!wtl_is_in_kiosk_mode()) && (g_strcmp0(panel_dir, panel_dir_w) != 0);
 
     GDir* dir = g_dir_open(panel_dir, 0, NULL);
 
@@ -2178,16 +2181,21 @@ static gboolean start_all_panels(void)
             char* panel_config = g_build_filename( panel_dir, file_name, NULL );
 
             Panel* panel = panel_new( panel_config, name );
-            if( panel )
-                all_panels = g_slist_prepend( all_panels, panel );
+            if (panel)
+            {
+                all_panels = g_slist_prepend(all_panels, panel);
+                if (save_panels)
+                    panel_save_configuration(panel);
+            }
 
             g_free( panel_config );
             g_free( name );
         }
     }
 
-    g_dir_close( dir );
-    g_free( panel_dir );
+    g_dir_close(dir);
+    g_free(panel_dir);
+    g_free(panel_dir_w);
 
     return all_panels != NULL;
 }

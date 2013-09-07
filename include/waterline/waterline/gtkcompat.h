@@ -26,7 +26,7 @@
 
 
 #if !GTK_CHECK_VERSION(3,0,0)
-#include <sde-utils-jansson/gdkrgba.h>
+#include <sde-utils-gtk/gdkrgba.h>
 #endif // !GTK_CHECK_VERSION(3,0,0)
 
 

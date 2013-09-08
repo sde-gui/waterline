@@ -401,45 +401,43 @@ get_net_wm_window_type(Window win, NetWMWindowType *nwwt)
     Atom *state;
     int num3;
 
-
-    ENTER;
     memset(nwwt, 0, sizeof(*nwwt));
     if (!(state = get_xaproperty(win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num3)))
-        RET();
+        return;
 
     su_log_debug( "%x: netwm state = { ", (unsigned int)win);
-    while (--num3 >= 0) {
+    while (--num3 >= 0)
+    {
         if (state[num3] == a_NET_WM_WINDOW_TYPE_DESKTOP) {
             su_log_debug("NET_WM_WINDOW_TYPE_DESKTOP ");
             nwwt->desktop = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_DOCK) {
-            su_log_debug( "NET_WM_WINDOW_TYPE_DOCK ");
-        nwwt->dock = 1;
-    } else if (state[num3] == a_NET_WM_WINDOW_TYPE_TOOLBAR) {
-            su_log_debug( "NET_WM_WINDOW_TYPE_TOOLBAR ");
-        nwwt->toolbar = 1;
+            su_log_debug2( "NET_WM_WINDOW_TYPE_DOCK ");
+            nwwt->dock = 1;
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_TOOLBAR) {
+            su_log_debug2( "NET_WM_WINDOW_TYPE_TOOLBAR ");
+            nwwt->toolbar = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_MENU) {
-            su_log_debug( "NET_WM_WINDOW_TYPE_MENU ");
+            su_log_debug2( "NET_WM_WINDOW_TYPE_MENU ");
             nwwt->menu = 1;
-    } else if (state[num3] == a_NET_WM_WINDOW_TYPE_UTILITY) {
-            su_log_debug( "NET_WM_WINDOW_TYPE_UTILITY ");
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_UTILITY) {
+            su_log_debug2( "NET_WM_WINDOW_TYPE_UTILITY ");
             nwwt->utility = 1;
-    } else if (state[num3] == a_NET_WM_WINDOW_TYPE_SPLASH) {
-            su_log_debug( "NET_WM_WINDOW_TYPE_SPLASH ");
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_SPLASH) {
+            su_log_debug2( "NET_WM_WINDOW_TYPE_SPLASH ");
             nwwt->splash = 1;
-    } else if (state[num3] == a_NET_WM_WINDOW_TYPE_DIALOG) {
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_DIALOG) {
             su_log_debug( "NET_WM_WINDOW_TYPE_DIALOG ");
             nwwt->dialog = 1;
-    } else if (state[num3] == a_NET_WM_WINDOW_TYPE_NORMAL) {
-            su_log_debug( "NET_WM_WINDOW_TYPE_NORMAL ");
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_NORMAL) {
+            su_log_debug2( "NET_WM_WINDOW_TYPE_NORMAL ");
             nwwt->normal = 1;
-    } else {
-        su_log_debug( "... ");
-    }
+        } else {
+            su_log_debug2( "... ");
+        }
     }
     XFree(state);
     su_log_debug( "}\n");
-    RET();
 }
 
 int

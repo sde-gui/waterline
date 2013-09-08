@@ -392,6 +392,8 @@ static GtkWidget* create_item( MenuCacheItem* item )
     {
         const char * name = menu_cache_item_get_name(item);
         su_log_debug("Name    = %s", name);
+        if (!name)
+            name = "<unknown>"
         mi = gtk_image_menu_item_new_with_label(name);
         GtkWidget * img = gtk_image_new();
         gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(mi), img );

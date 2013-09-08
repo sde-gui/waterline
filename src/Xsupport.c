@@ -45,11 +45,11 @@ enum {
 
 void resolve_atoms()
 {
-    static const char* atom_names[ N_ATOMS ];
-
-    #define A(x) atom_names[ I##x ] = #x;
-    #include <waterline/Xsupport_atoms.h>
-    #undef A
+    static const char * atom_names[ N_ATOMS ] = {
+        #define A(x) #x,
+        #include <waterline/Xsupport_atoms.h>
+        #undef A
+    };
 
     Atom atoms[ N_ATOMS ];
 

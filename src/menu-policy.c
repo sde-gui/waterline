@@ -30,9 +30,10 @@ guint32 visibility_flags = 0;
 MenuCache * panel_menu_cache_new(guint32* visibility_flags)
 {
     MenuCache* cache;
-    if (g_getenv("XDG_MENU_PREFIX") == NULL)
-        g_setenv("XDG_MENU_PREFIX", "lxde-", TRUE);
+/*    if (g_getenv("XDG_MENU_PREFIX") == NULL)
+        g_setenv("XDG_MENU_PREFIX", "lxde-", TRUE);*/
     cache = menu_cache_lookup("applications.menu");
+
     if (visibility_flags)
     {
         const char* de_name = get_de_name();

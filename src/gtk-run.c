@@ -498,7 +498,7 @@ void gtk_run()
     /* get all apps */
     if (!menu_cache)
     {
-        menu_cache = menu_cache_lookup(g_getenv("XDG_MENU_PREFIX") ? "applications.menu" : "lxde-applications.menu" );
+        menu_cache = menu_cache_lookup("applications.menu");
         if (menu_cache)
         {
     /*        menu_cache_reload(menu_cache);

@@ -194,11 +194,11 @@ fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget)
     win =  GDK_WINDOW_XWINDOW(widget->window);
     if (!XGetGeometry(bg->dpy, win, &dummy, &x, &y, &width, &height, &border,
               &depth)) {
-        DBG2("XGetGeometry failed\n");
+        su_log_debug("XGetGeometry failed\n");
         RET(NULL);
     }
     XTranslateCoordinates(bg->dpy, win, bg->xroot, 0, 0, &x, &y, &dummy);
-    DBG("win=%x %dx%d%+d%+d\n", win, width, height, x, y);
+    su_log_debug("win=%x %dx%d%+d%+d\n", win, width, height, x, y);
 
     GdkWindow * root_window = gdk_window_foreign_new_for_display(gtk_widget_get_display(widget), bg->xroot);
     gbgpix = gdk_pixmap_new(root_window, width, height, -1);
@@ -241,14 +241,13 @@ fb_bg_composite(GdkDrawable *base, GdkGC *gc, guint32 tintcolor, gint alpha)
 
     GdkColormap * cmap = gdk_drawable_get_colormap(base);
 
-    DBG("here\n");
     ret = gdk_pixbuf_get_from_drawable (NULL, base, cmap, 0, 0, 0, 0, w, h);
     if (!ret)
         RET();
-    DBG("here w=%d h=%d\n", w, h);
+
     ret2 = gdk_pixbuf_composite_color_simple(ret, w, h,
           GDK_INTERP_HYPER, 255-alpha, MIN(w, h), tintcolor, tintcolor);
-    DBG("here\n");
+
     if (!ret2) {
         g_object_unref(ret);
         RET();
@@ -271,7 +270,7 @@ fb_bg_changed(FbBg *bg)
 
         gcv.tile = bg->pixmap;
         XChangeGC(bg->dpy, bg->gc, GCTile, &gcv);
-        DBG("changed\n");
+        su_log_debug("changed\n");
     }
     RET();
 }

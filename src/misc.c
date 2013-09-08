@@ -64,14 +64,13 @@ guint32 gcolor2rgb24(const GdkColor *color)
     r = color->red * 0xFF / 0xFFFF;
     g = color->green * 0xFF / 0xFFFF;
     b = color->blue * 0xFF / 0xFFFF;
-    DBG("%x %x %x ==> %x %x %x\n", color->red, color->green, color->blue, r, g, b);
 
     i = r & 0xFF;
     i <<= 8;
     i |= g & 0xFF;
     i <<= 8;
     i |= b & 0xFF;
-    DBG("i=%x\n", i);
+
     RET(i);
 }
 

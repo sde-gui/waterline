@@ -277,6 +277,7 @@ void panel_save_configuration(Panel* p)
 
     if (g_file_test( file_path, G_FILE_TEST_EXISTS ) )
     {
+        su_log_debug("copying %s => %s\n", file_path, bak_file_path);
         int r = copyfile(file_path, bak_file_path);
         if (!r)
         {
@@ -285,6 +286,8 @@ void panel_save_configuration(Panel* p)
             goto err;
         }
     }
+
+    su_log_debug("saving panel %s to %s\n", p->name, file_path);
 
     if (!(fp = fopen(file_path, "w")))
     {
@@ -343,6 +346,11 @@ void load_global_config()
         global_config.file_manager_cmd = g_key_file_get_string(kf, command_group, "FileManager", NULL);
         global_config.terminal_cmd     = g_key_file_get_string(kf, command_group, "Terminal", NULL);
         global_config.logout_cmd       = g_key_file_get_string(kf, command_group, "Logout", NULL);
+
+        su_log_debug("FileManager = %s\n", global_config.file_manager_cmd);
+        su_log_debug("Terminal    = %s\n", global_config.terminal_cmd);
+        su_log_debug("Logout      = %s\n", global_config.logout_cmd);
+        su_log_debug("KioskMode   = %s\n", global_config.kiosk_mode ? "true" : "false");
     }
     g_key_file_free(kf);
 

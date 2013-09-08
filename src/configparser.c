@@ -215,10 +215,8 @@ get_line_as_is(char** fp, line *s)
         g_strstrip(s->str);
         if (s->str[0] == '#' || s->str[0] == 0)
         continue;
-        DBG( ">> %s\n", s->str);
         if (!g_ascii_strcasecmp(s->str, "}")) {
             s->type = LINE_BLOCK_END;
-            DBG( "        : line_block_end\n");
             break;
         }
         for (tmp = s->str; isalnum(*tmp); tmp++);
@@ -228,7 +226,6 @@ get_line_as_is(char** fp, line *s)
         } else if  (*tmp2 == '{') {
             s->type = LINE_BLOCK_START;
         } else {
-            DBG( "        : ? <%c>\n", *tmp2);
         }
         break;
     }

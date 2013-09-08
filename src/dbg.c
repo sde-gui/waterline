@@ -26,7 +26,7 @@
 #include <stdarg.h>
 #include <time.h>
 
-int log_level = LOG_WARN;
+int log_level = SU_LOG_WARNING;
 
 
 #define RED_COLOR               "\033[0;31m"
@@ -40,69 +40,132 @@ int log_level = LOG_WARN;
 #define NORMAL_COLOR            "\033[0m"
 
 
-void log_message(int level, const char *string, ...)
+void su_log_message_va(SU_LOG_LEVEL level, const char * format, va_list ap)
 {
-        char *modifier = "";
-        FILE *stream = stderr;
-        switch (level)
-        {
-                case LOG_ERR:
-                {
-                        modifier = RED_COLOR "[ERR] " NORMAL_COLOR;
-                        stream = stderr;
-                        break;
-                }
-                case LOG_WARN:
-                {
-                        modifier = ORANGE_COLOR "[WRN] " NORMAL_COLOR;
-                        break;
-                }
-                case LOG_INFO:
-                {
-                        modifier = GREEN_COLOR "[INF] " NORMAL_COLOR;
-                        break;
-                }
-                case LOG_DBG:
-                {
-                        modifier = TEAL_COLOR "[DBG] " NORMAL_COLOR;
-                        break;
-                }
-        }
+    if (level > log_level)
+        return;
 
-        time_t curtime = time(NULL);
-        struct tm *loctime = localtime(&curtime);
-        char *time_buffer = malloc(256 * sizeof(char));
-        time_buffer[0] = 0;
-        if (loctime != NULL)
-        {
-                char *tb = malloc(256 * sizeof(char));
-                strftime(tb, 256, "%T", loctime);
-                sprintf(time_buffer, "%s ", tb);
-                free(tb);
-        }
+    FILE * stream = stderr;
+    const char * modifier = "";
+    switch (level)
+    {
+            case SU_LOG_ERROR:
+            {
+                    modifier = RED_COLOR "[ERR] " NORMAL_COLOR;
+                    break;
+            }
+            case SU_LOG_WARNING:
+            {
+                    modifier = ORANGE_COLOR "[WRN] " NORMAL_COLOR;
+                    break;
+            }
+            case SU_LOG_INFO:
+            {
+                    modifier = GREEN_COLOR "[INF] " NORMAL_COLOR;
+                    break;
+            }
+            case SU_LOG_DEBUG:
+            {
+                    modifier = TEAL_COLOR "[DBG] " NORMAL_COLOR;
+                    break;
+            }
+            case SU_LOG_DEBUG_SPAM:
+            {
+                    modifier = BLUE_COLOR "[DBG] " NORMAL_COLOR;
+                    break;
+            }
+            default:
+            {
+                    modifier = RED_COLOR "[XXX] " NORMAL_COLOR;
+                    break;
+            }
+    }
 
-        char *f = "%s%s%s\n";
-        int string_len = strlen(string);
-        if (string_len > 0 && string[string_len - 1] == '\n')
-            f = "%s%s%s";
+    time_t current_time = time(NULL);
+    struct tm * local_time = localtime(&current_time);
+    char * time_buffer = malloc(256 * sizeof(char));
+    time_buffer[0] = 0;
+    if (local_time != NULL)
+    {
+            char *tb = malloc(256 * sizeof(char));
+            strftime(tb, 256, "%Y-%m-%d %T", local_time);
+            sprintf(time_buffer, "%s ", tb);
+            free(tb);
+    }
 
-        int len = strlen(string) + strlen(modifier) + strlen(time_buffer) + 3;
+    char *f = "%s%s%s\n";
+    int format_len = strlen(format);
+    if (format_len > 0 && format[format_len - 1] == '\n')
+        f = "%s%s%s";
 
-        char *buffer = (char *) malloc(len + 1);
+    int len = strlen(format) + strlen(modifier) + strlen(time_buffer) + 3;
 
-        snprintf(buffer, len, f, modifier, time_buffer, string);
+    char *buffer = (char *) malloc(len + 1);
 
-        buffer[len] = 0;
+    snprintf(buffer, len, f, modifier, time_buffer, format);
 
-        va_list ap;
-        va_start(ap, string);
+    buffer[len] = 0;
 
-        vfprintf(stream, buffer, ap);
+    vfprintf(stream, buffer, ap);
 
-        free(buffer);
-        free(time_buffer);
-        va_end(ap);
+    free(buffer);
+    free(time_buffer);
+    va_end(ap);
 }
+
+/********************************************************************/
+
+void su_log_message(SU_LOG_LEVEL level, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    su_log_message_va(level, format, ap);
+    va_end(ap);
+}
+
+/********************************************************************/
+
+void su_log_error(const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    su_log_message_va(SU_LOG_ERROR, format, ap);
+    va_end(ap);
+}
+
+void su_log_warning(const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    su_log_message_va(SU_LOG_WARNING, format, ap);
+    va_end(ap);
+}
+
+void su_log_info(const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    su_log_message_va(SU_LOG_INFO, format, ap);
+    va_end(ap);
+}
+
+void su_log_debug(const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    su_log_message_va(SU_LOG_DEBUG, format, ap);
+    va_end(ap);
+}
+
+void su_log_debug2(const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    su_log_message_va(SU_LOG_DEBUG_SPAM, format, ap);
+    va_end(ap);
+}
+
+/********************************************************************/
 
 void print_error_message(const char *string, ...)
 {
@@ -115,3 +178,4 @@ void print_error_message(const char *string, ...)
 
     va_end(ap);
 }
+

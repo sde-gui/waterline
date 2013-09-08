@@ -1422,7 +1422,7 @@ static void task_set_class(Task * tk)
 
     if (class_name != NULL)
     {
-        DBG("Task %s has class name %s\n", tk->name, class_name);
+        su_log_debug("Task %s has class name %s\n", tk->name, class_name);
 
         gboolean name_consumed;
         TaskClass * tc = taskbar_enter_class(tb, class_name, &name_consumed);
@@ -1496,7 +1496,7 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 {
     ENTER;
 
-    DBG("Deleting task %s (0x%x)\n", tk->name, (int)tk);
+    su_log_debug("Deleting task %s (0x%x)\n", tk->name, (int)tk);
 
     if (tk->run_path && tk->run_path != (gchar *)-1)
         g_free(tk->run_path);
@@ -3779,11 +3779,12 @@ static void task_insert_after(Task * tk, Task * tk_prev_new)
             tk->task_flink = tk_prev_new->task_flink;
             tk_prev_new->task_flink = tk;
 
-            DBG("[0x%x] task \"%s\" (0x%x) moved after \"%s\" (0x%x)\n", tb, tk->name, tk, tk_prev_new->name, tk_prev_new);
+            su_log_debug2("[0x%x] task \"%s\" (0x%x) moved after \"%s\" (0x%x)\n",
+                tb, tk->name, tk, tk_prev_new->name, tk_prev_new);
 
             icon_grid_place_child_after(tb->icon_grid, tk->button, tk_prev_new->button);
         } else {
-            DBG("[0x%x] task \"%s\" (0x%x) is in rigth place\n", tb, tk->name, tk);
+            su_log_debug2("[0x%x] task \"%s\" (0x%x) is in rigth place\n", tb, tk->name, tk);
         }
     } else {
         if (tk_prev_old)
@@ -3794,7 +3795,7 @@ static void task_insert_after(Task * tk, Task * tk_prev_new)
         tk->task_flink = tb->task_list;
         tb->task_list = tk;
 
-        DBG("[0x%x] task \"%s\" (0x%x) moved to head\n", tb, tk->name, tk);
+        su_log_debug2("[0x%x] task \"%s\" (0x%x) moved to head\n", tb, tk->name, tk);
 
         icon_grid_place_child_after(tb->icon_grid, tk->button, NULL);
     }
@@ -3845,7 +3846,8 @@ again: ;
     {
         if (tk_cursor == tk)
             continue;
-        DBG("[0x%x] [\"%s\" (0x%x), \"%s\" (0x%x)] => %d\n", tb, tk->name,tk, tk_cursor->name,tk_cursor, task_compare(tk, tk_cursor));
+        SU_LOG_DEBUG2("[0x%x] [\"%s\" (0x%x), \"%s\" (0x%x)] => %d\n",
+            tb, tk->name,tk, tk_cursor->name,tk_cursor, task_compare(tk, tk_cursor));
 
         if (task_compare(tk, tk_cursor) > 0)
             break;
@@ -3978,7 +3980,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     task_build_gui(tb, tk);
                     task_set_names(tk, None);
 
-                    DBG("Creating task %s (0x%x)\n", tk->name, (int)tk);
+                    su_log_debug("Creating task %s (0x%x)\n", tk->name, (int)tk);
 
                     task_set_class(tk);
 

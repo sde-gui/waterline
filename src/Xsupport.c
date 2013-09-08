@@ -250,7 +250,7 @@ void resolve_atoms()
 #else
     int i;
     for (i = 0; i < N_ATOMS; i++) {
-        DBG("Registering atom %s\n", atom_names[i]);
+        su_log_debug("Registering atom %s\n", atom_names[i]);
         if( !  XInternAtoms( GDK_DISPLAY(), ((char**)atom_names) + i,
                1, False, atoms + i) )
         {
@@ -408,7 +408,7 @@ get_utf8_property_list(Window win, Atom atom, int *count)
 
     if (nitems) {
         gchar *val = (gchar *) tmp;
-        DBG("res=%d(%d) nitems=%d val=%s\n", result, Success, nitems, val);
+        su_log_debug("res=%d(%d) nitems=%d val=%s\n", result, Success, nitems, val);
         for (i = 0; i < nitems; i++) {
             if (!val[i])
                 (*count)++;
@@ -419,10 +419,10 @@ get_utf8_property_list(Window win, Atom atom, int *count)
         }
         if (val[nitems-1]) {
             result = nitems - (s - val);
-            DBG("val does not ends by 0, moving last %d bytes\n", result);
+            su_log_debug("val does not ends by 0, moving last %d bytes\n", result);
             g_memmove(s - 1, s, result);
             val[nitems-1] = 0;
-            DBG("s=%s\n", s -1);
+            su_log_debug("s=%s\n", s -1);
             retval[i] = g_strdup(s - 1);
             (*count)++;
         }
@@ -474,7 +474,7 @@ text_property_to_utf8 (const XTextProperty *prop)
                                           prop->nitems,
                                           &list);
 
-  DBG("count=%d\n", count);
+  su_log_debug("count=%d\n", count);
   if (count == 0)
     return NULL;
 
@@ -494,7 +494,7 @@ get_textproperty(Window win, Atom atom)
 
     ENTER;
     if (XGetTextProperty(GDK_DISPLAY(), win, &text_prop, atom)) {
-        DBG("format=%d enc=%d nitems=%d value=%s   \n",
+        su_log_debug("format=%d enc=%d nitems=%d value=%s   \n",
               text_prop.format,
               text_prop.encoding,
               text_prop.nitems,
@@ -592,54 +592,54 @@ get_net_wm_state(Window win, NetWMState *nws)
     if (!(state = get_xaproperty(win, a_NET_WM_STATE, XA_ATOM, &num3)))
         RET();
 
-    DBG( "%x: netwm state = { ", (unsigned int)win);
+    su_log_debug( "%x: netwm state = { ", (unsigned int)win);
     while (--num3 >= 0) {
 
         if (state[num3] == a_NET_WM_STATE_SKIP_PAGER) {
-            DBG("NET_WM_STATE_SKIP_PAGER ");
+            su_log_debug("NET_WM_STATE_SKIP_PAGER ");
             nws->skip_pager = 1;
         } else if (state[num3] == a_NET_WM_STATE_SKIP_TASKBAR) {
-            DBG( "NET_WM_STATE_SKIP_TASKBAR ");
+            su_log_debug( "NET_WM_STATE_SKIP_TASKBAR ");
             nws->skip_taskbar = 1;
         } else if (state[num3] == a_NET_WM_STATE_STICKY) {
-            DBG( "NET_WM_STATE_STICKY ");
+            su_log_debug( "NET_WM_STATE_STICKY ");
             nws->sticky = 1;
         } else if (state[num3] == a_NET_WM_STATE_HIDDEN) {
-            DBG( "NET_WM_STATE_HIDDEN ");
+            su_log_debug( "NET_WM_STATE_HIDDEN ");
             nws->hidden = 1;
         } else if (state[num3] == a_NET_WM_STATE_SHADED) {
-            DBG( "NET_WM_STATE_SHADED ");
+            su_log_debug( "NET_WM_STATE_SHADED ");
             nws->shaded = 1;
         } else if (state[num3] == a_NET_WM_STATE_MODAL) {
-            DBG( "NET_WM_STATE_MODAL ");
+            su_log_debug( "NET_WM_STATE_MODAL ");
             nws->modal = 1;
         } else if (state[num3] == a_NET_WM_STATE_MAXIMIZED_VERT) {
-            DBG( "NET_WM_STATE_MAXIMIZED_VERT ");
+            su_log_debug( "NET_WM_STATE_MAXIMIZED_VERT ");
             nws->maximized_vert = 1;
         } else if (state[num3] == a_NET_WM_STATE_MAXIMIZED_HORZ) {
-            DBG( "NET_WM_STATE_MAXIMIZED_HORZ ");
+            su_log_debug( "NET_WM_STATE_MAXIMIZED_HORZ ");
             nws->maximized_horz = 1;
         } else if (state[num3] == a_NET_WM_STATE_FULLSCREEN) {
-            DBG( "NET_WM_STATE_FULLSCREEN; ");
+            su_log_debug( "NET_WM_STATE_FULLSCREEN; ");
             nws->fullscreen = 1;
         } else if (state[num3] == a_NET_WM_STATE_ABOVE) {
-            DBG( "NET_WM_STATE_ABOVE ");
+            su_log_debug( "NET_WM_STATE_ABOVE ");
             nws->above = 1;
         } else if (state[num3] == a_NET_WM_STATE_BELOW) {
-            DBG( "NET_WM_STATE_BELOW ");
+            su_log_debug( "NET_WM_STATE_BELOW ");
             nws->below = 1;
         } else if (state[num3] == a_NET_WM_STATE_DEMANDS_ATTENTION) {
-            DBG( "NET_WM_STATE_DEMANDS_ATTENTION ");
+            su_log_debug( "NET_WM_STATE_DEMANDS_ATTENTION ");
             nws->demands_attention = 1;
         } else if (state[num3] == a_OB_WM_STATE_UNDECORATED) {
-            DBG( "OB_WM_STATE_UNDECORATED ");
+            su_log_debug( "OB_WM_STATE_UNDECORATED ");
             nws->ob_undecorated = 1;
         } else {
-            DBG( "... ");
+            su_log_debug( "... ");
         }
     }
     XFree(state);
-    DBG( "}\n");
+    su_log_debug( "}\n");
     RET();
 }
 
@@ -655,38 +655,38 @@ get_net_wm_window_type(Window win, NetWMWindowType *nwwt)
     if (!(state = get_xaproperty(win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num3)))
         RET();
 
-    DBG( "%x: netwm state = { ", (unsigned int)win);
+    su_log_debug( "%x: netwm state = { ", (unsigned int)win);
     while (--num3 >= 0) {
         if (state[num3] == a_NET_WM_WINDOW_TYPE_DESKTOP) {
-            DBG("NET_WM_WINDOW_TYPE_DESKTOP ");
+            su_log_debug("NET_WM_WINDOW_TYPE_DESKTOP ");
             nwwt->desktop = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_DOCK) {
-            DBG( "NET_WM_WINDOW_TYPE_DOCK ");
+            su_log_debug( "NET_WM_WINDOW_TYPE_DOCK ");
         nwwt->dock = 1;
     } else if (state[num3] == a_NET_WM_WINDOW_TYPE_TOOLBAR) {
-            DBG( "NET_WM_WINDOW_TYPE_TOOLBAR ");
+            su_log_debug( "NET_WM_WINDOW_TYPE_TOOLBAR ");
         nwwt->toolbar = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_MENU) {
-            DBG( "NET_WM_WINDOW_TYPE_MENU ");
+            su_log_debug( "NET_WM_WINDOW_TYPE_MENU ");
             nwwt->menu = 1;
     } else if (state[num3] == a_NET_WM_WINDOW_TYPE_UTILITY) {
-            DBG( "NET_WM_WINDOW_TYPE_UTILITY ");
+            su_log_debug( "NET_WM_WINDOW_TYPE_UTILITY ");
             nwwt->utility = 1;
     } else if (state[num3] == a_NET_WM_WINDOW_TYPE_SPLASH) {
-            DBG( "NET_WM_WINDOW_TYPE_SPLASH ");
+            su_log_debug( "NET_WM_WINDOW_TYPE_SPLASH ");
             nwwt->splash = 1;
     } else if (state[num3] == a_NET_WM_WINDOW_TYPE_DIALOG) {
-            DBG( "NET_WM_WINDOW_TYPE_DIALOG ");
+            su_log_debug( "NET_WM_WINDOW_TYPE_DIALOG ");
             nwwt->dialog = 1;
     } else if (state[num3] == a_NET_WM_WINDOW_TYPE_NORMAL) {
-            DBG( "NET_WM_WINDOW_TYPE_NORMAL ");
+            su_log_debug( "NET_WM_WINDOW_TYPE_NORMAL ");
             nwwt->normal = 1;
     } else {
-        DBG( "... ");
+        su_log_debug( "... ");
     }
     }
     XFree(state);
-    DBG( "}\n");
+    su_log_debug( "}\n");
     RET();
 }
 

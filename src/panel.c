@@ -275,7 +275,7 @@ static void make_round_corners(Panel *p)
     r = p->round_corners_radius;
     if (2*r > MIN(w, h)) {
         r = MIN(w, h) / 2;
-        DBG("chaning radius to %d\n", r);
+        su_log_debug("chaning radius to %d\n", r);
     }
     b = gdk_pixmap_new(NULL, w, h, 1);
     gc = gdk_gc_new(GDK_DRAWABLE(b));
@@ -843,8 +843,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
 
     ENTER;
 
-    DBG("win  = 0x%x\n", ev->xproperty.window);
-    DBG("type = 0x%x\n", ev->type);
+    su_log_debug2("event_filter: window = 0x%x, type = 0x%x", ev->xproperty.window, ev->type);
 
     if (ev->type != PropertyNotify )
     {
@@ -1231,8 +1230,7 @@ static void panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
 static void calculate_width(int scrw, int wtype, int align, int margin, int *panw, int *x)
 {
     ENTER;
-    DBG("scrw=%d\n", scrw);
-    DBG("IN panw=%d, margin=%d\n", *panw, margin);
+    su_log_debug2("panw=%d, margin=%d scrw=%d\n", *panw, margin, scrw);
     //scrw -= 2;
     if (wtype == WIDTH_PERCENT) {
         /* sanity check */
@@ -1253,7 +1251,7 @@ static void calculate_width(int scrw, int wtype, int align, int margin, int *pan
 
     *panw = MIN(scrw - margin, *panw);
 
-    DBG("OUT panw=%d\n", *panw);
+    su_log_debug2("panw=%d\n", *panw);
     if (align == ALIGN_LEFT)
         *x += margin;
     else if (align == ALIGN_RIGHT) {
@@ -1713,7 +1711,7 @@ panel_start_gui(Panel *p)
     make_round_corners(p);
 
     p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
-    DBG("topxwin = %x\n", p->topxwin);
+    su_log_debug("topxwin = %x\n", p->topxwin);
 
     /* the settings that should be done before window is mapped */
     wm_noinput(p->topxwin);
@@ -2176,9 +2174,9 @@ static gboolean start_all_panels(void)
             char* name = g_strdup(file_name);
             name[strlen(name) - strlen(PANEL_FILE_SUFFIX)] = 0;
 
-            DBG("panel %s\n", name);
-
             char* panel_config = g_build_filename( panel_dir, file_name, NULL );
+
+            su_log_debug("loading panel %s from %s\n", name, panel_config);
 
             Panel* panel = panel_new( panel_config, name );
             if (panel)
@@ -2206,9 +2204,10 @@ int panel_handle_x_error(Display * d, XErrorEvent * ev)
 {
     char buf[256];
 
-    if (log_level >= LOG_WARN) {
+    if (log_level >= SU_LOG_WARNING)
+    {
         XGetErrorText(GDK_DISPLAY(), ev->error_code, buf, 256);
-        LOG(LOG_WARN, "waterline : X error: %s\n", buf);
+        su_log_warning("X error: %s\n", buf);
     }
     return 0;	/* Ignored */
 }

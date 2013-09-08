@@ -40,7 +40,6 @@ waterline_SOURCES = \
 	pixbuf-stuff.c \
 	configurator.c \
 	ev.c \
-	icon-grid.c \
 	panel_config.c \
 	panel_menu.c \
 	panel.c panel_internal.h panel_private.h \
@@ -61,7 +60,6 @@ waterline_include_HEADERS = \
 	$(top_srcdir)/include/waterline/waterline/global.h \
 	$(top_srcdir)/include/waterline/waterline/gtkcompat.h \
 	$(top_srcdir)/include/waterline/waterline/menu-cache-compat.h \
-	$(top_srcdir)/include/waterline/waterline/icon-grid.h \
 	$(top_srcdir)/include/waterline/waterline/libfm.h \
 	$(top_srcdir)/include/waterline/waterline/misc.h \
 	$(top_srcdir)/include/waterline/waterline/panel.h \

@@ -23,8 +23,7 @@
 #include <string.h>
 
 #include <gtk/gtk.h>
-
-#include <waterline/icon-grid.h>
+#include <sde-utils-gtk.h>
 
 #include "na-tray-manager.h"
 #include "fixedtip.h"

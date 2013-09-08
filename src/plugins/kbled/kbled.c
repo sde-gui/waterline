@@ -36,7 +36,6 @@
 #include <waterline/misc.h>
 #include <waterline/paths.h>
 #include <waterline/plugin.h>
-#include <waterline/icon-grid.h>
 
 #include <waterline/gtkcompat.h>
 

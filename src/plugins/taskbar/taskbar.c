@@ -49,7 +49,7 @@
 #include <waterline/plugin.h>
 #include <waterline/Xsupport.h>
 #include "icon.xpm"
-#include <waterline/icon-grid.h>
+#include <waterline/pixbuf-stuff.h>
 
 //#define DEBUG
 

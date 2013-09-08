@@ -35,7 +35,6 @@
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
 #include <waterline/Xsupport.h>
-#include <waterline/icon-grid.h>
 
 #include <waterline/dbg.h>
 

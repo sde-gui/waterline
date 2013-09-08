@@ -49,7 +49,6 @@
 #include <waterline/misc.h>
 #include <waterline/fb_button.h>
 #include <waterline/plugin.h>
-#include <waterline/icon-grid.h>
 #include "menu-policy.h"
 
 #include <waterline/dbg.h>

@@ -365,6 +365,24 @@ static gboolean on_menu_button_release(GtkWidget* mi, GdkEventButton* evt, MenuC
     return FALSE;
 }
 
+static char * str_remove_trailing_percent_args(char * s)
+{
+    if (!s)
+        return NULL;
+
+    while(1)
+    {
+        s = g_strstrip(s);
+        int l = strlen(s);
+        if (l > 4 && s[l - 3] == ' ' && s[l - 2] == '%')
+            s[l - 3] = 0;
+        else
+            break;
+    }
+
+    return s;
+}
+
 static GtkWidget* create_item( MenuCacheItem* item )
 {
     GtkWidget* mi;
@@ -381,6 +399,7 @@ static GtkWidget* create_item( MenuCacheItem* item )
         {
             const gchar * tooltip = menu_cache_item_get_comment(item);
             su_log_debug("Tooltip = %s", tooltip);
+
 /*
             FIXME: to be implemented in menu-cache
             if (su_str_empty(tooltip))
@@ -390,25 +409,8 @@ static GtkWidget* create_item( MenuCacheItem* item )
 
             const gchar * commandline = menu_cache_app_get_exec(MENU_CACHE_APP(item));
             su_log_debug("Exec    = %s", commandline);
-            gchar ** commandline_list = NULL;
-            if (commandline)
-                commandline_list = g_strsplit_set(commandline, " \t", 0);
 
-            const gchar * executable = NULL;
-
-            if (commandline_list && *commandline_list)
-            {
-                executable = *commandline_list;
-                gchar ** p;
-                for (p = commandline_list + 1; *p; p++)
-                {
-                     if (**p != '%')
-                     {
-                         executable = NULL;
-                         break;
-                     }
-                }
-            }
+            gchar * executable = str_remove_trailing_percent_args(g_strdup(commandline));
 
             if (executable)
             {
@@ -428,7 +430,7 @@ static GtkWidget* create_item( MenuCacheItem* item )
                 }
             }
 
-            g_strfreev(commandline_list);
+            g_free(executable);
 
             if (additional_tooltip)
             {

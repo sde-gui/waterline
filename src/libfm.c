@@ -25,14 +25,14 @@
 
 #include <gtk/gtk.h>
 
-#ifndef DISABLE_LIBFM
+#ifndef DISABLE_LIBSMFM
 #include <libsmfm-core/fm-file-info.h>
 #include <libsmfm-gtk/fm-file-menu.h>
 #include <libsmfm-core/fm-config.h>
 #endif
 
 
-#ifndef DISABLE_LIBFM
+#ifndef DISABLE_LIBSMFM
 
 static gboolean (*__fm_gtk_init)(FmConfig* config) = NULL;
 

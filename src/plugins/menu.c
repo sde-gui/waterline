@@ -372,13 +372,15 @@ static GtkWidget* create_item( MenuCacheItem* item )
         mi = gtk_separator_menu_item_new();
     else
     {
-        GtkWidget* img;
-        mi = gtk_image_menu_item_new_with_label( menu_cache_item_get_name(item) );
-        img = gtk_image_new();
+        const char * name = menu_cache_item_get_name(item);
+        su_log_debug("Name    = %s", name);
+        mi = gtk_image_menu_item_new_with_label(name);
+        GtkWidget * img = gtk_image_new();
         gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(mi), img );
         if( menu_cache_item_get_type(item) == MENU_CACHE_TYPE_APP )
         {
             const gchar * tooltip = menu_cache_item_get_comment(item);
+            su_log_debug("Tooltip = %s", tooltip);
 /*
             FIXME: to be implemented in menu-cache
             if (su_str_empty(tooltip))
@@ -387,7 +389,7 @@ static GtkWidget* create_item( MenuCacheItem* item )
             gchar * additional_tooltip = NULL;
 
             const gchar * commandline = menu_cache_app_get_exec(MENU_CACHE_APP(item));
-
+            su_log_debug("Exec    = %s", commandline);
             gchar ** commandline_list = NULL;
             if (commandline)
                 commandline_list = g_strsplit_set(commandline, " \t", 0);

@@ -90,9 +90,11 @@ typedef struct _lb_t {
 
     Plugin * plug;
 
+/*
     input_t input_title;
     input_t input_icon;
     input_t input_tooltip;
+*/
     input_t input_general;
 
     int input_restart_interval;
@@ -123,9 +125,11 @@ static su_json_option_definition option_definitions[] = {
 
     SU_JSON_OPTION(bool, interactive_update),
     SU_JSON_OPTION(bool, input_restart_interval),
+/*
     SU_JSON_OPTION(string, input_title.command),
     SU_JSON_OPTION(string, input_tooltip.command),
     SU_JSON_OPTION(string, input_icon.command),
+*/
     SU_JSON_OPTION(string, input_general.command),
 
     {0,}
@@ -417,6 +421,7 @@ static void lb_set_bgcolor(lb_t * lb, gchar * color_s)
 
 static void lb_input(lb_t * lb, input_t * input, gchar * line)
 {
+/*
     if (input == &lb->input_title)
     {
         fb_button_set_label_markup(lb->button, line);
@@ -430,7 +435,7 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
         int icon_size = plugin_get_icon_size(lb->plug);
         fb_button_set_from_file(lb->button, line, icon_size, icon_size);
     }
-    else if (input == &lb->input_general)
+    else */if (input == &lb->input_general)
     {
         gchar ** parts = g_strsplit_set(line, " \t", 2);
         if (g_strv_length(parts) == 2)
@@ -552,12 +557,14 @@ static gboolean lb_scroll_event(GtkWidget * widget, GdkEventScroll * event, lb_t
 
 static gboolean lb_input_timeout(lb_t * lb)
 {
+/*
     if (lb->input_title.eof)
         input_start(&lb->input_title);
     if (lb->input_tooltip.eof)
         input_start(&lb->input_tooltip);
     if (lb->input_icon.eof)
         input_start(&lb->input_icon);
+*/
     if (lb->input_general.eof)
         input_start(&lb->input_general);
 
@@ -686,9 +693,11 @@ static void lb_apply_configuration(Plugin * p)
 
     if (lb->interactive_update)
     {
+/*
         input_start(&lb->input_title);
         input_start(&lb->input_tooltip);
         input_start(&lb->input_icon);
+*/
         input_start(&lb->input_general);
 
         if (lb->input_restart_interval)
@@ -696,9 +705,11 @@ static void lb_apply_configuration(Plugin * p)
     }
     else
     {
+/*
         input_stop(&lb->input_title);
         input_stop(&lb->input_tooltip);
         input_stop(&lb->input_icon);
+*/
         input_stop(&lb->input_general);
     }
 }
@@ -711,10 +722,11 @@ static int lb_constructor(Plugin *p)
     lb_t * lb = g_new0(lb_t, 1);
     lb->plug = p;
     plugin_set_priv(p, lb);
-
+/*
     lb->input_title.lb = lb;
     lb->input_icon.lb = lb;
     lb->input_tooltip.lb = lb;
+*/
     lb->input_general.lb = lb;
 
     lb->icon_path = NULL;
@@ -763,10 +775,11 @@ static void lb_destructor(Plugin * p)
 
     if (lb->input_timeout)
         g_source_remove(lb->input_timeout);
-
+/*
     input_stop(&lb->input_title);
     input_stop(&lb->input_tooltip);
     input_stop(&lb->input_icon);
+*/
     input_stop(&lb->input_general);
 
     if (lb->bg_color_s)
@@ -794,9 +807,11 @@ static void lb_destructor(Plugin * p)
     g_free(lb->command3_override);
     g_free(lb->scroll_up_command_override);
     g_free(lb->scroll_down_command_override);
+/*
     g_free(lb->input_title.command);
     g_free(lb->input_tooltip.command);
     g_free(lb->input_icon.command);
+*/
     g_free(lb->input_general.command);
     g_free(lb);
 }
@@ -834,10 +849,14 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
         "int-min-value", (gpointer)&min_input_restart_interval, (GType)CONF_TYPE_SET_PROPERTY,
         "int-max-value", (gpointer)&max_input_restart_interval, (GType)CONF_TYPE_SET_PROPERTY,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+/*
         _("Title update command")  , &lb->input_title.command, (GType)CONF_TYPE_STR,
         _("Tooltip  update command"), &lb->input_tooltip.command, (GType)CONF_TYPE_STR,
         _("Icon path update command"), &lb->input_icon.command, (GType)CONF_TYPE_STR,
         _("General update command"), &lb->input_general.command, (GType)CONF_TYPE_STR,
+*/
+        _("Сommand"), &lb->input_general.command, (GType)CONF_TYPE_STR,
+
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
 
         NULL);

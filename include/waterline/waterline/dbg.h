@@ -19,12 +19,11 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define ERR(fmt, args...) print_error_message(fmt, ## args)
-
 #define DBG2(fmt, args...) fprintf(stderr, "%s:%s:%-5d: " fmt, __FILE__,  __FUNCTION__, __LINE__, ## args)
 #define ENTER2          do { fprintf(stderr, "%s:%s:%-5d: ENTER\n",  __FILE__,__FUNCTION__, __LINE__); } while(0)
 #define RET2(args...)   do { fprintf(stderr, "%s:%s:%-5d: RETURN\n",  __FILE__,__FUNCTION__, __LINE__);\
 return args; } while(0)
+
 
 typedef enum _SU_LOG_LEVEL {
     SU_LOG_NONE,
@@ -45,9 +44,13 @@ void su_log_info      (const char * format, ...);
 void su_log_debug     (const char * format, ...);
 void su_log_debug2    (const char * format, ...);
 
-void print_error_message(const char *string, ...);
+extern int su_log_level;
 
-#define SU_LOG_DEBUG2(fmt, args...) do { if (log_level >= SU_LOG_DEBUG_2) su_log_debug2(fmt, ## args); } while(0)
+#define SU_LOG_DEBUG(fmt, args...)  do { if (su_log_level >= SU_LOG_DEBUG  ) su_log_debug(fmt, ## args); } while(0)
+#define SU_LOG_DEBUG2(fmt, args...) do { if (su_log_level >= SU_LOG_DEBUG_2) su_log_debug2(fmt, ## args); } while(0)
+
+
+void su_print_error_message(const char *string, ...);
 
 #ifdef DEBUG
 
@@ -66,4 +69,4 @@ return args; } while(0)
 
 #endif
 
-extern int log_level;
+

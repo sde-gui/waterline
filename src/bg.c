@@ -205,7 +205,7 @@ fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget)
     g_object_unref(G_OBJECT(root_window));
 
     if (!gbgpix) {
-        ERR("gdk_pixmap_new failed\n");
+        su_print_error_message("gdk_pixmap_new failed\n");
         RET(NULL);
     }
 

@@ -179,7 +179,7 @@ gboolean wtl_launch_app(const char* exec, GList* files, gboolean in_terminal)
     //g_print("%s\n", cmd);
 
     if (! g_spawn_command_line_async(cmd, &error) ) {
-        ERR("can't spawn %s\nError is %s\n", cmd, error->message);
+        su_print_error_message("can't spawn %s\nError is %s\n", cmd, error->message);
         g_error_free (error);
     }
     g_free(cmd);

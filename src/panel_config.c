@@ -281,7 +281,7 @@ void panel_save_configuration(Panel* p)
         int r = copyfile(file_path, bak_file_path);
         if (!r)
         {
-            ERR("can't save .bak file %s:", bak_file_path);
+            su_print_error_message("can't save .bak file %s:", bak_file_path);
             perror(NULL);
             goto err;
         }
@@ -291,7 +291,7 @@ void panel_save_configuration(Panel* p)
 
     if (!(fp = fopen(file_path, "w")))
     {
-        ERR("can't open for write %s:", file_path);
+        su_print_error_message("can't open for write %s:", file_path);
         perror(NULL);
         goto err;
     }
@@ -300,7 +300,7 @@ void panel_save_configuration(Panel* p)
 
     if (json_dumpf(p->json, fp, JSON_INDENT(2) | JSON_PRESERVE_ORDER) != 0)
     {
-        ERR("failed to write panel configuration: %s\n", file_path);
+        su_print_error_message("failed to write panel configuration: %s\n", file_path);
         goto err;
     }
 

@@ -1242,7 +1242,7 @@ static void calculate_width(int scrw, int wtype, int align, int margin, int *pan
     }
 
     if (margin > scrw) {
-        ERR("margin is bigger then edge size %d > %d. Ignoring margin\n", margin, scrw);
+        su_print_error_message("margin is bigger then edge size %d > %d. Ignoring margin\n", margin, scrw);
         margin = 0;
     }
 
@@ -1966,7 +1966,7 @@ panel_parse_plugin(Panel *p, json_t * json_plugin)
     su_json_dot_get_string(json_plugin, "type", "", &type);
 
     if (su_str_empty(type) || !(plugin = plugin_load(type))) {
-        ERR( "can't load %s plugin\n", type ? type : "(null)");
+        su_print_error_message( "can't load %s plugin\n", type ? type : "(null)");
         goto error;
     }
 
@@ -1980,7 +1980,7 @@ panel_parse_plugin(Panel *p, json_t * json_plugin)
     plugin->json = json_incref(json_plugin);
 
     if (!plugin_start(plugin)) {
-        ERR( "can't start plugin %s\n", type);
+        su_print_error_message( "can't start plugin %s\n", type);
         goto error;
     }
 
@@ -2015,14 +2015,14 @@ int panel_start(Panel *p, const char * configuration, const char * source)
     if (!json)
     {
         gchar * error_message = format_json_error(&error, source);
-        ERR("%s\n", error_message);
+        su_print_error_message("%s\n", error_message);
         g_free(error_message);
         return 0;
     }
 
     if (!json_is_object(json))
     {
-        ERR("%s: toplevel item should be object\n", source);
+        su_print_error_message("%s: toplevel item should be object\n", source);
         json_decref(json);
         return 0;
     }
@@ -2033,7 +2033,7 @@ int panel_start(Panel *p, const char * configuration, const char * source)
     json_t * json_global = json_object_get(json, "global");
     if (!json_is_object(json_global))
     {
-        ERR( "%s: configuration file must contain global section\n", source);
+        su_print_error_message( "%s: configuration file must contain global section\n", source);
     }
 
     panel_read_global_configuration_from_json_object(p);
@@ -2140,7 +2140,7 @@ Panel* panel_new( const char* config_file, const char* config_name )
 
     if (!panel_start(panel, fp, config_file))
     {
-        ERR( "can't start panel\n");
+        su_print_error_message( "can't start panel\n");
         panel_destroy(panel);
         panel = NULL;
     }
@@ -2204,7 +2204,7 @@ int panel_handle_x_error(Display * d, XErrorEvent * ev)
 {
     char buf[256];
 
-    if (log_level >= SU_LOG_WARNING)
+    if (su_log_level >= SU_LOG_WARNING)
     {
         XGetErrorText(GDK_DISPLAY(), ev->error_code, buf, 256);
         su_log_warning("X error: %s\n", buf);
@@ -2376,7 +2376,7 @@ int main(int argc, char *argv[], char *env[])
     resolve_atoms();
     update_net_supported();
 
-#define NEXT_ARGUMENT(s) if (++i >= argc) { ERR(s); goto print_usage_and_exit; }
+#define NEXT_ARGUMENT(s) if (++i >= argc) { su_print_error_message(s); goto print_usage_and_exit; }
 
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
@@ -2394,7 +2394,7 @@ int main(int argc, char *argv[], char *env[])
             exit(0);
         } else if (!strcmp(argv[i], "--log")) {
             NEXT_ARGUMENT("missing log level\n")
-            log_level = atoi(argv[i]);
+            su_log_level = atoi(argv[i]);
         } else if (!strcmp(argv[i], "--profile") || !strcmp(argv[i], "-p")) {
             NEXT_ARGUMENT("missing profile name\n")
             cprofile = g_strdup(argv[i]);
@@ -2412,7 +2412,7 @@ int main(int argc, char *argv[], char *env[])
             NEXT_ARGUMENT("missing colormap argument\n");
             force_colormap = g_strdup(argv[i]);
         } else {
-            ERR("unrecognized option: %s\n", argv[i]);
+            su_print_error_message("unrecognized option: %s\n", argv[i]);
             goto print_usage_and_exit;
         }
     }
@@ -2446,7 +2446,7 @@ restart:
 
     if (!start_all_panels())
     {
-        ERR("No panels started. Creating an empty panel...\n");
+        su_print_error_message("No panels started. Creating an empty panel...\n");
         create_empty_panel();
     }
 

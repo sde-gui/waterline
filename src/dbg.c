@@ -26,7 +26,7 @@
 #include <stdarg.h>
 #include <time.h>
 
-int log_level = SU_LOG_WARNING;
+int su_log_level = -1;
 
 
 #define RED_COLOR               "\033[0;31m"
@@ -42,7 +42,16 @@ int log_level = SU_LOG_WARNING;
 
 void su_log_message_va(SU_LOG_LEVEL level, const char * format, va_list ap)
 {
-    if (level > log_level)
+    if (su_log_level < 0)
+    {
+        const char * s = g_getenv("SDE_UTILS_LOG_LEVEL");
+        if (s)
+            su_log_level = atoi(s);
+        else
+            su_log_level = SU_LOG_WARNING;
+    }
+
+    if (level > su_log_level)
         return;
 
     FILE * stream = stderr;
@@ -164,7 +173,7 @@ void su_log_debug2(const char * format, ...)
 
 /********************************************************************/
 
-void print_error_message(const char *string, ...)
+void su_print_error_message(const char *string, ...)
 {
     fprintf(stderr, "%s: ", g_get_prgname());
 

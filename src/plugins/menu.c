@@ -136,7 +136,7 @@ spawn_app(GtkWidget *widget, gpointer data)
     ENTER;
     if (data) {
         if (! g_spawn_command_line_async(data, &error) ) {
-            ERR("can't spawn %s\nError is %s\n", (char *)data, error->message);
+            su_print_error_message("can't spawn %s\nError is %s\n", (char *)data, error->message);
             g_error_free (error);
         }
     }
@@ -717,7 +717,7 @@ read_item(Plugin *p, char** fp)
                         }
                     }
                 } else {
-                    ERR( "menu/item: unknown var %s\n", s.t[0]);
+                    su_print_error_message( "menu/item: unknown var %s\n", s.t[0]);
                     goto error;
                 }
             }
@@ -764,7 +764,7 @@ read_separator(Plugin *p, char **fp)
     if( fp )
     {
         while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-            ERR("menu: error - separator can not have paramteres\n");
+            su_print_error_message("menu: error - separator can not have paramteres\n");
             RET(NULL);
         }
     }
@@ -792,7 +792,7 @@ read_recently_used_menu(GtkMenu* menu, Plugin *p, char** fp)
     if( fp )
     {
         while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-            ERR("menu: error - system can not have paramteres\n");
+            su_print_error_message("menu: error - system can not have paramteres\n");
             return;
         }
     }
@@ -910,10 +910,10 @@ read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
 		else if (!g_ascii_strcasecmp(s.t[0], "showtips"))
 		    show_tips = su_str_to_enum(bool_pair, s.t[1], show_tips);
 		else {
-		    ERR("menu: unknown var %s\n", s.t[0]);
+		    su_print_error_message("menu: unknown var %s\n", s.t[0]);
 		}
 	    } else {
-		ERR("menu: illegal in this context %s\n", s.str);
+		su_print_error_message("menu: illegal in this context %s\n", s.str);
 		goto error;
 	    }
         }
@@ -979,7 +979,7 @@ read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
         m->menu_cache = panel_menu_cache_new(&flags);
         if (m->menu_cache == NULL)
         {
-            ERR("error loading applications menu");
+            su_print_error_message("error loading applications menu");
             return;
         }
         m->visibility_flags = flags;
@@ -989,7 +989,7 @@ read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
     if( fp )
     {
         while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-            ERR("menu: error - system can not have parameters\n");
+            su_print_error_message("menu: error - system can not have parameters\n");
             return;
         }
     }
@@ -1016,7 +1016,7 @@ read_include(Plugin *p, char **fp)
                 if (!g_ascii_strcasecmp(s.t[0], "name"))
                     name = su_path_expand_tilda(s.t[1]);
                 else  {
-                    ERR( "menu/include: unknown var %s\n", s.t[0]);
+                    su_print_error_message( "menu/include: unknown var %s\n", s.t[0]);
                     RET();
                 }
             }
@@ -1027,7 +1027,7 @@ read_include(Plugin *p, char **fp)
         m->files = g_slist_prepend(m->files, fp);
         p->fp = fp;
     } else {
-        ERR("Can't include %s\n", name);
+        su_print_error_message("Can't include %s\n", name);
     }
     if (name) g_free(name);
 #endif
@@ -1069,11 +1069,11 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
                 read_include(p, fp);
                 continue;
             } else {
-                ERR("menu: unknown block %s\n", s.t[0]);
+                su_print_error_message("menu: unknown block %s\n", s.t[0]);
                 goto error;
             }
             if (!mi) {
-                ERR("menu: can't create menu item\n");
+                su_print_error_message("menu: can't create menu item\n");
                 goto error;
             }
             gtk_widget_show(mi);
@@ -1088,7 +1088,7 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
             else if (!g_ascii_strcasecmp(s.t[0], "tintcolor"))
                 gdk_color_parse( s.t[1], &color);
             else {
-                ERR("menu: unknown var %s\n", s.t[0]);
+                su_print_error_message("menu: unknown var %s\n", s.t[0]);
             }
         } else if (s.type == LINE_NONE) {
             if (m->files) {
@@ -1099,7 +1099,7 @@ read_submenu(Plugin *p, char** fp, gboolean as_item)
                 m->files = g_slist_delete_link(m->files, m->files);
             }
         }  else {
-            ERR("menu: illegal in this context %s\n", s.str);
+            su_print_error_message("menu: illegal in this context %s\n", s.str);
             goto error;
         }
     }
@@ -1183,7 +1183,7 @@ menu_constructor(Plugin *p)
 
     m->config_start = start = *fp;
     if (!read_submenu(p, fp, FALSE)) {
-        ERR("menu: plugin init failed\n");
+        su_print_error_message("menu: plugin init failed\n");
         return 0;
     }
     m->config_end = *fp - 1;

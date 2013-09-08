@@ -86,7 +86,7 @@ wtl_put_str( FILE* fp, const char* name, const char* val )
 
     if (strchr(val, '\n'))
     {
-        ERR("Value of a config variable cannot contain newline character. Variable %s ignored.\n", name);
+        su_print_error_message("Value of a config variable cannot contain newline character. Variable %s ignored.\n", name);
         return 0;
     }
 
@@ -190,7 +190,7 @@ wtl_get_line(char**fp, line *s)
             *tmp = 0;
             s->type = LINE_BLOCK_START;
         } else {
-            ERR( "parser: unknown token: '%c'\n", *tmp2);
+            su_print_error_message( "parser: unknown token: '%c'\n", *tmp2);
         }
         break;
     }

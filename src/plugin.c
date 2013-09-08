@@ -143,7 +143,7 @@ static PluginClass * plugin_load_dynamic(const char * type, const gchar * path)
 
     if (m == NULL)
     {
-        ERR("%s: %s\n", path, g_module_error());
+        su_print_error_message("%s: %s\n", path, g_module_error());
         goto err;
     }
 
@@ -154,43 +154,43 @@ static PluginClass * plugin_load_dynamic(const char * type, const gchar * path)
     if (( ! g_module_symbol(m, class_name, &tmpsym))
     || ((pc = tmpsym) == NULL))
     {
-        ERR("%s.so is not a waterline plugin: symbol %s not found\n", type, class_name);
+        su_print_error_message("%s.so is not a waterline plugin: symbol %s not found\n", type, class_name);
         goto err;
     }
 
     if (pc->structure_magic != PLUGINCLASS_MAGIC)
     {
-        ERR("%s.so is not a waterline plugin: invalid magic value 0x%lx (should be 0x%lx)\n", type, pc->structure_magic, PLUGINCLASS_MAGIC);
+        su_print_error_message("%s.so is not a waterline plugin: invalid magic value 0x%lx (should be 0x%lx)\n", type, pc->structure_magic, PLUGINCLASS_MAGIC);
         goto err;
     }
 
     if (pc->structure_version != PLUGINCLASS_VERSION)
     {
-        ERR("%s.so: invalid plugin class version: %d\n", type, pc->structure_version);
+        su_print_error_message("%s.so: invalid plugin class version: %d\n", type, pc->structure_version);
         goto err;
     }
 
     if (pc->structure_subversion != 0)
     {
-        ERR("%s.so: unknown plugin class subversion: %d\n", type, pc->structure_subversion);
+        su_print_error_message("%s.so: unknown plugin class subversion: %d\n", type, pc->structure_subversion);
         /* not fatal error */
     }
 
     if (pc->structure_base_size != PLUGINCLASS_BASE_SIZE)
     {
-        ERR("%s.so: invalid plugin class base size: %d (should be %d)\n", type, pc->structure_base_size, PLUGINCLASS_BASE_SIZE);
+        su_print_error_message("%s.so: invalid plugin class base size: %d (should be %d)\n", type, pc->structure_base_size, PLUGINCLASS_BASE_SIZE);
         goto err;
     }
 
     if (pc->structure_actual_size < pc->structure_base_size)
     {
-        ERR("%s.so: invalid plugin class actual size: %d (should be not less than %d)\n", type, pc->structure_actual_size, pc->structure_base_size);
+        su_print_error_message("%s.so: invalid plugin class actual size: %d (should be not less than %d)\n", type, pc->structure_actual_size, pc->structure_base_size);
         goto err;
     }
 
     if (strcmp(type, pc->type) != 0)
     {
-        ERR("%s.so: invalid plugin class type: %s\n", type, pc->type);
+        su_print_error_message("%s.so: invalid plugin class type: %s\n", type, pc->type);
         goto err;
     }
 

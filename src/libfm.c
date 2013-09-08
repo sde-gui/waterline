@@ -70,13 +70,13 @@ gboolean wtl_fm_init(void)
 */
     if (!libfm)
     {
-        ERR("Failed load libsmfm-gtk2.so.4");
+        su_print_error_message("Failed load libsmfm-gtk2.so.4");
         goto fail;
     }
 
 #define bind_name(name) if (! g_module_symbol(libfm, #name, (gpointer * ) &__##name) ) \
 {\
-    ERR("Failed resolve %s\n", #name); \
+    su_print_error_message("Failed resolve %s\n", #name); \
     goto fail;\
 }
 

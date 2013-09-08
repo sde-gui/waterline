@@ -62,18 +62,18 @@ static void load_implementation(void)
     GModule * m = g_module_open(path, 0);
     if (!m)
     {
-        ERR("%s: %s\n", path, g_module_error());
+        su_print_error_message("%s: %s\n", path, g_module_error());
         goto err;
     }
 
     if (!g_module_symbol(m, "panel_configure", (gpointer*) &_panel_configure))
     {
-        ERR("%s: symbol %s not found\n", path, "panel_configure");
+        su_print_error_message("%s: symbol %s not found\n", path, "panel_configure");
     }
 
     if (!g_module_symbol(m, "configurator_remove_plugin_from_list", (gpointer*) &_configurator_remove_plugin_from_list))
     {
-        ERR("%s: symbol %s not found\n", path, "configurator_remove_plugin_from_list");
+        su_print_error_message("%s: symbol %s not found\n", path, "configurator_remove_plugin_from_list");
     }
 
 err:

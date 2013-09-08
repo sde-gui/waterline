@@ -843,8 +843,6 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
 
     ENTER;
 
-    su_log_debug2("event_filter: window = 0x%x, type = 0x%x", ev->xproperty.window, ev->type);
-
     if (ev->type != PropertyNotify )
     {
         if( ev->type == DestroyNotify )
@@ -858,6 +856,8 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
     win = ev->xproperty.window;
     if (win == GDK_ROOT_WINDOW())
     {
+        su_log_debug2("PropertyNotify: atom = 0x%x", at);
+
         if (at == a_NET_CLIENT_LIST)
         {
             fb_ev_emit(fbev, EV_CLIENT_LIST);

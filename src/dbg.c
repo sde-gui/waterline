@@ -83,34 +83,31 @@ void su_log_message_va(SU_LOG_LEVEL level, const char * format, va_list ap)
 
     time_t current_time = time(NULL);
     struct tm * local_time = localtime(&current_time);
-    char * time_buffer = malloc(256 * sizeof(char));
+    char time_buffer[256];
     time_buffer[0] = 0;
     if (local_time != NULL)
     {
-            char *tb = malloc(256 * sizeof(char));
-            strftime(tb, 256, "%Y-%m-%d %T", local_time);
-            sprintf(time_buffer, "%s ", tb);
-            free(tb);
+            strftime(time_buffer, 256, "%Y-%m-%d %T ", local_time);
     }
 
-    char *f = "%s%s%s\n";
+    const char * f = "%s%s["LIGHT_YELLOW_COLOR"%s"NORMAL_COLOR"] %s\n";
     int format_len = strlen(format);
     if (format_len > 0 && format[format_len - 1] == '\n')
-        f = "%s%s%s";
+        f = "%s%s["LIGHT_YELLOW_COLOR"%s"NORMAL_COLOR"] %s";
 
-    int len = strlen(format) + strlen(modifier) + strlen(time_buffer) + 3;
+    const char * program_name = g_get_prgname();
 
-    char *buffer = (char *) malloc(len + 1);
+    int len = strlen(format) + strlen(modifier) + strlen(time_buffer) + strlen(program_name) + 20;
 
-    snprintf(buffer, len, f, modifier, time_buffer, format);
+    char * buffer = (char *) malloc(len + 1);
+
+    snprintf(buffer, len, f, modifier, time_buffer, program_name, format);
 
     buffer[len] = 0;
 
     vfprintf(stream, buffer, ap);
 
     free(buffer);
-    free(time_buffer);
-    va_end(ap);
 }
 
 /********************************************************************/

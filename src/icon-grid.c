@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2011-2013 Vadim Ushakov
  * Copyright (c) 2009 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,12 +18,8 @@
  */
 
 #include <gtk/gtk.h>
-#include <gtk/gtkprivate.h>
-#include <string.h>
 
 #include <waterline/icon-grid.h>
-#include <waterline/panel.h>
-#include <waterline/plugin.h>
 
 //#define DEBUG
 
@@ -55,12 +52,7 @@ static gboolean icon_grid_placement(IconGrid * ig)
 
     /* Make sure the container is visible. */
     gtk_widget_show(ig->container);
-#if 0
-    /* Erase the window. */
-    GdkWindow * window = ig->widget->window;
-    if (window != NULL)
-        panel_determine_background_pixmap(ig->panel, ig->widget, window);
-#endif
+
     /* Get and save the desired container geometry. */
     ig->container_width = ig->container->allocation.width;
     ig->container_height = ig->container->allocation.height;
@@ -222,10 +214,6 @@ static gboolean icon_grid_placement(IconGrid * ig)
 //    if (window != NULL)
 //        gdk_window_invalidate_rect(window, NULL, TRUE);
 //    gtk_widget_queue_draw(ig->container);
-
-    /* If the icon grid contains sockets, do special handling to get the background erased. */
-/*    if (contains_sockets)
-        plugin_widget_set_background(ig->widget, ig->panel);*/
 
     RET(FALSE);
 }
@@ -462,15 +450,13 @@ static void icon_grid_demand_resize(IconGrid * ig)
 /* Establish an icon grid in a specified container widget.
  * The icon grid manages the contents of the container.
  * The orientation, geometry of the elements, and spacing can be varied.  All elements are the same size. */
-IconGrid * icon_grid_new(
-    Panel * panel, GtkWidget * container,
+IconGrid * icon_grid_new(GtkWidget * container,
     GtkOrientation orientation, gint child_width, gint child_height, gint spacing, gint border, gint target_dimension)
 {
     ENTER;
 
     /* Create a structure representing the icon grid and collect the parameters. */
     IconGrid * ig = g_new0(IconGrid, 1);
-    ig->panel = panel;
     ig->container = container;
     ig->orientation = orientation;
     ig->child_width = child_width;

@@ -748,7 +748,7 @@ static int pager_constructor(Plugin * plug)
 
     /* Create an icon grid manager to manage the drawing areas within the container. */
     GtkOrientation bo = (plugin_get_orientation(plug) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
-    pg->icon_grid = icon_grid_new(plugin_panel(plug), pwid, bo,
+    pg->icon_grid = icon_grid_new(pwid, bo,
         (plugin_get_icon_size(plug) - BORDER_WIDTH * 2) * pg->aspect_ratio,
         plugin_get_icon_size(plug) - BORDER_WIDTH * 2,
         1, BORDER_WIDTH,

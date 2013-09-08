@@ -5011,7 +5011,7 @@ static void taskbar_build_gui(Plugin * p)
     /* Make container for task buttons as a child of top level widget. */
     GtkOrientation bo = (plugin_get_orientation(p) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     tb->icon_grid = icon_grid_new(
-         plugin_panel(p), plugin_widget(p), bo,
+         plugin_widget(p), bo,
          tb->task_width_max, tb->icon_size, tb->spacing, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
     icon_grid_set_expand(tb->icon_grid, taskbar_task_button_is_expandable(tb));
     icon_grid_use_separators(tb->icon_grid, tb->use_group_separators);

@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2011-2013 Vadim Ushakov
  * Copyright (c) 2009 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,8 +22,6 @@
 
 #include <gtk/gtk.h>
 
-#include "panel.h"
-
 struct _icon_grid_element;
 struct _icon_grid;
 
@@ -40,7 +39,6 @@ typedef struct _icon_grid_element {
 /* Representative of an icon grid.  This is a manager that packs widgets into a rectangular grid whose size adapts to conditions. */
 typedef struct _icon_grid {
     IconGridElement * child_list;		/* List of icon grid elements */
-    Panel * panel;				/* Back pointer to panel */
     GtkWidget * container;			/* Container widget */
     GtkOrientation orientation;			/* Desired orientation */
     gint child_width;				/* Desired child width */
@@ -79,8 +77,7 @@ typedef struct _icon_grid {
     gboolean debug_output;
 } IconGrid;
 
-extern IconGrid * icon_grid_new(
-    Panel * panel, GtkWidget * container,
+extern IconGrid * icon_grid_new(GtkWidget * container,
     GtkOrientation orientation, gint child_width, gint child_height, gint spacing, gint border, gint target_dimension);
 						/* Create an icon grid */
 extern void icon_grid_set_expand(IconGrid * ig, gboolean expand);

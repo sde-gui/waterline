@@ -618,7 +618,7 @@ na_tray_init (NaTray *tray)
   }
   else
   {
-      priv->icon_grid = icon_grid_new(NULL, priv->frame,
+      priv->icon_grid = icon_grid_new(priv->frame,
           priv->orientation,
           priv->icon_size, priv->icon_size, 
           ICON_SPACING,

@@ -39,7 +39,6 @@ waterline_SOURCES = \
 	Xsupport.c \
 	pixbuf-stuff.c \
 	configurator.c \
-	dbg.c \
 	ev.c \
 	icon-grid.c \
 	panel_config.c \

@@ -25,25 +25,10 @@
 
 #include <gtk/gtk.h>
 
-#ifndef DISABLE_LIBSMFM
-#include <libsmfm-core/fm-file-info.h>
-#include <libsmfm-gtk/fm-file-menu.h>
-#include <libsmfm-core/fm-config.h>
-#endif
 
+static gboolean (*__fm_gtk_init)(void * config) = NULL;
 
-#ifndef DISABLE_LIBSMFM
-
-static gboolean (*__fm_gtk_init)(FmConfig* config) = NULL;
-
-static FmPath* (*__fm_path_new_for_path)(const char* path_name) = NULL;
-static void (*__fm_path_unref)(FmPath* path) = NULL;
-
-static FmFileInfo* (*__fm_file_info_new_from_gfileinfo)(FmPath* path, GFileInfo* inf) = NULL;
-static void (*__fm_file_info_unref)( FmFileInfo* fi ) = NULL;
-
-static FmFileMenu* (*__fm_file_menu_new_for_file)(GtkWindow* parent, FmFileInfo* fi, FmPath* cwd, gboolean auto_destroy) = NULL;
-static GtkMenu* (*__fm_file_menu_get_menu)(FmFileMenu* menu) = NULL;
+static GtkMenu * (*__fm_get_gtk_file_menu_for_string)(GtkWindow* parent, const char * url) = NULL;
 
 static gboolean libfm_initialized = FALSE;
 static gboolean libfm_initialization_failed = FALSE;
@@ -81,15 +66,7 @@ gboolean wtl_fm_init(void)
 }
 
     bind_name(fm_gtk_init);
-
-    bind_name(fm_path_new_for_path);
-    bind_name(fm_path_unref);
-
-    bind_name(fm_file_info_new_from_gfileinfo);
-    bind_name(fm_file_info_unref);
-
-    bind_name(fm_file_menu_new_for_file);
-    bind_name(fm_file_menu_get_menu);
+    bind_name(fm_get_gtk_file_menu_for_string);
 
 #undef bind_name
 
@@ -105,66 +82,9 @@ fail:
 
 GtkMenu * wtl_fm_file_menu_for_path(const char * path)
 {
-    if (!path)
-        return NULL;
-
     if (!wtl_fm_init())
         return NULL;
 
-    GFile * gfile = NULL;
-    GFileInfo * gfile_info = NULL;
-    FmPath * fm_path = NULL;
-    FmFileInfo * fm_file_info = NULL;
-    GtkMenu * popup = NULL;
-
-    gfile = g_file_new_for_path(path);
-    if (!gfile)
-        goto out;
-
-    gfile_info = g_file_query_info(gfile, "standard::*,unix::*,time::*", G_FILE_QUERY_INFO_NONE, NULL, NULL);
-    if (!gfile_info)
-        goto out;
-
-    fm_path = __fm_path_new_for_path(path);
-    if (!fm_path)
-        goto out;
-
-    fm_file_info = __fm_file_info_new_from_gfileinfo(fm_path, gfile_info);
-    if (!fm_file_info)
-        goto out;
-
-//    FmFileMenu * fm_file_menu = __fm_file_menu_new_for_file(GTK_WINDOW(p->panel->topgwin),
-    FmFileMenu * fm_file_menu = __fm_file_menu_new_for_file(NULL,
-                                                          fm_file_info,
-                                                          /*cwd*/ NULL,
-                                                          TRUE);
-    if (!fm_file_menu)
-        goto out;
-
-    popup = __fm_file_menu_get_menu(fm_file_menu);
-
-out:
-
-    if (fm_file_info)
-        __fm_file_info_unref(fm_file_info);
-    if (fm_path)
-        __fm_path_unref(fm_path);
-    if (gfile_info)
-        g_object_unref(G_OBJECT(gfile_info));
-    if (gfile)
-        g_object_unref(G_OBJECT(gfile));
-
-    return popup;
+    return __fm_get_gtk_file_menu_for_string(NULL, path);
 }
-
-#else
-
-void wtl_fm_init(void) {}
-
-GtkMenu * wtl_fm_file_menu_for_path(const char * path)
-{
-    return NULL;
-}
-
-#endif
 

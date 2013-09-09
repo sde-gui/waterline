@@ -74,29 +74,6 @@ AC_DEFINE_UNQUOTED([MENU_CACHE_MICRO_VERSION],[$MENU_CACHE_MICRO_VERSION], [-])
 PACKAGE_CFLAGS="$PACKAGE_CFLAGS $MENU_CACHE_CFLAGS"' -I$(top_srcdir)/include/waterline/'
 PACKAGE_LIBS="$PACKAGE_LIBS $MENU_CACHE_LIBS -lutil"
 
-# libsmfm
-
-AC_ARG_WITH(libsmfm, [  --without-libsmfm           Compile without libsmfm support])
-if test "x$with_libsmfm" != "xno"; then
-	pkg_modules="libsmfm-gtk2 libsmfm-core"
-	PKG_CHECK_MODULES(LIBSMFM, [$pkg_modules],
-			  enable_libsmfm=yes, enable_libsmfm=no)
-	if test x"$enable_libsmfm" = "xno"; then
-		AC_WARN([libsmfm not found.  All libsmfm related routines are not built.])
-		AC_DEFINE(DISABLE_LIBSMFM, [1], [Disable libsmfm related routines])
-	fi
-	AC_SUBST(LIBSMFM_CFLAGS)
-	AC_SUBST(LIBSMFM_LIBS)
-else
-	enable_libsmfm=no
-	AC_WARN([libsmfm disabled.  All libsmfm related routines are not built.])
-	AC_DEFINE(DISABLE_LIBSMFM, [1], [Disable libsmfm related routines])
-fi
-AM_CONDITIONAL(ENABLE_LIBSMFM, test x"$enable_libsmfm" = x"yes")
-
-PACKAGE_CFLAGS="$PACKAGE_CFLAGS $LIBSMFM_CFLAGS"
-#PACKAGE_LIBS="$PACKAGE_LIBS $LIBSMFM_LIBS"
-
 # man
 
 AC_ARG_ENABLE(man,

@@ -39,6 +39,7 @@
 #include <glib/gi18n.h>
 
 #include <sde-utils.h>
+#include <sde-utils-gtk.h>
 
 #define PLUGIN_PRIV_TYPE TaskbarPlugin
 
@@ -49,7 +50,6 @@
 #include <waterline/plugin.h>
 #include <waterline/Xsupport.h>
 #include "icon.xpm"
-#include <waterline/pixbuf-stuff.h>
 
 //#define DEBUG
 
@@ -1619,7 +1619,7 @@ static gboolean task_update_thumbnail_preview_real(Task * tk)
     {
         int preview_width = 150;
         int preview_height = 100;
-        tk->thumbnail_preview = _gdk_pixbuf_scale_in_rect(tk->thumbnail, preview_width, preview_height, TRUE);
+        tk->thumbnail_preview = su_gdk_pixbuf_scale_in_rect(tk->thumbnail, preview_width, preview_height, TRUE);
         if (tk->thumbnail_preview && tk->preview_item.image)
         {
             gtk_image_set_from_pixbuf(GTK_IMAGE(tk->preview_item.image), tk->thumbnail_preview);
@@ -1706,7 +1706,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
 
     if (!skip && tk->backing_pixmap != 0)
     {
-        GdkPixbuf * pixbuf = _gdk_pixbuf_get_from_pixmap(tk->backing_pixmap, -1, -1);
+        GdkPixbuf * pixbuf = su_gdk_pixbuf_get_from_pixmap(tk->backing_pixmap, -1, -1);
         if (pixbuf)
         {
             if (tk->thumbnail)
@@ -1781,7 +1781,7 @@ static gboolean task_update_bgcolor_idle(Task * tk)
 
     if (tk->icon_for_bgcolor && tb->colorize_buttons)
     {
-        _gdk_pixbuf_get_color_sample(tk->icon_for_bgcolor, &tk->bgcolor1, &tk->bgcolor2);
+        su_gdk_pixbuf_get_color_sample(tk->icon_for_bgcolor, &tk->bgcolor1, &tk->bgcolor2);
 
         if (!tb->color_map)
             tb->color_map = panel_get_color_map(plugin_panel(tb->plug));
@@ -1895,7 +1895,7 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
     if (tb->thumbnails && tb->use_thumbnails_as_icons)
     {
         if (!tk->thumbnail_icon && tk->thumbnail)
-            tk->thumbnail_icon =  _gdk_pixbuf_scale_in_rect(tk->thumbnail, icon_size, icon_size, TRUE);
+            tk->thumbnail_icon = su_gdk_pixbuf_scale_in_rect(tk->thumbnail, icon_size, icon_size, TRUE);
 
         if (tk->thumbnail_icon)
         {
@@ -1907,7 +1907,7 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
             if (s)
             {
                 GdkPixbuf * p1 = get_window_icon(tk, s, source);
-                GdkPixbuf * p2 = _composite_thumb_icon(pixbuf, p1, icon_size, s);
+                GdkPixbuf * p2 = su_gdk_pixbuf_composite_thumb_icon(pixbuf, p1, icon_size, s);
                 g_object_unref(p1);
                 g_object_unref(pixbuf);
                 pixbuf = p2;
@@ -1920,7 +1920,7 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
         pixbuf = get_window_icon(tk, icon_size, source);
         if (pixbuf)
         {
-            GdkPixbuf * scaled_pixbuf =  _gdk_pixbuf_scale_in_rect(pixbuf, icon_size, icon_size, TRUE);
+            GdkPixbuf * scaled_pixbuf =  su_gdk_pixbuf_scale_in_rect(pixbuf, icon_size, icon_size, TRUE);
             g_object_unref(pixbuf);
             pixbuf = scaled_pixbuf;
         }
@@ -1978,7 +1978,7 @@ static void task_update_icon(Task * tk, Atom source, gboolean forse_icon_erase)
             if (!tk->icon_pixbuf_iconified)
             {
                 tk->icon_pixbuf_iconified = gdk_pixbuf_add_alpha(tk->icon_pixbuf, FALSE, 0, 0, 0);;
-                _wnck_dim_icon(tk->icon_pixbuf_iconified);
+                su_gdk_pixbuf_dim(tk->icon_pixbuf_iconified);
             }
             pixbuf = tk->icon_pixbuf_iconified;
         }

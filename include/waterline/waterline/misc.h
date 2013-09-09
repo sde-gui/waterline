@@ -32,8 +32,6 @@
 
 #include "configparser.h"
 
-#include "pixbuf-stuff.h"
-
 enum {
     CONF_TYPE_STR,
     CONF_TYPE_INT,

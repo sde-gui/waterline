@@ -266,7 +266,7 @@ static GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_path, in
     gulong h = gdk_pixbuf_get_height(icon);
     if ((width > 0 && w > width) || (height > 0 && h > height))
     {
-        icon = _gdk_pixbuf_scale_in_rect(icon, width, height, TRUE);
+        icon = su_gdk_pixbuf_scale_in_rect(icon, width, height, TRUE);
     }
 
     return icon;

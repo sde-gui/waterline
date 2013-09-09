@@ -37,7 +37,6 @@ waterline_SOURCES = \
 	configparser.c \
 	generic_config_dlg.c \
 	Xsupport.c \
-	pixbuf-stuff.c \
 	configurator.c \
 	ev.c \
 	panel_config.c \
@@ -64,7 +63,6 @@ waterline_include_HEADERS = \
 	$(top_srcdir)/include/waterline/waterline/misc.h \
 	$(top_srcdir)/include/waterline/waterline/panel.h \
 	$(top_srcdir)/include/waterline/waterline/paths.h \
-	$(top_srcdir)/include/waterline/waterline/pixbuf-stuff.h \
 	$(top_srcdir)/include/waterline/waterline/plugin.h \
 	$(top_srcdir)/include/waterline/waterline/typedef.h \
 	$(top_srcdir)/include/waterline/waterline/Xsupport.h

@@ -22,9 +22,9 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <string.h>
+#include <sde-utils-gtk.h>
 
 #include <waterline/Xsupport.h>
-#include <waterline/pixbuf-stuff.h>
 #include <waterline/dbg.h>
 
 /* if current window manager is EWMH conforming. */
@@ -1173,7 +1173,7 @@ static GdkPixbuf * get_icon_from_pixmap_mask(Pixmap xpixmap, Pixmap xmask)
     /* convert it to a GDK pixbuf. */
     if (result == Success) 
     {
-        pixmap = _gdk_pixbuf_get_from_pixmap(xpixmap, w, h);
+        pixmap = su_gdk_pixbuf_get_from_pixmap(xpixmap, w, h);
         result = ((pixmap != NULL) ? Success : -1);
     }
 
@@ -1189,11 +1189,11 @@ static GdkPixbuf * get_icon_from_pixmap_mask(Pixmap xpixmap, Pixmap xmask)
             &unused_win, &unused, &unused, &w, &h, &unused_2, &unused_2))
         {
             /* Convert the X mask to a GDK pixmap. */
-            GdkPixbuf * mask = _gdk_pixbuf_get_from_pixmap(xmask, w, h);
+            GdkPixbuf * mask = su_gdk_pixbuf_get_from_pixmap(xmask, w, h);
             if (mask != NULL)
             {
                 /* Apply the mask. */
-                GdkPixbuf * masked_pixmap = _gdk_pixbuf_apply_mask(pixmap, mask);
+                GdkPixbuf * masked_pixmap = su_gdk_pixbuf_apply_mask(pixmap, mask);
                 g_object_unref(G_OBJECT(pixmap));
                 g_object_unref(G_OBJECT(mask));
                 pixmap = masked_pixmap;

@@ -207,7 +207,6 @@ if test x"$plugins_loading" = "xno"; then
 fi
 
 dnl Here are plugin listing.
-#ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb xkbh thermal cpufreq notification_area"
 ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq notification_area"
 AC_SUBST(ALL_PLUGINS_LIST)
 

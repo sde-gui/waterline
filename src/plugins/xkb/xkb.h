@@ -24,19 +24,14 @@
 
 #define PLUGIN_PRIV_TYPE XkbPlugin
 
-#include <lxpanelx/global.h>
-#include <lxpanelx/plugin.h>
-#include <lxpanelx/misc.h>
-#include <lxpanelx/paths.h>
-#include <lxpanelx/panel.h>
-#include <lxpanelx/ev.h>
+#include <waterline/global.h>
+#include <waterline/plugin.h>
+#include <waterline/misc.h>
+#include <waterline/paths.h>
+#include <waterline/panel.h>
+#include <waterline/ev.h>
 
-#include <lxpanelx/dbg.h>
-
-typedef enum {
-    IMAGE = 0,
-    TEXT = 1
-} DisplayType;
+#include <waterline/dbg.h>
 
 typedef struct {
 
@@ -45,8 +40,8 @@ typedef struct {
     GtkWidget * btn;				/* Top level button */
     GtkWidget * label;				/* Label containing country name */
     GtkWidget * image;				/* Image containing country flag */
-    DisplayType display_type;			/* Display layout as image or text */
-    gboolean enable_perapp;			/* Enable per application (window) layout) */
+    gboolean display_as_text;			/* Display layout as image or text */
+    gboolean per_window_layout;			/* Enable per application (window) layout) */
     gint default_group;				/* Default group for "locale per process" */
     guint source_id;				/* Source ID for channel listening to XKB events */
     GtkWidget * config_dlg;			/* Configuration dialog */

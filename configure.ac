@@ -208,7 +208,7 @@ fi
 
 dnl Here are plugin listing.
 #ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb xkbh thermal cpufreq notification_area"
-ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled thermal cpufreq notification_area"
+ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq notification_area"
 AC_SUBST(ALL_PLUGINS_LIST)
 
 AC_MSG_CHECKING([which plugins should be built dynamically])

@@ -346,7 +346,6 @@ AC_CONFIG_FILES([
     src/plugins/batt/Makefile
     src/plugins/kbled/Makefile
     src/plugins/xkb/Makefile
-    src/plugins/xkbh/Makefile
     src/plugins/thermal/Makefile
     src/plugins/cpufreq/Makefile
     po/Makefile.in

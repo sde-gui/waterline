@@ -312,7 +312,7 @@ AM_GNU_GETTEXT_VERSION(0.14.1)
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package.])
 
-ALL_LINGUAS="af ar cs da de es et eu fa fi fr gl hu hr id it ja ko lt ml ms nb nl nn pl ps pt pt_BR ru sk sl sv tr uk ur ur_PK vi zh_CN zh_TW"
+ALL_LINGUAS="ru"
 AM_GLIB_GNU_GETTEXT
 
 if test x"$enable_man" = x"yes"; then

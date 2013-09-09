@@ -5,16 +5,16 @@
 src/bg.c
 src/configurator.c
 src/commands.c
-src/dbg.c
 src/ev.c
 src/panel.c
 src/plugin.c
 src/gtk-run.c
+src/libconfigurator/configurator.c
+src/libconfigurator/configurator_plugin_list.c
 
 # Putting translation of plugins in main catalog is not a good idea...
 src/plugins/cpu/cpu.c
 src/plugins/deskno/deskno.c
-#src/plugins/image.c
 src/plugins/launchbar.c
 src/plugins/launchbutton.c
 src/plugins/dclock.c
@@ -22,12 +22,19 @@ src/plugins/menu.c
 src/plugins/separator.c
 src/plugins/pager.c
 src/plugins/space.c
-src/plugins/tray.c
 src/plugins/xkb/xkb-plugin.c
 src/plugins/wincmd.c
 src/plugins/dirmenu.c
 
 src/plugins/taskbar/taskbar.c
+
+src/plugins/notification_area/fixedtip.c
+src/plugins/notification_area/main.c
+src/plugins/notification_area/na-marshal.c
+src/plugins/notification_area/na-tray.c
+src/plugins/notification_area/na-tray-child.c
+src/plugins/notification_area/na-tray-manager.c
+src/plugins/notification_area/testtray.c
 
 src/plugins/thermal/thermal.c
 

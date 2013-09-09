@@ -353,12 +353,6 @@ void load_global_config()
         su_log_debug("KioskMode   = %s\n", global_config.kiosk_mode ? "true" : "false");
     }
     g_key_file_free(kf);
-
-    global_settings = g_key_file_new();
-    file = wtl_get_config_path("settings", SU_PATH_CONFIG_USER);
-    if (file)
-        g_key_file_load_from_file(global_settings, file, 0, NULL);
-	g_free(file);
 }
 
 static void save_global_config()
@@ -392,7 +386,6 @@ void free_global_config()
     g_free( global_config.file_manager_cmd );
     g_free( global_config.terminal_cmd );
     g_free( global_config.logout_cmd );
-    g_key_file_free(global_settings);
 }
 
 /******************************************************************************/

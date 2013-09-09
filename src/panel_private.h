@@ -149,8 +149,6 @@ struct {
     int arg_kiosk_mode;
 } global_config;
 
-GKeyFile * global_settings;
-
 /* panel_config.c */
 
 extern void load_global_config(void);

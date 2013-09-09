@@ -1,6 +1,5 @@
 template_config_DATA = \
 	template/config \
-	template/settings \
 	template/top-level-domain-names
 template_configdir = $(datadir)/sde-config/sde/waterline/template
 

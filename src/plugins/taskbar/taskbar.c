@@ -2192,7 +2192,7 @@ static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean si
 /* Close task window. */
 static void task_close(Task * tk)
 {
-    Xclimsgwm(tk->win, a_WM_PROTOCOLS, a_WM_DELETE_WINDOW);
+    Xclimsgwm(tk->win, aWM_PROTOCOLS, aWM_DELETE_WINDOW);
 }
 
 static void task_iconify(Task * tk)
@@ -4294,7 +4294,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                     task_update_grouping(tk, GROUP_BY_CLASS);
                     taskbar_notify_panel_class_visibility_changed(tb, FALSE);
                 }
-                else if (at == a_WM_STATE)
+                else if (at == aWM_STATE)
                 {
 #if 0
                     /* Window changed state. */

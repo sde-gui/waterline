@@ -456,7 +456,7 @@ static void pager_property_notify_event(PagerPlugin * pg, XEvent * ev)
                 XErrorHandler previous_error_handler = XSetErrorHandler(panel_handle_x_error_swallow_BadWindow_BadDrawable);
 
                 /* Dispatch on atom. */
-                if (at == a_WM_STATE)
+                if (at == aWM_STATE)
                 {
                     /* Window changed state. */
                     tk->ws = get_wm_state(tk->win);

@@ -1,13 +1,13 @@
 
 /* X11 data types */
-A(_UTF8_STRING)
+A(UTF8_STRING)
 A(_XROOTPMAP_ID)
 
 /* old WM spec */
-A(_WM_STATE)
-A(_WM_CLASS)
-A(_WM_DELETE_WINDOW)
-A(_WM_PROTOCOLS)
+A(WM_STATE)
+A(WM_CLASS)
+A(WM_DELETE_WINDOW)
+A(WM_PROTOCOLS)
 
 /* new NET spec */
 

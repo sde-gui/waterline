@@ -126,13 +126,13 @@ get_utf8_property(Window win, Atom atom)
     type = None;
     retval = NULL;
     result = XGetWindowProperty (GDK_DISPLAY(), win, atom, 0, G_MAXLONG, False,
-          a_UTF8_STRING, &type, &format, &nitems,
+          aUTF8_STRING, &type, &format, &nitems,
           &bytes_after, &tmp);
     if (result != Success || type == None)
         return NULL;
     val = (gchar *) tmp;
     if (val) {
-        if (type == a_UTF8_STRING && format == 8 && nitems != 0)
+        if (type == aUTF8_STRING && format == 8 && nitems != 0)
             retval = g_strndup (val, nitems);
         XFree (val);
     }
@@ -153,9 +153,9 @@ get_utf8_property_list(Window win, Atom atom, int *count)
 
     *count = 0;
     result = XGetWindowProperty(GDK_DISPLAY(), win, atom, 0, G_MAXLONG, False,
-          a_UTF8_STRING, &type, &format, &nitems,
+          aUTF8_STRING, &type, &format, &nitems,
           &bytes_after, &tmp);
-    if (result != Success || type != a_UTF8_STRING || tmp == NULL)
+    if (result != Success || type != aUTF8_STRING || tmp == NULL)
         return NULL;
 
     if (nitems) {
@@ -447,7 +447,7 @@ get_wm_state (Window win)
     int ret = 0;
 
     ENTER;
-    data = get_xaproperty (win, a_WM_STATE, a_WM_STATE, 0);
+    data = get_xaproperty (win, aWM_STATE, aWM_STATE, 0);
     if (data) {
         ret = data[0];
         XFree (data);

@@ -4,9 +4,18 @@
 [type: gettext/glade]data/ui/launchbar.ui
 src/bg.c
 src/configurator.c
+src/defaultapplications.c
+src/libfm.c
+src/window-icons.c
+src/paths.c
+src/openbox-integration.c
+src/misc.c
 src/commands.c
 src/ev.c
+src/fb_button.c
 src/panel.c
+src/panel_config.c
+src/panel_menu.c
 src/plugin.c
 src/gtk-run.c
 src/libconfigurator/configurator.c

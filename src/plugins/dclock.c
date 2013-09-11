@@ -39,12 +39,16 @@
 #define DEFAULT_TIP_FORMAT    "%A %x"
 #define DEFAULT_CLOCK_FORMAT  "%R"
 
+#define MAX_LABELS 4
+
 /* Private context for digital clock plugin. */
 typedef struct {
-    Plugin * plugin;				/* Back pointer to Plugin */
-    GtkWidget * clock_label;			/* Label containing clock value */
-    GtkWidget * clock_icon;			/* Icon when icon_only */
-    GtkWidget * calendar_window;		/* Calendar window, if it is being displayed */
+    Plugin * plugin;
+    GtkWidget * label_box;
+    GtkWidget * clock_labels[MAX_LABELS];
+    GtkWidget * clock_icon;
+    GtkWidget * calendar_window;
+
     char * clock_format;			/* Format string for clock value */
     char * tooltip_format;			/* Format string for tooltip value */
     char * action;				/* Command to execute on a click */
@@ -319,26 +323,34 @@ static void dclock_timer_set(DClockPlugin * dc)
     dc->timer = g_timeout_add(milliseconds, (GSourceFunc) dclock_update_display, (gpointer) dc);
 }
 
+static struct tm * _get_time_to_display(DClockPlugin * dc)
+{
+    time_t now;
+    time(&now);
+
+    struct tm * current_time = NULL;
+    gchar* oldtz = NULL;
+
+    if (dc->timezone) {
+        oldtz = g_strdup(g_getenv("TZ"));
+        g_setenv("TZ", dc->timezone, 1);
+        current_time = localtime(&now);
+        if (oldtz)
+            g_setenv("TZ", oldtz, 1);
+        else
+            g_unsetenv("TZ");
+    } else
+        current_time = localtime(&now);
+
+    return current_time;
+}
+
 /* Periodic timer callback.
  * Also used during initialization and configuration change to do a redraw. */
 static gboolean dclock_update_display(DClockPlugin * dc)
 {
     /* Determine the current time. */
-    time_t now;
-    time(&now);
-
-    gchar* oldtz = NULL;
-    struct tm * current_time;
-    if (dc->timezone) {
-        oldtz = g_strdup(g_getenv("TZ"));
-        g_setenv("TZ", dc->timezone, 1);
-        current_time = localtime(&now);
-        if(oldtz) 
-            g_setenv("TZ", oldtz, 1);
-        else 
-            g_unsetenv("TZ");
-    } else 
-        current_time = localtime(&now);
+    struct tm * current_time = _get_time_to_display(dc);
 
     /* Determine the content of the clock label and tooltip. */
     char clock_value[256];
@@ -376,23 +388,43 @@ static gboolean dclock_update_display(DClockPlugin * dc)
             *q = '\0';
         }
 
-        gchar * utf8 = g_locale_to_utf8(((newlines_converted != NULL) ? newlines_converted : clock_value), -1, NULL, NULL, NULL);
-        if (utf8 != NULL)
+        gchar ** segments = g_strsplit(
+            (newlines_converted != NULL) ? newlines_converted : clock_value,
+            "\\t", MAX_LABELS);
+
+        int i;
+        for (i = 0; i < MAX_LABELS; i++)
         {
+            if (!segments || !segments[i])
+                break;
+            if (!dc->clock_labels[i])
+            {
+                dc->clock_labels[i] = gtk_label_new(NULL);
+                gtk_misc_set_alignment(GTK_MISC(dc->clock_labels[i]), 0.5, 0.5);
+                gtk_container_add(GTK_CONTAINER(dc->label_box), dc->clock_labels[i]);
+                gtk_label_set_justify(GTK_LABEL(dc->clock_labels[i]), GTK_JUSTIFY_CENTER);
+            }
             panel_draw_label_text_with_font(
-                plugin_panel(dc->plugin), dc->clock_label, utf8, STYLE_CUSTOM_COLOR | STYLE_MARKUP, dc->font);
-            g_free(utf8);
+                plugin_panel(dc->plugin), dc->clock_labels[i],
+                segments[i],
+                STYLE_CUSTOM_COLOR | STYLE_MARKUP, dc->font);
+            gtk_widget_show(dc->clock_labels[i]);
         }
+
+        for (/*nothing*/; i < MAX_LABELS; i++)
+        {
+            if (!dc->clock_labels[i])
+                break;
+            gtk_widget_hide(dc->clock_labels[i]);
+        }
+
+        g_strfreev(segments);
+
         g_free(newlines_converted);
     }
 
     /* Determine the content of the tooltip. */
-    gchar * utf8 = g_locale_to_utf8(tooltip_value, -1, NULL, NULL, NULL);
-    if (utf8 != NULL)
-    {
-        gtk_widget_set_tooltip_text(plugin_widget(dc->plugin), utf8);
-        g_free(utf8);
-    }
+    gtk_widget_set_tooltip_text(plugin_widget(dc->plugin), tooltip_value);
 
     /* Conduct an experiment to see how often the value changes.
      * Use this to decide whether we update the value every second or every minute.
@@ -468,22 +500,27 @@ static int dclock_constructor(Plugin * p)
     plugin_set_widget(p, pwid);
     gtk_widget_set_has_window(pwid, FALSE);
 
-    /* Allocate a horizontal box as the child of the top level. */
     GtkWidget * hbox = gtk_hbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(pwid), hbox);
     gtk_widget_show(hbox);
 
-    /* Create a label and an image as children of the horizontal box.
-     * Only one of these is visible at a time, controlled by user preference. */
-    dc->clock_label = gtk_label_new(NULL);
-    gtk_misc_set_alignment(GTK_MISC(dc->clock_label), 0.5, 0.5);
+    dc->clock_icon = gtk_image_new();
+    gtk_container_add(GTK_CONTAINER(hbox), dc->clock_icon);
+
+    dc->label_box = gtk_hbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(hbox), dc->label_box);
+/*
+    dc->clock_labels[0] = gtk_label_new(NULL);
+    gtk_misc_set_alignment(GTK_MISC(dc->clock_labels[0]), 0.5, 0.5);
+    gtk_label_set_justify(GTK_LABEL(dc->clock_labels[0]), GTK_JUSTIFY_CENTER);
+*/
+/*
     if (plugin_get_orientation(dc->plugin) == ORIENT_HORIZ)
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
     else
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 0, 4);
-    gtk_container_add(GTK_CONTAINER(hbox), dc->clock_label);
-    dc->clock_icon = gtk_image_new();
-    gtk_container_add(GTK_CONTAINER(hbox), dc->clock_icon);
+*/
+    gtk_container_add(GTK_CONTAINER(dc->label_box), dc->clock_labels[0]);
 
     /* Connect signals. */
     g_signal_connect(G_OBJECT (pwid), "button_press_event", G_CALLBACK(dclock_button_press_event), (gpointer) p);
@@ -532,14 +569,14 @@ static void dclock_apply_configuration(Plugin * p)
         panel_image_set_from_file(plugin_panel(p), dc->clock_icon, clock_icon_path);
         g_free(clock_icon_path);
         gtk_widget_show(dc->clock_icon);
-        gtk_widget_hide(dc->clock_label);
+        gtk_widget_hide(dc->label_box);
     }
     else
     {
-        gtk_widget_show(dc->clock_label);
+        gtk_widget_show(dc->label_box);
         gtk_widget_hide(dc->clock_icon);
     }
-
+/*
     if (plugin_get_orientation(dc->plugin) == ORIENT_HORIZ)
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
     else
@@ -549,7 +586,7 @@ static void dclock_apply_configuration(Plugin * p)
         gtk_label_set_justify(GTK_LABEL(dc->clock_label), GTK_JUSTIFY_CENTER);
     else
         gtk_label_set_justify(GTK_LABEL(dc->clock_label), GTK_JUSTIFY_LEFT);
-
+*/
     /* Rerun the experiment to determine update interval and update the display. */
     g_free(dc->prev_clock_value);
     g_free(dc->prev_tooltip_value);

@@ -55,7 +55,6 @@ typedef struct {
     char * timezone;				/* Timezone */
     char * font;
     gboolean icon_only;				/* True if icon only (no clock value) */
-    gboolean center_text;
     guint timer;				/* Timer for periodic update */
     enum {
 	AWAITING_FIRST_CHANGE,			/* Experimenting to determine interval, waiting for first change */
@@ -90,7 +89,6 @@ static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(string, action),
     SU_JSON_OPTION(string, font),
     SU_JSON_OPTION(bool, icon_only),
-    SU_JSON_OPTION(bool, center_text),
     SU_JSON_OPTION(string, timezone),
     {0,}
 };
@@ -582,10 +580,6 @@ static void dclock_apply_configuration(Plugin * p)
     else
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 0, 4);
 
-    if (dc->center_text)
-        gtk_label_set_justify(GTK_LABEL(dc->clock_label), GTK_JUSTIFY_CENTER);
-    else
-        gtk_label_set_justify(GTK_LABEL(dc->clock_label), GTK_JUSTIFY_LEFT);
 */
     /* Rerun the experiment to determine update interval and update the display. */
     g_free(dc->prev_clock_value);
@@ -630,7 +624,6 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         "", 0, (GType)CONF_TYPE_END_TABLE,
 
         _("Tooltip only"), &dc->icon_only, (GType)CONF_TYPE_BOOL,
-        _("Center text"), &dc->center_text, CONF_TYPE_BOOL,
 
         _("Timezone")  , &dc->timezone , (GType)CONF_TYPE_STR,
         "completion-list", (gpointer)dclock_get_timezones(dc), (GType)CONF_TYPE_SET_PROPERTY,

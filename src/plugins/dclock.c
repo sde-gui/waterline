@@ -341,8 +341,8 @@ static gboolean dclock_update_display(DClockPlugin * dc)
         current_time = localtime(&now);
 
     /* Determine the content of the clock label and tooltip. */
-    char clock_value[64];
-    char tooltip_value[64];
+    char clock_value[256];
+    char tooltip_value[256];
 
     clock_value[0] = '\0';
     if (dc->clock_format != NULL)
@@ -380,7 +380,7 @@ static gboolean dclock_update_display(DClockPlugin * dc)
         if (utf8 != NULL)
         {
             panel_draw_label_text_with_font(
-                plugin_panel(dc->plugin), dc->clock_label, utf8, STYLE_CUSTOM_COLOR, dc->font);
+                plugin_panel(dc->plugin), dc->clock_label, utf8, STYLE_CUSTOM_COLOR | STYLE_MARKUP, dc->font);
             g_free(utf8);
         }
         g_free(newlines_converted);

@@ -1,6 +1,23 @@
 GQuark SYS_MENU_ITEM_ID = 0;
+GQuark SYS_MENU_ITEM_MANAGED_ICON_ID = 0;
 GQuark SYS_MENU_HEAD_ITEM_ID = 0;
 
+static gboolean sys_menu_item_has_data(gpointer item)
+{
+   return (g_object_get_qdata(G_OBJECT(item), SYS_MENU_ITEM_ID) != NULL);
+}
+
+static gboolean sys_menu_item_has_managed_icon(gpointer item)
+{
+   return (g_object_get_qdata(G_OBJECT(item), SYS_MENU_ITEM_MANAGED_ICON_ID) != NULL);
+}
+
+static gboolean sys_menu_item_is_head(gpointer item)
+{
+   return (g_object_get_qdata(G_OBJECT(item), SYS_MENU_HEAD_ITEM_ID) != NULL);
+}
+
+/********************************************************************/
 
 static void on_menu_item( GtkMenuItem* mi, MenuCacheItem* item )
 {
@@ -10,8 +27,11 @@ static void on_menu_item( GtkMenuItem* mi, MenuCacheItem* item )
 
 
 /* load icon when mapping the menu item to speed up */
-static void on_menu_item_map(GtkWidget* mi, MenuCacheItem* _item)
+static void on_menu_item_map(GtkWidget* mi, gpointer * _user_data)
 {
+    if (!sys_menu_item_has_managed_icon(mi))
+        return;
+
     GtkImage* img = GTK_IMAGE(gtk_image_menu_item_get_image(GTK_IMAGE_MENU_ITEM(mi)));
     if (img)
     {
@@ -33,7 +53,7 @@ static void on_menu_item_map(GtkWidget* mi, MenuCacheItem* _item)
 static void on_menu_item_style_set(GtkWidget* mi, GtkStyle* prev, MenuCacheItem* item)
 {
     /* reload icon */
-    on_menu_item_map(mi, item);
+    on_menu_item_map(GTK_WIDGET(mi), NULL);
 }
 
 
@@ -258,10 +278,16 @@ static GtkWidget* create_item( MenuCacheItem* item )
             icon_name = "applications-other";
         GtkWidget * image = NULL;
         if (_is_icon_name_valid_for_gtk(icon_name))
+        {
             image = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_MENU);
+        }
         else
+        {
+            g_object_set_qdata_full(G_OBJECT(mi),
+                SYS_MENU_ITEM_MANAGED_ICON_ID, GINT_TO_POINTER(1), NULL);
             image = gtk_image_new();
-        gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(mi), image);
+        }
+        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), image);
 
         if( menu_cache_item_get_type(item) == MENU_CACHE_TYPE_APP )
         {
@@ -312,7 +338,7 @@ static GtkWidget* create_item( MenuCacheItem* item )
 
             g_signal_connect( mi, "activate", G_CALLBACK(on_menu_item), item );
         }
-        g_signal_connect(mi, "map", G_CALLBACK(on_menu_item_map), item);
+        g_signal_connect(mi, "map", G_CALLBACK(on_menu_item_map), NULL);
         g_signal_connect(mi, "style-set", G_CALLBACK(on_menu_item_style_set), item);
         g_signal_connect(mi, "button-press-event", G_CALLBACK(on_menu_button_press), item);
         g_signal_connect(mi, "button-release-event", G_CALLBACK(on_menu_button_release), item);
@@ -367,43 +393,24 @@ static int load_menu(menup* m, MenuCacheDir* dir, GtkWidget* menu, int pos )
 }
 
 
-
-static gboolean sys_menu_item_has_data( GtkMenuItem* item )
-{
-   return (g_object_get_qdata( G_OBJECT(item), SYS_MENU_ITEM_ID ) != NULL);
-}
-
-static gboolean sys_menu_item_is_head(GtkMenuItem* item)
-{
-   return (g_object_get_qdata(G_OBJECT(item), SYS_MENU_HEAD_ITEM_ID) != NULL);
-}
-
 static void unload_old_icons(GtkMenu* menu, GtkIconTheme* theme)
 {
-    GList *children, *child;
-    GtkMenuItem* item;
-    GtkWidget* sub_menu=NULL;
-
-    children = gtk_container_get_children( GTK_CONTAINER(menu) );
-    for( child = children; child; child = child->next )
+    GList * child;
+    GList * children = gtk_container_get_children(GTK_CONTAINER(menu));
+    for (child = children; child; child = child->next)
     {
-        item = GTK_MENU_ITEM( child->data );
-        if( sys_menu_item_has_data( item ) )
+        GtkMenuItem * item = GTK_MENU_ITEM(child->data);
+
+        GtkWidget * sub_menu = gtk_menu_item_get_submenu(item);
+        if (sub_menu)
+            unload_old_icons(GTK_MENU(sub_menu), theme);
+
+        if (sys_menu_item_has_data(item) && sys_menu_item_has_managed_icon(item) && GTK_IS_IMAGE_MENU_ITEM(item))
         {
-            GtkImage* img;
-            item = GTK_MENU_ITEM( child->data );
-            if( GTK_IS_IMAGE_MENU_ITEM(item) )
-            {
-	        img = GTK_IMAGE(gtk_image_menu_item_get_image(GTK_IMAGE_MENU_ITEM(item)));
-                gtk_image_clear(img);
-                if( gtk_widget_get_mapped(GTK_WIDGET(img)) )
-		    on_menu_item_map(GTK_WIDGET(item),
-			(MenuCacheItem*)g_object_get_qdata(G_OBJECT(item), SYS_MENU_ITEM_ID) );
-            }
-        }
-        else if( ( sub_menu = gtk_menu_item_get_submenu( item ) ) )
-        {
-	    unload_old_icons( GTK_MENU(sub_menu), theme );
+            GtkImage * image = GTK_IMAGE(gtk_image_menu_item_get_image(GTK_IMAGE_MENU_ITEM(item)));
+            gtk_image_clear(image);
+            if (gtk_widget_get_mapped(GTK_WIDGET(image)))
+                on_menu_item_map(GTK_WIDGET(item), NULL);
         }
     }
     g_list_free( children );
@@ -417,7 +424,7 @@ static void remove_change_handler(gpointer id, GObject* menu)
 /*
  * Insert application menus into specified menu
  * menu: The parent menu to which the items should be inserted
- * pisition: Position to insert items.
+ * position: Position to insert items.
              Passing -1 in this parameter means append all items
              at the end of menu.
  */
@@ -502,9 +509,10 @@ read_system_menu(GtkMenu* menu, Plugin *p, json_t * json_item)
 
     if (SYS_MENU_ITEM_ID == 0)
         SYS_MENU_ITEM_ID = g_quark_from_static_string("SysMenuItem");
+    if (SYS_MENU_ITEM_MANAGED_ICON_ID == 0)
+        SYS_MENU_ITEM_MANAGED_ICON_ID = g_quark_from_static_string("SysMenuItemManagedIcon");
     if (SYS_MENU_HEAD_ITEM_ID == 0)
         SYS_MENU_HEAD_ITEM_ID = g_quark_from_static_string("SysMenuHeadItem");
-
 
     if (m->menu_cache == NULL)
     {
@@ -518,8 +526,6 @@ read_system_menu(GtkMenu* menu, Plugin *p, json_t * json_item)
         m->visibility_flags = flags;
         m->reload_notify = menu_cache_add_reload_notify(m->menu_cache, (MenuCacheReloadNotify) on_reload_menu, m);
     }
-
-    //sys_menu_insert_items(m, menu, -1);
 
     GtkWidget* mi = gtk_menu_item_new();
     g_object_set_qdata(G_OBJECT(mi), SYS_MENU_HEAD_ITEM_ID, GINT_TO_POINTER(1));

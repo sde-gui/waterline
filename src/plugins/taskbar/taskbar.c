@@ -40,6 +40,7 @@
 
 #include <sde-utils.h>
 #include <sde-utils-gtk.h>
+#include <sde-utils-jansson.h>
 
 #define PLUGIN_PRIV_TYPE TaskbarPlugin
 

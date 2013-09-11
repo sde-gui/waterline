@@ -31,6 +31,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <sde-utils.h>
+#include <sde-utils-jansson.h>
 #include "netstatus-dialog.h"
 
 #include <string.h>

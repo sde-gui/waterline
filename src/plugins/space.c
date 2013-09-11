@@ -20,6 +20,7 @@
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
+#include <sde-utils-jansson.h>
 
 #define PLUGIN_PRIV_TYPE SpacePlugin
 

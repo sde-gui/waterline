@@ -1,5 +1,5 @@
 
-#if NULL
+#if 0
 /* System tray main() */
 
 /*
@@ -274,6 +274,7 @@ static gboolean applet_factory(MatePanelApplet* applet, const gchar* iid, gpoint
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gi18n.h>
+#include <sde-utils-jansson.h>
 
 #define PLUGIN_PRIV_TYPE NAPlugin
 

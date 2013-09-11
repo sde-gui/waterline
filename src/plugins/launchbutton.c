@@ -34,6 +34,7 @@
 #include <pty.h>
 
 #include <sde-utils.h>
+#include <sde-utils-jansson.h>
 
 #define PLUGIN_PRIV_TYPE lb_t
 

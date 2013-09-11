@@ -42,6 +42,7 @@
 #include <semaphore.h> /* used by update() and alarmProcess() for alarms */
 #include <stdlib.h>
 #include <string.h>
+#include <sde-utils-jansson.h>
 
 #define PLUGIN_PRIV_TYPE BatteryPlugin
 

@@ -25,6 +25,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <alsa/asoundlib.h>
 #include <poll.h>
+#include <sde-utils-jansson.h>
 
 #define PLUGIN_PRIV_TYPE VolumeALSAPlugin
 

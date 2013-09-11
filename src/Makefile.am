@@ -34,7 +34,6 @@ waterline_SOURCES = \
 	openbox-integration.c \
 	bg.c bg.h  \
 	commands.c commands.h \
-	configparser.c \
 	generic_config_dlg.c \
 	Xsupport.c \
 	configurator.c \
@@ -51,7 +50,6 @@ if BUILD_PLUGIN_LOADER
 DYNAMIC_FLAGS = -export-dynamic
 waterline_includedir = $(pkgincludedir)/waterline
 waterline_include_HEADERS = \
-	$(top_srcdir)/include/waterline/waterline/configparser.h \
 	$(top_srcdir)/include/waterline/waterline/dbg.h \
 	$(top_srcdir)/include/waterline/waterline/defaultapplications.h \
 	$(top_srcdir)/include/waterline/waterline/ev.h \

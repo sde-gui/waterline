@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <sde-utils-jansson.h>
 
 #include "xkb.h"
 

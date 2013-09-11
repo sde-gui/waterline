@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib/gi18n.h>
-
+#include <sde-utils-jansson.h>
 #include <string.h>
 
 #define PLUGIN_PRIV_TYPE thermal

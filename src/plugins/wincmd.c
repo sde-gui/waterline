@@ -22,6 +22,7 @@
 #include <glib/gi18n.h>
 
 #include <sde-utils.h>
+#include <sde-utils-jansson.h>
 
 #define PLUGIN_PRIV_TYPE WinCmdPlugin
 

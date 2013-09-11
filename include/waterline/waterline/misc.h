@@ -27,10 +27,10 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
+#include <sde-utils-gtk.h>
+
 #include "panel.h"
 #include "plugin.h"
-
-#include "configparser.h"
 
 enum {
     CONF_TYPE_STR,

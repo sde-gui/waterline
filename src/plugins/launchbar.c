@@ -38,6 +38,7 @@
 #include <glib/gi18n.h>
 
 #include <sde-utils.h>
+#include <sde-utils-jansson.h>
 
 #include <waterline/menu-cache-compat.h>
 

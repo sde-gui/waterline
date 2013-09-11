@@ -26,6 +26,7 @@
 #include <glib/gi18n.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <string.h>
+#include <sde-utils-jansson.h>
 
 #include <X11/XKBlib.h>
 

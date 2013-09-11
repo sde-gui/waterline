@@ -97,6 +97,8 @@ typedef struct {
     gpointer reload_notify;
 
     gboolean has_run_command;
+
+    guint menu_reload_timeout_cb;
 } menup;
 
 static guint idle_loader = 0;
@@ -122,6 +124,9 @@ menu_destructor(Plugin *p)
         menu_cache_remove_reload_notify(m->menu_cache, m->reload_notify);
         menu_cache_unref( m->menu_cache );
     }
+
+    if (m->menu_reload_timeout_cb)
+        g_source_remove(m->menu_reload_timeout_cb);
 
     g_free(m->fname);
     g_free(m->caption);
@@ -780,9 +785,21 @@ static GtkWidget * read_separator(Plugin *p, json_t * json_separator)
     return gtk_separator_menu_item_new();
 }
 
-static void on_reload_menu( MenuCache* cache, menup* m )
+static gboolean on_timeout_reload_menu(menup * m)
 {
-    reload_system_menu( m, GTK_MENU(m->menu) );
+    m->menu_reload_timeout_cb = 0;
+    reload_system_menu(m, GTK_MENU(m->menu));
+    return FALSE;
+}
+
+static void on_reload_menu(MenuCache * cache, menup * m)
+{
+    su_log_debug("got menu reload notification");
+
+    if (!m->menu_reload_timeout_cb)
+    {
+        m->menu_reload_timeout_cb = g_timeout_add(2000, (GSourceFunc) on_timeout_reload_menu, m);
+    }
 }
 
 #include "menu_recent_documents.c"
@@ -805,7 +822,7 @@ read_system_menu(GtkMenu* menu, Plugin *p, json_t * json_item)
         m->reload_notify = menu_cache_add_reload_notify(m->menu_cache, (MenuCacheReloadNotify) on_reload_menu, m);
     }
 
-    sys_menu_insert_items( m, menu, -1 );
+    sys_menu_insert_items(m, menu, -1);
     plugin_set_has_system_menu(p, TRUE);
 }
 

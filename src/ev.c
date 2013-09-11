@@ -210,7 +210,7 @@ fb_ev_finalize (GObject *object)
 void
 fb_ev_emit(FbEv *ev, int signal)
 {
-    su_log_debug("signal=%d\n", signal);
+    //su_log_debug("signal=%d\n", signal);
     g_assert(signal >=0 && signal < EV_LAST_SIGNAL);
     if( signal == EV_ACTIVE_WINDOW )
     {

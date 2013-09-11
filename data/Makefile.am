@@ -21,6 +21,10 @@ template_plugins_taskbar_DATA = \
 	template/plugins/taskbar/task-menu
 template_plugins_taskbardir = $(datadir)/sde-config/sde/waterline/template/plugins/taskbar/
 
+template_plugins_menu_DATA = \
+	template/plugins/menu/application_menu.js
+template_plugins_menudir = $(datadir)/sde-config/sde/waterline/template/plugins/menu/
+
 
 ui_DATA = \
 	ui/panel-pref.ui \

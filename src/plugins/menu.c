@@ -44,6 +44,7 @@
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
+#include <waterline/paths.h>
 #include <waterline/fb_button.h>
 #include "bg.h"
 #include "menu-policy.h"
@@ -53,7 +54,6 @@
 
 extern void gtk_run(void); /* FIXME! */
 
-//#define DEFAULT_MENU_ICON PACKAGE_DATA_DIR "/lxpanelx/images/my-computer.png"
 #define DEFAULT_MENU_ICON "start-here"
 
 
@@ -128,32 +128,27 @@ menu_destructor(Plugin *p)
     RET();
 }
 
-static void
-spawn_app(GtkWidget *widget, gpointer data)
+static void spawn_app(GtkWidget *widget, gpointer data)
 {
     GError *error = NULL;
 
-    ENTER;
-    if (data) {
-        if (! g_spawn_command_line_async(data, &error) ) {
-            su_print_error_message("can't spawn %s\nError is %s\n", (char *)data, error->message);
-            g_error_free (error);
-        }
+    if (!data)
+        return;
+
+    if (! g_spawn_command_line_async(data, &error) )
+    {
+        su_print_error_message("can't spawn %s\nError is %s\n", (char *)data, error->message);
+        g_error_free (error);
     }
-    RET();
 }
 
 
-static void
-run_command(GtkWidget *widget, void (*cmd)(void))
+static void run_command(GtkWidget *widget, void (*cmd)(void))
 {
-    ENTER;
     cmd();
-    RET();
 }
 
-static void
-menu_pos(GtkWidget *menu, gint *px, gint *py, gboolean *push_in, Plugin * p)
+static void menu_pos(GtkWidget *menu, gint *px, gint *py, gboolean *push_in, Plugin * p)
 {
     /* Get the allocation of the popup menu. */
     GtkRequisition popup_req;
@@ -683,54 +678,46 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
 }
 
 
-static GtkWidget *
-read_item(Plugin *p, char** fp)
+static GtkWidget * read_item(Plugin *p, json_t * json_item)
 {
     ENTER;
 
-    menup* m = PRIV(p);
+    menup * m = PRIV(p);
 
-    line s;
-    gchar *name, *fname, *action;
-    GtkWidget *item;
+    GtkWidget * item;
     Command *cmd_entry = NULL;
 
-    name = fname = action = NULL;
+    gchar * name = NULL;
+    gchar * icon = NULL;
+    gchar * action = NULL;
+    su_json_dot_get_string(json_item, "name", "<unknown>", &name);
+    su_json_dot_get_string(json_item, "icon", "", &icon);
+    su_json_dot_get_string(json_item, "action", "", &action);
 
-    if( fp )
+    if (!su_str_empty(icon))
     {
-        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-            if (s.type == LINE_VAR) {
-                if (!g_ascii_strcasecmp(s.t[0], "image"))
-                    fname = su_path_expand_tilda(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "name"))
-                    name = g_strdup(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "action"))
-                    action = g_strdup(s.t[1]);
-                else if (!g_ascii_strcasecmp(s.t[0], "command")) {
+        gchar * icon1 = su_path_expand_tilda(icon);
+        g_free(icon);
+        icon = icon1;
+    }
 
-                    if (!g_ascii_strcasecmp(s.t[1], "run"))
-                    {
-                        m->has_run_command = TRUE;
-                    }
+    if (!g_ascii_strcasecmp(action, "run"))
+    {
+        m->has_run_command = TRUE;
+    }
 
-                    Command *tmp;
+    Command * tmp = NULL;
 
-                    for (tmp = commands; tmp->name; tmp++) {
-                        if (!g_ascii_strcasecmp(s.t[1], tmp->name)) {
-                            cmd_entry = tmp;
-                            break;
-                        }
-                    }
-                } else {
-                    su_print_error_message( "menu/item: unknown var %s\n", s.t[0]);
-                    goto error;
-                }
-            }
+    for (tmp = commands; tmp->name; tmp++)
+    {
+        if (g_strcmp0(action, tmp->name) == 0)
+        {
+            cmd_entry = tmp;
+            break;
         }
     }
-    /* menu button */
-    if( cmd_entry ) /* built-in commands */
+
+    if (cmd_entry) /* built-in commands */
     {
         item = gtk_image_menu_item_new_with_label( _(cmd_entry->disp_name) );
         g_signal_connect(G_OBJECT(item), "activate", (GCallback)run_command, cmd_entry->cmd);
@@ -738,245 +725,47 @@ read_item(Plugin *p, char** fp)
     else
     {
         item = gtk_image_menu_item_new_with_label(name ? name : "");
-        if (action) {
+        if (!su_str_empty(action))
+        {
             g_signal_connect(G_OBJECT(item), "activate", (GCallback)spawn_app, action);
         }
-    }
-    gtk_container_set_border_width(GTK_CONTAINER(item), 0);
-    g_free(name);
-    if (fname) {
-        GtkWidget *img;
-
-        img = _gtk_image_new_from_file_scaled(fname, m->iconsize, m->iconsize, TRUE, TRUE);
-        gtk_widget_show(img);
-        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), img);
-        g_free(fname);
-    }
-    RET(item);
-
- error:
-    g_free(fname);
-    g_free(name);
-    g_free(action);
-    RET(NULL);
-}
-
-static GtkWidget *
-read_separator(Plugin *p, char **fp)
-{
-    line s;
-
-    ENTER;
-    if( fp )
-    {
-        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-            su_print_error_message("menu: error - separator can not have paramteres\n");
-            RET(NULL);
+        else
+        {
+            gtk_widget_set_sensitive(item, FALSE);
         }
     }
-    RET(gtk_separator_menu_item_new());
+
+    gtk_container_set_border_width(GTK_CONTAINER(item), 0);
+
+    if (!su_str_empty(icon)) {
+        GtkWidget *image = _gtk_image_new_from_file_scaled(icon, m->iconsize, m->iconsize, TRUE, TRUE);
+        gtk_widget_show(image);
+        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+
+    }
+
+    g_free(name);
+    g_free(icon);
+    g_free(action);
+
+    return item;
+}
+
+static GtkWidget * read_separator(Plugin *p, json_t * json_separator)
+{
+    return gtk_separator_menu_item_new();
 }
 
 static void on_reload_menu( MenuCache* cache, menup* m )
 {
-    /* g_debug("reload system menu!!"); */
     reload_system_menu( m, GTK_MENU(m->menu) );
 }
 
-#if 0
-static void ru_menuitem_open(GtkWidget * item, Plugin * p)
-{
-    open_in_file_manager(p, g_object_get_data(G_OBJECT(item), "uri"));
-}
+#include "menu_recent_documents.c"
 
 static void
-read_recently_used_menu(GtkMenu* menu, Plugin *p, char** fp)
+read_system_menu(GtkMenu* menu, Plugin *p, json_t * json_item)
 {
-    menup *m = PRIV(p);
-
-    line s;
-    if( fp )
-    {
-        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-            su_print_error_message("menu: error - system can not have paramteres\n");
-            return;
-        }
-    }
-
-    GtkRecentManager * rm = gtk_recent_manager_get_default();
-    GList * rl = gtk_recent_manager_get_items(rm);
-    GList *l;
-    for (l = rl; l; l = l->next)
-    {
-        GtkRecentInfo *info = l->data;
-        const char * uri = gtk_recent_info_get_uri(info);
-
-        //GFile * file = g_file_new_for_uri(uri);
-        //if (g_file_query_exists(file, NULL) || gtk_recent_info_get_private_hint(info))
-        if (!gtk_recent_info_get_private_hint(info) && gtk_recent_info_exists(info))
-        {
-	    const char * display_name = gtk_recent_info_get_display_name(info);
-
-	    GdkPixbuf * pixbuf = gtk_recent_info_get_icon(info, m->iconsize);
-	    GtkWidget* img = gtk_image_new_from_pixbuf(pixbuf);
-	    g_object_unref(pixbuf);
-
-	    GtkWidget* mi = gtk_image_menu_item_new_with_label(display_name);
-	    gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(mi), img);
-	    g_object_set_data_full(G_OBJECT(mi), "uri", g_strdup(uri), g_free);
-
-            gchar * tooltip = g_strdup_printf("%d", gtk_recent_info_get_age(info));
-            gtk_widget_set_tooltip_text(mi, tooltip);
-            g_free(tooltip);
-
-	    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(ru_menuitem_open), p);
-
-	    gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
-	    gtk_widget_show(mi);
-        }
-
-        //g_object_unref(file);
-        gtk_recent_info_unref(info);
-    }
-    g_list_free(rl);
-
-    //GtkWidget* mi = gtk_menu_item_new();
-    //gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
-}
-#endif
-
-static gboolean
-recent_documents_filter (const GtkRecentFilterInfo *filter_info, gpointer user_data)
-{
-    if (!filter_info)
-         return FALSE;
-
-    if (!filter_info->uri)
-         return FALSE;
-/*
-g_print("%s\n", filter_info->uri);
-int i;
-for (i = 0; filter_info->applications[i]; i++)
-{
-    g_print("    %s\n", filter_info->applications[i]);
-}
-*/
-    if (!has_case_prefix(filter_info->uri, "file:/"))
-        return TRUE;
-
-    gchar * filename = g_filename_from_uri(filter_info->uri, NULL, NULL);
-
-    if (!filename)
-        return FALSE;
-
-    gboolean result = FALSE;
-
-    struct stat stat_buf;
-    if (stat(filename, &stat_buf) == 0)
-        result = TRUE;
-
-    g_free(filename);
-
-    return result;
-}
-
-static void
-recent_documents_activate_cb (GtkRecentChooser *chooser, Plugin * p)
-{
-    GtkRecentInfo * recent_info = gtk_recent_chooser_get_current_item (chooser);
-    const char    * uri = gtk_recent_info_get_uri (recent_info);
-
-    wtl_open_in_file_manager(uri);
-
-    gtk_recent_info_unref (recent_info);
-}
-
-static void
-read_recent_documents_menu(GtkMenu* menu, Plugin *p, char** fp)
-{
-    menup *m = PRIV(p);
-
-    int limit = 20;
-    gboolean show_private = FALSE;
-    gboolean local_only = FALSE;
-    gboolean show_tips = TRUE;
-
-    line s;
-    if( fp )
-    {
-        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-            if (s.type == LINE_VAR) {
-		m->config_start = *fp;
-		if (!g_ascii_strcasecmp(s.t[0], "limit"))
-		    limit = atoi(s.t[1]);
-		else if (!g_ascii_strcasecmp(s.t[0], "showprivate"))
-		    show_private = su_str_to_enum(bool_pair, s.t[1], show_private);
-		else if (!g_ascii_strcasecmp(s.t[0], "localonly"))
-		    local_only = su_str_to_enum(bool_pair, s.t[1], local_only);
-		else if (!g_ascii_strcasecmp(s.t[0], "showtips"))
-		    show_tips = su_str_to_enum(bool_pair, s.t[1], show_tips);
-		else {
-		    su_print_error_message("menu: unknown var %s\n", s.t[0]);
-		}
-	    } else {
-		su_print_error_message("menu: illegal in this context %s\n", s.str);
-		goto error;
-	    }
-        }
-    }
-
-    GtkRecentManager * rm = gtk_recent_manager_get_default();
-
-    GtkWidget      *recent_menu;
-    GtkWidget      *menu_item;
-
-    menu_item = gtk_image_menu_item_new_with_label(_("Recent Documents"));
-    recent_menu = gtk_recent_chooser_menu_new_for_manager(rm);
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), recent_menu);
-
-    GdkPixbuf * pixbuf = wtl_load_icon("document-open-recent", m->iconsize, m->iconsize, FALSE);
-    if (pixbuf)
-    {
-        GtkWidget* img = gtk_image_new_from_pixbuf(pixbuf);
-        g_object_unref(pixbuf);
-        gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(menu_item), img);
-    }
-
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-    gtk_widget_show_all(menu_item);
-
-    /*
-        Ok, Gtk+ has a couple of bugs here.
-
-        First, gtk_recent_chooser_set_show_tips() has no effect
-        with GtkRecentChooserMenu. So we use a custom filter to
-        do the things.
-
-        Second, get_is_recent_filtered() in gtkrecentchooserutils.c
-        nulls filter_info.uri field,
-        if GTK_RECENT_FILTER_DISPLAY_NAME flag not supplied.
-    */
-    GtkRecentFilter * filter = gtk_recent_filter_new();
-    gtk_recent_filter_add_custom(filter, GTK_RECENT_FILTER_URI | GTK_RECENT_FILTER_DISPLAY_NAME/* | GTK_RECENT_FILTER_APPLICATION*/,
-        recent_documents_filter, NULL, NULL);
-    gtk_recent_chooser_set_filter(GTK_RECENT_CHOOSER(recent_menu), filter);
-
-    gtk_recent_chooser_set_show_private(GTK_RECENT_CHOOSER(recent_menu), show_private);
-    gtk_recent_chooser_set_local_only(GTK_RECENT_CHOOSER(recent_menu), local_only);
-    gtk_recent_chooser_set_show_not_found(GTK_RECENT_CHOOSER(recent_menu), FALSE); // XXX: Seems not working.
-    gtk_recent_chooser_set_show_tips(GTK_RECENT_CHOOSER(recent_menu), show_tips);
-    gtk_recent_chooser_set_sort_type(GTK_RECENT_CHOOSER(recent_menu), GTK_RECENT_SORT_MRU);
-    gtk_recent_chooser_set_limit(GTK_RECENT_CHOOSER(recent_menu), limit);
-
-    g_signal_connect(G_OBJECT(recent_menu), "item-activated", G_CALLBACK(recent_documents_activate_cb), p);
-    
-    error: ;
-}
-
-static void
-read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
-{
-    line s;
     menup *m = PRIV(p);
 
     if (m->menu_cache == NULL)
@@ -992,189 +781,92 @@ read_system_menu(GtkMenu* menu, Plugin *p, char** fp)
         m->reload_notify = menu_cache_add_reload_notify(m->menu_cache, (MenuCacheReloadNotify) on_reload_menu, m);
     }
 
-    if( fp )
-    {
-        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-            su_print_error_message("menu: error - system can not have parameters\n");
-            return;
-        }
-    }
-
     sys_menu_insert_items( m, menu, -1 );
     plugin_set_has_system_menu(p, TRUE);
 }
 
-static void
-read_include(Plugin *p, char **fp)
-{
-    ENTER;
-#if 0
-    gchar *name;
-    line s;
-    menup *m = PRIV(p);
-    /* FIXME: this is disabled */
-    ENTER;
-    name = NULL;
-    if( fp )
-    {
-        while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-            if (s.type == LINE_VAR) {
-                if (!g_ascii_strcasecmp(s.t[0], "name"))
-                    name = su_path_expand_tilda(s.t[1]);
-                else  {
-                    su_print_error_message( "menu/include: unknown var %s\n", s.t[0]);
-                    RET();
-                }
-            }
-        }
-    }
-    if ((fp = fopen(name, "r"))) {
-        LOG(LOG_INFO, "Including %s\n", name);
-        m->files = g_slist_prepend(m->files, fp);
-        p->fp = fp;
-    } else {
-        su_print_error_message("Can't include %s\n", name);
-    }
-    if (name) g_free(name);
-#endif
-    RET();
-}
-
 static GtkWidget *
-read_submenu(Plugin *p, char** fp, gboolean as_item)
+read_submenu(Plugin *p, json_t * json_menu, gboolean as_item)
 {
-    line s;
     GtkWidget *mi, *menu;
-    gchar *name, *fname;
     menup *m = PRIV(p);
-    GdkColor color={0, 0, 36 * 0xffff / 0xff, 96 * 0xffff / 0xff};
-
-    ENTER;
 
     menu = gtk_menu_new ();
     gtk_container_set_border_width(GTK_CONTAINER(menu), 0);
 
-    fname = NULL;
-    name = NULL;
-    while (wtl_get_line(fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_BLOCK_START) {
-            mi = NULL;
-            if (!g_ascii_strcasecmp(s.t[0], "item")) {
-                mi = read_item(p, fp);
-            } else if (!g_ascii_strcasecmp(s.t[0], "separator")) {
-                mi = read_separator(p, fp);
-            } else if (!g_ascii_strcasecmp(s.t[0], "system")) {
-                read_system_menu(GTK_MENU(menu), p, fp); /* add system menu items */
-                continue;
-            } else if (!g_ascii_strcasecmp(s.t[0], "recentdocuments")) {
-                read_recent_documents_menu(GTK_MENU(menu), p, fp);
-                continue;
-            } else if (!g_ascii_strcasecmp(s.t[0], "menu")) {
-                mi = read_submenu(p, fp, TRUE);
-            } else if (!g_ascii_strcasecmp(s.t[0], "include")) {
-                read_include(p, fp);
-                continue;
-            } else {
-                su_print_error_message("menu: unknown block %s\n", s.t[0]);
-                goto error;
-            }
-            if (!mi) {
-                su_print_error_message("menu: can't create menu item\n");
-                goto error;
-            }
-            gtk_widget_show(mi);
-            gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
-        } else if (s.type == LINE_VAR) {
-            m->config_start = *fp;
-            if (!g_ascii_strcasecmp(s.t[0], "image"))
-                fname = su_path_expand_tilda(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "name"))
-                name = g_strdup(s.t[1]);
-        /* FIXME: tintcolor will not be saved.  */
-            else if (!g_ascii_strcasecmp(s.t[0], "tintcolor"))
-                gdk_color_parse( s.t[1], &color);
-            else {
-                su_print_error_message("menu: unknown var %s\n", s.t[0]);
-            }
-        } else if (s.type == LINE_NONE) {
-            if (m->files) {
-                /*
-                  fclose(p->fp);
-                  p->fp = m->files->data;
-                */
-                m->files = g_slist_delete_link(m->files, m->files);
-            }
-        }  else {
-            su_print_error_message("menu: illegal in this context %s\n", s.str);
-            goto error;
+    json_t * json_items = json_object_get(json_menu, "items");
+
+    size_t index;
+    json_t * json_item = NULL;
+    json_array_foreach(json_items, index, json_item) {
+        mi = NULL;
+        gchar * type = NULL;
+        su_json_dot_get_string(json_item, "type", "", &type);
+        if (!g_strcmp0(type, "item"))
+        {
+            mi = read_item(p, json_item);
         }
+        else if (!g_strcmp0(type, "xdg_menu"))
+        {
+            read_system_menu(GTK_MENU(menu), p, json_item);
+        }
+        else if (!g_strcmp0(type, "recent_documents_menu"))
+        {
+            read_recent_documents_menu(GTK_MENU(menu), p, json_item);
+        }
+        else if (!g_strcmp0(type, "separator"))
+        {
+            mi = read_separator(p, json_item);
+        }
+        else if (!g_strcmp0(type, "menu"))
+        {
+            mi = read_submenu(p, json_item, TRUE);
+        }
+
+        gtk_widget_show(mi);
+        gtk_menu_shell_append(GTK_MENU_SHELL (menu), mi);
+
+        g_free(type);
     }
-    if (as_item) {
+
+    if (as_item)
+    {
+        gchar * icon = NULL;
+        su_json_dot_get_string(json_menu, "icon", "", &icon);
+        gchar * name = NULL;
+        su_json_dot_get_string(json_menu, "name", "<unknown>", &name);
+
         mi = gtk_image_menu_item_new_with_label(name);
-        if (fname) {
-            GtkWidget *img;
-            img = _gtk_image_new_from_file_scaled(fname, m->iconsize, m->iconsize, TRUE, TRUE);
-            gtk_widget_show(img);
-            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), img);
+        if (icon) {
+            GtkWidget * image = _gtk_image_new_from_file_scaled(icon, m->iconsize, m->iconsize, TRUE, TRUE);
+            gtk_widget_show(image);
+            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), image);
         }
-        gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), menu);
-    } else {
-        m->fname = fname ? g_strdup(fname) : g_strdup( DEFAULT_MENU_ICON );
-        m->caption = name ? g_strdup(name) : NULL;
-        mi = make_button(p, fname, name, &color, menu);
-        RET(mi);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(mi), menu);
+        g_free(name);
+        g_free(icon);
     }
-
-    g_free(fname);
-    g_free(name);
-    RET(mi);
-
- error:
-    // FIXME: we need to recursivly destroy all child menus and their items
-    gtk_widget_destroy(menu);
-    g_free(fname);
-    g_free(name);
-    RET(NULL);
+    else
+    {
+        su_json_dot_get_string(json_menu, "icon", m->fname, &m->fname);
+        su_json_dot_get_string(json_menu, "name", m->caption, &m->caption);
+        mi = make_button(p, m->fname, m->caption, NULL, menu);
+        return mi;
+    }
+    return mi;
 }
 
 static int
 menu_constructor(Plugin *p)
 {
-    char **fp = NULL;
-
-    char *start;
     menup *m;
-    static char default_config[] =
-        "system {\n"
-        "}\n"
-        "separator {\n"
-        "}\n"
-        "recentdocuments {\n"
-            "showprivate=0\n"
-            "limit=20\n"
-            "localonly=0\n"
-            "showtips=1\n"
-        "}\n"
-        "separator {\n"
-        "}\n"
-        "item {\n"
-            "command=run\n"
-        "}\n"
-        "separator {\n"
-        "}\n"
-        "item {\n"
-            "image=gnome-logout\n"
-            "command=logout\n"
-        "}\n"
-        "image=" DEFAULT_MENU_ICON "\n"
-        "}\n";
-    char *config_default = default_config;
     int iw, ih;
 
     m = g_new0(menup, 1);
     g_return_val_if_fail(m != NULL, 0);
-    m->fname = NULL;
+
     m->caption = NULL;
+    m->fname = g_strdup(DEFAULT_MENU_ICON);
 
     plugin_set_priv(p, m);
 
@@ -1184,86 +876,30 @@ menu_constructor(Plugin *p)
     m->box = gtk_hbox_new(FALSE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(m->box), 0);
 
-    if( ! fp )
-        fp = &config_default;
+    json_t * json_menu = json_incref(json_object_get(plugin_inner_json(p), "menu"));
+    if (!json_menu) {
+        gchar * path = wtl_get_config_path("plugins/menu/application_menu.js", SU_PATH_CONFIG_USER);
+        if (path) {
+            json_menu = json_load_file(path, 0, NULL);
+        }
+    }
 
-    m->config_start = start = *fp;
-    if (!read_submenu(p, fp, FALSE)) {
+    if (!read_submenu(p, json_menu, FALSE)) {
         su_print_error_message("menu: plugin init failed\n");
         return 0;
     }
-    m->config_end = *fp - 1;
-    while( *m->config_end != '}' && m->config_end > m->config_start ) {
-        --m->config_end;
-    }
-    if( *m->config_end == '}' )
-        --m->config_end;
 
-    m->config_data = g_strndup( start, (m->config_end - start) );
+    json_decref(json_menu);
 
     plugin_set_widget(p, m->box);
 
-    RET(1);
-
-}
-
-static void save_config( Plugin* p)
-{
-#if 0
-    menup* menu = PRIV(p);
-    int level = 0;
-    wtl_put_str( fp, "name", menu->caption );
-    wtl_put_str( fp, "image", menu->fname );
-    if( menu->config_data ) {
-        char** lines = g_strsplit( menu->config_data, "\n", 0 );
-        char** line;
-        for( line = lines; *line; ++line ) {
-            g_strstrip( *line );
-            if( **line )
-            {
-                if( level == 0 )
-                {
-                    /* skip image and caption since we already save these two items */
-                    if( g_str_has_prefix(*line, "image") || g_str_has_prefix(*line, "name") )
-                        continue;
-                }
-                g_strchomp(*line); /* remove trailing spaces */
-                if( g_str_has_suffix( *line, "{" ) )
-                    ++level;
-                else if( g_str_has_suffix( *line, "}" ) )
-                    --level;
-                wtl_put_line( fp, *line );
-            }
-        }
-        g_strfreev( lines );
-    }
-#endif
+    return 1;
 }
 
 static void apply_config(Plugin* p)
 {
     menup* m = PRIV(p);
-    if( m->fname )
-        fb_button_set_from_file( m->img, m->fname, -1, plugin_get_icon_size(p) );
-    fb_button_set_label_text( m->img, m->caption);
     fb_button_set_orientation(m->img, plugin_get_orientation(p));
-}
-
-static void menu_config( Plugin *p, GtkWindow* parent )
-{
-    GtkWidget* dlg;
-    menup* menu = PRIV(p);
-    dlg = create_generic_config_dlg(
-        _(plugin_class(p)->name),
-        GTK_WIDGET(parent),
-        (GSourceFunc) apply_config, (gpointer) p,
-        "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
-        _("Icon"), &menu->fname, (GType)CONF_TYPE_FILE_ENTRY,
-        _("Caption"), &menu->caption, (GType)CONF_TYPE_STR,
-        NULL);
-
-    if (dlg)
-        gtk_window_present( GTK_WINDOW(dlg) );
 }
 
 /* Callback when panel configuration changes. */
@@ -1283,8 +919,6 @@ PluginClass menu_plugin_class = {
 
     constructor : menu_constructor,
     destructor  : menu_destructor,
-    config : menu_config,
-    save : save_config,
     panel_configuration_changed : menu_panel_configuration_changed,
     open_system_menu : menu_open_system_menu
 };

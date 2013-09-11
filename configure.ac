@@ -390,9 +390,6 @@ echo Building dynamic plugins:
     if test x"$plugin_xkb" != x; then
         AC_MSG_RESULT([    xkb - Keyboard layout switcher])
     fi
-    if test x"$plugin_xkb" != x; then
-        AC_MSG_RESULT([    xkbh - Keyboard layout handler])
-    fi
     if test x"$plugin_thermal" != x; then
         AC_MSG_RESULT([    thermal - Temperature monitor])
     fi

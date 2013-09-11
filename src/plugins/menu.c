@@ -167,19 +167,17 @@ static void on_menu_item( GtkMenuItem* mi, MenuCacheItem* item )
 }
 
 /* load icon when mapping the menu item to speed up */
-static void on_menu_item_map(GtkWidget* mi, MenuCacheItem* item)
+static void on_menu_item_map(GtkWidget* mi, MenuCacheItem* _item)
 {
     GtkImage* img = GTK_IMAGE(gtk_image_menu_item_get_image(GTK_IMAGE_MENU_ITEM(mi)));
-    if( img )
+    if (img)
     {
-        if( gtk_image_get_storage_type(img) == GTK_IMAGE_EMPTY )
+        if (gtk_image_get_storage_type(img) == GTK_IMAGE_EMPTY)
         {
-            GdkPixbuf* icon;
             int w, h;
-            /* FIXME: this is inefficient */
             gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &w, &h);
-            item = g_object_get_qdata(G_OBJECT(mi), SYS_MENU_ITEM_ID);
-            icon = wtl_load_icon(menu_cache_item_get_icon(item), w, h, TRUE);
+            MenuCacheItem * item = g_object_get_qdata(G_OBJECT(mi), SYS_MENU_ITEM_ID);
+            GdkPixbuf * icon = wtl_load_icon(menu_cache_item_get_icon(item), w, h, TRUE);
             if (icon)
             {
                 gtk_image_set_from_pixbuf(img, icon);
@@ -379,6 +377,20 @@ static char * str_remove_trailing_percent_args(char * s)
     return s;
 }
 
+static gboolean _is_icon_name_valid_for_gtk(const char * icon_name)
+{
+    while (*icon_name)
+    {
+        char c = *icon_name;
+        gboolean valid = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || (c == '-');
+        if (!valid)
+            return FALSE;
+        icon_name++;
+    }
+
+    return TRUE;
+}
+
 static GtkWidget* create_item( MenuCacheItem* item )
 {
     GtkWidget* mi;
@@ -390,9 +402,20 @@ static GtkWidget* create_item( MenuCacheItem* item )
         su_log_debug("Name    = %s", name);
         if (!name)
             name = "<unknown>";
+
         mi = gtk_image_menu_item_new_with_label(name);
-        GtkWidget * img = gtk_image_new();
-        gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(mi), img );
+
+        const char * icon_name = menu_cache_item_get_icon(item);
+        su_log_debug("Icon    = %s", icon_name);
+        if (su_str_empty(icon_name))
+            icon_name = "applications-other";
+        GtkWidget * image = NULL;
+        if (_is_icon_name_valid_for_gtk(icon_name))
+            image = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_MENU);
+        else
+            image = gtk_image_new();
+        gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(mi), image);
+
         if( menu_cache_item_get_type(item) == MENU_CACHE_TYPE_APP )
         {
             const gchar * tooltip = menu_cache_item_get_comment(item);

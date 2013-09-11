@@ -433,18 +433,11 @@ static void sys_menu_insert_items( menup* m, GtkMenu* menu, int position )
     MenuCacheDir* dir;
     guint change_handler;
 
-    dir = menu_cache_get_root_dir( m->menu_cache );
-    if(dir)
-        load_menu( m, dir, GTK_WIDGET(menu), position );
-#if 0
-    else /* menu content is empty */
-    {
-        /* add a place holder */
-        GtkWidget* mi = gtk_menu_item_new();
-        g_object_set_qdata( G_OBJECT(mi), SYS_MENU_ITEM_ID, GINT_TO_POINTER(1) );
-        gtk_menu_shell_insert(GTK_MENU_SHELL(menu), mi, position);
-    }
-#endif
+    dir = menu_cache_get_root_dir(m->menu_cache);
+    if (dir)
+        load_menu(m, dir, GTK_WIDGET(menu), position);
+    else
+        su_log_debug("menu_cache_get_root_dir() returned NULL");
 
     change_handler = g_signal_connect_swapped( gtk_icon_theme_get_default(), "changed", G_CALLBACK(unload_old_icons), menu );
     g_object_weak_ref( G_OBJECT(menu), remove_change_handler, GINT_TO_POINTER(change_handler) );
@@ -530,6 +523,11 @@ read_system_menu(GtkMenu* menu, Plugin *p, json_t * json_item)
     GtkWidget* mi = gtk_menu_item_new();
     g_object_set_qdata(G_OBJECT(mi), SYS_MENU_HEAD_ITEM_ID, GINT_TO_POINTER(1));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+    if (!m->menu_reload_timeout_cb)
+    {
+        m->menu_reload_timeout_cb = g_timeout_add(500, (GSourceFunc) on_timeout_reload_menu, m);
+    }
 
     plugin_set_has_system_menu(p, TRUE);
 }

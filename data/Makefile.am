@@ -25,6 +25,9 @@ template_plugins_menu_DATA = \
 	template/plugins/menu/application_menu.js
 template_plugins_menudir = $(datadir)/sde-config/sde/waterline/template/plugins/menu/
 
+applications_DATA = \
+	waterline.desktop
+applicationsdir = $(datadir)/applications
 
 ui_DATA = \
 	ui/panel-pref.ui \

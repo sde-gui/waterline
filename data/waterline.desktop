@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=waterline
+Comment=A framework for desktop widgets
+Exec=waterline
+Terminal=false
+Type=Application
+StartupNotify=false
+NoDisplay=true

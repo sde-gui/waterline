@@ -359,8 +359,11 @@ read_submenu(Plugin *p, json_t * json_menu, gboolean as_item)
             mi = read_submenu(p, json_item, TRUE);
         }
 
-        gtk_widget_show(mi);
-        gtk_menu_shell_append(GTK_MENU_SHELL (menu), mi);
+        if (mi)
+        {
+            gtk_widget_show(mi);
+            gtk_menu_shell_append(GTK_MENU_SHELL (menu), mi);
+        }
 
         g_free(type);
     }

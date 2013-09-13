@@ -1476,8 +1476,7 @@ static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e,
 
 /******************************************************************************/
 
-/* Handler for "button_press_event" signal with Panel as parameter. */
-static gboolean panel_button_press_event_with_panel(GtkWidget *widget, GdkEventButton *event, Panel *panel)
+void panel_button_press_hack(Panel *panel)
 {
     /*
         XXX:
@@ -1486,6 +1485,12 @@ static gboolean panel_button_press_event_with_panel(GtkWidget *widget, GdkEventB
     */
     if (panel->visibility_mode == VISIBILITY_BELOW)
         panel_set_wm_state(panel);
+}
+
+/* Handler for "button_press_event" signal with Panel as parameter. */
+static gboolean panel_button_press_event_with_panel(GtkWidget *widget, GdkEventButton *event, Panel *panel)
+{
+    panel_button_press_hack(panel);
 
     if (event->button == 3)	 /* right button */
     {

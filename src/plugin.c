@@ -466,6 +466,8 @@ void plugin_widget_set_background(GtkWidget * w, Panel * p)
  * External so can be used from a plugin. */
 gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plugin *plugin)
 {
+    panel_button_press_hack(plugin->panel);
+
     if (event->button == 3)	 /* right button */
     {
         plugin_show_menu(plugin, event);

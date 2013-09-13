@@ -53,6 +53,8 @@ extern int panel_get_orientation(Panel * p);
 extern GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_menu);
 extern void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event);
 
+extern void panel_button_press_hack(Panel *panel);
+
 //#pragma GCC visibility pop
 
 #endif

@@ -329,7 +329,7 @@ static struct tm * _get_time_to_display(DClockPlugin * dc)
     struct tm * current_time = NULL;
     gchar* oldtz = NULL;
 
-    if (dc->timezone) {
+    if (!su_str_empty(dc->timezone)) {
         oldtz = g_strdup(g_getenv("TZ"));
         g_setenv("TZ", dc->timezone, 1);
         current_time = localtime(&now);

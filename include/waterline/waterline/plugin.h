@@ -26,6 +26,7 @@
 #include <gdk/gdk.h>
 #include <stdio.h>
 #include <jansson.h>
+#include <stdint.h>
 
 #include "typedef.h"
 
@@ -33,7 +34,7 @@
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */
 #define PLUGINCLASS_MAGIC ((unsigned long)0x7bd4370f)
 #define PLUGINCLASS_VERSION 3
-#define PLUGINCLASS_BASE_SIZE ((unsigned short) (unsigned) & ((PluginClass*)0)->__end_of_required_part)
+#define PLUGINCLASS_BASE_SIZE ((unsigned short) (uintptr_t) & ((PluginClass*)0)->__end_of_required_part)
 #define PLUGINCLASS_VERSIONING \
     structure_magic : PLUGINCLASS_MAGIC, \
     structure_version : PLUGINCLASS_VERSION, \

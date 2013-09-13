@@ -1181,16 +1181,6 @@ void panel_update_background(Panel * p)
         gdk_window_clear(p->topgwin->window);
     }
     gtk_widget_queue_draw(p->topgwin);
-#if 0
-    /* Loop over all plugins redrawing each plugin. */
-    GList * l;
-    for (l = p->plugins; l != NULL; l = l->next)
-    {
-        Plugin * pl = (Plugin *) l->data;
-        if (pl->pwid != NULL)
-            plugin_widget_set_background(pl->pwid, p);
-    }
-#endif
 }
 
 static gboolean delay_update_background( Panel* p )
@@ -1891,6 +1881,15 @@ panel_start_gui(Panel *p)
 
     /* window mapping point */
     gtk_widget_show_all(p->topgwin);
+
+    /*
+        HACK:
+        Есть баг: отрисовка панели динамического размера зависает после старта.
+        Если панель передвинуть, отрисовка отвисает.
+        Так что этот gtk_window_move() -- хак, чтобы развисла отрисовка.
+        До истинных причин бага я не докопался.
+    */
+    gtk_window_move(GTK_WINDOW(p->topgwin), -1, -1);
 
     gdk_window_set_accept_focus(gtk_widget_get_window(p->topgwin), FALSE);
 

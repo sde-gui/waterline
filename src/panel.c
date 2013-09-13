@@ -1479,6 +1479,14 @@ static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e,
 /* Handler for "button_press_event" signal with Panel as parameter. */
 static gboolean panel_button_press_event_with_panel(GtkWidget *widget, GdkEventButton *event, Panel *panel)
 {
+    /*
+        XXX:
+        Openbox raises a _NET_WM_WINDOW_TYPE_DOCK window on click even if it has _NET_WM_STATE_BELOW flag.
+        We have to explicitly lower the panel on every click.
+    */
+    if (panel->visibility_mode == VISIBILITY_BELOW)
+        panel_set_wm_state(panel);
+
     if (event->button == 3)	 /* right button */
     {
         panel_show_panel_menu(panel, NULL, event);

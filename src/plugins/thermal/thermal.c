@@ -169,7 +169,6 @@ sysfs_get_critical(thermal *th){
             ! ( pstr = buf ) );
     if( pstr )
     {
-        printf("Critical: [%s]\n",pstr);
         fclose(state);
         return atoi(pstr)/1000;
     }

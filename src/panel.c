@@ -941,6 +941,8 @@ static gboolean panel_expose_event(GtkWidget *widget, GdkEventExpose *event, Pan
 {
     cairo_t *cr;
 
+    //su_log_debug2("panel expose");
+
     cr = gdk_cairo_create(widget->window); /* create cairo context */
 
     float a = (float) p->alpha / 255;
@@ -1074,6 +1076,7 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         if (!p->expose_event_connected && widget == p->topgwin)
         {
             g_signal_connect(G_OBJECT(p->topgwin), "expose_event", G_CALLBACK(panel_expose_event), p);
+            su_log_debug("panel_expose_event connected");
             p->expose_event_connected = TRUE;
         }
     }
@@ -1082,6 +1085,7 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         if (p->expose_event_connected && widget == p->topgwin)
         {
             g_signal_handlers_disconnect_by_func(G_OBJECT(p->topgwin), G_CALLBACK(panel_expose_event), p);
+            su_log_debug("panel_expose_event disconnected");
             p->expose_event_connected = FALSE;
         }
     }
@@ -1195,8 +1199,8 @@ static gboolean delay_update_background( Panel* p )
 
     /* Panel could be destroyed while background update scheduled */
     if ( p->topgwin && gtk_widget_get_realized( p->topgwin ) ) {
-	gdk_display_sync( gtk_widget_get_display(p->topgwin) );
-	panel_update_background( p );
+        gdk_display_sync( gtk_widget_get_display(p->topgwin) );
+        panel_update_background( p );
     }
 
     return FALSE;

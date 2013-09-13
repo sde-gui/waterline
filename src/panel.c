@@ -1476,6 +1476,119 @@ static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e,
 
 /******************************************************************************/
 
+static gboolean panel_can_be_drag_moved(Panel * panel)
+{
+    if (wtl_is_in_kiosk_mode())
+        return FALSE;
+    return (panel->visibility_mode == VISIBILITY_ALWAYS) || (panel->visibility_mode == VISIBILITY_BELOW);
+}
+
+gboolean panel_handle_drag_move(Panel * panel, GdkEventButton * event)
+{
+    if (event->type == GDK_BUTTON_PRESS)
+    {
+        if (event->button == 1 && event->state & GDK_CONTROL_MASK)
+        {
+            if (!panel->doing_panel_drag_move && panel_can_be_drag_moved(panel))
+            {
+                GdkGrabStatus grab_status = gdk_pointer_grab(
+                    panel_get_toplevel_window(panel),
+                    FALSE,
+                    GDK_ALL_EVENTS_MASK,
+                    NULL,
+                    NULL /*FIXME: set cursor*/,
+                    event->time);
+
+                if (grab_status == GDK_GRAB_SUCCESS)
+                {
+                    panel->doing_panel_drag_move = TRUE;
+                    panel->panel_drag_move_start_x = event->x_root;
+                    panel->panel_drag_move_start_y = event->y_root;
+                    panel->panel_drag_move_start_edge_margin = panel->edge_margin;
+                    panel->panel_drag_move_start_align_margin = panel->align_margin;
+                }
+            }
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    if (!panel->doing_panel_drag_move)
+    {
+        return FALSE;
+    }
+
+    int x_offset = event->x_root - panel->panel_drag_move_start_x;
+    int y_offset = event->y_root - panel->panel_drag_move_start_y;
+
+    int edge_margin_offset = 0;
+    int align_margin_offset = 0;
+
+    switch (panel->edge)
+    {
+        case EDGE_TOP:
+        {
+            edge_margin_offset = panel->panel_drag_move_start_edge_margin + y_offset;
+            if (panel->align == ALIGN_LEFT)
+                align_margin_offset = panel->panel_drag_move_start_align_margin + x_offset;
+            else if (panel->align == ALIGN_RIGHT)
+                align_margin_offset = panel->panel_drag_move_start_align_margin - x_offset;
+            break;
+        }
+        case EDGE_LEFT:
+        {
+            edge_margin_offset = panel->panel_drag_move_start_edge_margin + x_offset;
+            if (panel->align == ALIGN_LEFT)
+                align_margin_offset = panel->panel_drag_move_start_align_margin + y_offset;
+            else if (panel->align == ALIGN_RIGHT)
+                align_margin_offset = panel->panel_drag_move_start_align_margin - y_offset;
+            break;
+        }
+        case EDGE_BOTTOM:
+        {
+            edge_margin_offset = panel->panel_drag_move_start_edge_margin - y_offset;
+            if (panel->align == ALIGN_LEFT)
+                align_margin_offset = panel->panel_drag_move_start_align_margin + x_offset;
+            else if (panel->align == ALIGN_RIGHT)
+                align_margin_offset = panel->panel_drag_move_start_align_margin - x_offset;
+            break;
+        }
+        case EDGE_RIGHT:
+        {
+            edge_margin_offset = panel->panel_drag_move_start_edge_margin - x_offset;
+            if (panel->align == ALIGN_LEFT)
+                align_margin_offset = panel->panel_drag_move_start_align_margin + y_offset;
+            else if (panel->align == ALIGN_RIGHT)
+                align_margin_offset = panel->panel_drag_move_start_align_margin - y_offset;
+            break;
+        }
+    }
+
+    if (edge_margin_offset < 0)
+        edge_margin_offset = 0;
+    if (align_margin_offset < 0)
+        align_margin_offset = 0;
+
+    panel->edge_margin = edge_margin_offset;
+    panel->align_margin = align_margin_offset;
+
+    update_panel_geometry(panel);
+
+    if (!(event->state & GDK_BUTTON1_MASK)
+    ||   (event->type == GDK_BUTTON_RELEASE && event->button == 1)
+    ||  !(panel_can_be_drag_moved(panel)))
+    {
+        gdk_pointer_ungrab(event->time);
+        panel->doing_panel_drag_move = FALSE;
+        panel_save_configuration(panel);
+        return TRUE;
+    }
+
+    return TRUE;
+}
+
+/******************************************************************************/
+
 void panel_button_press_hack(Panel *panel)
 {
     /*
@@ -1497,7 +1610,18 @@ static gboolean panel_button_press_event_with_panel(GtkWidget *widget, GdkEventB
         panel_show_panel_menu(panel, NULL, event);
         return TRUE;
     }
-    return FALSE;
+
+    return panel_handle_drag_move(panel, event);
+}
+
+static gboolean panel_release_event(GtkWidget * widget, GdkEventButton * event, Panel * panel)
+{
+    return panel_handle_drag_move(panel, event);
+}
+
+static gboolean panel_motion_notify_event(GtkWidget * widget, GdkEventButton * event, Panel * panel)
+{
+    return panel_handle_drag_move(panel, event);
 }
 
 /******************************************************************************/
@@ -1697,6 +1821,10 @@ panel_start_gui(Panel *p)
     gtk_widget_add_events( p->topgwin, GDK_BUTTON_PRESS_MASK );
     g_signal_connect(G_OBJECT (p->topgwin), "button_press_event",
           (GCallback) panel_button_press_event_with_panel, p);
+
+    g_signal_connect(G_OBJECT (p->topgwin), "button_release_event", G_CALLBACK(panel_release_event), (gpointer) p);
+    g_signal_connect(G_OBJECT (p->topgwin), "motion-notify-event", G_CALLBACK(panel_motion_notify_event), (gpointer) p);
+
 
     g_signal_connect (G_OBJECT (p->topgwin), "realize",
           (GCallback) panel_realize, p);

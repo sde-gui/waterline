@@ -54,6 +54,7 @@ extern GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean u
 extern void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event);
 
 extern void panel_button_press_hack(Panel *panel);
+extern gboolean panel_handle_drag_move(Panel * panel, GdkEventButton * event);
 
 //#pragma GCC visibility pop
 

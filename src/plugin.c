@@ -473,7 +473,7 @@ gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plu
         plugin_show_menu(plugin, event);
         return TRUE;
     }
-    return FALSE;
+    return panel_handle_drag_move(plugin->panel, event);
 }
 
 /* Helper for position-calculation callback for popup menus. */

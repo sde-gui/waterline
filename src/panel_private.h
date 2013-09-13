@@ -104,6 +104,12 @@ struct _Panel {
 
     int update_background_idle_cb;
 
+    gboolean doing_panel_drag_move;
+    int panel_drag_move_start_x;
+    int panel_drag_move_start_y;
+    int panel_drag_move_start_edge_margin;
+    int panel_drag_move_start_align_margin;
+
     GList * plugins;			/* List of all plugins */
 
     json_t * json;

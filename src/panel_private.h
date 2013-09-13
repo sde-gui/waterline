@@ -144,6 +144,8 @@ struct _Panel {
         GtkWidget * height_when_minimized;
         GtkWidget * reserve_space;
 
+        GtkSpinButton * custom_monitor;
+
         GtkSpinButton * padding_top;
         GtkSpinButton * padding_bottom;
         GtkSpinButton * padding_left;

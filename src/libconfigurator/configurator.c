@@ -515,6 +515,32 @@ set_icon_size( GtkSpinButton* spin,  Panel* p  )
     panel_set_panel_configuration_changed(p);
 }
 
+static void on_output_target_changed(GtkWidget * item, Panel * p)
+{
+    int output_target = gtk_combo_box_get_active(GTK_COMBO_BOX(item));
+    if (p->output_target != output_target)
+    {
+        p->output_target = output_target;
+        update_panel_geometry(p);
+        gui_update_width(p);
+
+        gtk_widget_set_sensitive(GTK_WIDGET(p->pref_dialog.custom_monitor), p->output_target == OUTPUT_CUSTOM_MONITOR);
+    }
+}
+
+static void
+on_custom_monitor_value_changed( GtkSpinButton* spin,  Panel* p  )
+{
+    int custom_monitor = gtk_spin_button_get_value(spin);
+    if (p->custom_monitor != custom_monitor)
+    {
+        p->custom_monitor != custom_monitor;
+        update_panel_geometry(p);
+        gui_update_width(p);
+    }
+}
+
+
 static void
 on_paddings_value_changed(GtkSpinButton* spin, Panel* p)
 {
@@ -693,6 +719,19 @@ void panel_initialize_pref_dialog(Panel * p)
                       G_CALLBACK(set_height_when_minimized), p);
 
     gui_update_visibility(p);
+
+    /* monitor */
+
+    w = (GtkWidget *) gtk_builder_get_object( builder, "output_target" );
+    gtk_combo_box_set_active(GTK_COMBO_BOX(w), p->output_target);
+    g_signal_connect(w, "changed", G_CALLBACK(on_output_target_changed), p);
+
+    p->pref_dialog.custom_monitor = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "custom_monitor"));
+    gtk_spin_button_set_range(p->pref_dialog.custom_monitor, 0, gdk_screen_get_n_monitors(gtk_widget_get_screen(p->topgwin)) - 1);
+    gtk_spin_button_set_value(p->pref_dialog.custom_monitor, p->custom_monitor);
+    gtk_widget_set_sensitive(GTK_WIDGET(p->pref_dialog.custom_monitor), p->output_target == OUTPUT_CUSTOM_MONITOR);
+    g_signal_connect(p->pref_dialog.custom_monitor, "value_changed", G_CALLBACK(on_custom_monitor_value_changed), p);
+
 
     /* transparancy */
     tint_clr = w = (GtkWidget*)gtk_builder_get_object( builder, "tint_clr" );

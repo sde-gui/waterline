@@ -90,6 +90,13 @@ static su_enum_pair panel_visibility_pair[] = {
     { 0, NULL},
 };
 
+static su_enum_pair output_target_pair[] = {
+    { OUTPUT_WHOLE_SCREEN, "whole_screen" },
+    { OUTPUT_PRIMARY_MONITOR, "primary_monitor" },
+    { OUTPUT_CUSTOM_MONITOR,  "custom_monitor" },
+    { 0, NULL},
+};
+
 /******************************************************************************/
 
 #define SU_JSON_OPTION_STRUCTURE Panel
@@ -103,6 +110,9 @@ static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION_ENUM(width_pair, oriented_width_type),
     SU_JSON_OPTION(int, oriented_width),
     SU_JSON_OPTION(int, oriented_height),
+
+    SU_JSON_OPTION_ENUM(output_target_pair, output_target),
+    SU_JSON_OPTION(int, custom_monitor),
 
     SU_JSON_OPTION(bool, round_corners),
     SU_JSON_OPTION(int, round_corners_radius),

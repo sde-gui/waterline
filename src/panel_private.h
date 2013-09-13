@@ -55,6 +55,9 @@ struct _Panel {
     int oriented_width_type, oriented_width;
     int oriented_height_type, oriented_height;
 
+    int output_target;
+    int custom_monitor;
+
     int padding_top;
     int padding_bottom;
     int padding_left;

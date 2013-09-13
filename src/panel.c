@@ -209,6 +209,7 @@ static Panel* panel_allocate(void)
     p->oriented_width = 100;
     p->oriented_height_type = HEIGHT_PIXEL;
     p->oriented_height = PANEL_HEIGHT_DEFAULT;
+    p->output_target = OUTPUT_PRIMARY_MONITOR;
     p->set_strut = 1;
     p->round_corners = 0;
     p->round_corners_radius = 7;
@@ -1270,6 +1271,9 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
     int sswidth, ssheight, minx, miny;
 
     ENTER;
+
+    GdkScreen * screen = gtk_widget_get_screen(np->topgwin);
+
     /* FIXME: Why this doesn't work? */
     if (0)  {
 //        if (np->curdesk < np->wa_len/4) {
@@ -1279,8 +1283,28 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
         ssheight = np->workarea[np->curdesk*4 + 3];
     } else {
         minx = miny = 0;
-        sswidth  = gdk_screen_get_width( gtk_widget_get_screen(np->topgwin) );
-        ssheight = gdk_screen_get_height( gtk_widget_get_screen(np->topgwin) );
+        sswidth  = gdk_screen_get_width(screen);
+        ssheight = gdk_screen_get_height(screen);
+
+        int monitor = -1;
+        if (np->output_target == OUTPUT_PRIMARY_MONITOR)
+            monitor = gdk_screen_get_primary_monitor(screen);
+        else if (np->output_target == OUTPUT_CUSTOM_MONITOR)
+            monitor = np->custom_monitor;
+
+        if (monitor >= 0 && monitor < gdk_screen_get_n_monitors(screen))
+        {
+            GdkRectangle rect;
+            rect.x = 0;
+            rect.y = 0;
+            rect.width = sswidth;
+            rect.height = ssheight;
+            gdk_screen_get_monitor_geometry(screen, monitor, &rect);
+            sswidth = rect.width;
+            ssheight = rect.height;
+            minx = rect.x;
+            miny = rect.y;
+        }
     }
 
     int edge_margin = np->edge_margin;

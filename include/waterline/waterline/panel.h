@@ -38,6 +38,8 @@ enum {
 };
 enum { POS_NONE, POS_START, POS_END };
 
+enum { OUTPUT_WHOLE_SCREEN, OUTPUT_PRIMARY_MONITOR, OUTPUT_CUSTOM_MONITOR };
+
 #define STYLE_BOLD         (1 << 0)
 #define STYLE_ITALIC       (1 << 1)
 #define STYLE_UNDERLINE    (1 << 2)

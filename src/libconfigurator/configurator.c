@@ -534,7 +534,7 @@ on_custom_monitor_value_changed( GtkSpinButton* spin,  Panel* p  )
     int custom_monitor = gtk_spin_button_get_value(spin);
     if (p->custom_monitor != custom_monitor)
     {
-        p->custom_monitor != custom_monitor;
+        p->custom_monitor = custom_monitor;
         update_panel_geometry(p);
         gui_update_width(p);
     }

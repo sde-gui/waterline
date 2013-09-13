@@ -79,11 +79,11 @@ static void gui_update_width(Panel* p)
     {
         if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
         {
-            gtk_spin_button_set_range(spin, 0, gdk_screen_width());
+            gtk_spin_button_set_range(spin, 0, p->output_target_width);
         }
         else
         {
-            gtk_spin_button_set_range(spin, 0, gdk_screen_height());
+            gtk_spin_button_set_range(spin, 0, p->output_target_height);
         }
     }
 
@@ -250,8 +250,8 @@ static void set_width_type( GtkWidget *item, Panel* p )
     if (widthtype == WIDTH_PERCENT || widthtype == WIDTH_PIXEL)
     {
         int max_width = ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM)) ?
-            gdk_screen_width() :
-            gdk_screen_height();
+            p->output_target_width :
+            p->output_target_height;
         int width = p->oriented_width;
 
         if (widthtype == WIDTH_PERCENT)

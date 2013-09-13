@@ -58,6 +58,10 @@ struct _Panel {
     int output_target;
     int custom_monitor;
 
+    /* Set by calculate_position(), used by configurator.c to adjust spin buttons. */
+    int output_target_width;
+    int output_target_height;
+
     int padding_top;
     int padding_bottom;
     int padding_left;

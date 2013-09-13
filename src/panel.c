@@ -1305,6 +1305,9 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
             minx = rect.x;
             miny = rect.y;
         }
+
+        np->output_target_width = sswidth;
+        np->output_target_height = ssheight;
     }
 
     int edge_margin = np->edge_margin;

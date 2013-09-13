@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = plugins libexec libconfigurator
+SUBDIRS = plugins libconfigurator
 
 bin_PROGRAMS = waterline waterlinectl
 

@@ -334,7 +334,6 @@ AC_CONFIG_FILES([
     Makefile
     src/Makefile
     src/libconfigurator/Makefile
-    src/libexec/Makefile
     src/plugins/Makefile
     src/plugins/taskbar/Makefile
     src/plugins/notification_area/Makefile

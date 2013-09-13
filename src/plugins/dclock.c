@@ -512,6 +512,7 @@ static int dclock_constructor(Plugin * p)
     dc->clock_labels[0] = gtk_label_new(NULL);
     gtk_misc_set_alignment(GTK_MISC(dc->clock_labels[0]), 0.5, 0.5);
     gtk_label_set_justify(GTK_LABEL(dc->clock_labels[0]), GTK_JUSTIFY_CENTER);
+    gtk_container_add(GTK_CONTAINER(dc->label_box), dc->clock_labels[0]);
 */
 /*
     if (plugin_get_orientation(dc->plugin) == ORIENT_HORIZ)
@@ -519,7 +520,6 @@ static int dclock_constructor(Plugin * p)
     else
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 0, 4);
 */
-    gtk_container_add(GTK_CONTAINER(dc->label_box), dc->clock_labels[0]);
 
     /* Connect signals. */
     g_signal_connect(G_OBJECT (pwid), "button_press_event", G_CALLBACK(dclock_button_press_event), (gpointer) p);

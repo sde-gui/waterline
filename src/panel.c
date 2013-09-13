@@ -320,25 +320,25 @@ static gboolean panel_set_wm_strut_real(Panel *p)
             index = 0;
             strut_size = p->cw;
             strut_lower = p->cy;
-            strut_upper = p->cy + p->ch;
+            strut_upper = p->cy + p->ch - 1;
             break;
         case EDGE_RIGHT:
             index = 1;
             strut_size = p->cw;
             strut_lower = p->cy;
-            strut_upper = p->cy + p->ch;
+            strut_upper = p->cy + p->ch - 1;
             break;
         case EDGE_TOP:
             index = 2;
             strut_size = p->ch;
             strut_lower = p->cx;
-            strut_upper = p->cx + p->cw;
+            strut_upper = p->cx + p->cw - 1;
             break;
         case EDGE_BOTTOM:
             index = 3;
             strut_size = p->ch;
             strut_lower = p->cx;
-            strut_upper = p->cx + p->cw;
+            strut_upper = p->cx + p->cw - 1;
             break;
         default:
             return FALSE;

@@ -2570,7 +2570,7 @@ int main(int argc, char *argv[], char *env[])
     XSetLocaleModifiers("");
     XSetErrorHandler((XErrorHandler) panel_handle_x_error);
 
-    resolve_atoms();
+    su_x11_resolve_well_known_atoms(gdk_x11_get_default_xdisplay());
     update_net_supported();
 
 #define NEXT_ARGUMENT(s) if (++i >= argc) { su_print_error_message(s); goto print_usage_and_exit; }

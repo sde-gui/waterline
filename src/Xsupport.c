@@ -30,55 +30,6 @@
 /* if current window manager is EWMH conforming. */
 gboolean is_ewmh_supported;
 
-
-#define A(x) Atom a##x = 0;
-#include <waterline/Xsupport_atoms.h>
-#undef A
-
-enum {
-    #define A(x) I##x,
-    #include <waterline/Xsupport_atoms.h>
-    #undef A
-    N_ATOMS
-};
-
-
-void resolve_atoms()
-{
-    static const char * atom_names[ N_ATOMS ] = {
-        #define A(x) #x,
-        #include <waterline/Xsupport_atoms.h>
-        #undef A
-    };
-
-    Atom atoms[ N_ATOMS ];
-
-#ifndef DEBUG
-    if( !  XInternAtoms( GDK_DISPLAY(), (char**)atom_names,
-            N_ATOMS, False, atoms ) )
-    {
-        g_warning( "Error: unable to return Atoms" );
-        return;
-    }
-#else
-    int i;
-    for (i = 0; i < N_ATOMS; i++) {
-        su_log_debug("Registering atom %s\n", atom_names[i]);
-        if( !  XInternAtoms( GDK_DISPLAY(), ((char**)atom_names) + i,
-               1, False, atoms + i) )
-        {
-            g_warning( "Error: unable to return Atoms" );
-            return;
-        }
-    }
-#endif
-
-    #define A(x) a##x = atoms[ I##x ];
-    #include <waterline/Xsupport_atoms.h>
-    #undef A
-}
-
-
 void
 Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4)
 {

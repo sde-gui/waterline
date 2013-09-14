@@ -1522,22 +1522,29 @@ gboolean panel_handle_drag_move(Panel * panel, GdkEventButton * event)
         {
             if (!panel->doing_panel_drag_move && panel_can_be_drag_moved(panel))
             {
+                //GdkCursor * cursor = gdk_cursor_new_for_display(panel->display, GDK_FLEUR);
+                GdkCursor * cursor = gdk_cursor_new_from_name(panel->display, "fleur");
+
                 GdkGrabStatus grab_status = gdk_pointer_grab(
                     panel_get_toplevel_window(panel),
                     FALSE,
                     GDK_ALL_EVENTS_MASK,
                     NULL,
-                    NULL /*FIXME: set cursor*/,
+                    cursor,
                     event->time);
 
                 if (grab_status == GDK_GRAB_SUCCESS)
                 {
+                    gdk_window_set_cursor(panel_get_toplevel_window(panel), cursor);
+
                     panel->doing_panel_drag_move = TRUE;
                     panel->panel_drag_move_start_x = event->x_root;
                     panel->panel_drag_move_start_y = event->y_root;
                     panel->panel_drag_move_start_edge_margin = panel->edge_margin;
                     panel->panel_drag_move_start_align_margin = panel->align_margin;
                 }
+
+                gdk_cursor_unref(cursor);
             }
             return TRUE;
         }
@@ -1610,6 +1617,7 @@ gboolean panel_handle_drag_move(Panel * panel, GdkEventButton * event)
     ||  !(panel_can_be_drag_moved(panel)))
     {
         gdk_pointer_ungrab(event->time);
+        gdk_window_set_cursor(panel_get_toplevel_window(panel), NULL);
         panel->doing_panel_drag_move = FALSE;
         panel_save_configuration(panel);
         return TRUE;

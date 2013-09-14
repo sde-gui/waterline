@@ -20,7 +20,10 @@
 #ifndef __WATERLINE__XSUPPORT_H
 #define __WATERLINE__XSUPPORT_H
 
+#include <sde-utils-x11.h>
+#include <gdk/gdkx.h>
 #include <X11/X.h>
+#include <X11/Xlib.h>
 
 /* Decoded value of WM_STATE property. */
 typedef struct {
@@ -54,7 +57,7 @@ typedef struct {
 
 void Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4);
 void Xclimsgwm(Window win, Atom type, Atom arg);
-void *get_xaproperty (Window win, Atom prop, Atom type, int *nitems);
+
 char *get_textproperty(Window win, Atom prop);
 void *get_utf8_property(Window win, Atom atom);
 char **get_utf8_property_list(Window win, Atom atom, int *count);
@@ -83,15 +86,13 @@ void wm_noinput(Window w);
 
 GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 
-#define A(x) extern Atom a##x;
-#include "Xsupport_atoms.h"
-#undef A
-
-#define a_NET_WM_STATE_REMOVE        0    /* remove/unset property */
-#define a_NET_WM_STATE_ADD           1    /* add/set property */
-#define a_NET_WM_STATE_TOGGLE        2    /* toggle property  */
-
 /* if current window manager is EWMH conforming. */
 extern gboolean is_ewmh_supported;
+
+
+static inline void * get_xaproperty(Window xid, Atom prop, Atom type, int * nitems)
+{
+    return su_x11_get_xa_property(gdk_x11_get_default_xdisplay(), xid, prop, type, nitems);
+}
 
 #endif

@@ -28,9 +28,10 @@
 
 struct _Panel {
     char* name;
-    GtkWidget * topgwin;		/* Main panel window */
-    Window topxwin;			/* Main panel's X window   */
-    GdkDisplay * display;		/* Main panel's GdkDisplay */
+    GtkWidget * topgwin;
+    Window topxwin;
+    GdkDisplay * display;
+    GdkScreen * screen;
     GtkStyle * defstyle;
 
     GtkWidget * toplevel_alignment;	/* Widget containing plugin_box */

@@ -1495,6 +1495,16 @@ static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e,
     RET(FALSE);
 }
 
+static void panel_screen_monitors_changed_event(GdkScreen * _screen, Panel * panel)
+{
+    update_panel_geometry(panel);
+}
+
+static void panel_screen_size_changed_event(GdkScreen * _screen, Panel * panel)
+{
+    update_panel_geometry(panel);
+}
+
 /******************************************************************************/
 
 static gboolean panel_can_be_drag_moved(Panel * panel)
@@ -1797,22 +1807,22 @@ panel_start_gui(Panel *p)
     p->display = gdk_display_get_default();
 
     /* Set colormap. */
-    GdkScreen * screen = gtk_widget_get_screen(p->topgwin);
+    p->screen = gtk_widget_get_screen(p->topgwin);
     GdkColormap * colormap = NULL;
     p->alpha_channel_support = FALSE;
     if (strcmp(force_colormap, "rgba") == 0)
     {
-        colormap = gdk_screen_get_rgba_colormap(screen);
+        colormap = gdk_screen_get_rgba_colormap(p->screen);
         if (colormap != NULL)
             p->alpha_channel_support = TRUE;
     }
     else if (strcmp(force_colormap, "rgb") == 0)
     {
-        colormap = gdk_screen_get_rgb_colormap(screen);
+        colormap = gdk_screen_get_rgb_colormap(p->screen);
     }
     else if (strcmp(force_colormap, "system") == 0)
     {
-        colormap = gdk_screen_get_system_colormap(screen);
+        colormap = gdk_screen_get_system_colormap(p->screen);
     }
 
     if (colormap)
@@ -1827,6 +1837,11 @@ panel_start_gui(Panel *p)
     gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
 
     gtk_window_group_add_window( window_group, (GtkWindow*)p->topgwin );
+
+    g_signal_connect(G_OBJECT(p->screen), "monitors-changed",
+          (GCallback) panel_screen_monitors_changed_event, p);
+    g_signal_connect(G_OBJECT(p->screen), "size-changed",
+          (GCallback) panel_screen_size_changed_event, p);
 
     g_signal_connect(G_OBJECT(p->topgwin), "delete-event",
           G_CALLBACK(panel_delete_event), p);
@@ -2238,6 +2253,9 @@ static void panel_destroy(Panel *p)
     ENTER;
 
     json_decref(p->json);
+
+    g_signal_handlers_disconnect_by_func(G_OBJECT(p->screen), panel_screen_monitors_changed_event, p);
+    g_signal_handlers_disconnect_by_func(G_OBJECT(p->screen), panel_screen_size_changed_event, p);
 
     if (p->set_wm_strut_idle)
         g_source_remove(p->set_wm_strut_idle);

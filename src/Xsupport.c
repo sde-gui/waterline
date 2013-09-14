@@ -63,34 +63,6 @@ Xclimsgwm(Window win, Atom type, Atom arg)
 }
 
 
-void *
-get_utf8_property(Window win, Atom atom)
-{
-    Atom type;
-    int format;
-    gulong nitems;
-    gulong bytes_after;
-    gchar *val, *retval;
-    int result;
-    guchar *tmp = NULL;
-
-    type = None;
-    retval = NULL;
-    result = XGetWindowProperty (GDK_DISPLAY(), win, atom, 0, G_MAXLONG, False,
-          aUTF8_STRING, &type, &format, &nitems,
-          &bytes_after, &tmp);
-    if (result != Success || type == None)
-        return NULL;
-    val = (gchar *) tmp;
-    if (val) {
-        if (type == aUTF8_STRING && format == 8 && nitems != 0)
-            retval = g_strndup (val, nitems);
-        XFree (val);
-    }
-    return retval;
-
-}
-
 char **
 get_utf8_property_list(Window win, Atom atom, int *count)
 {

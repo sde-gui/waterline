@@ -59,7 +59,6 @@ void Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4)
 void Xclimsgwm(Window win, Atom type, Atom arg);
 
 char *get_textproperty(Window win, Atom prop);
-void *get_utf8_property(Window win, Atom atom);
 char **get_utf8_property_list(Window win, Atom atom, int *count);
 
 //Window Select_Window(Display *dpy);
@@ -92,6 +91,11 @@ extern gboolean is_ewmh_supported;
 static inline void * get_xaproperty(Window xid, Atom prop, Atom type, int * nitems)
 {
     return su_x11_get_xa_property(gdk_x11_get_default_xdisplay(), xid, prop, type, nitems);
+}
+
+static inline void * get_utf8_property(Window win, Atom atom)
+{
+    return su_x11_get_utf8_property(gdk_x11_get_default_xdisplay(), win, atom);
 }
 
 #endif

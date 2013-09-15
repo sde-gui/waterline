@@ -304,6 +304,28 @@ static void make_round_corners(Panel *p)
 
 /*= wm properties =*/
 
+
+static void panel_set_desktop_icon_overlap_mode(Panel * panel)
+{
+    guint32 val[4];
+    int val_size = 0;
+    if (panel->visibility_mode != VISIBILITY_AUTOHIDE)
+    {
+        val[0] = panel->cx;
+        val[1] = panel->cy;
+        val[2] = panel->cw;
+        val[3] = panel->ch;
+        val_size = 4;
+    }
+    else
+    {
+        val[0] = 0;
+        val_size = 1;
+    }
+    XChangeProperty(GDK_DISPLAY(), panel->topxwin, a_SDE_DONT_OVERLAP_DESKTOP_ICONS, XA_CARDINAL, 32,
+          PropModeReplace, (unsigned char *) val, val_size);
+}
+
 static gboolean panel_set_wm_strut_real(Panel *p)
 {
     p->set_wm_strut_idle = 0;
@@ -1389,6 +1411,7 @@ void update_panel_geometry(Panel* p)
         panel_establish_autohide(p);
         panel_set_wm_state(p);
         panel_set_wm_strut(p);
+        panel_set_desktop_icon_overlap_mode(p);
     }
 }
 
@@ -1418,6 +1441,7 @@ static void panel_size_position_changed(Panel *p, gboolean position_changed)
     }
 
     panel_set_wm_strut(p);
+    panel_set_desktop_icon_overlap_mode(p);
     make_round_corners(p);
 
     if (position_changed)
@@ -1932,6 +1956,8 @@ panel_start_gui(Panel *p)
     gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);
     panel_set_wm_strut(p);
 
+    panel_set_desktop_icon_overlap_mode(p);
+
     RET();
 }
 
@@ -2098,6 +2124,8 @@ void panel_update_toplevel_alignment(Panel *p)
 void panel_set_panel_configuration_changed(Panel *p)
 {
     GList* l;
+
+    panel_set_desktop_icon_overlap_mode(p);
 
     if (p->toplevel_alignment)
         gtk_alignment_set_padding(GTK_ALIGNMENT(p->toplevel_alignment),

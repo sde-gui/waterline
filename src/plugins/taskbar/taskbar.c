@@ -429,7 +429,6 @@ typedef struct _taskbar {
     gboolean show_all_desks;			/* User preference: show windows from all desktops */
     gboolean show_mapped;			/* User preference: show mapped windows */
     gboolean show_iconified;			/* User preference: show iconified windows */
-    gboolean tooltips;				/* User preference: show tooltips */
     int show_icons_titles;			/* User preference: show icons, titles */
 
     char* custom_fallback_icon; /* User preference: use as fallback icon */
@@ -523,7 +522,6 @@ typedef struct _taskbar {
 #define SU_JSON_OPTION_STRUCTURE TaskbarPlugin
 static su_json_option_definition option_definitions[] = {
 
-    SU_JSON_OPTION(bool, tooltips),
     SU_JSON_OPTION_ENUM(show_pair, show_icons_titles),
     SU_JSON_OPTION(string, custom_fallback_icon),
     SU_JSON_OPTION(bool, show_iconified),
@@ -1093,8 +1091,7 @@ static void task_draw_label(Task * tk)
     else
     {
         char * name = task_get_displayed_name(tk);
-        if (tk->tb->tooltips)
-            gtk_widget_set_tooltip_text(tk->button, name);
+        gtk_widget_set_tooltip_text(tk->button, name);
         if (tk->label)
             panel_draw_label_text(plugin_panel(tk->tb->plug), tk->label, name, label_style);
     }
@@ -1102,10 +1099,7 @@ static void task_draw_label(Task * tk)
     char * name = task_get_displayed_name(tk);
     if (tk->preview_item.button)
     {
-        if (tk->tb->tooltips)
-            gtk_widget_set_tooltip_text(tk->preview_item.button, name);
-        else
-            gtk_widget_set_tooltip_text(tk->preview_item.button, "");
+        gtk_widget_set_tooltip_text(tk->preview_item.button, name);
     }
     if (tk->preview_item.label)
             gtk_label_set_text(GTK_LABEL(tk->preview_item.label), name);
@@ -2822,10 +2816,7 @@ static void task_update_preview_item(Task * tk, gboolean create)
 
     if (I->button)
     {
-        if (tb->tooltips)
-            gtk_widget_set_tooltip_text(I->button, task_get_displayed_name(tk));
-        else
-            gtk_widget_set_tooltip_text(I->button, "");
+        gtk_widget_set_tooltip_text(I->button, task_get_displayed_name(tk));
 
         if (tb->colorize_buttons)
         {
@@ -5148,7 +5139,6 @@ static int taskbar_constructor(Plugin * p)
 
     /* Initialize to defaults. */
     tb->icon_size         = plugin_get_icon_size(p);
-    tb->tooltips          = TRUE;
     tb->show_icons_titles = SHOW_BOTH;
     tb->custom_fallback_icon = g_strdup("xorg");
     tb->show_all_desks    = FALSE;
@@ -5364,7 +5354,6 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
         _("Appearance"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
 
         _("|Show:|Icons only|Titles only|Icons and titles"), (gpointer)&tb->show_icons_titles, (GType)CONF_TYPE_ENUM,
-        _("Show tooltips"), (gpointer)&tb->tooltips, (GType)CONF_TYPE_BOOL,
         _("Show close buttons"), (gpointer)&tb->show_close_buttons, (GType)CONF_TYPE_BOOL,
         _("Display inactive buttons flat"), (gpointer)&tb->flat_inactive_buttons, (GType)CONF_TYPE_BOOL,
         _("Display active button flat"), (gpointer)&tb->flat_active_button, (GType)CONF_TYPE_BOOL,

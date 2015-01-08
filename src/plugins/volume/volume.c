@@ -73,7 +73,7 @@ static void update_icon (Plugin* p)
 	GdkPixbuf *icon;
 	GtkWidget *image;
 	GtkIconTheme* theme;
-	GtkIconInfo* info;
+	GtkIconInfo* info = NULL;
 	
 	theme = gtk_icon_theme_get_default();
 

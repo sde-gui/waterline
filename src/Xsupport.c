@@ -917,11 +917,11 @@ static const guint8 OB_DEFAULT_ICON_pixel_data[48 * 48 * 4 + 1] =
 static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int required_height)
 {
     GdkPixbuf * pixmap = NULL;
-    int result = -1;
+    int result;
 
     /* Important Notes:
      * According to freedesktop.org document:
-     * http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html#id2552223
+     * http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html#idm139915842350096
      * _NET_WM_ICON contains an array of 32-bit packed CARDINAL ARGB.
      * However, this is incorrect. Actually it's an array of long integers.
      * Toolkits like gtk+ use unsigned long here to store icons.
@@ -931,7 +931,7 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
      * padded in the upper 4 bytes).
      */
 
-    /* Get the window property _NET_WM_ICON, if possible. */
+    /* Get the window property _NET_WM_ICON. */
     Atom type = None;
     int format;
     gulong nitems;
@@ -946,107 +946,102 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
         &type, &format, &nitems, &bytes_after, (void *) &data);
 
     /* Inspect the result to see if it is usable.  If not, and we got data, free it. */
-    if ((type != XA_CARDINAL) || (nitems <= 0))
+    if ((result != Success) || (type != XA_CARDINAL) || (nitems <= 0))
     {
         if (data != NULL)
             XFree(data);
-        result = -1;
+        return NULL;
     }
 
-    /* If the result is usable, extract the icon from it. */
-    if (result == Success)
+    /* Extract the icon. */
+
+    /* Get the largest icon available, unless there is one that is of the desired size. */
+    /* FIXME: should we try to find an icon whose size is closest to
+     * required_width and required_height to reduce unnecessary resizing? */
+    gulong * pdata = data;
+    gulong * pdata_end = data + nitems;
+    gulong * max_icon = NULL;
+    gulong max_w = 0;
+    gulong max_h = 0;
+    while ((pdata + 2) < pdata_end)
     {
-        /* Get the largest icon available, unless there is one that is the desired size. */
-        /* FIXME: should we try to find an icon whose size is closest to
-         * required_width and required_height to reduce unnecessary resizing? */
-        gulong * pdata = data;
-        gulong * pdata_end = data + nitems;
-        gulong * max_icon = NULL;
-        gulong max_w = 0;
-        gulong max_h = 0;
-        while ((pdata + 2) < pdata_end)
+        /* Extract the width and height. */
+        gulong w = pdata[0];
+        gulong h = pdata[1];
+        gulong size = w * h;
+        pdata += 2;
+
+        /* Bounds check the icon. */
+        if (pdata + size > pdata_end)
+            break;
+
+        /* The desired size is the same as icon size. */
+        if ((required_width == w) && (required_height == h))
         {
-            /* Extract the width and height. */
-            gulong w = pdata[0];
-            gulong h = pdata[1];
-            gulong size = w * h;
-            pdata += 2;
-
-            /* Bounds check the icon. */
-            if (pdata + size > pdata_end)
-                break;
-
-            /* Rare special case: the desired size is the same as icon size. */
-            if ((required_width == w) && (required_height == h))
-            {
-                max_icon = pdata;
-                max_w = w;
-                max_h = h;
-                break;
-            }
-
-            /* If the icon is the largest so far, capture it. */
-            if ((w > max_w) && (h > max_h))
-            {
-                max_icon = pdata;
-                max_w = w;
-                max_h = h;
-            }
-            pdata += size;
+            max_icon = pdata;
+            max_w = w;
+            max_h = h;
+            break;
         }
 
-        /* If an icon was extracted, convert it to a pixbuf.
-         * Its size is max_w and max_h. */
-        if (max_icon != NULL)
+        /* If the icon is the largest so far, capture it. */
+        if ((w > max_w) && (h > max_h))
         {
-            /* Allocate enough space for the pixel data. */
-            gulong len = max_w * max_h;
-            guchar * pixdata = g_new(guchar, len * 4);
+            max_icon = pdata;
+            max_w = w;
+            max_h = h;
+        }
+        pdata += size;
+    }
 
-            /* Loop to convert the pixel data. */
-            guchar * p = pixdata;
-            int i;
-            for (i = 0; i < len; p += 4, i += 1)
-            {
-                guint argb = max_icon[i];
-                guint rgba = (argb << 8) | (argb >> 24);
-                p[0] = rgba >> 24;
-                p[1] = (rgba >> 16) & 0xff;
-                p[2] = (rgba >> 8) & 0xff;
-                p[3] = rgba & 0xff;
-            }
+    /* Сonvert the icon to GdkPixbuf. */
+    if (max_icon != NULL)
+    {
+        /* Allocate enough space for the pixel data. */
+        gulong len = max_w * max_h;
+        guchar * pixdata = g_new(guchar, len * 4);
+
+        /* Loop to convert the pixel data. */
+        guchar * p = pixdata;
+        int i;
+        for (i = 0; i < len; p += 4, i += 1)
+        {
+            guint argb = max_icon[i];
+            guint rgba = (argb << 8) | (argb >> 24);
+            p[0] = rgba >> 24;
+            p[1] = (rgba >> 16) & 0xff;
+            p[2] = (rgba >> 8) & 0xff;
+            p[3] = rgba & 0xff;
+        }
 #if 0
-            /*
-                HACK:
-                Openbox assigns a default icon to a window, if window does not have its own one.
-                We prefer to guess an icon from window class in that case.
-                So we skip wn_icon if it is the same as openbox's icon.
-            */
-            if (max_w == 48 && max_h == 48)
+        /*
+            HACK:
+            Openbox assigns a default icon to a window, if window does not have its own one.
+            We prefer to guess an icon from window class in that case.
+            So we skip wn_icon if it is the same as openbox's icon.
+        */
+        if (max_w == 48 && max_h == 48)
+        {
+            if (memcmp(pixdata, OB_DEFAULT_ICON_pixel_data, 48 * 48 * 4) == 0)
             {
-                if (memcmp(pixdata, OB_DEFAULT_ICON_pixel_data, 48 * 48 * 4) == 0)
-                {
-                    g_free(pixdata);
-                    pixdata = NULL;
-                }
+                g_free(pixdata);
+                pixdata = NULL;
             }
+        }
 #endif
-            /* Initialize a pixmap with the pixel data. */
-            if (pixdata)
-                pixmap = gdk_pixbuf_new_from_data(
-                    pixdata,
-                    GDK_COLORSPACE_RGB,
-                    TRUE, 8,	/* has_alpha, bits_per_sample */
-                    max_w, max_h, max_w * 4,
-                    (GdkPixbufDestroyNotify) g_free,
-                    NULL);
-         }
-         else
-	    result = -1;
+        /* Initialize a pixmap with the pixel data. */
+        if (pixdata)
+            pixmap = gdk_pixbuf_new_from_data(
+                pixdata,
+                GDK_COLORSPACE_RGB,
+                TRUE, 8,	/* has_alpha, bits_per_sample */
+                max_w, max_h, max_w * 4,
+                (GdkPixbufDestroyNotify) g_free,
+                NULL);
+    }
 
-        /* Free the X property data. */
-        XFree(data);
-     }
+    /* Free the X property data. */
+    XFree(data);
 
     return pixmap;
 }
@@ -1054,7 +1049,7 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
 static GdkPixbuf * get_icon_from_pixmap_mask(Pixmap xpixmap, Pixmap xmask)
 {
     GdkPixbuf * pixmap = NULL;
-    int result = -1;
+    int result;
 
     /* get pixmap geometry.*/
     unsigned int w, h;
@@ -1104,7 +1099,7 @@ static GdkPixbuf * get_icon_from_pixmap_mask(Pixmap xpixmap, Pixmap xmask)
 static GdkPixbuf * get_icon_from_wm_hints(Window task_win)
 {
     GdkPixbuf * pixmap = NULL;
-    int result = -1;
+    int result;
 
     XWMHints * hints = XGetWMHints(GDK_DISPLAY(), task_win);
     result = (hints != NULL) ? Success : -1;
@@ -1138,7 +1133,7 @@ static GdkPixbuf * get_icon_from_wm_hints(Window task_win)
 static GdkPixbuf * get_icon_from_kwm_win_icon(Window task_win)
 {
     GdkPixbuf * pixmap = NULL;
-    int result = -1;
+    int result;
 
     Pixmap xpixmap = None;
     Pixmap xmask = None;

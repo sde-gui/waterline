@@ -455,6 +455,7 @@ PluginClass menu_plugin_class = {
     name : N_("Menu"),
     version: "2.0",
     description : N_("Application Menu"),
+    category: PLUGIN_CATEGORY_LAUNCHER,
 
     constructor : menu_constructor,
     destructor  : menu_destructor,

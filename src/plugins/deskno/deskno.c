@@ -232,6 +232,7 @@ PluginClass deskno_plugin_class = {
     name : N_("Desktop Number / Workspace Name"),
     version: "0.6",
     description : N_("Display workspace number, by cmeury@users.sf.net"),
+    category: PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
 
     constructor : deskno_constructor,
     destructor  : deskno_destructor,

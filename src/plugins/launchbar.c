@@ -951,6 +951,7 @@ PluginClass launchbar_plugin_class = {
     name : N_("Application Launch Bar"),
     version: "2.0",
     description : N_("Bar with buttons to launch application"),
+    category: PLUGIN_CATEGORY_LAUNCHER,
 
     constructor : launchbar_constructor,
     destructor  : launchbar_destructor,

@@ -412,6 +412,7 @@ PluginClass notification_area_plugin_class = {
     name : N_("Notification Area"),
     version: "1.0",
     description : N_("Notification Area"),
+    category: PLUGIN_CATEGORY_SW_INDICATOR,
 
     not_unloadable: TRUE,
 

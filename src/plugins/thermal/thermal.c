@@ -436,6 +436,7 @@ PluginClass thermal_plugin_class = {
     name : N_("Temperature Monitor"),
     version: "0.6",
     description : N_("Display system temperature"),
+    category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : thermal_constructor,
     destructor  : thermal_destructor,

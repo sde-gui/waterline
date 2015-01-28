@@ -614,6 +614,7 @@ PluginClass volumealsa_plugin_class = {
     name : N_("Volume Control (ALSA)"),
     version: "1.0",
     description : N_("Display and control volume for ALSA"),
+    category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : volumealsa_constructor,
     destructor  : volumealsa_destructor,

@@ -438,6 +438,7 @@ PluginClass cpu_plugin_class = {
     name : N_("CPU Usage Monitor"),
     version: "1.0",
     description : N_("Display CPU usage"),
+    category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : cpu_constructor,
     destructor  : cpu_destructor,

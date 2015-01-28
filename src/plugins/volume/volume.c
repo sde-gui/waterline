@@ -304,6 +304,7 @@ PluginClass volume_plugin_class = {
     name : N_("Volume Control (OSS)"),
     version: "1.0",
     description : "Display and control volume for Open Sound System",
+    category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : volume_constructor,
     destructor  : volume_destructor,

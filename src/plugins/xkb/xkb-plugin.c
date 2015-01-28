@@ -405,6 +405,7 @@ PluginClass xkb_plugin_class = {
     name : N_("Keyboard Layout Switcher"),
     version: "1.0",
     description : N_("Switch between available keyboard layouts"),
+    category: PLUGIN_CATEGORY_SW_INDICATOR,
 
     constructor : xkb_constructor,
     destructor  : xkb_destructor,

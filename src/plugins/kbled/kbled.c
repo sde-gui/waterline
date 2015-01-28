@@ -255,6 +255,7 @@ PluginClass kbled_plugin_class = {
     name : N_("Keyboard LED"),
     version: "1.0",
     description : N_("Indicators for CapsLock, NumLock, and ScrollLock keys"),
+    category: PLUGIN_CATEGORY_SW_INDICATOR,
 
     constructor : kbled_constructor,
     destructor  : kbled_destructor,

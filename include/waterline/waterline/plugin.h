@@ -33,7 +33,7 @@
 /* Support for external plugin versioning.
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */
 #define PLUGINCLASS_MAGIC ((unsigned long)0x7bd4370f)
-#define PLUGINCLASS_VERSION 3
+#define PLUGINCLASS_VERSION 4
 #define PLUGINCLASS_BASE_SIZE ((unsigned short) (uintptr_t) & ((PluginClass*)0)->__end_of_required_part)
 #define PLUGINCLASS_VERSIONING \
     structure_magic : PLUGINCLASS_MAGIC, \
@@ -41,6 +41,15 @@
     structure_subversion : 0, \
     structure_base_size : PLUGINCLASS_BASE_SIZE, \
     structure_actual_size : sizeof(PluginClass)
+
+typedef enum {
+    PLUGIN_CATEGORY_UNKNOWN,
+    PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
+    PLUGIN_CATEGORY_LAUNCHER,
+    PLUGIN_CATEGORY_SW_INDICATOR,
+    PLUGIN_CATEGORY_HW_INDICATOR,
+    NR_PLUGIN_CATEGORY
+} PLUGIN_CATEGORY;
 
 /* Representative of an available plugin. */
 struct _PluginClass {
@@ -67,6 +76,7 @@ struct _PluginClass {
     char * name;				/* Display name of plugin for selection UI */
     char * version;				/* Version of plugin */
     char * description;				/* Brief textual description of plugin for selection UI */
+    PLUGIN_CATEGORY category;
 
     int  (*constructor)(struct _Plugin * plugin);		/* Create an instance of the plugin */
     void (*destructor)(struct _Plugin * plugin);			/* Destroy an instance of the plugin */

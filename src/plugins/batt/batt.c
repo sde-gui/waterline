@@ -693,6 +693,7 @@ PluginClass batt_plugin_class = {
     name        : N_("Battery Monitor"),
     version     : "2.0",
     description : N_("Display battery status using ACPI"),
+    category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : constructor,
     destructor  : destructor,

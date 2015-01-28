@@ -1016,6 +1016,7 @@ PluginClass dirmenu_plugin_class = {
     name : N_("Directory Menu"),
     version: "1.0",
     description : N_("Browse directory tree via menu (Author: PCMan)"),
+    category: PLUGIN_CATEGORY_LAUNCHER,
 
     constructor : dirmenu_constructor,
     destructor  : dirmenu_destructor,

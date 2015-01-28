@@ -890,6 +890,7 @@ PluginClass launchbutton_plugin_class = {
     name : N_("Button"),
     version: "0.1",
     description : N_("Launch button"),
+    category: PLUGIN_CATEGORY_LAUNCHER,
 
     constructor : lb_constructor,
     destructor  : lb_destructor,

@@ -708,6 +708,7 @@ PluginClass dclock_plugin_class = {
     name : N_("Digital Clock"),
     version: "1.0",
     description : N_("Display digital clock and tooltip"),
+    category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : dclock_constructor,
     destructor  : dclock_destructor,

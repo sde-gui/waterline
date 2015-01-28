@@ -229,7 +229,7 @@ static void plugin_class_unref(PluginClass * pc)
 
 
 /* Create an instance of a plugin with a specified name, loading it if external. */
-Plugin * plugin_load(char * type)
+Plugin * plugin_load(const char * type)
 {
     /* Initialize static plugins on first call. */
     if (pcl == NULL)

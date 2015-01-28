@@ -50,6 +50,8 @@ enum{
 
 static void modify_plugin( GtkTreeView* view );
 
+static gchar * menu_item_plugin_type_key = NULL;
+
 /******************************************************************************/
 
 static void
@@ -164,150 +166,116 @@ static void init_plugin_list( Panel* p, GtkTreeView* view, GtkWidget* label )
         gtk_tree_selection_select_iter( tree_sel, &it );
 }
 
-static void on_add_plugin_response( GtkDialog* dlg,
-                                    int response,
-                                    GtkTreeView* _view )
+static void on_add_plugin_menu_item_activate(GtkWidget * menu_item, GtkTreeView * _view)
 {
-    Panel* p = (Panel*) g_object_get_data( G_OBJECT(_view), "panel" );
-    if( response == GTK_RESPONSE_OK )
+    Panel * panel = (Panel *) g_object_get_data( G_OBJECT(_view), "panel" );
+    const gchar * type = (const gchar *) g_object_get_data((GObject *) menu_item, menu_item_plugin_type_key);
+
+    Plugin * pl = plugin_load(type);
+    if (pl)
     {
-        GtkTreeView* view;
-        GtkTreeSelection* tree_sel;
-        GtkTreeIter it;
-        GtkTreeModel* model;
+        pl->panel = panel;
+        if (pl->class->expand_default)
+            pl->expand = TRUE;
+        plugin_start(pl);
+        panel->plugins = g_list_append(panel->plugins, pl);
+        panel_save_configuration(panel);
 
-        view = (GtkTreeView*)g_object_get_data( G_OBJECT(dlg), "avail-plugins" );
-        tree_sel = gtk_tree_view_get_selection( view );
-        if( gtk_tree_selection_get_selected( tree_sel, &model, &it ) )
+        if (pl->pwid)
         {
-            char* type = NULL;
-            Plugin* pl;
-            gtk_tree_model_get( model, &it, 1, &type, -1 );
-            if ((pl = plugin_load(type)) != NULL)
-            {
-                GtkTreePath* tree_path;
-
-                pl->panel = p;
-                if (pl->class->expand_default)
-                    pl->expand = TRUE;
-                plugin_start(pl);
-                p->plugins = g_list_append(p->plugins, pl);
-                panel_save_configuration(p);
-
-                if (pl->pwid)
-                {
-                    gtk_widget_show(pl->pwid);
-
-                    /* update background of the newly added plugin */
-                    plugin_widget_set_background( pl->pwid, pl->panel );
-                }
-
-                model = gtk_tree_view_get_model( _view );
-                gtk_list_store_append( (GtkListStore*)model, &it );
-                gtk_list_store_set( (GtkListStore*)model, &it,
-                                    COL_NAME, _(pl->class->name),
-                                    COL_EXPAND, pl->expand,
-                                    COL_DATA, pl, -1 );
-                tree_sel = gtk_tree_view_get_selection( _view );
-                gtk_tree_selection_select_iter( tree_sel, &it );
-                if ((tree_path = gtk_tree_model_get_path(model, &it)) != NULL)
-                {
-                    gtk_tree_view_scroll_to_cell( _view, tree_path, NULL, FALSE, 0, 0 );
-                    gtk_tree_path_free( tree_path );
-                }
-            }
-            g_free( type );
+            gtk_widget_show(pl->pwid);
+            plugin_widget_set_background(pl->pwid, pl->panel);
         }
-    }
-    gtk_widget_destroy( (GtkWidget*)dlg );
-}
 
-static void on_add_plugin_row_activated(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *col, gpointer userdata)
-{
-    GtkWidget* dlg = (GtkWidget*)userdata;
-    gtk_dialog_response(GTK_DIALOG(dlg), GTK_RESPONSE_OK);
-}
-
-static void on_add_plugin( GtkButton* btn, GtkTreeView* _view )
-{
-    GtkWidget* dlg, *parent_win, *scroll;
-    GList* classes;
-    GList* tmp;
-    GtkTreeViewColumn* col;
-    GtkCellRenderer* render;
-    GtkTreeView* view;
-    GtkListStore* list;
-    GtkTreeSelection* tree_sel;
-
-    Panel* p = (Panel*) g_object_get_data( G_OBJECT(_view), "panel" );
-
-    classes = plugin_get_available_classes();
-
-    parent_win = gtk_widget_get_toplevel( (GtkWidget*)_view );
-    dlg = gtk_dialog_new_with_buttons( _("Add plugin to panel"),
-                                       GTK_WINDOW(parent_win), 0,
-                                       GTK_STOCK_CANCEL,
-                                       GTK_RESPONSE_CANCEL,
-                                       GTK_STOCK_ADD,
-                                       GTK_RESPONSE_OK, NULL );
-    panel_apply_icon(GTK_WINDOW(dlg));
-
-    /* fix background */
-    if (p->background)
-        gtk_widget_set_style(dlg, p->defstyle);
-
-    /* gtk_widget_set_sensitive( parent_win, FALSE ); */
-    scroll = gtk_scrolled_window_new( NULL, NULL );
-    gtk_scrolled_window_set_shadow_type( (GtkScrolledWindow*)scroll,
-                                          GTK_SHADOW_IN );
-    gtk_scrolled_window_set_policy((GtkScrolledWindow*)scroll,
-                                   GTK_POLICY_AUTOMATIC,
-                                   GTK_POLICY_AUTOMATIC );
-    gtk_box_pack_start( (GtkBox*)GTK_DIALOG(dlg)->vbox, scroll,
-                         TRUE, TRUE, 4 );
-    view = (GtkTreeView*)gtk_tree_view_new();
-    gtk_container_add( (GtkContainer*)scroll, GTK_WIDGET(view) );
-    tree_sel = gtk_tree_view_get_selection( view );
-    gtk_tree_selection_set_mode( tree_sel, GTK_SELECTION_BROWSE );
-
-    render = gtk_cell_renderer_text_new();
-    col = gtk_tree_view_column_new_with_attributes(
-                                            _("Available plugins"),
-                                            render, "text", 0, NULL );
-    gtk_tree_view_append_column( view, col );
-
-    list = gtk_list_store_new( 2,
-                               G_TYPE_STRING,
-                               G_TYPE_STRING );
-
-    /* Populate list of available plugins.
-     * Omit plugins that can only exist once per system if it is already configured. */
-    for( tmp = classes; tmp; tmp = tmp->next ) {
-        PluginClass* pc = (PluginClass*)tmp->data;
-        if (( ! pc->one_per_system ) || ( ! pc->one_per_system_instantiated))
         {
+            GtkTreePath* tree_path;
+            GtkTreeView* view;
+            GtkTreeSelection* tree_sel;
             GtkTreeIter it;
-            gtk_list_store_append( list, &it );
-            gtk_list_store_set( list, &it,
-                                0, _(pc->name),
-                                1, pc->type,
-                                -1 );
-            /* g_debug( "%s (%s)", pc->type, _(pc->name) ); */
+            GtkTreeModel* model;
+
+            model = gtk_tree_view_get_model( _view );
+            gtk_list_store_append( (GtkListStore*)model, &it );
+            gtk_list_store_set( (GtkListStore*)model, &it,
+                COL_NAME, _(pl->class->name),
+                COL_EXPAND, pl->expand,
+                COL_DATA, pl, -1 );
+            tree_sel = gtk_tree_view_get_selection( _view );
+            gtk_tree_selection_select_iter( tree_sel, &it );
+            if ((tree_path = gtk_tree_model_get_path(model, &it)) != NULL)
+            {
+                gtk_tree_view_scroll_to_cell( _view, tree_path, NULL, FALSE, 0, 0 );
+                gtk_tree_path_free( tree_path );
+            }
         }
     }
 
-    gtk_tree_view_set_model( view, GTK_TREE_MODEL(list) );
-    g_object_unref( list );
+}
 
-    g_signal_connect( view, "row-activated", G_CALLBACK(on_add_plugin_row_activated), (gpointer)dlg );
+static void on_add_plugin(GtkButton * _button, GtkTreeView * _view)
+{
+    GtkWidget * menu = gtk_menu_new();
+    GtkWidget ** submenus = g_new0(GtkWidget *, NR_PLUGIN_CATEGORY);
+    GtkWidget ** submenus_mi = g_new0(GtkWidget *, NR_PLUGIN_CATEGORY);
 
-    g_signal_connect( dlg, "response",
-                      G_CALLBACK(on_add_plugin_response), _view );
-    g_object_set_data( G_OBJECT(dlg), "avail-plugins", view );
-    g_object_weak_ref( G_OBJECT(dlg), (GWeakNotify) plugin_class_list_free, classes );
+    {
+        PLUGIN_CATEGORY i;
+        for (i = 0; i < NR_PLUGIN_CATEGORY; i++)
+        {
+            PLUGIN_CATEGORY c = (i == NR_PLUGIN_CATEGORY - 1) ? 0 : i + 1;
+            submenus[c] = gtk_menu_new();
+            const char * label = "";
+            switch (c)
+            {
+                case PLUGIN_CATEGORY_UNKNOWN:      label = _("Miscellaneous"); break;
+                case PLUGIN_CATEGORY_WINDOW_MANAGEMENT: label = _("Window Management"); break;
+                case PLUGIN_CATEGORY_LAUNCHER:     label = _("Launchers"); break;
+                case PLUGIN_CATEGORY_SW_INDICATOR: label = _("Notifications and Indicators"); break;
+                case PLUGIN_CATEGORY_HW_INDICATOR: label = _("Hardware Monitoring and Control"); break;
+            }
+            submenus_mi[c] = gtk_menu_item_new_with_label(label);
+            gtk_menu_item_set_submenu(GTK_MENU_ITEM(submenus_mi[c]), submenus[c]);
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu), submenus_mi[c]);
+        }
+    }
 
-    gtk_window_set_default_size( (GtkWindow*)dlg, 320, 400 );
-    gtk_widget_show_all( dlg );
+    {
+        if (!menu_item_plugin_type_key) {
+            menu_item_plugin_type_key = g_strdup_printf("waterline menu_item_plugin_type_key %x%x",
+                (unsigned) g_random_int(), (unsigned) g_random_int());
+        }
+    }
+
+
+    {
+        GList * classes = plugin_get_available_classes();
+        GList * iter;
+        for (iter = classes; iter; iter = iter->next) {
+            PluginClass * pc = (PluginClass *) iter->data;
+            PLUGIN_CATEGORY category = pc->category;
+            if (category >= NR_PLUGIN_CATEGORY || category < 0)
+                category = 0;
+            GtkWidget * menu_item = gtk_menu_item_new_with_label(_(pc->name));
+            if (pc->description)
+                gtk_widget_set_tooltip_text(menu_item, _(pc->description));
+            gtk_menu_shell_append(GTK_MENU_SHELL(submenus[category]), menu_item);
+            gtk_widget_show(menu_item);
+            gtk_widget_show(submenus_mi[category]);
+            gtk_widget_set_sensitive(menu_item, (!pc->one_per_system) || (!pc->one_per_system_instantiated));
+            g_object_set_data_full(G_OBJECT(menu_item), menu_item_plugin_type_key, g_strdup(pc->type), g_free);
+
+            g_signal_connect(G_OBJECT(menu_item), "activate", (GCallback) on_add_plugin_menu_item_activate, _view);
+        }
+        plugin_class_list_free(classes);
+    }
+
+    g_free(submenus);
+    g_free(submenus_mi);
+
+    gtk_menu_popup(GTK_MENU(menu),
+                   NULL, NULL,
+                   NULL, NULL,
+                   0, 0);
 }
 
 void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);

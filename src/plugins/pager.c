@@ -826,6 +826,7 @@ PluginClass pager_plugin_class = {
     name : N_("Desktop Pager"),
     version: "1.0",
     description : N_("Simple pager plugin"),
+    category: PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
 
     constructor : pager_constructor,
     destructor  : pager_destructor,

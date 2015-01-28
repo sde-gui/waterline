@@ -220,7 +220,6 @@ static void kbled_configure(Plugin * p, GtkWindow * parent)
         NULL);
     if (dlg)
     {
-       gtk_widget_set_size_request(GTK_WIDGET(dlg), 200, -1);	/* Improve geometry */
        gtk_window_present(GTK_WINDOW(dlg));
     }
 }

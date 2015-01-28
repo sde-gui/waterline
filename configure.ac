@@ -208,7 +208,7 @@ if test x"$plugins_loading" = "xno"; then
 fi
 
 dnl Here are plugin listing.
-ALL_PLUGINS_LIST="taskbar netstatus volume volumealsa cpu deskno batt kbled xkb thermal cpufreq notification_area"
+ALL_PLUGINS_LIST="taskbar notification_area netstatus volume volumealsa cpu deskno batt kbled xkb xkb_locks thermal cpufreq"
 AC_SUBST(ALL_PLUGINS_LIST)
 
 AC_MSG_CHECKING([which plugins should be built dynamically])
@@ -218,7 +218,7 @@ AC_ARG_WITH(plugins,
 [                         'all' builds all plugins (default), 'none' builds none ]
 [                         Possible plugins are: ]
 [                         taskbar, notification_area, netstatus, volume, volumealsa,]
-[                         cpu, deskno, batt, kbled, xkb, thermal, cpufreq], plugins="$withval",[plugins="all"])
+[                         cpu, deskno, batt, kbled, xkb, xkb_locks, thermal, cpufreq], plugins="$withval",[plugins="all"])
 
 if test x"$plugins" != xall -a x"$plugins" != xnone; then
     if test x"$plugins_loading" = xno; then
@@ -346,6 +346,7 @@ AC_CONFIG_FILES([
     src/plugins/batt/Makefile
     src/plugins/kbled/Makefile
     src/plugins/xkb/Makefile
+    src/plugins/xkb_locks/Makefile
     src/plugins/thermal/Makefile
     src/plugins/cpufreq/Makefile
     po/Makefile.in
@@ -385,7 +386,10 @@ echo Building dynamic plugins:
         AC_MSG_RESULT([    batt - Monitor battery status])
     fi
     if test x"$plugin_kbled" != x; then
-        AC_MSG_RESULT([    kbled - Indicator for CapsLock, NumLock, and ScrLock])
+        AC_MSG_RESULT([    kbled - Indicator for Caps Lock, Num Lock, and Scroll Lock LEDs])
+    fi
+    if test x"$plugin_kbled" != x; then
+        AC_MSG_RESULT([    xkb_locks - Indicator for Caps Lock, Num Lock, and Scroll Lock modifiers])
     fi
     if test x"$plugin_xkb" != x; then
         AC_MSG_RESULT([    xkb - Keyboard layout switcher])

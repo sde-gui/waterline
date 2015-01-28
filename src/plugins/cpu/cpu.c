@@ -389,7 +389,7 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
     int update_interval_min = 50;
     int update_interval_max = 5000;
 
-    GtkWidget * dlg = create_generic_config_dlg(
+    GtkWidget * dialog = create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) cpu_apply_configuration, (gpointer) p,
@@ -409,8 +409,8 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
         "int-max-value", (gpointer)&update_interval_max, (GType)CONF_TYPE_SET_PROPERTY,
         NULL);
 
-    if (dlg)
-        gtk_window_present(GTK_WINDOW(dlg));
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
 }
 
 

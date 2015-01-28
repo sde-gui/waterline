@@ -182,7 +182,7 @@ gboolean  completion_match_cb(GtkEntryCompletion *completion, const gchar *key, 
 }
 
 /* Parameters: const char* name, gpointer ret_value, GType type, ....NULL */
-GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
+GtkWidget* create_generic_config_dialog( const char* title, GtkWidget* parent,
                                       GSourceFunc apply_func, Plugin * plugin,
                                       const char* nm, ... )
 {

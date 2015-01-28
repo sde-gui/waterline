@@ -195,17 +195,17 @@ static void deskno_apply_configuration(Plugin * p)
 static void deskno_configure(Plugin * p, GtkWindow * parent)
 {
     DesknoPlugin * dc = PRIV(p);
-    GtkWidget * dlg = create_generic_config_dlg(
+    GtkWidget * dialog = create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) deskno_apply_configuration, (gpointer) p,
         _("Bold font"), &dc->bold, CONF_TYPE_BOOL,
         _("Display desktop names"), &dc->display_labels, (GType)CONF_TYPE_BOOL,
         NULL);
-    if (dlg)
+    if (dialog)
     {
-       gtk_widget_set_size_request(GTK_WIDGET(dlg), 400, -1);	/* Improve geometry */
-       gtk_window_present(GTK_WINDOW(dlg));
+       gtk_widget_set_size_request(GTK_WIDGET(dialog), 400, -1);	/* Improve geometry */
+       gtk_window_present(GTK_WINDOW(dialog));
     }
 }
 

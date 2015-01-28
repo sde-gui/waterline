@@ -167,17 +167,16 @@ static void apply_config(Plugin* p)
 
 static void netstatus_config( Plugin* p, GtkWindow* parent  )
 {
-    GtkWidget* dlg;
-    netstatus *ns = PRIV(p);
-    dlg = create_generic_config_dlg(
+    netstatus * ns = PRIV(p);
+    GtkWidget * dialog = create_generic_config_dialog(
                 _(plugin_class(p)->name),
                 GTK_WIDGET(parent),
                 (GSourceFunc) apply_config, p,
                 _("Interface to monitor"), &ns->iface, (GType)CONF_TYPE_STR,
                 _("Config tool"), &ns->config_tool, (GType)CONF_TYPE_STR,
                 NULL );
-    if (dlg)
-        gtk_window_present( GTK_WINDOW(dlg) );
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
 }
 
 static void save_config( Plugin* p)

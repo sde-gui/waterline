@@ -826,7 +826,7 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
     int min_input_restart_interval = 0;
     int max_input_restart_interval = 100000;
 
-    GtkWidget * dlg = create_generic_config_dlg(
+    GtkWidget * dialog = create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) lb_apply_configuration, (gpointer) p,
@@ -862,8 +862,8 @@ static void lb_configure(Plugin * p, GtkWindow * parent)
 
         NULL);
 
-    if (dlg)
-        gtk_window_present(GTK_WINDOW(dlg));
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
 }
 
 

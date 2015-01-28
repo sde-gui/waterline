@@ -924,7 +924,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
     char* sort_files = g_strdup_printf("%s%s", _("|Sort files by"), sort_by);
 
     DirMenuPlugin * dm = PRIV(p);
-    GtkWidget * dlg = create_generic_config_dlg(
+    GtkWidget * dialog = create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) dirmenu_apply_configuration, (gpointer) p,
@@ -946,8 +946,8 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         "", 0, (GType)CONF_TYPE_END_TABLE,
         NULL);
 
-    if (dlg)
-        gtk_window_present(GTK_WINDOW(dlg));
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
 
     g_free(sort_directories);
     g_free(sort_files);

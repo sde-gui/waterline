@@ -555,7 +555,7 @@ static void volumealsa_configure(Plugin * p, GtkWindow * parent)
     else
         tooltip = g_strdup(_("Application to run by double click"));
 
-    GtkWidget * dlg = create_generic_config_dlg(
+    GtkWidget * dialog = create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) volumealsa_apply_configuration, (gpointer) p,
@@ -565,8 +565,8 @@ static void volumealsa_configure(Plugin * p, GtkWindow * parent)
 
     g_free(tooltip);
 
-    if (dlg)
-        gtk_window_present(GTK_WINDOW(dlg));
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
 }
 
 /* Save the configuration to the configuration file. */

@@ -61,9 +61,9 @@ char* translate_exec_to_cmd( const char* exec, const char* icon,
 void show_error( GtkWindow* parent_win, const char* msg );
 
 /* Parameters: const char* name, gpointer ret_value, GType type, ....NULL */
-GtkWidget* create_generic_config_dlg( const char* title, GtkWidget* parent,
-                              GSourceFunc apply_func, Plugin * plugin,
-                      const char* name, ... );
+GtkWidget * create_generic_config_dialog(const char * title, GtkWidget * parent,
+    GSourceFunc apply_func, Plugin * plugin,
+    const char * name, ...);
 
 
 extern GdkPixbuf* wtl_load_icon(const char* name, int width, int height, gboolean use_fallback);

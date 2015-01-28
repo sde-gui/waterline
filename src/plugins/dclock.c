@@ -609,7 +609,7 @@ static void dclock_apply_configuration(Plugin * p)
 static void dclock_configure(Plugin * p, GtkWindow * parent)
 {
     DClockPlugin * dc = PRIV(p);
-    GtkWidget * dlg = create_generic_config_dlg(
+    GtkWidget * dialog = create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) dclock_apply_configuration, (gpointer) p,
@@ -629,8 +629,8 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         _("Timezone")  , &dc->timezone , (GType)CONF_TYPE_STR,
         "completion-list", (gpointer)dclock_get_timezones(dc), (GType)CONF_TYPE_SET_PROPERTY,
         NULL);
-    if (dlg)
-        gtk_window_present(GTK_WINDOW(dlg));
+    if (dialog)
+        gtk_window_present(GTK_WINDOW(dialog));
 }
 
 /* Callback when the configuration is to be saved. */

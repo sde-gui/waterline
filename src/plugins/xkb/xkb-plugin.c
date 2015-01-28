@@ -59,7 +59,7 @@ static void xkb_save_configuration(Plugin * p);
 static void xkb_panel_configuration_changed(Plugin * p);
 
 /* Redraw the graphics. */
-void xkb_redraw(XkbPlugin * xkb) 
+void xkb_update(XkbPlugin * xkb) 
 {
     /* Set the image. */
     gboolean valid_image = FALSE;
@@ -122,7 +122,7 @@ static void xkb_active_window_event(FbEv * ev, gpointer data)
         if (*win != None)
         {
             xkb_active_window_changed(xkb, *win);
-            xkb_redraw(xkb);
+            xkb_update(xkb);
         }
     }
 }
@@ -209,7 +209,7 @@ static int xkb_constructor(Plugin * plugin)
     g_signal_connect(G_OBJECT(fbev), "active_window", G_CALLBACK(xkb_active_window_event), xkb);
 
     /* Show the widget and return. */
-    xkb_redraw(xkb);
+    xkb_update(xkb);
     gtk_widget_show(pwid);
     return 1;
 }
@@ -240,7 +240,7 @@ static void xkb_display_type_changed(GtkComboBox * cb, gpointer * data)
     /* Fetch the new value and redraw. */
     XkbPlugin * xkb = (XkbPlugin *) data;
     xkb->display_as_text = gtk_combo_box_get_active(cb);
-    xkb_redraw(xkb);
+    xkb_update(xkb);
 }
 
 /* Handler for "toggled" event on per-application check box of configuration dialog. */
@@ -250,7 +250,7 @@ static void xkb_enable_per_application_changed(GtkToggleButton * tb, gpointer * 
     XkbPlugin * xkb = (XkbPlugin *) data;
     xkb->per_window_layout = gtk_toggle_button_get_active(tb);
     gtk_widget_set_sensitive(xkb->per_app_default_layout_menu, xkb->per_window_layout);
-    xkb_redraw(xkb);
+    xkb_update(xkb);
 }
 
 /* Handler for "changed" event on default language combo box of configuration dialog. */
@@ -259,7 +259,7 @@ static void xkb_default_language_changed(GtkComboBox * cb, gpointer * data)
     /* Fetch the new value and redraw. */
     XkbPlugin * xkb = (XkbPlugin *) data;
     xkb->default_group = gtk_combo_box_get_active(cb);
-    xkb_redraw(xkb);
+    xkb_update(xkb);
 }
 
 /* Handler for "response" event on configuration dialog. */
@@ -269,7 +269,7 @@ static void xkb_configuration_response(GtkDialog * dialog, int response, gpointe
 
     /* Save the new configuration and redraw the plugin. */
     plugin_save_configuration(xkb->plugin);
-    xkb_redraw(xkb);
+    xkb_update(xkb);
 
     /* Destroy the dialog. */
     gtk_widget_destroy(xkb->config_dlg);
@@ -393,7 +393,7 @@ static void xkb_panel_configuration_changed(Plugin * p)
 {
     /* Do a full redraw. */
     XkbPlugin * xkb = PRIV(p);
-    xkb_redraw(xkb);
+    xkb_update(xkb);
 }
 
 /* Plugin descriptor. */

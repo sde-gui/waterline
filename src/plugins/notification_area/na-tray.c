@@ -118,7 +118,7 @@ get_tray (TraysScreen *trays_screen)
   return trays_screen->all_trays->data;
 }
 
-const char *ordered_roles[] = {
+static const char *ordered_roles[] = {
   "keyboard",
   "volume",
   "bluetooth",
@@ -127,7 +127,7 @@ const char *ordered_roles[] = {
   NULL
 };
 
-const char *wmclass_roles[] = {
+static const char *wmclass_roles[] = {
   "Bluetooth-applet", "bluetooth",
   "Mate-volume-control-applet", "volume",
   "Nm-applet", "network",

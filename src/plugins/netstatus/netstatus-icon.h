@@ -24,6 +24,7 @@
 #define __NETSTATUS_ICON_H__
 
 #include <gtk/gtk.h>
+#include <waterline/misc.h>
 
 #include "netstatus-iface.h"
 
@@ -54,27 +55,27 @@ struct _NetstatusIconClass
   void (*invoked) (NetstatusIcon *icon);
 };
 
-GType           netstatus_icon_get_type            (void) G_GNUC_CONST;
+extern SYMBOL_HIDDEN GType           netstatus_icon_get_type            (void) G_GNUC_CONST;
 
-GtkWidget *     netstatus_icon_new                  (NetstatusIface *iface);
+extern SYMBOL_HIDDEN GtkWidget *     netstatus_icon_new                  (NetstatusIface *iface);
 
-void            netstatus_icon_invoke               (NetstatusIcon  *icon);
+extern SYMBOL_HIDDEN void            netstatus_icon_invoke               (NetstatusIcon  *icon);
 
-void            netstatus_icon_set_iface            (NetstatusIcon  *icon,
+extern SYMBOL_HIDDEN void            netstatus_icon_set_iface            (NetstatusIcon  *icon,
 						     NetstatusIface *interface);
-NetstatusIface *netstatus_icon_get_iface            (NetstatusIcon  *icon);
+extern SYMBOL_HIDDEN NetstatusIface *netstatus_icon_get_iface            (NetstatusIcon  *icon);
 
-void            netstatus_icon_set_orientation      (NetstatusIcon  *icon,
+extern SYMBOL_HIDDEN void            netstatus_icon_set_orientation      (NetstatusIcon  *icon,
 						     GtkOrientation  orientation);
-GtkOrientation  netstatus_icon_get_orientation      (NetstatusIcon  *icon);
+extern SYMBOL_HIDDEN GtkOrientation  netstatus_icon_get_orientation      (NetstatusIcon  *icon);
 
-void            netstatus_icon_set_tooltips_enabled (NetstatusIcon  *icon,
+extern SYMBOL_HIDDEN void            netstatus_icon_set_tooltips_enabled (NetstatusIcon  *icon,
 						     gboolean        enabled);
-gboolean        netstatus_icon_get_tooltips_enabled (NetstatusIcon  *icon);
+extern SYMBOL_HIDDEN gboolean        netstatus_icon_get_tooltips_enabled (NetstatusIcon  *icon);
 
-void            netstatus_icon_set_show_signal      (NetstatusIcon  *icon,
+extern SYMBOL_HIDDEN void            netstatus_icon_set_show_signal      (NetstatusIcon  *icon,
 						     gboolean        show_signal);
-gboolean        netstatus_icon_get_show_signal      (NetstatusIcon  *icon);
+extern SYMBOL_HIDDEN gboolean        netstatus_icon_get_show_signal      (NetstatusIcon  *icon);
 
 G_END_DECLS
 

@@ -26,17 +26,20 @@
 #define __NETSTATUS_SYSDEPS_H__
 
 #include <glib.h>
+#include <waterline/misc.h>
 
 G_BEGIN_DECLS
 
-char *netstatus_sysdeps_read_iface_statistics       (const char *iface,
-						     gulong     *in_packets,
-						     gulong     *out_packets,
-						     gulong     *in_bytes,
-						     gulong     *out_bytes);
-char *netstatus_sysdeps_read_iface_wireless_details (const char *iface,
-						     gboolean   *is_wireless,
-						     int        *signal_strength);
+extern SYMBOL_HIDDEN char * netstatus_sysdeps_read_iface_statistics(
+    const char * iface,
+    gulong     * in_packets,
+    gulong     * out_packets,
+    gulong     * in_bytes,
+    gulong     * out_bytes);
+extern SYMBOL_HIDDEN char * netstatus_sysdeps_read_iface_wireless_details(
+    const char * iface,
+    gboolean   * is_wireless,
+    int        * signal_strength);
 
 //char *netstatus_sysdeps_read_iface_device_info      (const char *iface);
 

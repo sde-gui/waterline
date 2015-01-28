@@ -127,4 +127,6 @@ static inline void mix_rgba(GdkRGBA * result, GdkRGBA * a, GdkRGBA * b, double v
 void rgba_to_color(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
 void color_to_rgba(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
 
+#define SYMBOL_HIDDEN __attribute__ ((visibility ("hidden")))
+
 #endif

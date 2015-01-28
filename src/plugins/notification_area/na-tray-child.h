@@ -25,6 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#include <waterline/misc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,18 +56,13 @@ struct _NaTrayChildClass
   GtkSocketClass parent_class;
 };
 
-GType           na_tray_child_get_type        (void);
-
-GtkWidget      *na_tray_child_new            (GdkScreen    *screen,
-                                              Window        icon_window);
-char           *na_tray_child_get_title      (NaTrayChild  *child);
-gboolean        na_tray_child_has_alpha      (NaTrayChild  *child);
-void            na_tray_child_set_composited (NaTrayChild  *child,
-                                              gboolean      composited);
-void            na_tray_child_force_redraw   (NaTrayChild  *child);
-void            na_tray_child_get_wm_class   (NaTrayChild  *child,
-					      char        **res_name,
-					      char        **res_class);
+extern SYMBOL_HIDDEN GType       na_tray_child_get_type(void);
+extern SYMBOL_HIDDEN GtkWidget * na_tray_child_new(GdkScreen * screen, Window  icon_window);
+extern SYMBOL_HIDDEN char      * na_tray_child_get_title(NaTrayChild  * child);
+extern SYMBOL_HIDDEN gboolean    na_tray_child_has_alpha(NaTrayChild  * child);
+extern SYMBOL_HIDDEN void        na_tray_child_set_composited(NaTrayChild  * child, gboolean composited);
+extern SYMBOL_HIDDEN void        na_tray_child_force_redraw(NaTrayChild * child);
+extern SYMBOL_HIDDEN void        na_tray_child_get_wm_class(NaTrayChild * child, char ** res_name, char ** res_class);
 
 #ifdef __cplusplus
 }

@@ -58,18 +58,18 @@ typedef struct {
 
 } XkbPlugin;
 
-extern void xkb_redraw(XkbPlugin * xkb);
+extern SYMBOL_HIDDEN void xkb_update(XkbPlugin * xkb);
 
-extern int xkb_get_current_group_xkb_no(XkbPlugin * xkb);
-extern int xkb_get_group_count(XkbPlugin * xkb);
-extern const char * xkb_get_symbol_name_by_res_no(XkbPlugin * xkb, int group_res_no);
-extern const char * xkb_get_current_group_name(XkbPlugin * xkb);
-extern const char * xkb_get_current_symbol_name(XkbPlugin * xkb);
-extern const char * xkb_get_current_symbol_name_lowercase(XkbPlugin * xkb);
-extern void xkb_mechanism_constructor(XkbPlugin * xkb);
-extern void xkb_mechanism_destructor(XkbPlugin * xkb);
-extern int xkb_change_group(XkbPlugin * xkb, int increment);
-extern void xkb_active_window_changed(XkbPlugin * xkb, Window window);
+extern SYMBOL_HIDDEN int xkb_get_current_group_xkb_no(XkbPlugin * xkb);
+extern SYMBOL_HIDDEN int xkb_get_group_count(XkbPlugin * xkb);
+extern SYMBOL_HIDDEN const char * xkb_get_symbol_name_by_res_no(XkbPlugin * xkb, int group_res_no);
+extern SYMBOL_HIDDEN const char * xkb_get_current_group_name(XkbPlugin * xkb);
+extern SYMBOL_HIDDEN const char * xkb_get_current_symbol_name(XkbPlugin * xkb);
+extern SYMBOL_HIDDEN const char * xkb_get_current_symbol_name_lowercase(XkbPlugin * xkb);
+extern SYMBOL_HIDDEN void xkb_mechanism_constructor(XkbPlugin * xkb);
+extern SYMBOL_HIDDEN void xkb_mechanism_destructor(XkbPlugin * xkb);
+extern SYMBOL_HIDDEN int xkb_change_group(XkbPlugin * xkb, int increment);
+extern SYMBOL_HIDDEN void xkb_active_window_changed(XkbPlugin * xkb, Window window);
 
 #endif
 

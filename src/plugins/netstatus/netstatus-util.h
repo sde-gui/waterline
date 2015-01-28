@@ -25,6 +25,7 @@
 #define __NETSTATUS_UTIL_H__
 
 #include <glib-object.h>
+#include <waterline/misc.h>
 
 G_BEGIN_DECLS
 
@@ -68,18 +69,18 @@ typedef struct
   gulong out_bytes;
 } NetstatusStats;
 
-GQuark               netstatus_error_quark                (void);
-GType                netstatus_g_error_get_type           (void);
-GType                netstatus_stats_get_type             (void);
-void                 netstatus_adopt_error                (GError         *error,
+extern SYMBOL_HIDDEN GQuark               netstatus_error_quark                (void);
+extern SYMBOL_HIDDEN GType                netstatus_g_error_get_type           (void);
+extern SYMBOL_HIDDEN GType                netstatus_stats_get_type             (void);
+extern SYMBOL_HIDDEN void                 netstatus_adopt_error                (GError         *error,
 							   NetstatusError  code);
 
-G_CONST_RETURN char *netstatus_get_state_string           (NetstatusState  state);
+extern SYMBOL_HIDDEN G_CONST_RETURN char *netstatus_get_state_string           (NetstatusState  state);
 
-GList               *netstatus_list_insert_unique         (GList          *list,
+extern SYMBOL_HIDDEN GList               *netstatus_list_insert_unique         (GList          *list,
 							   char           *str);
 
-void                 netstatus_connect_signal_while_alive (gpointer        object,
+extern SYMBOL_HIDDEN void                 netstatus_connect_signal_while_alive (gpointer        object,
 							   const char     *detailed_signal,
 							   GCallback       func,
 							   gpointer        func_data,
@@ -89,7 +90,7 @@ void                 netstatus_connect_signal_while_alive (gpointer        objec
 
 #include <stdio.h>
 
-extern NetstatusDebugFlags _netstatus_debug_flags;
+extern SYMBOL_HIDDEN NetstatusDebugFlags _netstatus_debug_flags;
 
 #ifdef G_HAVE_ISO_VARARGS
 #  define dprintf(type, ...) G_STMT_START {                   \
@@ -103,7 +104,7 @@ extern NetstatusDebugFlags _netstatus_debug_flags;
         } G_STMT_END
 #endif
 
-void netstatus_setup_debug_flags (void);
+extern SYMBOL_HIDDEN void netstatus_setup_debug_flags (void);
 
 #else /* if !defined (G_ENABLE_DEBUG) */
 

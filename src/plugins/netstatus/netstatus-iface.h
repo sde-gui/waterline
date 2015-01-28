@@ -27,6 +27,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <waterline/misc.h>
 
 #include "netstatus-util.h"
 
@@ -55,39 +56,39 @@ struct _NetstatusIfaceClass
   GObjectClass parent_class;
 };
 
-GList *                netstatus_list_interface_names        (GError         **error);
+extern SYMBOL_HIDDEN GList *                netstatus_list_interface_names        (GError         **error);
 
-GType                  netstatus_iface_get_type              (void) G_GNUC_CONST;
+extern SYMBOL_HIDDEN GType                  netstatus_iface_get_type              (void) G_GNUC_CONST;
 
-NetstatusIface *       netstatus_iface_new                   (const char      *name);
+extern SYMBOL_HIDDEN NetstatusIface *       netstatus_iface_new                   (const char      *name);
 
-G_CONST_RETURN char *  netstatus_iface_get_name              (NetstatusIface  *iface);
-void                   netstatus_iface_set_name              (NetstatusIface  *iface,
-							      const char      *name);
-NetstatusState         netstatus_iface_get_state             (NetstatusIface  *iface);
-void                   netstatus_iface_get_statistics        (NetstatusIface  *iface,
-							      NetstatusStats  *stats);
-gboolean               netstatus_iface_get_is_wireless       (NetstatusIface  *iface);
-int                    netstatus_iface_get_signal_strength   (NetstatusIface  *iface);
+extern SYMBOL_HIDDEN G_CONST_RETURN char *  netstatus_iface_get_name              (NetstatusIface  *iface);
+extern SYMBOL_HIDDEN void                   netstatus_iface_set_name              (NetstatusIface  *iface,
+                                                                    		       const char      *name);
+extern SYMBOL_HIDDEN NetstatusState         netstatus_iface_get_state             (NetstatusIface  *iface);
+extern SYMBOL_HIDDEN void                   netstatus_iface_get_statistics        (NetstatusIface  *iface,
+                                                                    		       NetstatusStats  *stats);
+extern SYMBOL_HIDDEN gboolean               netstatus_iface_get_is_wireless       (NetstatusIface  *iface);
+extern SYMBOL_HIDDEN int                    netstatus_iface_get_signal_strength   (NetstatusIface  *iface);
 
-void                   netstatus_iface_set_error             (NetstatusIface  *iface,
-							      const GError    *error);
-G_CONST_RETURN GError *netstatus_iface_get_error             (NetstatusIface  *iface);
-void                   netstatus_iface_clear_error           (NetstatusIface  *iface,
-							      NetstatusError   code);
+extern SYMBOL_HIDDEN void                   netstatus_iface_set_error             (NetstatusIface  *iface,
+                                                							       const GError    *error);
+extern SYMBOL_HIDDEN G_CONST_RETURN GError *netstatus_iface_get_error             (NetstatusIface  *iface);
+extern SYMBOL_HIDDEN void                   netstatus_iface_clear_error           (NetstatusIface  *iface,
+                                                							       NetstatusError   code);
 
-gboolean               netstatus_iface_get_inet4_details     (NetstatusIface  *iface,
+extern SYMBOL_HIDDEN gboolean               netstatus_iface_get_inet4_details     (NetstatusIface  *iface,
 							      char           **addr,
 							      char           **dest,
 							      char           **bcast,
 							      char           **mask);
-gboolean               netstatus_iface_get_device_details    (NetstatusIface  *iface,
+extern SYMBOL_HIDDEN gboolean               netstatus_iface_get_device_details    (NetstatusIface  *iface,
 							      const char     **hw_name,
 							      char           **hw_addr);
 
 //gchar *                netstatus_iface_get_device_info       (NetstatusIface  *iface);
 
-gboolean               netstatus_iface_get_is_loopback       (NetstatusIface  *iface);
+extern SYMBOL_HIDDEN gboolean               netstatus_iface_get_is_loopback       (NetstatusIface  *iface);
 
 
 G_END_DECLS

@@ -24,6 +24,7 @@
 #define FIXED_TIP_H
 
 #include <gtk/gtk.h>
+#include <waterline/misc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,16 +55,10 @@ struct _NaFixedTipClass
   void (* clicked)    (NaFixedTip *fixedtip);
 };
 
-GType      na_fixed_tip_get_type (void);
-
-GtkWidget *na_fixed_tip_new (GtkWidget      *parent,
-                             GtkOrientation  orientation);
-
-void       na_fixed_tip_set_markup (GtkWidget  *widget,
-                                    const char *markup_text);
-
-void       na_fixed_tip_set_orientation (GtkWidget      *widget,
-                                         GtkOrientation  orientation);
+extern SYMBOL_HIDDEN GType      na_fixed_tip_get_type(void);
+extern SYMBOL_HIDDEN GtkWidget *na_fixed_tip_new(GtkWidget * parent, GtkOrientation orientation);
+extern SYMBOL_HIDDEN void       na_fixed_tip_set_markup(GtkWidget * widget, const char * markup_text);
+extern SYMBOL_HIDDEN void       na_fixed_tip_set_orientation(GtkWidget * widget, GtkOrientation orientation);
 
 #ifdef __cplusplus
 }

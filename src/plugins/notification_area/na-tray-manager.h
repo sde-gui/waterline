@@ -84,15 +84,13 @@ struct _NaTrayManagerClass
   void (* lost_selection)    (NaTrayManager      *manager);
 };
 
-GType           na_tray_manager_get_type        (void);
+extern SYMBOL_HIDDEN GType           na_tray_manager_get_type(void);
 
-gboolean        na_tray_manager_check_running   (GdkScreen          *screen);
-NaTrayManager  *na_tray_manager_new             (void);
-gboolean        na_tray_manager_manage_screen   (NaTrayManager      *manager,
-						 GdkScreen          *screen);
-void            na_tray_manager_set_orientation (NaTrayManager      *manager,
-						 GtkOrientation      orientation);
-GtkOrientation  na_tray_manager_get_orientation (NaTrayManager      *manager);
+extern SYMBOL_HIDDEN gboolean        na_tray_manager_check_running(GdkScreen * screen);
+extern SYMBOL_HIDDEN NaTrayManager  *na_tray_manager_new(void);
+extern SYMBOL_HIDDEN gboolean        na_tray_manager_manage_screen(NaTrayManager * manager, GdkScreen * screen);
+extern SYMBOL_HIDDEN void            na_tray_manager_set_orientation (NaTrayManager * manager, GtkOrientation orientation);
+extern SYMBOL_HIDDEN GtkOrientation  na_tray_manager_get_orientation (NaTrayManager * manager);
 
 #ifdef __cplusplus
 }

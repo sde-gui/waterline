@@ -56,21 +56,15 @@ struct _NaTrayClass
   GtkBinClass parent_class;
 };
 
-GType           na_tray_get_type        (void);
-NaTray         *na_tray_new_for_screen  (GdkScreen     *screen,
-					 GtkOrientation orientation);
-void            na_tray_set_orientation	(NaTray        *tray,
-					 GtkOrientation orientation);
-GtkOrientation  na_tray_get_orientation (NaTray        *tray);
-void		na_tray_force_redraw	(NaTray        *tray);
-
-void            na_tray_set_icon_size	(NaTray        *tray,
-					 int            icon_size);
-int             na_tray_get_icon_size	(NaTray        *tray);
-
-void            na_tray_set_target_dimension(NaTray        *tray,
-					     int            target_dimension);
-int             na_tray_get_target_dimension(NaTray        *tray);
+extern SYMBOL_HIDDEN GType           na_tray_get_type        (void);
+extern SYMBOL_HIDDEN NaTray         *na_tray_new_for_screen  (GdkScreen  * screen, GtkOrientation orientation);
+extern SYMBOL_HIDDEN void            na_tray_set_orientation (NaTray     * tray, GtkOrientation orientation);
+extern SYMBOL_HIDDEN GtkOrientation  na_tray_get_orientation (NaTray     * tray);
+extern SYMBOL_HIDDEN void		na_tray_force_redraw (NaTray     * tray);
+extern SYMBOL_HIDDEN void            na_tray_set_icon_size   (NaTray     * tray, int icon_size);
+extern SYMBOL_HIDDEN int             na_tray_get_icon_size   (NaTray     * tray);
+extern SYMBOL_HIDDEN void            na_tray_set_target_dimension(NaTray * tray, int target_dimension);
+extern SYMBOL_HIDDEN int             na_tray_get_target_dimension(NaTray * tray);
 
 #ifdef __cplusplus
 }

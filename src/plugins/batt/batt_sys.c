@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-battery * battery_new()
+static battery * battery_new()
 {
     static int battery_num = 1;
 

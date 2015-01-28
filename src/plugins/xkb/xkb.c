@@ -233,7 +233,7 @@ static GdkFilterReturn xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, Xk
         {
             initialize_keyboard_description(xkb);
             refresh_group_xkb(xkb);
-            xkb_redraw(xkb);
+            xkb_update(xkb);
             xkb_enter_locale_by_process(xkb);
         }
         else if (xkbev->any.xkb_type == XkbStateNotify)
@@ -244,7 +244,7 @@ static GdkFilterReturn xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, Xk
                  * This shouldn't be necessary, but mask the group number down for safety. */
                 xkb->current_group_xkb_no = xkbev->state.group & (XkbNumKbdGroups - 1);
                 refresh_group_xkb(xkb);
-                xkb_redraw(xkb);
+                xkb_update(xkb);
                 xkb_enter_locale_by_process(xkb);
             }
         }
@@ -315,7 +315,7 @@ int xkb_change_group(XkbPlugin * xkb, int increment)
     /* Execute the change. */
     XkbLockGroup(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, next_group);
     refresh_group_xkb(xkb);
-    xkb_redraw(xkb);
+    xkb_update(xkb);
     xkb_enter_locale_by_process(xkb);
     return 1;
 }

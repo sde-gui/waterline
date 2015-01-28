@@ -253,7 +253,7 @@ static void update_bar(BatteryPlugin *iplugin)
     gtk_widget_queue_draw(iplugin->drawingArea);
 }
 
-void update_label(BatteryPlugin *iplugin) {
+static void update_label(BatteryPlugin *iplugin) {
 
     if (!iplugin->label)
         return;

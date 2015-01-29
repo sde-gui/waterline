@@ -953,16 +953,17 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
         return NULL;
     }
 
-    /* Extract the icon. */
 
-    /* Get the largest icon available, unless there is one that is of the desired size. */
-    /* FIXME: should we try to find an icon whose size is closest to
-     * required_width and required_height to reduce unnecessary resizing? */
+    /*
+        Choose the best icon size. In order:
+        1. The exact required size.
+        2. The maximum size in the range of 2x...4x.
+        3. The maximum size.
+    */
     gulong * pdata = data;
     gulong * pdata_end = data + nitems;
-    gulong * max_icon = NULL;
-    gulong max_w = 0;
-    gulong max_h = 0;
+    gulong * max_icon = NULL; gulong max_w = 0; gulong max_h = 0;
+    gulong * best_icon = NULL; gulong best_w = 0; gulong best_h = 0;
     while ((pdata + 2) < pdata_end)
     {
         /* Extract the width and height. */
@@ -978,9 +979,9 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
         /* The desired size is the same as icon size. */
         if ((required_width == w) && (required_height == h))
         {
-            max_icon = pdata;
-            max_w = w;
-            max_h = h;
+            best_icon = pdata;
+            best_w = w;
+            best_h = h;
             break;
         }
 
@@ -991,14 +992,32 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
             max_w = w;
             max_h = h;
         }
+
+        if ((w >= required_width * 2) && (w <= required_width * 4) && (h >= required_height * 2) && (h <= required_height * 4))
+        {
+            if ((w > best_w) && (h > best_h))
+            {
+                best_icon = pdata;
+                best_w = w;
+                best_h = h;
+            }
+        }
+
         pdata += size;
     }
 
+    if (!best_icon)
+    {
+        best_icon = max_icon;
+        best_w = max_w;
+        best_h = max_h;
+    }
+
     /* Сonvert the icon to GdkPixbuf. */
-    if (max_icon != NULL)
+    if (best_icon != NULL)
     {
         /* Allocate enough space for the pixel data. */
-        gulong len = max_w * max_h;
+        gulong len = best_w * best_h;
         guchar * pixdata = g_new(guchar, len * 4);
 
         /* Loop to convert the pixel data. */
@@ -1006,7 +1025,7 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
         int i;
         for (i = 0; i < len; p += 4, i += 1)
         {
-            guint argb = max_icon[i];
+            guint argb = best_icon[i];
             p[0] = (argb >> 16) & 0xff;
             p[1] = (argb >>  8) & 0xff;
             p[2] = (argb >>  0) & 0xff;
@@ -1034,10 +1053,13 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
                 pixdata,
                 GDK_COLORSPACE_RGB,
                 TRUE, 8,	/* has_alpha, bits_per_sample */
-                max_w, max_h, max_w * 4,
+                best_w, best_h, best_w * 4,
                 (GdkPixbufDestroyNotify) g_free,
                 NULL);
     }
+
+    /*g_print("required_width %d, required_height %d\nbest_w %lu, best_h %lu\nmax_w %lu, max_h %lu\n",
+        required_width, required_height, best_w, best_h, max_w, max_h);*/
 
     /* Free the X property data. */
     XFree(data);

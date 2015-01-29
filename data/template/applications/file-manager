@@ -1,8 +1,8 @@
-stuurman %s
-pcmanfm %s
-thunar %s
+[SDE] stuurman %s
+[LXDE] pcmanfm %s
+[XFCE] thunar %s
 spacefm %s
 xfe %s
 PathFinder %s
-caja %s
-nautilus %s
+[MATE] caja %s
+[GNOME] nautilus %s

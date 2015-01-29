@@ -1,5 +1,6 @@
 #fixme: urxvt -e %s
-lilyterm -e %s
-lxterminal -e %s
-xfce4-terminal -e %s
+[SDE] lilyterm -e %s
+[LXDE] lxterminal -e %s
+[XFCE] xfce4-terminal -e %s
+[GNOME] gnome-terminal -e %s
 xterm -e %s

@@ -14,15 +14,16 @@ Makefile
 /po/POTFILES
 /po/stamp-it
 /stamp-h1
+/config.h.in
 /config.h
 /config.log
 /config.status
 /libtool
 /waterline.pc
-
 Makefile.in
 /aclocal.m4
 /compile
 /configure
 /ltmain.sh
 /missing
+/depcomp

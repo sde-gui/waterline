@@ -54,10 +54,10 @@ static void panel_popupmenu_config_plugin( GtkMenuItem* item, Plugin* plugin )
     plugin->panel->config_changed = TRUE;
 }
 
-static void panel_popupmenu_add_item( GtkMenuItem* item, Panel* panel )
+static void panel_popupmenu_add_item(GtkMenuItem* item, Panel* panel)
 {
     /* panel_add_plugin( panel, panel->topgwin ); */
-    panel_configure( panel, 2 );
+    panel_configure(panel, 3);
 }
 
 static void panel_popupmenu_remove_item( GtkMenuItem* item, Plugin* plugin )

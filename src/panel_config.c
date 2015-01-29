@@ -402,18 +402,19 @@ void free_global_config()
 
 extern const char* wtl_get_logout_command()
 {
-    return global_config.logout_cmd;
+    return (!su_str_empty(global_config.logout_cmd)) ?
+        global_config.logout_cmd : wtl_get_default_application("logout");
 }
 
 extern const char* wtl_get_file_manager_application()
 {
-    return global_config.file_manager_cmd ?
+    return (!su_str_empty(global_config.file_manager_cmd)) ?
         global_config.file_manager_cmd : wtl_get_default_application("file-manager");
 }
 
 extern const char* wtl_get_terminal_emulator_application()
 {
-    return global_config.terminal_cmd ?
+    return (!su_str_empty(global_config.terminal_cmd)) ?
         global_config.terminal_cmd : wtl_get_default_application("terminal-emulator");
 }
 

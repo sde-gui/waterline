@@ -65,20 +65,16 @@ void restart(void)
 
 void logout(void)
 {
-    const char* l_logout_cmd = wtl_get_logout_command();
-    /* If LXSession is running, _LXSESSION_PID will be set */
-    if( ! l_logout_cmd && getenv("_LXSESSION_PID") )
-        l_logout_cmd = "lxsession-logout";
-
-    if( l_logout_cmd ) {
+    const char * logout_command = wtl_get_logout_command();
+    if (logout_command) {
         GError* err = NULL;
-        if( ! g_spawn_command_line_async( l_logout_cmd, &err ) ) {
-            show_error( NULL, err->message );
-            g_error_free( err );
+        if (!g_spawn_command_line_async(logout_command, &err)) {
+            show_error(NULL, err->message);
+            g_error_free(err);
         }
     }
     else {
-        show_error( NULL, _("Logout command is not set") );
+        show_error(NULL, _("Logout command is not set"));
     }
 }
 

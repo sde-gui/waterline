@@ -553,6 +553,81 @@ on_paddings_value_changed(GtkSpinButton* spin, Panel* p)
 }
 
 static void
+update_preferred_applications_info_label(Panel * p)
+{
+    gtk_label_set_markup (GTK_LABEL(p->pref_dialog.preferred_applications_info_label), "");
+
+    gchar * info_text_0 = g_strdup_printf("%s",
+        _("<i>If you leave these fields empty,\n"
+          "Waterline will try to automatically detect the appropriate applications.</i>"));
+
+    gchar * info_text_1 = NULL;
+    if (!su_str_empty(gtk_entry_get_text(GTK_ENTRY(p->pref_dialog.preferred_applications_file_manager)))) {
+        info_text_1 = g_strdup("");
+    }
+    else if (!su_str_empty(wtl_get_default_application("file-manager"))) {
+        info_text_1 = g_strdup_printf(
+            _("\n\n<i>Automatically detected <b>file manager</b>:</i> %s"),
+            wtl_get_default_application("file-manager"));
+    }
+    else {
+        info_text_1 = g_strdup_printf("%s",
+            _("\n\n<span foreground='red'><b>WARNING:</b></span> "
+             "<i>Waterline failed to automatically detect your <b>file manager</b>.\n"
+             "Please specify the preferable <b>file manager</b> in the field above.</i>"));
+    }
+
+    gchar * info_text_2 = NULL;
+    if (!su_str_empty(gtk_entry_get_text(GTK_ENTRY(p->pref_dialog.preferred_applications_terminal_emulator)))) {
+        info_text_2 = g_strdup("");
+    }
+    else if (!su_str_empty(wtl_get_default_application("terminal-emulator"))) {
+        info_text_2 = g_strdup_printf(
+            _("\n\n<i>Automatically detected <b>terminal emulator</b>:</i> %s"),
+            wtl_get_default_application("terminal-emulator"));
+    }
+    else {
+        info_text_2 = g_strdup_printf("%s",
+            _("\n\n<span foreground='red'><b>WARNING:</b></span> "
+              "<i>Waterline failed to automatically detect your <b>terminal emulator</b>.\n"
+              "Please specify the preferable <b>terminal emulator</b> in the field above.</i>"));
+    }
+
+    gchar * info_text_3 = NULL;
+    if (!su_str_empty(gtk_entry_get_text(GTK_ENTRY(p->pref_dialog.preferred_applications_logout)))) {
+        info_text_3 = g_strdup("");
+    }
+    else if (!su_str_empty(wtl_get_default_application("logout"))) {
+        info_text_3 = g_strdup_printf(
+            _("\n\n<i>Automatically detected <b>logout command</b>:</i> %s"),
+            wtl_get_default_application("logout"));
+    }
+    else {
+        info_text_3 = g_strdup_printf("%s",
+            _("\n\n<span foreground='red'><b>WARNING:</b></span> "
+              "<i>Waterline failed to automatically detect your <b>logout command</b>.\n"
+              "Please specify the preferable <b>logout command</b> in the field above.</i>"));
+    }
+
+    gchar * info_text = g_strconcat(info_text_0, info_text_1, info_text_2, info_text_3, NULL);
+
+    gtk_label_set_markup (GTK_LABEL(p->pref_dialog.preferred_applications_info_label), info_text);
+
+    g_free(info_text);
+    g_free(info_text_0);
+    g_free(info_text_1);
+    g_free(info_text_2);
+    g_free(info_text_3);
+}
+
+
+static void
+on_preferred_applications_changed(GtkEditable * editable, Panel * p)
+{
+    update_preferred_applications_info_label(p);
+}
+
+static void
 update_opt_menu(GtkWidget *w, int ind)
 {
     int i;
@@ -840,34 +915,29 @@ void panel_initialize_pref_dialog(Panel * p)
     initialize_plugin_list(p, builder);
 
     /* advanced, applications */
-    w = (GtkWidget*)gtk_builder_get_object( builder, "file_manager" );
+    p->pref_dialog.preferred_applications_file_manager = w = (GtkWidget*)gtk_builder_get_object( builder, "file_manager" );
     if (global_config.file_manager_cmd)
         gtk_entry_set_text( (GtkEntry*)w, global_config.file_manager_cmd );
-    g_signal_connect( w, "focus-out-event",
-                      G_CALLBACK(on_entry_focus_out),
-                      &global_config.file_manager_cmd);
+    g_signal_connect(w, "focus-out-event", G_CALLBACK(on_entry_focus_out), &global_config.file_manager_cmd);
+    g_signal_connect(w, "changed", G_CALLBACK(on_preferred_applications_changed), p);
 
-    w = (GtkWidget*)gtk_builder_get_object( builder, "term" );
+    p->pref_dialog.preferred_applications_terminal_emulator = w = (GtkWidget*)gtk_builder_get_object( builder, "term" );
     if (global_config.terminal_cmd)
         gtk_entry_set_text( (GtkEntry*)w, global_config.terminal_cmd );
-    g_signal_connect( w, "focus-out-event",
-                      G_CALLBACK(on_entry_focus_out),
-                      &global_config.terminal_cmd);
+    g_signal_connect(w, "focus-out-event", G_CALLBACK(on_entry_focus_out), &global_config.terminal_cmd);
+    g_signal_connect(w, "changed", G_CALLBACK(on_preferred_applications_changed), p);
 
     /* If we are under LXSession, setting logout command is not necessary. */
-    w = (GtkWidget*)gtk_builder_get_object( builder, "logout" );
-    if( getenv("_LXSESSION_PID") ) {
-        gtk_widget_hide( w );
-        w = (GtkWidget*)gtk_builder_get_object( builder, "logout_label" );
-        gtk_widget_hide( w );
-    }
-    else {
-        if(global_config.logout_cmd)
-            gtk_entry_set_text( (GtkEntry*)w, global_config.logout_cmd );
-        g_signal_connect( w, "focus-out-event",
-                        G_CALLBACK(on_entry_focus_out),
-                        &global_config.logout_cmd);
-    }
+    p->pref_dialog.preferred_applications_logout = w = (GtkWidget*)gtk_builder_get_object( builder, "logout" );
+    if(global_config.logout_cmd)
+        gtk_entry_set_text( (GtkEntry*)w, global_config.logout_cmd );
+    g_signal_connect(w, "focus-out-event", G_CALLBACK(on_entry_focus_out), &global_config.logout_cmd);
+    g_signal_connect(w, "changed", G_CALLBACK(on_preferred_applications_changed), p);
+
+    p->pref_dialog.preferred_applications_info_label = (GtkWidget *) gtk_builder_get_object(builder,
+        "preferred_applications_info_label");
+
+    update_preferred_applications_info_label(p);
 
     p->pref_dialog.notebook = (GtkWidget*)gtk_builder_get_object( builder, "notebook" );
 

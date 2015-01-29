@@ -153,6 +153,11 @@ struct _Panel {
         GtkSpinButton * padding_right;
         GtkSpinButton * applet_spacing;
 
+        GtkWidget * preferred_applications_file_manager;
+        GtkWidget * preferred_applications_terminal_emulator;
+        GtkWidget * preferred_applications_logout;
+        GtkWidget * preferred_applications_info_label;
+
         gboolean doing_update;
     } pref_dialog;
 };

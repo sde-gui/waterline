@@ -46,8 +46,26 @@ gchar ** read_list_from_config(gchar * file_name)
     return lines;
 }
 
+static const char * wtl_get_default_application_special_cases(char * type)
+{
+    if (g_strcmp0(type, "logout") == 0) {
+        /* If LXSession is running, _LXSESSION_PID will be set */
+        if (getenv("_LXSESSION_PID"))
+            return "lxsession-logout";
+    }
+
+    return NULL;
+}
+
+
 const char * wtl_get_default_application(char * type)
 {
+    {
+        const char * result = wtl_get_default_application_special_cases(type);
+        if (result)
+            return result;
+    }
+
     if (!default_applications)
         default_applications = g_hash_table_new(NULL, g_str_equal);
     if (!default_applications)

@@ -1,5 +1,4 @@
 /*
- *      batt_sys.h
  *
  *      Copyright 2009 Juergen Hötzel <juergen@archlinux.org>
  *
@@ -29,7 +28,7 @@
 #  include <config.h>
 #endif
 
-#include "batt_sys.h"
+#include "battery.h"
 #include <glib/gstdio.h>
 
 /* shrug: get rid of this */

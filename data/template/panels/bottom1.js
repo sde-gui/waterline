@@ -133,7 +133,7 @@
         "discharging_color1": "rgb(0,255,0)",
         "discharging_color2": "rgb(255,0,0)"
       },
-      "type": "batt",
+      "type": "battery_indicator",
       "expand": false,
       "padding": 0,
       "border": 0

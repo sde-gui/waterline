@@ -64,6 +64,6 @@ src/plugins/netstatus/netstatus-sysdeps.c
 src/plugins/netstatus/netstatus-util.c
 src/plugins/netstatus/gnome-netstatus.glade
 
-src/plugins/batt/batt.c
+src/plugins/battery_indicator/battery_indicator.c
 
 src/plugins/kbled/kbled.c

@@ -1,5 +1,4 @@
 /*
- *      batt_sys.h
  *      
  *      Copyright 2009 Juergen Hötzel <juergen@archlinux.org>
  *      
@@ -20,8 +19,8 @@
  */
 
 
-#ifndef BATT_SYS_H
-#define BATT_SYS_H
+#ifndef BATTERY_H
+#define BATTERY_H
 
 
 #define BUF_SIZE 1024

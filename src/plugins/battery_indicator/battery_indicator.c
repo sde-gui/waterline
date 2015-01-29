@@ -48,7 +48,7 @@
 
 #include <waterline/gtkcompat.h>
 #include <waterline/dbg.h>
-#include "batt_sys.h"
+#include "battery.h"
 #include <waterline/misc.h>
 #include <waterline/panel.h>
 #include <waterline/plugin.h>
@@ -115,7 +115,7 @@ typedef struct {
 
 static void destructor(Plugin *p);
 static void update_display(BatteryPlugin *iplugin);
-static void batt_panel_configuration_changed(Plugin *p);
+static void battery_indicator_panel_configuration_changed(Plugin *p);
 
 /******************************************************************************/
 
@@ -571,7 +571,7 @@ constructor(Plugin *p)
 
     su_json_read_options(plugin_inner_json(p), option_definitions, iplugin);
 
-    batt_panel_configuration_changed(p);
+    battery_indicator_panel_configuration_changed(p);
 
     /* Start the update loop */
     iplugin->timer = g_timeout_add_seconds( 3, (GSourceFunc) update_timout, (gpointer) iplugin);
@@ -606,7 +606,7 @@ destructor(Plugin *p)
 }
 
 
-static void batt_panel_configuration_changed(Plugin *p) {
+static void battery_indicator_panel_configuration_changed(Plugin *p) {
 
     ENTER;
 
@@ -685,19 +685,19 @@ static void save(Plugin* p) {
 }
 
 
-PluginClass batt_plugin_class = {
+PluginClass battery_indicator_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 
-    type        : "batt",
+    type        : "battery_indicator",
     name        : N_("Battery Monitor"),
     version     : "2.0",
-    description : N_("Display battery status using ACPI"),
+    description : N_("Battery charge level indicator"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : constructor,
     destructor  : destructor,
     config      : config,
     save        : save,
-    panel_configuration_changed : batt_panel_configuration_changed
+    panel_configuration_changed : battery_indicator_panel_configuration_changed
 };

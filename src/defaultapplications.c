@@ -46,7 +46,7 @@ gchar ** read_list_from_config(gchar * file_name)
     return lines;
 }
 
-char * get_default_application(char * type)
+const char * wtl_get_default_application(char * type)
 {
     if (!default_applications)
         default_applications = g_hash_table_new(NULL, g_str_equal);

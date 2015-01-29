@@ -40,6 +40,7 @@
 #include <sde-utils.h>
 
 #include <waterline/global.h>
+#include <waterline/defaultapplications.h>
 #include <waterline/misc.h>
 #include <waterline/panel.h>
 #include "panel_internal.h"
@@ -157,7 +158,7 @@ gboolean wtl_launch_app(const char* exec, GList* files, gboolean in_terminal)
     if( in_terminal )
     {
         char* term_cmd;
-        const char* term = wtl_get_terminal();
+        const char * term = wtl_get_terminal_emulator_application();
         if (!term)
         {
             g_free(cmd);
@@ -221,7 +222,7 @@ gchar * panel_translate_directory_name(const gchar * name)
 void wtl_open_in_file_manager(const char * path)
 {
     char * quote = g_shell_quote(path);
-    const char * fm = wtl_get_file_manager();
+    const char * fm = wtl_get_file_manager_application();
     char * cmd = ((strstr(fm, "%s") != NULL) ? g_strdup_printf(fm, quote) : g_strdup_printf("%s %s", fm, quote));
     g_free(quote);
     g_spawn_command_line_async(cmd, NULL);
@@ -231,7 +232,7 @@ void wtl_open_in_file_manager(const char * path)
 /* Open a specified path in a terminal. */
 void wtl_open_in_terminal(const char * path)
 {
-    const char * term = wtl_get_terminal();
+    const char * term = wtl_get_terminal_emulator_application();
     char * argv[2];
     char * sp = strchr(term, ' ');
     argv[0] = ((sp != NULL) ? g_strndup(term, sp - term) : (char *) term);

@@ -19,6 +19,9 @@
 #ifndef __WATERLINE__DEFAULT_APPLICATIONS_H
 #define __WATERLINE__DEFAULT_APPLICATIONS_H
 
-char * get_default_application(char * type);
+extern const char * wtl_get_default_application(char * type);
+extern const char * wtl_get_logout_command(void);
+extern const char * wtl_get_file_manager_application(void);
+extern const char * wtl_get_terminal_emulator_application(void);
 
 #endif

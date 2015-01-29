@@ -24,6 +24,7 @@
 
 #include "commands.h"
 #include <waterline/global.h>
+#include <waterline/defaultapplications.h>
 #include <waterline/panel.h>
 #include <waterline/plugin.h>
 #include <waterline/misc.h>

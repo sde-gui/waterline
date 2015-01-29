@@ -245,10 +245,10 @@ static void asound_set_volume(VolumeALSAPlugin * vol, int volume)
 /*** Graphics ***/
 
 /* Handler for "button-press-event" signal on main widget. */
-static gchar * volumealsa_get_volume_control_command(VolumeALSAPlugin * vol)
+static const char * volumealsa_get_volume_control_command(VolumeALSAPlugin * vol)
 {
     if (su_str_empty(vol->volume_control_command))
-        return get_default_application("volume-control");
+        return wtl_get_default_application("volume-control");
     else
         return vol->volume_control_command;
 }
@@ -548,7 +548,7 @@ static void volumealsa_configure(Plugin * p, GtkWindow * parent)
 {
     VolumeALSAPlugin * vol = PRIV(p);
 
-    gchar * volume_control_application = get_default_application("volume-control");
+    const char * volume_control_application = wtl_get_default_application("volume-control");
     gchar * tooltip = NULL;
     if (volume_control_application)
         tooltip = g_strdup_printf(_("Application to run by double click. \"%s\" by default."), volume_control_application);
@@ -592,7 +592,7 @@ static void volumealsa_on_volume_control_activate(GtkMenuItem * item, VolumeALSA
 static void volumealsa_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
 {
     VolumeALSAPlugin * vol = PRIV(plugin);
-    gchar * command = volumealsa_get_volume_control_command(vol);
+    const char * command = volumealsa_get_volume_control_command(vol);
     if (command)
     {
         GtkWidget * mi = gtk_menu_item_new_with_label(_("Volume Control..."));

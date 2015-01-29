@@ -84,6 +84,16 @@ AC_ARG_ENABLE(man,
 	[enable_man=no]
 )
 
+# debug
+
+AC_ARG_ENABLE([debug],
+    AS_HELP_STRING([--enable-debug],
+               [enable debug build (default: disable)]),
+               debug=$enableval, debug="no")
+if test x"$debug" = "xyes"; then
+    CFLAGS="$CFLAGS -DDEBUG -Og -g"
+fi
+
 # cast checks
 
 AC_ARG_ENABLE([cast-checks],

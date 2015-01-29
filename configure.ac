@@ -111,6 +111,17 @@ fi
 PACKAGE_CFLAGS="$PACKAGE_CFLAGS $GTK_CHECKS"
 
 
+_save_cflags="$CFLAGS"
+CFLAGS="-Werror-implicit-function-declaration"
+AC_MSG_CHECKING([whether $CC accepts $CFLAGS])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+    [AC_MSG_RESULT([yes])]
+    CFLAGS="$_save_cflags $CFLAGS",
+    [AC_MSG_RESULT([no])]
+    CFLAGS="$_save_cflags"
+)
+
+
 dnl linker tweaking
 # The function of the link flag --as-needed is to prevent unnecesary linking.
 # Example: A -> B -> C
@@ -415,4 +426,6 @@ echo "X11_LIBS           =  $X11_LIBS"
 echo "MENU_CACHE_VERSION =  $MENU_CACHE_VERSION"
 echo "LDFLAGS            =  $LDFLAGS"
 echo "CFLAGS             =  $CFLAGS"
-
+echo "CC                 =  $CC"
+echo "LD                 =  $LD"
+echo "AR                 =  $AR"

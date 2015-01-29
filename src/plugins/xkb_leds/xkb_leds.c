@@ -132,9 +132,9 @@ static int xkb_leds_constructor(Plugin * p)
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
     xkb_leds_t * kl = g_new0(xkb_leds_t, 1);
     kl->plugin = p;
-    kl->visible[0] = FALSE;
+    kl->visible[0] = TRUE;
     kl->visible[1] = TRUE;
-    kl->visible[2] = TRUE;
+    kl->visible[2] = FALSE;
     plugin_set_priv(p, kl);
 
     su_json_read_options(plugin_inner_json(p), option_definitions, kl);

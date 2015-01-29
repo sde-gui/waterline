@@ -1007,11 +1007,10 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
         for (i = 0; i < len; p += 4, i += 1)
         {
             guint argb = max_icon[i];
-            guint rgba = (argb << 8) | (argb >> 24);
-            p[0] = rgba >> 24;
-            p[1] = (rgba >> 16) & 0xff;
-            p[2] = (rgba >> 8) & 0xff;
-            p[3] = rgba & 0xff;
+            p[0] = (argb >> 16) & 0xff;
+            p[1] = (argb >>  8) & 0xff;
+            p[2] = (argb >>  0) & 0xff;
+            p[3] = (argb >> 24) & 0xff;
         }
 #if 0
         /*

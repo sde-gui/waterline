@@ -22,7 +22,7 @@
 #include <gtk/gtk.h>
 #include <glib.h>
 
-#define PLUGIN_PRIV_TYPE XkbPlugin
+#define PLUGIN_PRIV_TYPE xkb_groups_t
 
 #include <waterline/global.h>
 #include <waterline/plugin.h>
@@ -56,20 +56,20 @@ typedef struct {
     char * symbol_names[XkbNumKbdGroups];	/* Symbol names as returned by Xkb */
     GHashTable * group_hash_table;		/* Hash table to correlate application with layout */
 
-} XkbPlugin;
+} xkb_groups_t;
 
-extern SYMBOL_HIDDEN void xkb_update(XkbPlugin * xkb);
+extern SYMBOL_HIDDEN void xkb_groups_update(xkb_groups_t * xkb);
 
-extern SYMBOL_HIDDEN int xkb_get_current_group_xkb_no(XkbPlugin * xkb);
-extern SYMBOL_HIDDEN int xkb_get_group_count(XkbPlugin * xkb);
-extern SYMBOL_HIDDEN const char * xkb_get_symbol_name_by_res_no(XkbPlugin * xkb, int group_res_no);
-extern SYMBOL_HIDDEN const char * xkb_get_current_group_name(XkbPlugin * xkb);
-extern SYMBOL_HIDDEN const char * xkb_get_current_symbol_name(XkbPlugin * xkb);
-extern SYMBOL_HIDDEN const char * xkb_get_current_symbol_name_lowercase(XkbPlugin * xkb);
-extern SYMBOL_HIDDEN void xkb_mechanism_constructor(XkbPlugin * xkb);
-extern SYMBOL_HIDDEN void xkb_mechanism_destructor(XkbPlugin * xkb);
-extern SYMBOL_HIDDEN int xkb_change_group(XkbPlugin * xkb, int increment);
-extern SYMBOL_HIDDEN void xkb_active_window_changed(XkbPlugin * xkb, Window window);
+extern SYMBOL_HIDDEN int xkb_groups_get_current_group_xkb_no(xkb_groups_t * xkb);
+extern SYMBOL_HIDDEN int xkb_groups_get_group_count(xkb_groups_t * xkb);
+extern SYMBOL_HIDDEN const char * xkb_groups_get_symbol_name_by_res_no(xkb_groups_t * xkb, int group_res_no);
+extern SYMBOL_HIDDEN const char * xkb_groups_get_current_group_name(xkb_groups_t * xkb);
+extern SYMBOL_HIDDEN const char * xkb_groups_get_current_symbol_name(xkb_groups_t * xkb);
+extern SYMBOL_HIDDEN const char * xkb_groups_get_current_symbol_name_lowercase(xkb_groups_t * xkb);
+extern SYMBOL_HIDDEN void xkb_groups_mechanism_constructor(xkb_groups_t * xkb);
+extern SYMBOL_HIDDEN void xkb_groups_mechanism_destructor(xkb_groups_t * xkb);
+extern SYMBOL_HIDDEN int xkb_groups_change_group(xkb_groups_t * xkb, int increment);
+extern SYMBOL_HIDDEN void xkb_groups_active_window_changed(xkb_groups_t * xkb, Window window);
 
 #endif
 

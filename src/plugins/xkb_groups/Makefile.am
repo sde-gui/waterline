@@ -4,18 +4,18 @@ INCLUDES = \
 	$(PACKAGE_CFLAGS) \
 	$(G_CAST_CHECKS)
 
-module_LTLIBRARIES = xkb.la
+module_LTLIBRARIES = xkb_groups.la
 moduledir = $(pkglibdir)/plugins
 
-xkb_la_SOURCES = \
-	xkb-plugin.c \
+xkb_groups_la_SOURCES = \
+	xkb_groups.c \
 	xkb.c \
 	xkb.h
 
-xkb_la_LIBADD = \
+xkb_groups_la_LIBADD = \
 	$(PACKAGE_LIBS)
 
-xkb_la_LDFLAGS = \
+xkb_groups_la_LDFLAGS = \
 	-module \
     @WATERLINE_MODULE@
 

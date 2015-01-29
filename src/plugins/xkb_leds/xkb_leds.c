@@ -30,7 +30,7 @@
 
 #include <X11/XKBlib.h>
 
-#define PLUGIN_PRIV_TYPE KeyboardLEDPlugin
+#define PLUGIN_PRIV_TYPE xkb_leds_t
 
 #include <waterline/dbg.h>
 #include <waterline/panel.h>
@@ -62,21 +62,21 @@ typedef struct {
     GtkWidget *indicator_image[3];		/* Image for each indicator */
     unsigned int current_state;			/* Current LED state, bit encoded */
     gboolean visible[3];			/* True if control is visible (per user configuration) */
-} KeyboardLEDPlugin;
+} xkb_leds_t;
 
-static void kbled_update_image(KeyboardLEDPlugin * kl, int i, unsigned int state);
-static void kbled_update_display(Plugin * p, unsigned int state);
-static GdkFilterReturn kbled_event_filter(GdkXEvent * gdkxevent, GdkEvent * event, Plugin * p);
-static int kbled_constructor(Plugin * p);
-static void kbled_destructor(Plugin * p);
-static void kbled_apply_configuration(Plugin * p);
-static void kbled_configure(Plugin * p, GtkWindow * parent);
-static void kbled_save_configuration(Plugin * p);
-static void kbled_panel_configuration_changed(Plugin * p);
+static void xkb_leds_update_image(xkb_leds_t * kl, int i, unsigned int state);
+static void xkb_leds_update_display(Plugin * p, unsigned int state);
+static GdkFilterReturn xkb_leds_event_filter(GdkXEvent * gdkxevent, GdkEvent * event, Plugin * p);
+static int xkb_leds_constructor(Plugin * p);
+static void xkb_leds_destructor(Plugin * p);
+static void xkb_leds_apply_configuration(Plugin * p);
+static void xkb_leds_configure(Plugin * p, GtkWindow * parent);
+static void xkb_leds_save_configuration(Plugin * p);
+static void xkb_leds_panel_configuration_changed(Plugin * p);
 
 /******************************************************************************/
 
-#define SU_JSON_OPTION_STRUCTURE KeyboardLEDPlugin
+#define SU_JSON_OPTION_STRUCTURE xkb_leds_t
 static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(bool, visible[0]),
     SU_JSON_OPTION(bool, visible[1]),
@@ -87,7 +87,7 @@ static su_json_option_definition option_definitions[] = {
 /******************************************************************************/
 
 /* Update image to correspond to current state. */
-static void kbled_update_image(KeyboardLEDPlugin * kl, int i, unsigned int state)
+static void xkb_leds_update_image(xkb_leds_t * kl, int i, unsigned int state)
 {
     gchar * file = wtl_resolve_own_resource("", "images", ((state) ? on_icons[i] : off_icons[i]), 0);
     panel_image_set_from_file(plugin_panel(kl->plugin), kl->indicator_image[i], file);
@@ -95,9 +95,9 @@ static void kbled_update_image(KeyboardLEDPlugin * kl, int i, unsigned int state
 }
 
 /* Redraw after Xkb event or initialization. */
-static void kbled_update_display(Plugin * p, unsigned int new_state)
+static void xkb_leds_update_display(Plugin * p, unsigned int new_state)
 {
-    KeyboardLEDPlugin * kl = PRIV(p);
+    xkb_leds_t * kl = PRIV(p);
     int i;
     for (i = 0; i < 3; i++)
     {
@@ -105,7 +105,7 @@ static void kbled_update_display(Plugin * p, unsigned int new_state)
         int current_is_lit = kl->current_state & (1 << i);
         int new_is_lit = new_state & (1 << i);
         if (current_is_lit != new_is_lit)
-            kbled_update_image(kl, i, new_is_lit);
+            xkb_leds_update_image(kl, i, new_is_lit);
     }
 
     /* Save new state. */
@@ -113,7 +113,7 @@ static void kbled_update_display(Plugin * p, unsigned int new_state)
 }
 
 /* GDK event filter. */
-static GdkFilterReturn kbled_event_filter(GdkXEvent * gdkxevent, GdkEvent * event, Plugin * p)
+static GdkFilterReturn xkb_leds_event_filter(GdkXEvent * gdkxevent, GdkEvent * event, Plugin * p)
 {
     /* Look for XkbIndicatorStateNotify events and update the display. */
     XEvent * xev = (XEvent *) gdkxevent;
@@ -121,16 +121,16 @@ static GdkFilterReturn kbled_event_filter(GdkXEvent * gdkxevent, GdkEvent * even
     {
         XkbEvent * xkbev = (XkbEvent *) xev;
         if (xkbev->any.xkb_type == XkbIndicatorStateNotify)
-            kbled_update_display(p, xkbev->indicators.state);
+            xkb_leds_update_display(p, xkbev->indicators.state);
     }
     return GDK_FILTER_CONTINUE;
 }
 
 /* Plugin constructor. */
-static int kbled_constructor(Plugin * p)
+static int xkb_leds_constructor(Plugin * p)
 {
     /* Allocate and initialize plugin context and set into Plugin private data pointer. */
-    KeyboardLEDPlugin * kl = g_new0(KeyboardLEDPlugin, 1);
+    xkb_leds_t * kl = g_new0(xkb_leds_t, 1);
     kl->plugin = p;
     kl->visible[0] = FALSE;
     kl->visible[1] = TRUE;
@@ -170,7 +170,7 @@ static int kbled_constructor(Plugin * p)
     }
 
     /* Add GDK event filter and enable XkbIndicatorStateNotify events. */
-    gdk_window_add_filter(NULL, (GdkFilterFunc) kbled_event_filter, p);
+    gdk_window_add_filter(NULL, (GdkFilterFunc) xkb_leds_event_filter, p);
     if ( ! XkbSelectEvents(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, XkbIndicatorStateNotifyMask, XkbIndicatorStateNotifyMask))
         return 0;
 
@@ -179,7 +179,7 @@ static int kbled_constructor(Plugin * p)
     unsigned int current_state;
     XkbGetIndicatorState(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, &current_state);
     kl->current_state = ~ current_state;
-    kbled_update_display(p, current_state);
+    xkb_leds_update_display(p, current_state);
 
     /* Show the widget. */
     gtk_widget_show(pwid);
@@ -187,33 +187,33 @@ static int kbled_constructor(Plugin * p)
 }
 
 /* Plugin destructor. */
-static void kbled_destructor(Plugin * p)
+static void xkb_leds_destructor(Plugin * p)
 {
-    KeyboardLEDPlugin * kl = PRIV(p);
+    xkb_leds_t * kl = PRIV(p);
 
     /* Remove GDK event filter. */
-    gdk_window_remove_filter(NULL, (GdkFilterFunc) kbled_event_filter, p);
+    gdk_window_remove_filter(NULL, (GdkFilterFunc) xkb_leds_event_filter, p);
     icon_grid_free(kl->icon_grid);
     g_free(kl);
 }
 
 /* Callback when the configuration dialog has recorded a configuration change. */
-static void kbled_apply_configuration(Plugin * p)
+static void xkb_leds_apply_configuration(Plugin * p)
 {
-    KeyboardLEDPlugin * kl = PRIV(p);
+    xkb_leds_t * kl = PRIV(p);
     int i;
     for (i = 0; i < 3; i++)
         icon_grid_set_visible(kl->icon_grid, kl->indicator_image[i], kl->visible[i]);
 }
 
 /* Callback when the configuration dialog is to be shown. */
-static void kbled_configure(Plugin * p, GtkWindow * parent)
+static void xkb_leds_configure(Plugin * p, GtkWindow * parent)
 {
-    KeyboardLEDPlugin * kl = PRIV(p);
+    xkb_leds_t * kl = PRIV(p);
     GtkWidget * dialog = create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
-        (GSourceFunc) kbled_apply_configuration, (gpointer) p,
+        (GSourceFunc) xkb_leds_apply_configuration, (gpointer) p,
         _("Show CapsLock"), &kl->visible[0], (GType)CONF_TYPE_BOOL,
         _("Show NumLock"), &kl->visible[1], (GType)CONF_TYPE_BOOL,
         _("Show ScrollLock"), &kl->visible[2], (GType)CONF_TYPE_BOOL,
@@ -225,40 +225,40 @@ static void kbled_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Callback when the configuration is to be saved. */
-static void kbled_save_configuration(Plugin * p)
+static void xkb_leds_save_configuration(Plugin * p)
 {
-    KeyboardLEDPlugin * kl = PRIV(p);
+    xkb_leds_t * kl = PRIV(p);
     su_json_write_options(plugin_inner_json(p), option_definitions, kl);
 }
 
 /* Callback when panel configuration changes. */
-static void kbled_panel_configuration_changed(Plugin * p)
+static void xkb_leds_panel_configuration_changed(Plugin * p)
 {
     /* Set orientation into the icon grid. */
-    KeyboardLEDPlugin * kl = PRIV(p);
+    xkb_leds_t * kl = PRIV(p);
     GtkOrientation bo = (plugin_get_orientation(p) == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
     icon_grid_set_geometry(kl->icon_grid, bo, plugin_get_icon_size(p), plugin_get_icon_size(p), 0, 0, panel_get_oriented_height_pixels(plugin_panel(p)));
 
     /* Do a full redraw. */
     int current_state = kl->current_state;
     kl->current_state = ~ kl->current_state;
-    kbled_update_display(p, current_state);
+    xkb_leds_update_display(p, current_state);
 }
 
 /* Plugin descriptor. */
-PluginClass kbled_plugin_class = {
+PluginClass xkb_leds_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 
-    type : "kbled",
-    name : N_("Keyboard LED"),
+    type : "xkb_leds",
+    name : N_("Keyboard LED Indicator"),
     version: "1.0",
-    description : N_("Indicators for CapsLock, NumLock, and ScrollLock keys"),
+    description : N_("Indicator of hardware LEDs: Caps Lock, Num Lock, and Scroll Lock. You need an indicator/switcher of logical keyboard Locks, not just hardware LEDs, please try the Keyboard Lock Key Indicator."),
     category: PLUGIN_CATEGORY_SW_INDICATOR,
 
-    constructor : kbled_constructor,
-    destructor  : kbled_destructor,
-    config : kbled_configure,
-    save : kbled_save_configuration,
-    panel_configuration_changed : kbled_panel_configuration_changed
+    constructor : xkb_leds_constructor,
+    destructor  : xkb_leds_destructor,
+    config : xkb_leds_configure,
+    save : xkb_leds_save_configuration,
+    panel_configuration_changed : xkb_leds_panel_configuration_changed
 };

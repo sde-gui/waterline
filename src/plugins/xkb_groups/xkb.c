@@ -34,13 +34,13 @@
 /* The X Keyboard Extension: Library Specification
  * http://www.xfree86.org/current/XKBlib.pdf */
 
-static void xkb_enter_locale_by_process(XkbPlugin * xkb);
-static void refresh_group_xkb(XkbPlugin * xkb);
-static int initialize_keyboard_description(XkbPlugin * xkb);
-static GdkFilterReturn xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, XkbPlugin * xkb);
+static void xkb_groups_enter_locale_by_process(xkb_groups_t * xkb);
+static void refresh_group_xkb(xkb_groups_t * xkb);
+static int initialize_keyboard_description(xkb_groups_t * xkb);
+static GdkFilterReturn xkb_groups_event_filter(GdkXEvent * xevent, GdkEvent * event, xkb_groups_t * xkb);
 
 /* Insert a process and its layout into the hash table. */
-static void xkb_enter_locale_by_process(XkbPlugin * xkb)
+static void xkb_groups_enter_locale_by_process(xkb_groups_t * xkb)
 {
     if ((xkb->group_hash_table != NULL) && (fb_ev_active_window(fbev) != None))
     {
@@ -51,44 +51,44 @@ static void xkb_enter_locale_by_process(XkbPlugin * xkb)
 }
 
 /* Return the current group Xkb ID. */
-int xkb_get_current_group_xkb_no(XkbPlugin * xkb)
+int xkb_groups_get_current_group_xkb_no(xkb_groups_t * xkb)
 {
     return xkb->current_group_xkb_no;
 }
 
 /* Return the count of members in the current group. */
-int xkb_get_group_count(XkbPlugin * xkb) 
+int xkb_groups_get_group_count(xkb_groups_t * xkb) 
 { 
   return xkb->group_count;
 }
 
 /* Get the current group name. */
-const char * xkb_get_current_group_name(XkbPlugin * xkb) 
+const char * xkb_groups_get_current_group_name(xkb_groups_t * xkb) 
 {
     return xkb->group_names[xkb->current_group_xkb_no];
 }
 
 /* Convert a group number to a symbol name. */
-const char * xkb_get_symbol_name_by_res_no(XkbPlugin * xkb, int n) 
+const char * xkb_groups_get_symbol_name_by_res_no(xkb_groups_t * xkb, int n) 
 {
     return xkb->symbol_names[n];
 }
 
 /* Get the current symbol name. */
-const char * xkb_get_current_symbol_name(XkbPlugin * xkb) 
+const char * xkb_groups_get_current_symbol_name(xkb_groups_t * xkb) 
 {
-    return xkb_get_symbol_name_by_res_no(xkb, xkb->current_group_xkb_no);
+    return xkb_groups_get_symbol_name_by_res_no(xkb, xkb->current_group_xkb_no);
 }
 
 /* Get the current symbol name converted to lowercase. */
-const char * xkb_get_current_symbol_name_lowercase(XkbPlugin * xkb) 
+const char * xkb_groups_get_current_symbol_name_lowercase(xkb_groups_t * xkb) 
 {
-    const char * tmp = xkb_get_current_symbol_name(xkb);
+    const char * tmp = xkb_groups_get_current_symbol_name(xkb);
     return ((tmp != NULL) ? g_utf8_strdown(tmp, -1) : NULL);
 }
 
 /* Refresh current group number from Xkb state. */
-static void refresh_group_xkb(XkbPlugin * xkb) 
+static void refresh_group_xkb(xkb_groups_t * xkb) 
 {
     /* Get the current group number.
      * This shouldn't be necessary, but mask the group number down for safety. */
@@ -98,7 +98,7 @@ static void refresh_group_xkb(XkbPlugin * xkb)
 }
 
 /* Initialize the keyboard description initially or after a NewKeyboard event. */
-static int initialize_keyboard_description(XkbPlugin * xkb)
+static int initialize_keyboard_description(xkb_groups_t * xkb)
 {
     /* Allocate a keyboard description. */
     XkbDescRec * xkb_desc = XkbAllocKeyboard();
@@ -221,7 +221,7 @@ static int initialize_keyboard_description(XkbPlugin * xkb)
 }
 
 /* GDK event filter that receives events from all windows and the Xkb extension. */
-static GdkFilterReturn xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, XkbPlugin * xkb)
+static GdkFilterReturn xkb_groups_event_filter(GdkXEvent * xevent, GdkEvent * event, xkb_groups_t * xkb)
 {
     XEvent * ev = (XEvent *) xevent;
 
@@ -233,8 +233,8 @@ static GdkFilterReturn xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, Xk
         {
             initialize_keyboard_description(xkb);
             refresh_group_xkb(xkb);
-            xkb_update(xkb);
-            xkb_enter_locale_by_process(xkb);
+            xkb_groups_update(xkb);
+            xkb_groups_enter_locale_by_process(xkb);
         }
         else if (xkbev->any.xkb_type == XkbStateNotify)
         {
@@ -244,8 +244,8 @@ static GdkFilterReturn xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, Xk
                  * This shouldn't be necessary, but mask the group number down for safety. */
                 xkb->current_group_xkb_no = xkbev->state.group & (XkbNumKbdGroups - 1);
                 refresh_group_xkb(xkb);
-                xkb_update(xkb);
-                xkb_enter_locale_by_process(xkb);
+                xkb_groups_update(xkb);
+                xkb_groups_enter_locale_by_process(xkb);
             }
         }
     }
@@ -253,7 +253,7 @@ static GdkFilterReturn xkb_event_filter(GdkXEvent * xevent, GdkEvent * event, Xk
 }
 
 /* Initialize the Xkb interface. */
-void xkb_mechanism_constructor(XkbPlugin * xkb)
+void xkb_groups_mechanism_constructor(xkb_groups_t * xkb)
 {
     /* Initialize Xkb extension. */
     int opcode;
@@ -266,7 +266,7 @@ void xkb_mechanism_constructor(XkbPlugin * xkb)
         initialize_keyboard_description(xkb);
 
         /* Establish GDK event filter. */
-        gdk_window_add_filter(NULL, (GdkFilterFunc) xkb_event_filter, (gpointer) xkb);
+        gdk_window_add_filter(NULL, (GdkFilterFunc) xkb_groups_event_filter, (gpointer) xkb);
 
         /* Specify events we will receive. */
         XkbSelectEvents(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, XkbNewKeyboardNotifyMask, XkbNewKeyboardNotifyMask);
@@ -278,10 +278,10 @@ void xkb_mechanism_constructor(XkbPlugin * xkb)
 }
 
 /* Deallocate resources associated with Xkb interface. */
-void xkb_mechanism_destructor(XkbPlugin * xkb) 
+void xkb_groups_mechanism_destructor(xkb_groups_t * xkb) 
 {
     /* Remove event filter. */
-    gdk_window_remove_filter(NULL, (GdkFilterFunc) xkb_event_filter, xkb);
+    gdk_window_remove_filter(NULL, (GdkFilterFunc) xkb_groups_event_filter, xkb);
 
     /* Free group and symbol name memory. */
     int i;
@@ -305,7 +305,7 @@ void xkb_mechanism_destructor(XkbPlugin * xkb)
 }
 
 /* Set the layout to the next layout. */
-int xkb_change_group(XkbPlugin * xkb, int increment) 
+int xkb_groups_change_group(xkb_groups_t * xkb, int increment) 
 {
     /* Apply the increment and wrap the result. */
     int next_group = xkb->current_group_xkb_no + increment;
@@ -315,13 +315,13 @@ int xkb_change_group(XkbPlugin * xkb, int increment)
     /* Execute the change. */
     XkbLockGroup(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, next_group);
     refresh_group_xkb(xkb);
-    xkb_update(xkb);
-    xkb_enter_locale_by_process(xkb);
+    xkb_groups_update(xkb);
+    xkb_groups_enter_locale_by_process(xkb);
     return 1;
 }
 
 /* React to change of focus by switching to the application's layout or the default layout. */
-void xkb_active_window_changed(XkbPlugin * xkb, Window window)
+void xkb_groups_active_window_changed(xkb_groups_t * xkb, Window window)
 {
     gint new_group_xkb_no = xkb->default_group;
 

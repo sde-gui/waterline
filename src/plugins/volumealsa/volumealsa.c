@@ -232,6 +232,7 @@ static GdkPixbuf * volumealsa_load_icons(VolumeALSAPlugin * vol)
         "audio-volume-muted-panel",
         "audio-volume-muted",
         "xfce4-mixer-muted",
+        "stock_volume-mute",
         NULL);
 
     load_icon(&vol->pixbuf_level_0, icon_size,
@@ -240,24 +241,28 @@ static GdkPixbuf * volumealsa_load_icons(VolumeALSAPlugin * vol)
         "audio-volume-low-panel",
         "audio-volume-low",
         "xfce4-mixer-volume-ultra-low",
+        "stock_volume-min",
         NULL);
 
     load_icon(&vol->pixbuf_level_33, icon_size,
         "audio-volume-low-panel",
         "audio-volume-low",
         "xfce4-mixer-volume-low",
+        "stock_volume-min",
         NULL);
 
     load_icon(&vol->pixbuf_level_66, icon_size,
         "audio-volume-medium-panel",
         "audio-volume-medium",
         "xfce4-mixer-volume-medium",
+        "stock_volume-med",
         NULL);
 
     load_icon(&vol->pixbuf_level_100, icon_size,
         "audio-volume-high-panel",
         "audio-volume-high",
         "xfce4-mixer-volume-high",
+        "stock_volume-max",
         NULL);
 
     if (!vol->pixbuf_mute) {

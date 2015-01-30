@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2015 Vadim Ushakov
  * Copyright (c) 2008 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,13 +20,10 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include <alsa/asoundlib.h>
-#include <poll.h>
 #include <sde-utils-jansson.h>
 
 #define PLUGIN_PRIV_TYPE VolumeALSAPlugin
@@ -39,6 +37,8 @@
 #include <waterline/dbg.h>
 
 #include <sde-utils.h>
+
+#include "backend_asound.c"
 
 typedef struct {
 
@@ -62,37 +62,27 @@ typedef struct {
 
     GHashTable * pixbuf_blend_cache;
 
+    gboolean displayed_valid;
     long displayed_scaled_volume;
     gboolean displayed_mute;
     gboolean displayed_has_mute;
 
     /* State. */
+    gboolean valid;
     long scaled_volume;
     gboolean mute;
     gboolean has_mute;
-
-    /* ALSA interface. */
-    snd_mixer_t * mixer;			/* The mixer */
-    snd_mixer_selem_id_t * sid;			/* The element ID */
-    snd_mixer_elem_t * master_element;		/* The Master element */
-    guint mixer_evt_idle;			/* Timer to handle restarting poll */
 
     /* Settings. */
     gchar * volume_control_command;
     gboolean alpha_blending_enabled;
 
+    /* Backend. */
+    backend_alsa_t * backend;
 } VolumeALSAPlugin;
 
-static gboolean asound_find_element(VolumeALSAPlugin * vol, const char * ename);
-static gboolean asound_reset_mixer_evt_idle(VolumeALSAPlugin * vol);
-static gboolean asound_mixer_event(GIOChannel * channel, GIOCondition cond, gpointer vol_gpointer);
-static gboolean asound_initialize(VolumeALSAPlugin * vol);
-static gboolean asound_has_mute(VolumeALSAPlugin * vol);
-static gboolean asound_is_muted(VolumeALSAPlugin * vol);
-static int asound_get_volume(VolumeALSAPlugin * vol);
-static void asound_set_volume(VolumeALSAPlugin * vol, int volume);
 static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force);
-static void volumealsa_state_changed(VolumeALSAPlugin * vol);
+static void volumealsa_state_changed(VolumeALSAPlugin * vol, gpointer backend);
 static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton * event, VolumeALSAPlugin * vol);
 static gboolean volumealsa_popup_focus_out(GtkWidget * widget, GdkEvent * event, VolumeALSAPlugin * vol);
 static void volumealsa_popup_map(GtkWidget * widget, VolumeALSAPlugin * vol);
@@ -114,158 +104,6 @@ static su_json_option_definition option_definitions[] = {
 };
 
 /******************************************************************************/
-
-
-/*** ALSA ***/
-
-static gboolean asound_find_element(VolumeALSAPlugin * vol, const char * ename)
-{
-    for (
-      vol->master_element = snd_mixer_first_elem(vol->mixer);
-      vol->master_element != NULL;
-      vol->master_element = snd_mixer_elem_next(vol->master_element))
-    {
-        snd_mixer_selem_get_id(vol->master_element, vol->sid);
-        if ((snd_mixer_selem_is_active(vol->master_element))
-        && (strcmp(ename, snd_mixer_selem_id_get_name(vol->sid)) == 0))
-            return TRUE;
-    }
-    return FALSE;
-}
-
-/* NOTE by PCMan:
- * This is magic! Since ALSA uses its own machanism to handle this part.
- * After polling of mixer fds, it requires that we should call
- * snd_mixer_handle_events to clear all pending mixer events.
- * However, when using the glib IO channels approach, we don't have
- * poll() and snd_mixer_poll_descriptors_revents(). Due to the design of
- * glib, on_mixer_event() will be called for every fd whose status was
- * changed. So, after each poll(), it's called for several times,
- * not just once. Therefore, we cannot call snd_mixer_handle_events()
- * directly in the event handler. Otherwise, it will get called for
- * several times, which might clear unprocessed pending events in the queue.
- * So, here we call it once in the event callback for the first fd.
- * Then, we don't call it for the following fds. After all fds with changed
- * status are handled, we remove this restriction in an idle handler.
- * The next time the event callback is involked for the first fs, we can
- * call snd_mixer_handle_events() again. Racing shouldn't happen here
- * because the idle handler has the same priority as the io channel callback.
- * So, io callbacks for future pending events should be in the next gmain
- * iteration, and won't be affected.
- */
-
-static gboolean asound_reset_mixer_evt_idle(VolumeALSAPlugin * vol)
-{
-    vol->mixer_evt_idle = 0;
-    return FALSE;
-}
-
-/* Handler for I/O event on ALSA channel. */
-static gboolean asound_mixer_event(GIOChannel * channel, GIOCondition cond, gpointer vol_gpointer)
-{
-    VolumeALSAPlugin * vol = (VolumeALSAPlugin *) vol_gpointer;
-
-    if (vol->mixer_evt_idle == 0)
-    {
-        vol->mixer_evt_idle = g_idle_add_full(G_PRIORITY_DEFAULT, (GSourceFunc) asound_reset_mixer_evt_idle, vol, NULL);
-        snd_mixer_handle_events(vol->mixer);
-    }
-
-    if (cond & G_IO_IN)
-    {
-        volumealsa_state_changed(vol);
-    }
-
-    if (cond & G_IO_HUP)
-    {
-        /* This means there're some problems with alsa. */
-        return FALSE;
-    }
-
-    return TRUE;
-}
-
-/* Initialize the ALSA interface. */
-static gboolean asound_initialize(VolumeALSAPlugin * vol)
-{
-    /* Access the "default" device. */
-    snd_mixer_selem_id_alloca(&vol->sid);
-    snd_mixer_open(&vol->mixer, 0);
-    snd_mixer_attach(vol->mixer, "default");
-    snd_mixer_selem_register(vol->mixer, NULL, NULL);
-    snd_mixer_load(vol->mixer);
-
-    /* Find Master element, or Front element, or PCM element, or LineOut element.
-     * If one of these succeeds, master_element is valid. */
-    if ( ! asound_find_element(vol, "Master"))
-        if ( ! asound_find_element(vol, "Front"))
-            if ( ! asound_find_element(vol, "PCM"))
-            	if ( ! asound_find_element(vol, "LineOut"))
-                    return FALSE;
-
-    /* Set the playback volume range as we wish it. */
-    snd_mixer_selem_set_playback_volume_range(vol->master_element, 0, 100);
-
-    /* Listen to events from ALSA. */
-    int n_fds = snd_mixer_poll_descriptors_count(vol->mixer);
-    struct pollfd * fds = g_new0(struct pollfd, n_fds);
-
-    snd_mixer_poll_descriptors(vol->mixer, fds, n_fds);
-    int i;
-    for (i = 0; i < n_fds; ++i)
-    {
-        GIOChannel* channel = g_io_channel_unix_new(fds[i].fd);
-        g_io_add_watch(channel, G_IO_IN | G_IO_HUP, asound_mixer_event, vol);
-        g_io_channel_unref(channel);
-    }
-    g_free(fds);
-    return TRUE;
-}
-
-/* Get the presence of the mute control from the sound system. */
-static gboolean asound_has_mute(VolumeALSAPlugin * vol)
-{
-    return ((vol->master_element != NULL) ? snd_mixer_selem_has_playback_switch(vol->master_element) : FALSE);
-}
-
-/* Get the condition of the mute control from the sound system. */
-static gboolean asound_is_muted(VolumeALSAPlugin * vol)
-{
-    /* The switch is on if sound is not muted, and off if the sound is muted.
-     * Initialize so that the sound appears unmuted if the control does not exist. */
-    int value = 1;
-    if (vol->master_element != NULL)
-        snd_mixer_selem_get_playback_switch(vol->master_element, 0, &value);
-    return (value == 0);
-}
-
-/* Get the volume from the sound system.
- * This implementation returns the average of the Front Left and Front Right channels. */
-static int asound_get_volume(VolumeALSAPlugin * vol)
-{
-    long aleft = 0;
-    long aright = 0;
-    if (vol->master_element != NULL)
-    {
-        snd_mixer_selem_get_playback_volume(vol->master_element, SND_MIXER_SCHN_FRONT_LEFT, &aleft);
-        snd_mixer_selem_get_playback_volume(vol->master_element, SND_MIXER_SCHN_FRONT_RIGHT, &aright);
-    }
-    return (aleft + aright) >> 1;
-}
-
-/* Set the volume to the sound system.
- * This implementation sets the Front Left and Front Right channels to the specified value. */
-static void asound_set_volume(VolumeALSAPlugin * vol, int volume)
-{
-    if (vol->master_element != NULL)
-    {
-//        snd_mixer_selem_set_playback_volume(vol->master_element, SND_MIXER_SCHN_FRONT_LEFT, volume);
-//        snd_mixer_selem_set_playback_volume(vol->master_element, SND_MIXER_SCHN_FRONT_RIGHT, volume);
-          snd_mixer_selem_set_playback_volume_all(vol->master_element, volume);
-    }
-}
-
-/*** Graphics ***/
 
 /* Handler for "button-press-event" signal on main widget. */
 static const char * volumealsa_get_volume_control_command(VolumeALSAPlugin * vol)
@@ -481,15 +319,15 @@ static GdkPixbuf * volumealsa_get_icon_for_level(VolumeALSAPlugin * vol, int lev
     return g_object_ref(result);
 }
 
-static void volumealsa_update_icon(VolumeALSAPlugin * vol, int level, gboolean mute)
+static void volumealsa_update_icon(VolumeALSAPlugin * vol)
 {
-    if (mute)
+    if (vol->displayed_mute || !vol->displayed_valid)
     {
         gtk_image_set_from_pixbuf(GTK_IMAGE(vol->tray_icon), vol->pixbuf_mute);
     }
     else
     {
-        GdkPixbuf * pixbuf_level = volumealsa_get_icon_for_level(vol, level);
+        GdkPixbuf * pixbuf_level = volumealsa_get_icon_for_level(vol, vol->displayed_scaled_volume);
         gtk_image_set_from_pixbuf(GTK_IMAGE(vol->tray_icon), pixbuf_level);
         g_object_unref(pixbuf_level);
     }
@@ -504,31 +342,46 @@ static void on_theme_changed(GtkIconTheme * theme, VolumeALSAPlugin * vol)
 static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force)
 {
     if (!force &&
+        vol->displayed_valid == vol->valid && 
         vol->displayed_scaled_volume == vol->scaled_volume &&
         vol->displayed_mute == vol->mute && 
         vol->displayed_has_mute == vol->has_mute)
         return;
 
+    vol->displayed_valid = vol->valid;
     vol->displayed_scaled_volume = vol->scaled_volume;
     vol->displayed_mute = vol->mute;
     vol->displayed_has_mute = vol->has_mute;
 
-    volumealsa_update_icon(vol, vol->displayed_scaled_volume, vol->displayed_mute);
+    volumealsa_update_icon(vol);
 
-    g_signal_handler_block(vol->mute_check, vol->mute_check_handler);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(vol->mute_check), vol->displayed_mute);
-    gtk_widget_set_sensitive(vol->mute_check, vol->displayed_has_mute);
-    g_signal_handler_unblock(vol->mute_check, vol->mute_check_handler);
-
-    if (vol->volume_scale != NULL)
+    if (vol->displayed_valid)
     {
-        g_signal_handler_block(vol->volume_scale, vol->volume_scale_handler);
-        gtk_range_set_value(GTK_RANGE(vol->volume_scale), vol->displayed_scaled_volume);
-        g_signal_handler_unblock(vol->volume_scale, vol->volume_scale_handler);
+        g_signal_handler_block(vol->mute_check, vol->mute_check_handler);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(vol->mute_check), vol->displayed_mute);
+        gtk_widget_set_sensitive(vol->mute_check, vol->displayed_has_mute);
+        g_signal_handler_unblock(vol->mute_check, vol->mute_check_handler);
+
+        if (vol->volume_scale != NULL)
+        {
+            g_signal_handler_block(vol->volume_scale, vol->volume_scale_handler);
+            gtk_range_set_value(GTK_RANGE(vol->volume_scale), vol->displayed_scaled_volume);
+            g_signal_handler_unblock(vol->volume_scale, vol->volume_scale_handler);
+        }
+    }
+    else
+    {
+        if (vol->show_popup)
+        {
+            gtk_widget_hide(vol->popup_window);
+            vol->show_popup = FALSE;
+        }
     }
 
     char * tooltip = NULL;
-    if (vol->displayed_mute)
+    if (!vol->displayed_valid)
+        tooltip = g_strdup_printf(_("<i>An internal error occured.\nVolume Control is not functioning properly.</i>"));
+    else if (vol->displayed_mute)
         tooltip = g_strdup_printf(_("Volume <b>%ld%</b> (muted)"), vol->displayed_scaled_volume);
     else
         tooltip = g_strdup_printf(_("Volume <b>%ld%</b>"), vol->displayed_scaled_volume);
@@ -536,11 +389,12 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force)
     g_free(tooltip);
 }
 
-static void volumealsa_state_changed(VolumeALSAPlugin * vol)
+static void volumealsa_state_changed(VolumeALSAPlugin * vol, gpointer _backend)
 {
-    vol->has_mute = asound_has_mute(vol);
-    vol->mute = asound_is_muted(vol);
-    vol->scaled_volume = asound_get_volume(vol);
+    vol->valid = asound_is_valid(vol->backend);
+    vol->has_mute = asound_has_mute(vol->backend);
+    vol->mute = asound_is_muted(vol->backend);
+    vol->scaled_volume = asound_get_volume(vol->backend);
     volumealsa_update_display(vol, FALSE);
 }
 
@@ -570,7 +424,7 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
                 gtk_widget_hide(vol->popup_window);
                 vol->show_popup = FALSE;
             }
-            else
+            else if (vol->displayed_valid)
             {
                 plugin_adjust_popup_position(vol->popup_window, vol->plugin);
                 gtk_widget_show_all(vol->popup_window);
@@ -605,8 +459,7 @@ static void volumealsa_popup_map(GtkWidget * widget, VolumeALSAPlugin * vol)
 /* Handler for "value_changed" signal on popup window vertical scale. */
 static void volumealsa_popup_scale_changed(GtkRange * range, VolumeALSAPlugin * vol)
 {
-    asound_set_volume(vol, gtk_range_get_value(range));
-    volumealsa_state_changed(vol);
+    asound_set_volume(vol->backend, gtk_range_get_value(range));
 }
 
 /* Handler for "scroll-event" signal on popup window vertical scale. */
@@ -630,16 +483,7 @@ static void volumealsa_popup_mute_toggled(GtkWidget * widget, VolumeALSAPlugin *
 {
     /* Get the state of the mute toggle. */
     gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-
-    /* Reflect the mute toggle to the sound system. */
-    if (vol->master_element != NULL)
-    {
-        int chn;
-        for (chn = 0; chn <= SND_MIXER_SCHN_LAST; chn++)
-            snd_mixer_selem_set_playback_switch(vol->master_element, chn, ((active) ? 0 : 1));
-    }
-
-    volumealsa_state_changed(vol);
+    asound_set_mute(vol->backend, active);
 }
 
 /* Build the window that appears when the top level widget is clicked. */
@@ -711,9 +555,9 @@ static int volumealsa_constructor(Plugin * p)
     vol->plugin = p;
     plugin_set_priv(p, vol);
 
-    /* Initialize ALSA.  If that fails, present nothing. */
-    if ( ! asound_initialize(vol))
-        return 1;
+    vol->backend = g_new0(backend_alsa_t, 1);
+    vol->backend->frontend_callback_state_changed = volumealsa_state_changed;
+    vol->backend->frontend = vol;
 
     vol->volume_control_command = NULL;
     vol->alpha_blending_enabled = TRUE;
@@ -740,9 +584,10 @@ static int volumealsa_constructor(Plugin * p)
     vol->theme_changed_handler_id =
         g_signal_connect(gtk_icon_theme_get_default(), "changed", G_CALLBACK(on_theme_changed), vol);
 
-    /* Update the display, show the widget, and return. */
     volumealsa_load_icons(vol);
-    volumealsa_state_changed(vol);
+
+    asound_initialize(vol->backend);
+
     volumealsa_update_display(vol, TRUE);
     gtk_widget_show_all(pwid);
     return 1;
@@ -755,9 +600,9 @@ static void volumealsa_destructor(Plugin * p)
 
     g_signal_handler_disconnect(gtk_icon_theme_get_default(), vol->theme_changed_handler_id);
 
-    /* Remove the periodic timer. */
-    if (vol->mixer_evt_idle != 0)
-        g_source_remove(vol->mixer_evt_idle);
+    asound_destroy(vol->backend);
+    g_free(vol->backend);
+    vol->backend = NULL;
 
     /* If the dialog box is open, dismiss it. */
     if (vol->popup_window != NULL)

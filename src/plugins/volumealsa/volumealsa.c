@@ -494,7 +494,7 @@ static void volumealsa_build_popup_window(Plugin * p)
     /* Create a new window. */
     vol->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_decorated(GTK_WINDOW(vol->popup_window), FALSE);
-    gtk_container_set_border_width(GTK_CONTAINER(vol->popup_window), 5);
+    gtk_container_set_border_width(GTK_CONTAINER(vol->popup_window), 0);
     gtk_window_set_default_size(GTK_WINDOW(vol->popup_window), 80, 140);
     gtk_window_set_skip_taskbar_hint(GTK_WINDOW(vol->popup_window), TRUE);
     gtk_window_set_skip_pager_hint(GTK_WINDOW(vol->popup_window), TRUE);
@@ -504,24 +504,15 @@ static void volumealsa_build_popup_window(Plugin * p)
     g_signal_connect(G_OBJECT(vol->popup_window), "focus_out_event", G_CALLBACK(volumealsa_popup_focus_out), vol);
     g_signal_connect(G_OBJECT(vol->popup_window), "map", G_CALLBACK(volumealsa_popup_map), vol);
 
-    /* Create a scrolled window as the child of the top level window. */
-    GtkWidget * scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
-    gtk_container_set_border_width (GTK_CONTAINER(scrolledwindow), 0);
-    gtk_widget_show(scrolledwindow);
-    gtk_container_add(GTK_CONTAINER(vol->popup_window), scrolledwindow);
-    gtk_widget_set_can_focus(scrolledwindow, FALSE);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledwindow), GTK_SHADOW_NONE);
-
     /* Create a viewport as the child of the scrolled window. */
     GtkWidget * viewport = gtk_viewport_new(NULL, NULL);
-    gtk_container_add(GTK_CONTAINER(scrolledwindow), viewport);
-    gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE);
+    gtk_container_add(GTK_CONTAINER(vol->popup_window), viewport);
+    gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_OUT);
     gtk_widget_show(viewport);
 
     /* Create a frame as the child of the viewport. */
     GtkWidget * frame = gtk_frame_new(_("Volume"));
-    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
+    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
     gtk_container_add(GTK_CONTAINER(viewport), frame);
 
     /* Create a vertical box as the child of the frame. */

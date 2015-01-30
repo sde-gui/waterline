@@ -228,11 +228,16 @@ static GtkWidget * dclock_create_calendar(DClockPlugin * dc)
     gtk_window_set_decorated(window, FALSE);
     gtk_window_set_resizable(window, FALSE);
     gtk_window_stick(window);
-    gtk_container_set_border_width(GTK_CONTAINER(window), 5);
+    gtk_container_set_border_width(GTK_CONTAINER(window), 0);
+
+    GtkWidget * viewport = gtk_viewport_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(window), viewport);
+    gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_OUT);
+    gtk_widget_show(viewport);
 
     /* Create a vertical box as a child of the window. */
     GtkWidget * box = gtk_vbox_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(box));
+    gtk_container_add(GTK_CONTAINER(viewport), GTK_WIDGET(box));
 
     /* Create a standard calendar widget as a child of the vertical box. */
     GtkWidget * calendar = gtk_calendar_new();

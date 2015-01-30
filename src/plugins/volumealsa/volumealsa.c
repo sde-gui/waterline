@@ -62,6 +62,15 @@ typedef struct {
 
     GHashTable * pixbuf_blend_cache;
 
+    long displayed_scaled_volume;
+    gboolean displayed_mute;
+    gboolean displayed_has_mute;
+
+    /* State. */
+    long scaled_volume;
+    gboolean mute;
+    gboolean has_mute;
+
     /* ALSA interface. */
     snd_mixer_t * mixer;			/* The mixer */
     snd_mixer_selem_id_t * sid;			/* The element ID */
@@ -82,7 +91,8 @@ static gboolean asound_has_mute(VolumeALSAPlugin * vol);
 static gboolean asound_is_muted(VolumeALSAPlugin * vol);
 static int asound_get_volume(VolumeALSAPlugin * vol);
 static void asound_set_volume(VolumeALSAPlugin * vol, int volume);
-static void volumealsa_update_display(VolumeALSAPlugin * vol);
+static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force);
+static void volumealsa_state_changed(VolumeALSAPlugin * vol);
 static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton * event, VolumeALSAPlugin * vol);
 static gboolean volumealsa_popup_focus_out(GtkWidget * widget, GdkEvent * event, VolumeALSAPlugin * vol);
 static void volumealsa_popup_map(GtkWidget * widget, VolumeALSAPlugin * vol);
@@ -163,8 +173,7 @@ static gboolean asound_mixer_event(GIOChannel * channel, GIOCondition cond, gpoi
 
     if (cond & G_IO_IN)
     {
-        /* the status of mixer is changed. update of display is needed. */
-        volumealsa_update_display(vol);
+        volumealsa_state_changed(vol);
     }
 
     if (cond & G_IO_HUP)
@@ -489,37 +498,50 @@ static void volumealsa_update_icon(VolumeALSAPlugin * vol, int level, gboolean m
 static void on_theme_changed(GtkIconTheme * theme, VolumeALSAPlugin * vol)
 {
     volumealsa_load_icons(vol);
-    volumealsa_update_display(vol);
+    volumealsa_update_display(vol, TRUE);
 }
 
-/* Do a full redraw of the display. */
-static void volumealsa_update_display(VolumeALSAPlugin * vol)
+static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force)
 {
-    /* Mute status. */
-    gboolean mute = asound_is_muted(vol);
-    int level = asound_get_volume(vol);
+    if (!force &&
+        vol->displayed_scaled_volume == vol->scaled_volume &&
+        vol->displayed_mute == vol->mute && 
+        vol->displayed_has_mute == vol->has_mute)
+        return;
 
-    gboolean icon_updated = FALSE;
+    vol->displayed_scaled_volume = vol->scaled_volume;
+    vol->displayed_mute = vol->mute;
+    vol->displayed_has_mute = vol->has_mute;
 
-    volumealsa_update_icon(vol, level, mute);
+    volumealsa_update_icon(vol, vol->displayed_scaled_volume, vol->displayed_mute);
 
     g_signal_handler_block(vol->mute_check, vol->mute_check_handler);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(vol->mute_check), mute);
-    gtk_widget_set_sensitive(vol->mute_check, asound_has_mute(vol));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(vol->mute_check), vol->displayed_mute);
+    gtk_widget_set_sensitive(vol->mute_check, vol->displayed_has_mute);
     g_signal_handler_unblock(vol->mute_check, vol->mute_check_handler);
 
-    /* Volume. */
     if (vol->volume_scale != NULL)
     {
         g_signal_handler_block(vol->volume_scale, vol->volume_scale_handler);
-        gtk_range_set_value(GTK_RANGE(vol->volume_scale), asound_get_volume(vol));
+        gtk_range_set_value(GTK_RANGE(vol->volume_scale), vol->displayed_scaled_volume);
         g_signal_handler_unblock(vol->volume_scale, vol->volume_scale_handler);
     }
 
-    /* Display current level in tooltip. */
-    char * tooltip = g_strdup_printf("%s %d", _("Volume control"), level);
-    gtk_widget_set_tooltip_text(plugin_widget(vol->plugin), tooltip);
+    char * tooltip = NULL;
+    if (vol->displayed_mute)
+        tooltip = g_strdup_printf(_("Volume <b>%ld%</b> (muted)"), vol->displayed_scaled_volume);
+    else
+        tooltip = g_strdup_printf(_("Volume <b>%ld%</b>"), vol->displayed_scaled_volume);
+    gtk_widget_set_tooltip_markup(plugin_widget(vol->plugin), tooltip);
     g_free(tooltip);
+}
+
+static void volumealsa_state_changed(VolumeALSAPlugin * vol)
+{
+    vol->has_mute = asound_has_mute(vol);
+    vol->mute = asound_is_muted(vol);
+    vol->scaled_volume = asound_get_volume(vol);
+    volumealsa_update_display(vol, FALSE);
 }
 
 /* Handler for "button-press-event" signal on main widget. */
@@ -583,11 +605,8 @@ static void volumealsa_popup_map(GtkWidget * widget, VolumeALSAPlugin * vol)
 /* Handler for "value_changed" signal on popup window vertical scale. */
 static void volumealsa_popup_scale_changed(GtkRange * range, VolumeALSAPlugin * vol)
 {
-    /* Reflect the value of the control to the sound system. */
     asound_set_volume(vol, gtk_range_get_value(range));
-
-    /* Redraw the controls. */
-    volumealsa_update_display(vol);
+    volumealsa_state_changed(vol);
 }
 
 /* Handler for "scroll-event" signal on popup window vertical scale. */
@@ -620,8 +639,7 @@ static void volumealsa_popup_mute_toggled(GtkWidget * widget, VolumeALSAPlugin *
             snd_mixer_selem_set_playback_switch(vol->master_element, chn, ((active) ? 0 : 1));
     }
 
-    /* Redraw the controls. */
-    volumealsa_update_display(vol);
+    volumealsa_state_changed(vol);
 }
 
 /* Build the window that appears when the top level widget is clicked. */
@@ -724,7 +742,8 @@ static int volumealsa_constructor(Plugin * p)
 
     /* Update the display, show the widget, and return. */
     volumealsa_load_icons(vol);
-    volumealsa_update_display(vol);
+    volumealsa_state_changed(vol);
+    volumealsa_update_display(vol, TRUE);
     gtk_widget_show_all(pwid);
     return 1;
 }
@@ -798,7 +817,7 @@ static void volumealsa_save_configuration(Plugin * p)
 static void volumealsa_panel_configuration_changed(Plugin * p)
 {
     volumealsa_load_icons(PRIV(p));
-    volumealsa_update_display(PRIV(p));
+    volumealsa_update_display(PRIV(p), TRUE);
 }
 
 static void volumealsa_on_volume_control_activate(GtkMenuItem * item, VolumeALSAPlugin * vol)

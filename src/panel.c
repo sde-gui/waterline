@@ -1823,6 +1823,23 @@ gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const gchar * 
 
 /*= panel creation =*/
 
+/* Force Pango initialization to avoid confusing timings in callgring log. */
+static void
+panel_force_pango_initialization(Panel * p)
+{
+    static initialized = 0;
+    if (initialized)
+        return;
+
+    PangoRectangle logical_rect;
+    PangoLayout * layout = gtk_widget_create_pango_layout(p->topgwin, NULL);
+    pango_layout_set_text (layout, "0", -1);
+    pango_layout_get_pixel_extents(layout, NULL, &logical_rect);
+    g_object_unref(layout);
+
+    initialized = 1;
+}
+
 static void
 panel_start_gui(Panel *p)
 {
@@ -1957,6 +1974,8 @@ panel_start_gui(Panel *p)
     panel_set_wm_strut(p);
 
     panel_set_desktop_icon_overlap_mode(p);
+
+    panel_force_pango_initialization(p);
 
     RET();
 }

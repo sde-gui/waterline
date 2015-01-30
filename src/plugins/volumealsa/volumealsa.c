@@ -105,6 +105,35 @@ static su_json_option_definition option_definitions[] = {
 
 /******************************************************************************/
 
+static void volumealsa_show_popup(VolumeALSAPlugin * vol)
+{
+    if (!vol->displayed_valid)
+        return;
+    if (vol->show_popup)
+        return;
+
+    int optimal_height = 140;
+    int available_screen_height = panel_get_available_screen_height(plugin_panel(vol->plugin));
+    if (available_screen_height > optimal_height)
+    {
+        optimal_height += (available_screen_height - optimal_height) / 10;
+    }
+    gtk_window_set_default_size(GTK_WINDOW(vol->popup_window), 80, optimal_height);
+
+    plugin_adjust_popup_position(vol->popup_window, vol->plugin);
+    gtk_widget_show_all(vol->popup_window);
+    vol->show_popup = TRUE;
+}
+
+static void volumealsa_hide_popup(VolumeALSAPlugin * vol)
+{
+    if (!vol->show_popup)
+        return;
+
+    gtk_widget_hide(vol->popup_window);
+    vol->show_popup = FALSE;
+}
+
 /* Handler for "button-press-event" signal on main widget. */
 static const char * volumealsa_get_volume_control_command(VolumeALSAPlugin * vol)
 {
@@ -371,11 +400,7 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force)
     }
     else
     {
-        if (vol->show_popup)
-        {
-            gtk_widget_hide(vol->popup_window);
-            vol->show_popup = FALSE;
-        }
+        volumealsa_hide_popup(vol);
     }
 
     char * tooltip = NULL;
@@ -410,25 +435,18 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
     {
         if (event->type==GDK_2BUTTON_PRESS)
         {
-            if (vol->show_popup)
-            {
-                gtk_widget_hide(vol->popup_window);
-                vol->show_popup = FALSE;
-            }
+            volumealsa_hide_popup(vol);
             wtl_launch(volumealsa_get_volume_control_command(vol), NULL);
         }
         else
         {
             if (vol->show_popup)
             {
-                gtk_widget_hide(vol->popup_window);
-                vol->show_popup = FALSE;
+                volumealsa_hide_popup(vol);
             }
             else if (vol->displayed_valid)
             {
-                plugin_adjust_popup_position(vol->popup_window, vol->plugin);
-                gtk_widget_show_all(vol->popup_window);
-                vol->show_popup = TRUE;
+                volumealsa_show_popup(vol);
             }
         }
     }
@@ -445,8 +463,7 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
 static gboolean volumealsa_popup_focus_out(GtkWidget * widget, GdkEvent * event, VolumeALSAPlugin * vol)
 {
     /* Hide the widget. */
-    gtk_widget_hide(vol->popup_window);
-    vol->show_popup = FALSE;
+    volumealsa_hide_popup(vol);
     return FALSE;
 }
 
@@ -595,8 +612,10 @@ static void volumealsa_destructor(Plugin * p)
     vol->backend = NULL;
 
     /* If the dialog box is open, dismiss it. */
-    if (vol->popup_window != NULL)
+    if (vol->popup_window != NULL) {
         gtk_widget_destroy(vol->popup_window);
+        vol->popup_window = NULL;
+    }
 
     g_free(vol->volume_control_command);
 

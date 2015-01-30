@@ -197,6 +197,36 @@ int panel_get_icon_size(Panel * p)
     return (p->preferred_icon_size < max_icon_size) ? p->preferred_icon_size : max_icon_size;
 }
 
+int panel_get_available_screen_width(Panel * p)
+{
+    switch (p->edge)
+    {
+        case EDGE_TOP:
+        case EDGE_BOTTOM:
+            return gdk_screen_height();
+        case EDGE_LEFT:
+            return gdk_screen_width() - (p->cx + p->cw);
+        case EDGE_RIGHT:
+            return gdk_screen_width() - p->cw;
+    }
+    return 0;
+}
+
+int panel_get_available_screen_height(Panel * p)
+{
+    switch (p->edge)
+    {
+        case EDGE_TOP:
+            return gdk_screen_height() - (p->cy + p->ch);
+        case EDGE_BOTTOM:
+            return gdk_screen_height() - p->ch;
+        case EDGE_LEFT:
+        case EDGE_RIGHT:
+            return gdk_screen_width();
+    }
+    return 0;
+}
+
 /******************************************************************************/
 
 /* Allocate and initialize new Panel structure. */

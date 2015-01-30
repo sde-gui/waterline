@@ -674,9 +674,9 @@ int plugin_get_orientation(Plugin * plugin)
     return panel_get_orientation(plugin_panel(plugin));
 }
 
-GtkMenu * plugin_get_menu(Plugin * plugin, gboolean use_sub_menu)
+GtkMenu * plugin_get_menu(Plugin * plugin)
 {
-    return panel_get_panel_menu(plugin_panel(plugin), plugin, use_sub_menu);
+    return panel_get_panel_menu(plugin_panel(plugin), plugin);
 }
 
 void plugin_show_menu(Plugin * plugin, GdkEventButton * event)

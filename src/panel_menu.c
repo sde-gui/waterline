@@ -163,169 +163,115 @@ static void panel_popupmenu_quit( GtkMenuItem* item, Panel* panel )
     gtk_main_quit();
 }
 
-GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin, gboolean use_sub_menu)
+GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
 {
-    GtkWidget  *menu_item, *img;
-    GtkMenuShell *ret,*menu;
-
-    char* tmp;
-    ret = menu = GTK_MENU_SHELL(gtk_menu_new());
-
     GtkMenuShell * panel_submenu = GTK_MENU_SHELL(gtk_menu_new());
-
-    menu_item = gtk_menu_item_new_with_mnemonic(_("Pa_nel"));
-    gtk_menu_shell_append(menu, menu_item);
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(panel_submenu) );
-
-
-    gboolean display_icons = FALSE;
 
     if (!wtl_is_in_kiosk_mode())
     {
-
-        /*********************/
-
-        if( plugin )
         {
-            menu_item = gtk_separator_menu_item_new();
-            gtk_menu_shell_prepend(menu, menu_item);
-
-            if (display_icons)
-                img = gtk_image_new_from_stock( GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU );
-
-            menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Properties"));
-
-            tmp = g_strdup_printf( _("\"%s\" Settings"), _(plugin->class->name) );
-            gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tmp);
-            g_free( tmp );
-
-            if (display_icons)
-                gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-
-            gtk_menu_shell_prepend(menu, menu_item);
-            if( plugin->class->config )
-                g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_config_plugin), plugin );
-            else
-                gtk_widget_set_sensitive( menu_item, FALSE );
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("Panel _Settings..."));
+            char * tooltip = g_strdup_printf( _("Edit settings of panel \"%s\""), panel->name);
+            gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
+            g_free(tooltip);
+            gtk_menu_shell_append(panel_submenu, menu_item);
+            g_signal_connect(G_OBJECT(menu_item), "activate", G_CALLBACK(panel_popupmenu_configure), panel );
         }
 
-        /*********************/
-
-        if (display_icons)
-            img = gtk_image_new_from_stock( GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU );
-
-        menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Add to Panel..."));
-
-        if (display_icons)
-            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-
-        gtk_menu_shell_append(menu, menu_item);
-        g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_add_item), panel );
-
-        /*********************/
-
-        if( plugin )
         {
-            if (display_icons)
-                img = gtk_image_new_from_stock( GTK_STOCK_REMOVE, GTK_ICON_SIZE_MENU );
-
-            menu_item = gtk_image_menu_item_new_with_mnemonic( _("_Remove From Panel") );
-
-            tmp = g_strdup_printf( _("Remove \"%s\" From Panel"), _(plugin->class->name) );
-            gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tmp);
-            g_free( tmp );
-
-            if (display_icons)
-                gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-
-            gtk_menu_shell_append(menu, menu_item);
-            g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_remove_item), plugin );
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Create New Panel"));
+            gtk_menu_shell_append(panel_submenu, menu_item);
+            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_create_panel), panel);
         }
-/*
-        menu_item = gtk_separator_menu_item_new();
-        gtk_menu_shell_append(menu, menu_item);
-*/
+
+        {
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Delete This Panel"));
+            char * tooltip = g_strdup_printf( _("Delete panel \"%s\""), panel->name);
+            gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
+            g_free(tooltip);
+            gtk_menu_shell_append(panel_submenu, menu_item);
+            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_delete_panel), panel);
+            gtk_widget_set_sensitive(menu_item, panel_count() > 1);
+        }
 
 
-        if (display_icons)
-            img = gtk_image_new_from_stock( GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU );
-        menu_item = gtk_image_menu_item_new_with_mnemonic(_("Panel _Settings..."));
+        gtk_menu_shell_append(panel_submenu, gtk_separator_menu_item_new());
 
-        tmp = g_strdup_printf( _("Edit settings of panel \"%s\""), panel->name);
-        gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tmp);
-        g_free( tmp );
+        {
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Add to Panel..."));
+            gtk_menu_shell_append(panel_submenu, menu_item);
+            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_add_item), panel );
+        }
 
-        if (display_icons)
-            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-        gtk_menu_shell_append(panel_submenu, menu_item);
-        g_signal_connect(G_OBJECT(menu_item), "activate", G_CALLBACK(panel_popupmenu_configure), panel );
+        if (plugin)
+        {
+            char * name = g_strdup_printf( _("D_elete \"%s\""), _(plugin_class(plugin)->name) );
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(name);
+            gtk_menu_shell_append(panel_submenu, menu_item);
+            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_remove_item), plugin);
+            g_free(name);
+        }
 
-        if (display_icons)
-            img = gtk_image_new_from_stock( GTK_STOCK_NEW, GTK_ICON_SIZE_MENU );
-        menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Create New Panel"));
-        if (display_icons)
-            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-        gtk_menu_shell_append(panel_submenu, menu_item);
-        g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_create_panel), panel );
+        gtk_menu_shell_append(panel_submenu, gtk_separator_menu_item_new());
 
-        if (display_icons)
-            img = gtk_image_new_from_stock( GTK_STOCK_DELETE, GTK_ICON_SIZE_MENU );
-        menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Delete This Panel"));
-        if (display_icons)
-            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-        gtk_menu_shell_append(panel_submenu, menu_item);
-        g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_delete_panel), panel );
-        gtk_widget_set_sensitive(menu_item, panel_count() > 1);
+        if (quit_in_menu)
+        {
+            {
+                GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Quit"));
+                gtk_menu_shell_append(panel_submenu, menu_item);
+                g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_quit), panel );
+            }
 
-        menu_item = gtk_separator_menu_item_new();
-        gtk_menu_shell_append(panel_submenu, menu_item);
-
+            gtk_menu_shell_append(panel_submenu, gtk_separator_menu_item_new());
+        }
     }
 
-    if (display_icons)
-        img = gtk_image_new_from_stock( GTK_STOCK_ABOUT, GTK_ICON_SIZE_MENU );
-    menu_item = gtk_image_menu_item_new_with_mnemonic(_("A_bout"));
-    if (display_icons)
-        gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
-    gtk_menu_shell_append(panel_submenu, menu_item);
-    g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_about), panel );
-
-    if (quit_in_menu)
     {
-        menu_item = gtk_separator_menu_item_new();
-        gtk_menu_shell_append(menu, menu_item);
-
-        if (display_icons)
-            img = gtk_image_new_from_stock( GTK_STOCK_QUIT, GTK_ICON_SIZE_MENU );
-        menu_item = gtk_image_menu_item_new_with_label(_("Quit"));
-        if (display_icons)
-            gtk_image_menu_item_set_image( (GtkImageMenuItem*)menu_item, img );
+        GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("A_bout"));
         gtk_menu_shell_append(panel_submenu, menu_item);
-        g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_quit), panel );
+        g_signal_connect( menu_item, "activate", G_CALLBACK(panel_popupmenu_about), panel);
     }
-/*
-    if( use_sub_menu )
-    {
-        ret = GTK_MENU(gtk_menu_new());
-        menu_item = gtk_image_menu_item_new_with_label(_("Panel"));
-        gtk_menu_shell_append(GTK_MENU_SHELL(ret), menu_item);
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(menu) );
-    }
-*/
-    gtk_widget_show_all(GTK_WIDGET(ret));
 
-    g_signal_connect( ret, "selection-done", G_CALLBACK(gtk_widget_destroy), NULL );
+    /*****************************************************/
+
+    GtkMenuShell * menu = GTK_MENU_SHELL(gtk_menu_new());
+
+    {
+        GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Properties"));
+        if (plugin)
+        {
+            char * tooltip = g_strdup_printf(_("\"%s\" Settings"), _(plugin_class(plugin)->name));
+            gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
+            g_free(tooltip);
+        }
+        gtk_menu_shell_append(menu, menu_item);
+        if (plugin && plugin_class(plugin)->config && !wtl_is_in_kiosk_mode())
+            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_config_plugin), plugin);
+        else
+            gtk_widget_set_sensitive(menu_item, FALSE);
+    }
+
+    gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
+
+    {
+        GtkWidget * menu_item = gtk_menu_item_new_with_mnemonic(_("Pa_nel"));
+        gtk_menu_shell_append(menu, menu_item);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(panel_submenu));
+    }
+
+    gtk_widget_show_all(GTK_WIDGET(menu));
+
+    g_signal_connect(menu, "selection-done", G_CALLBACK(gtk_widget_destroy), NULL);
 
     if (plugin && plugin_class(plugin)->popup_menu_hook)
-        plugin_class(plugin)->popup_menu_hook(plugin, GTK_MENU(ret));
+        plugin_class(plugin)->popup_menu_hook(plugin, GTK_MENU(menu));
 
-    return GTK_MENU(ret);
+    return GTK_MENU(menu);
 }
-
 
 void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event)
 {
-    GtkMenu* popup = panel_get_panel_menu(panel, plugin, FALSE);
+    GtkMenu* popup = panel_get_panel_menu(panel, plugin);
     if (popup)
         gtk_menu_popup(popup, NULL, NULL, NULL, NULL, event->button, event->time);
 }

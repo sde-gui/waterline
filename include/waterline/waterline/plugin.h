@@ -118,7 +118,7 @@ extern int plugin_get_icon_size(Plugin * plugin);
 extern int plugin_get_orientation(Plugin * plugin);
 
 
-extern GtkMenu * plugin_get_menu(Plugin * plugin, gboolean use_sub_menu);
+extern GtkMenu * plugin_get_menu(Plugin * plugin);
 extern void plugin_show_menu(Plugin * plugin, GdkEventButton * event);
 
 

@@ -44,6 +44,7 @@
 
 #define PLUGIN_PRIV_TYPE TaskbarPlugin
 
+#include <waterline/defaultapplications.h>
 #include <waterline/gtkcompat.h>
 #include <waterline/global.h>
 #include <waterline/panel.h>
@@ -5573,6 +5574,34 @@ static gboolean taskbar_is_application_class_visible(Plugin * p, const char * cl
 
 /******************************************************************************/
 
+static void taskbar_popupmenu_task_manager(GtkMenuItem * item, TaskbarPlugin * tb)
+{
+    wtl_launch(wtl_get_default_application("task-manager"), NULL);
+}
+
+static void taskbar_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
+{
+    TaskbarPlugin * tb = PRIV(plugin);
+
+    if (!su_str_empty(wtl_get_default_application("task-manager")))
+    {
+        {
+            GtkWidget * menu_item = gtk_separator_menu_item_new();
+            gtk_widget_show(menu_item);
+            gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), menu_item);
+        }
+
+        {
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("Tas_k Manager"));
+            gtk_widget_show(menu_item);
+            gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), menu_item);
+            g_signal_connect(menu_item, "activate", G_CALLBACK(taskbar_popupmenu_task_manager), tb);
+        }
+    }
+}
+
+/******************************************************************************/
+
 /* Plugin descriptor. */
 PluginClass taskbar_plugin_class = {
 
@@ -5594,5 +5623,6 @@ PluginClass taskbar_plugin_class = {
     save : taskbar_save_configuration,
     panel_configuration_changed : taskbar_panel_configuration_changed,
     run_command : taskbar_run_command,
-    is_application_class_visible : taskbar_is_application_class_visible
+    is_application_class_visible : taskbar_is_application_class_visible,
+    popup_menu_hook : taskbar_popup_menu_hook
 };

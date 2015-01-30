@@ -8,6 +8,7 @@ template_config_panel_DATA = \
 template_config_paneldir = $(datadir)/sde-config/sde/waterline/template/panels
 
 template_applications_DATA = \
+	template/applications/task-manager \
 	template/applications/file-manager \
 	template/applications/terminal-emulator \
 	template/applications/volume-control

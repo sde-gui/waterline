@@ -194,7 +194,6 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
             gtk_widget_set_sensitive(menu_item, panel_count() > 1);
         }
 
-
         gtk_menu_shell_append(panel_submenu, gtk_separator_menu_item_new());
 
         {

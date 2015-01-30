@@ -89,7 +89,7 @@ static void volumealsa_popup_map(GtkWidget * widget, VolumeALSAPlugin * vol);
 static void volumealsa_popup_scale_changed(GtkRange * range, VolumeALSAPlugin * vol);
 static void volumealsa_popup_scale_scrolled(GtkScale * scale, GdkEventScroll * evt, VolumeALSAPlugin * vol);
 static void volumealsa_popup_mute_toggled(GtkWidget * widget, VolumeALSAPlugin * vol);
-static void volumealsa_build_popup_window(Plugin * p);
+static void volumealsa_build_popup_window(VolumeALSAPlugin * vol);
 static int volumealsa_constructor(Plugin * p);
 static void volumealsa_destructor(Plugin * p);
 static void volumealsa_panel_configuration_changed(Plugin * p);
@@ -111,6 +111,8 @@ static void volumealsa_show_popup(VolumeALSAPlugin * vol)
         return;
     if (vol->show_popup)
         return;
+
+    volumealsa_build_popup_window(vol);
 
     int optimal_height = 140;
     int available_screen_height = panel_get_available_screen_height(plugin_panel(vol->plugin));
@@ -386,10 +388,13 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force)
 
     if (vol->displayed_valid)
     {
-        g_signal_handler_block(vol->mute_check, vol->mute_check_handler);
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(vol->mute_check), vol->displayed_mute);
-        gtk_widget_set_sensitive(vol->mute_check, vol->displayed_has_mute);
-        g_signal_handler_unblock(vol->mute_check, vol->mute_check_handler);
+        if (vol->volume_scale != NULL)
+        {
+            g_signal_handler_block(vol->mute_check, vol->mute_check_handler);
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(vol->mute_check), vol->displayed_mute);
+            gtk_widget_set_sensitive(vol->mute_check, vol->displayed_has_mute);
+            g_signal_handler_unblock(vol->mute_check, vol->mute_check_handler);
+        }
 
         if (vol->volume_scale != NULL)
         {
@@ -450,10 +455,10 @@ static gboolean volumealsa_button_press_event(GtkWidget * widget, GdkEventButton
             }
         }
     }
-
     /* Middle-click.  Toggle the mute status. */
     else if (event->button == 2)
     {
+        volumealsa_build_popup_window(vol);
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(vol->mute_check), ! gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(vol->mute_check)));
     }
     return TRUE;
@@ -482,6 +487,8 @@ static void volumealsa_popup_scale_changed(GtkRange * range, VolumeALSAPlugin * 
 /* Handler for "scroll-event" signal on popup window vertical scale. */
 static void volumealsa_popup_scale_scrolled(GtkScale * scale, GdkEventScroll * evt, VolumeALSAPlugin * vol)
 {
+    volumealsa_build_popup_window(vol);
+
     /* Get the state of the vertical scale. */
     gdouble val = gtk_range_get_value(GTK_RANGE(vol->volume_scale));
 
@@ -504,9 +511,10 @@ static void volumealsa_popup_mute_toggled(GtkWidget * widget, VolumeALSAPlugin *
 }
 
 /* Build the window that appears when the top level widget is clicked. */
-static void volumealsa_build_popup_window(Plugin * p)
+static void volumealsa_build_popup_window(VolumeALSAPlugin * vol)
 {
-    VolumeALSAPlugin * vol = PRIV(p);
+    if (vol->popup_window)
+        return;
 
     /* Create a new window. */
     vol->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -552,7 +560,9 @@ static void volumealsa_build_popup_window(Plugin * p)
     vol->mute_check_handler = g_signal_connect(vol->mute_check, "toggled", G_CALLBACK(volumealsa_popup_mute_toggled), vol);
 
     /* Set background to default. */
-    gtk_widget_set_style(viewport, panel_get_default_style(plugin_panel(p)));
+    gtk_widget_set_style(viewport, panel_get_default_style(plugin_panel(vol->plugin)));
+
+    volumealsa_update_display(vol, TRUE);
 }
 
 /* Plugin constructor. */
@@ -578,9 +588,6 @@ static int volumealsa_constructor(Plugin * p)
     /* Allocate icon as a child of top level. */
     vol->tray_icon = gtk_image_new();
     gtk_container_add(GTK_CONTAINER(pwid), vol->tray_icon);
-
-    /* Initialize window to appear when icon clicked. */
-    volumealsa_build_popup_window(p);
 
     /* Connect signals. */
     g_signal_connect(G_OBJECT(pwid), "button-press-event", G_CALLBACK(volumealsa_button_press_event), vol);

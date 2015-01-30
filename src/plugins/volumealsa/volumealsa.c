@@ -18,6 +18,7 @@
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <glib.h>
@@ -51,6 +52,16 @@ typedef struct {
     guint volume_scale_handler;			/* Handler for vscale widget */
     guint mute_check_handler;			/* Handler for mute_check widget */
 
+    guint theme_changed_handler_id;
+
+    GdkPixbuf * pixbuf_mute;
+    GdkPixbuf * pixbuf_level_0;
+    GdkPixbuf * pixbuf_level_33;
+    GdkPixbuf * pixbuf_level_66;
+    GdkPixbuf * pixbuf_level_100;
+
+    GHashTable * pixbuf_blend_cache;
+
     /* ALSA interface. */
     snd_mixer_t * mixer;			/* The mixer */
     snd_mixer_selem_id_t * sid;			/* The element ID */
@@ -59,6 +70,8 @@ typedef struct {
 
     /* Settings. */
     gchar * volume_control_command;
+    gboolean alpha_blending_enabled;
+
 } VolumeALSAPlugin;
 
 static gboolean asound_find_element(VolumeALSAPlugin * vol, const char * ename);
@@ -86,6 +99,7 @@ static void volumealsa_panel_configuration_changed(Plugin * p);
 #define SU_JSON_OPTION_STRUCTURE VolumeALSAPlugin
 static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(string, volume_control_command),
+    SU_JSON_OPTION(bool, alpha_blending_enabled),
     {0,}
 };
 
@@ -253,6 +267,231 @@ static const char * volumealsa_get_volume_control_command(VolumeALSAPlugin * vol
         return vol->volume_control_command;
 }
 
+static GdkPixbuf * pixbuf_blend(GdkPixbuf * pixbuf_src1, GdkPixbuf * pixbuf_src2, float level)
+{
+    if (gdk_pixbuf_get_colorspace(pixbuf_src1) != GDK_COLORSPACE_RGB)
+        return NULL;
+    if (gdk_pixbuf_get_bits_per_sample(pixbuf_src1) != 8)
+        return NULL;
+
+    if (gdk_pixbuf_get_colorspace(pixbuf_src2) != GDK_COLORSPACE_RGB)
+        return NULL;
+    if (gdk_pixbuf_get_bits_per_sample(pixbuf_src2) != 8)
+        return NULL;
+
+    int src1_n_channels = gdk_pixbuf_get_n_channels(pixbuf_src1);
+    gboolean src1_has_alpha = gdk_pixbuf_get_has_alpha(pixbuf_src1);
+    int src2_n_channels = gdk_pixbuf_get_n_channels(pixbuf_src2);
+    gboolean src2_has_alpha = gdk_pixbuf_get_has_alpha(pixbuf_src2);
+
+    int w = MIN(gdk_pixbuf_get_width(pixbuf_src1), gdk_pixbuf_get_width(pixbuf_src2));
+    int h = MIN(gdk_pixbuf_get_height(pixbuf_src1), gdk_pixbuf_get_height(pixbuf_src2));
+
+    GdkPixbuf * pixbuf_dst = gdk_pixbuf_new(
+        GDK_COLORSPACE_RGB,
+        src1_has_alpha || src2_has_alpha,
+        8,
+        w, h);
+
+    if (!pixbuf_dst)
+        return NULL;
+
+    int dst_n_channels = gdk_pixbuf_get_n_channels(pixbuf_dst);
+
+    guchar * dst = gdk_pixbuf_get_pixels(pixbuf_dst);
+    guchar * src1 = gdk_pixbuf_get_pixels(pixbuf_src1);
+    guchar * src2 = gdk_pixbuf_get_pixels(pixbuf_src2);
+
+    int dst_stride = gdk_pixbuf_get_rowstride(pixbuf_dst);
+    int src1_stride = gdk_pixbuf_get_rowstride(pixbuf_src1);
+    int src2_stride = gdk_pixbuf_get_rowstride(pixbuf_src2);
+
+    int i;
+    for (i = 0; i < h; i += 1)
+    {
+        int j;
+        for (j = 0; j < w; j += 1)
+        {
+            guchar * s1 = src1 + i * src1_stride + j * 4;
+            guchar * s2 = src2 + i * src2_stride + j * 4;
+            guchar * d = dst + i * dst_stride + j * 4;
+            int n;
+            for (n = 0; n < dst_n_channels; n++) {
+                guchar v1 = (n < src1_n_channels) ? s1[n] : 0xFF;
+                guchar v2 = (n < src2_n_channels) ? s2[n] : 0xFF;
+                d[n] = v1 * (1 - level) + v2 * (level);
+            }
+        }
+    }
+
+    return pixbuf_dst;
+}
+
+static void load_icon(GdkPixbuf ** p_pixbuf, int icon_size, ...)
+{
+    if (*p_pixbuf) {
+        g_object_unref(*p_pixbuf);
+        *p_pixbuf = NULL;
+    }
+
+    va_list ap;
+    va_start(ap, icon_size);
+    while (!*p_pixbuf) {
+        const char * name = va_arg(ap, const char *);
+        if (!name)
+            break;
+        *p_pixbuf = wtl_load_icon(name, icon_size, icon_size, FALSE);
+    }
+    va_end(ap);
+}
+
+
+static GdkPixbuf * volumealsa_load_icons(VolumeALSAPlugin * vol)
+{
+    int icon_size = plugin_get_icon_size(vol->plugin);
+
+    load_icon(&vol->pixbuf_mute, icon_size,
+        "audio-volume-muted-panel",
+        "audio-volume-muted",
+        "xfce4-mixer-muted",
+        NULL);
+
+    load_icon(&vol->pixbuf_level_0, icon_size,
+        "audio-volume-zero-panel",
+        "audio-volume-off",
+        "audio-volume-low-panel",
+        "audio-volume-low",
+        "xfce4-mixer-volume-ultra-low",
+        NULL);
+
+    load_icon(&vol->pixbuf_level_33, icon_size,
+        "audio-volume-low-panel",
+        "audio-volume-low",
+        "xfce4-mixer-volume-low",
+        NULL);
+
+    load_icon(&vol->pixbuf_level_66, icon_size,
+        "audio-volume-medium-panel",
+        "audio-volume-medium",
+        "xfce4-mixer-volume-medium",
+        NULL);
+
+    load_icon(&vol->pixbuf_level_100, icon_size,
+        "audio-volume-high-panel",
+        "audio-volume-high",
+        "xfce4-mixer-volume-high",
+        NULL);
+
+    if (!vol->pixbuf_mute) {
+        gchar * icon_path = wtl_resolve_own_resource("", "images", "mute.png", 0);
+        vol->pixbuf_mute = wtl_load_icon(icon_path, icon_size, icon_size, TRUE);
+        g_free(icon_path);
+    }
+
+    if (!vol->pixbuf_level_0 || !vol->pixbuf_level_33 || !vol->pixbuf_level_66 || !vol->pixbuf_level_100) {
+        gchar * icon_path = wtl_resolve_own_resource("", "images", "volume.png", 0);
+        GdkPixbuf * pixbuf = wtl_load_icon(icon_path, icon_size, icon_size, TRUE);
+        if (!vol->pixbuf_level_0)
+            vol->pixbuf_level_0 = g_object_ref(pixbuf);
+        if (!vol->pixbuf_level_33)
+            vol->pixbuf_level_33 = g_object_ref(pixbuf);
+        if (!vol->pixbuf_level_66)
+            vol->pixbuf_level_66 = g_object_ref(pixbuf);
+        if (!vol->pixbuf_level_100)
+            vol->pixbuf_level_100 = g_object_ref(pixbuf);
+        g_object_unref(pixbuf);
+        g_free(icon_path);
+    }
+
+    if (vol->pixbuf_blend_cache) {
+        g_hash_table_unref(vol->pixbuf_blend_cache);
+        vol->pixbuf_blend_cache = NULL;
+    }
+}
+
+static GdkPixbuf * volumealsa_get_icon_for_level(VolumeALSAPlugin * vol, int level)
+{
+    GdkPixbuf * pixbuf_level_low = NULL;
+    GdkPixbuf * pixbuf_level_high = NULL;
+    float l;
+
+    if (level < 33)
+    {
+        pixbuf_level_low = vol->pixbuf_level_0;
+        pixbuf_level_high = vol->pixbuf_level_33;
+        l = level / 33.0;
+    }
+    else if (level < 66)
+    {
+        pixbuf_level_low = vol->pixbuf_level_33;
+        pixbuf_level_high = vol->pixbuf_level_66;
+        l = (level - 33) / 33.0;
+    }
+    else
+    {
+        pixbuf_level_low = vol->pixbuf_level_66;
+        pixbuf_level_high = vol->pixbuf_level_100;
+        l = (level - 66) / 34.0;
+    }
+
+    if (!vol->alpha_blending_enabled) {
+        if (level == 0)
+            return g_object_ref(pixbuf_level_low);
+        else
+            return g_object_ref(pixbuf_level_high);
+    }
+
+    if (!vol->pixbuf_blend_cache)
+    {
+        vol->pixbuf_blend_cache = g_hash_table_new_full(
+            g_direct_hash,
+            g_direct_equal,
+            NULL,
+            g_object_unref
+        );
+    }
+    else
+    {
+        GdkPixbuf * result = g_hash_table_lookup(vol->pixbuf_blend_cache, GINT_TO_POINTER(level));
+        if (result)
+            return g_object_ref(result);
+    }
+
+    if (!pixbuf_level_low || !pixbuf_level_high)
+        return NULL;
+
+    if (l > 1.0)
+        l = 1.0;
+
+    int icon_size = plugin_get_icon_size(vol->plugin);
+    GdkPixbuf * result = pixbuf_blend(pixbuf_level_low, pixbuf_level_high, l);
+    if (!result)
+        result = g_object_ref(pixbuf_level_high);
+
+    g_hash_table_replace(vol->pixbuf_blend_cache, GINT_TO_POINTER(level), result);
+    return g_object_ref(result);
+}
+
+static void volumealsa_update_icon(VolumeALSAPlugin * vol, int level, gboolean mute)
+{
+    if (mute)
+    {
+        gtk_image_set_from_pixbuf(GTK_IMAGE(vol->tray_icon), vol->pixbuf_mute);
+    }
+    else
+    {
+        GdkPixbuf * pixbuf_level = volumealsa_get_icon_for_level(vol, level);
+        gtk_image_set_from_pixbuf(GTK_IMAGE(vol->tray_icon), pixbuf_level);
+        g_object_unref(pixbuf_level);
+    }
+}
+
+static void on_theme_changed(GtkIconTheme * theme, VolumeALSAPlugin * vol)
+{
+    volumealsa_load_icons(vol);
+    volumealsa_update_display(vol);
+}
+
 /* Do a full redraw of the display. */
 static void volumealsa_update_display(VolumeALSAPlugin * vol)
 {
@@ -262,39 +501,7 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol)
 
     gboolean icon_updated = FALSE;
 
-    if (mute)
-    {
-         icon_updated = panel_image_set_icon_theme(plugin_panel(vol->plugin), vol->tray_icon, "audio-volume-muted");
-         if (!icon_updated)
-         {
-             gchar * mute_icon_path = wtl_resolve_own_resource("", "images", "mute.png", 0);
-             panel_image_set_from_file(plugin_panel(vol->plugin), vol->tray_icon, mute_icon_path);
-             g_free(mute_icon_path);
-         }
-         icon_updated = TRUE;
-    }
-    
-    if (!icon_updated && level < 30)
-    {
-        icon_updated = panel_image_set_icon_theme(plugin_panel(vol->plugin), vol->tray_icon, "audio-volume-low");
-    }
-
-    if (!icon_updated && level < 70)
-    {
-        icon_updated = panel_image_set_icon_theme(plugin_panel(vol->plugin), vol->tray_icon, "audio-volume-medium");
-    }
-
-    if (!icon_updated)
-    {
-        icon_updated = panel_image_set_icon_theme(plugin_panel(vol->plugin), vol->tray_icon, "audio-volume-high");
-    }
-
-    if (!icon_updated)
-    {
-        gchar * volume_icon_path = wtl_resolve_own_resource("", "images", "volume.png", 0);
-        panel_image_set_from_file(plugin_panel(vol->plugin), vol->tray_icon, volume_icon_path);
-        g_free(volume_icon_path);
-    }
+    volumealsa_update_icon(vol, level, mute);
 
     g_signal_handler_block(vol->mute_check, vol->mute_check_handler);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(vol->mute_check), mute);
@@ -491,6 +698,7 @@ static int volumealsa_constructor(Plugin * p)
         return 1;
 
     vol->volume_control_command = NULL;
+    vol->alpha_blending_enabled = TRUE;
 
     su_json_read_options(plugin_inner_json(p), option_definitions, vol);
 
@@ -510,9 +718,12 @@ static int volumealsa_constructor(Plugin * p)
 
     /* Connect signals. */
     g_signal_connect(G_OBJECT(pwid), "button-press-event", G_CALLBACK(volumealsa_button_press_event), vol);
-    g_signal_connect(G_OBJECT(pwid), "scroll-event", G_CALLBACK(volumealsa_popup_scale_scrolled), vol );
+    g_signal_connect(G_OBJECT(pwid), "scroll-event", G_CALLBACK(volumealsa_popup_scale_scrolled), vol);
+    vol->theme_changed_handler_id =
+        g_signal_connect(gtk_icon_theme_get_default(), "changed", G_CALLBACK(on_theme_changed), vol);
 
     /* Update the display, show the widget, and return. */
+    volumealsa_load_icons(vol);
     volumealsa_update_display(vol);
     gtk_widget_show_all(pwid);
     return 1;
@@ -522,6 +733,8 @@ static int volumealsa_constructor(Plugin * p)
 static void volumealsa_destructor(Plugin * p)
 {
     VolumeALSAPlugin * vol = PRIV(p);
+
+    g_signal_handler_disconnect(gtk_icon_theme_get_default(), vol->theme_changed_handler_id);
 
     /* Remove the periodic timer. */
     if (vol->mixer_evt_idle != 0)
@@ -561,6 +774,10 @@ static void volumealsa_configure(Plugin * p, GtkWindow * parent)
         (GSourceFunc) volumealsa_apply_configuration, (gpointer) p,
         _("Volume Control application"), &vol->volume_control_command, (GType)CONF_TYPE_STR,
         "tooltip-text", tooltip, (GType)CONF_TYPE_SET_PROPERTY,
+
+        _("Alpha-blending"), &vol->alpha_blending_enabled, (GType)CONF_TYPE_BOOL,
+        "tooltip-text", _("An icon theme typically includes only 3 or 4 distinct icons intended to indicate the sound volume. This option enables alpha-blending mode that allows Volume Control Plugin to smoothly display the full range of the sound volume. May not interact well with some icon themes."), (GType)CONF_TYPE_SET_PROPERTY,
+
         NULL);
 
     g_free(tooltip);
@@ -580,7 +797,7 @@ static void volumealsa_save_configuration(Plugin * p)
 /* Callback when panel configuration changes. */
 static void volumealsa_panel_configuration_changed(Plugin * p)
 {
-    /* Do a full redraw. */
+    volumealsa_load_icons(PRIV(p));
     volumealsa_update_display(PRIV(p));
 }
 

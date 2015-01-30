@@ -87,6 +87,9 @@ GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height
 /* if current window manager is EWMH conforming. */
 extern gboolean is_ewmh_supported;
 
+gboolean get_net_showing_desktop_supported(void);
+gboolean get_net_showing_desktop(void);
+void set_net_showing_desktop(gboolean value);
 
 static inline void * get_xaproperty(Window xid, Atom prop, Atom type, int * nitems)
 {

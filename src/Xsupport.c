@@ -1289,3 +1289,27 @@ void wm_noinput(Window w)
           XInternAtom(GDK_DISPLAY(), "_WIN_HINTS", False), XA_CARDINAL, 32,
           PropModeReplace, (unsigned char *) &val, 1);
 }
+
+gboolean get_net_showing_desktop_supported(void)
+{
+    return gdk_x11_screen_supports_net_wm_hint(gdk_screen_get_default(),
+        gdk_atom_intern("_NET_SHOWING_DESKTOP", FALSE));
+}
+
+gboolean get_net_showing_desktop(void)
+{
+    gboolean result;
+    guint32 * data = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_SHOWING_DESKTOP, XA_CARDINAL, 0);
+    if (data)
+    {
+        result = *data;
+        XFree (data);
+    }
+    return result;
+}
+
+void set_net_showing_desktop(gboolean value)
+{
+    Xclimsg(DefaultRootWindow(GDK_DISPLAY()), a_NET_SHOWING_DESKTOP, value, 0, 0, 0, 0);
+}
+

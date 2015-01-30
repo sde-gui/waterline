@@ -5579,6 +5579,11 @@ static void taskbar_popupmenu_task_manager(GtkMenuItem * item, TaskbarPlugin * t
     wtl_launch(wtl_get_default_application("task-manager"), NULL);
 }
 
+static void taskbar_popupmenu_show_desktop(GtkMenuItem * item, TaskbarPlugin * tb)
+{
+    set_net_showing_desktop(!get_net_showing_desktop());
+}
+
 static void taskbar_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
 {
     TaskbarPlugin * tb = PRIV(plugin);
@@ -5596,6 +5601,23 @@ static void taskbar_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
             gtk_widget_show(menu_item);
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), menu_item);
             g_signal_connect(menu_item, "activate", G_CALLBACK(taskbar_popupmenu_task_manager), tb);
+        }
+    }
+
+    if (get_net_showing_desktop_supported())
+    {
+        {
+            GtkWidget * menu_item = gtk_separator_menu_item_new();
+            gtk_widget_show(menu_item);
+            gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), menu_item);
+        }
+
+        {
+            GtkWidget * menu_item = gtk_check_menu_item_new_with_mnemonic(_("Show the _Desktop"));
+            gtk_widget_show(menu_item);
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), get_net_showing_desktop());
+            gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), menu_item);
+            g_signal_connect(menu_item, "activate", G_CALLBACK(taskbar_popupmenu_show_desktop), tb);
         }
     }
 }

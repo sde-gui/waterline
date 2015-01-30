@@ -38,7 +38,7 @@
 
 #include <sde-utils.h>
 
-#include "backend_asound.c"
+#include "backend.h"
 
 typedef struct {
 
@@ -78,7 +78,7 @@ typedef struct {
     gboolean alpha_blending_enabled;
 
     /* Backend. */
-    backend_alsa_t * backend;
+    volume_control_backend_t * backend;
 } VolumeALSAPlugin;
 
 static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force);
@@ -391,10 +391,10 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force)
 
 static void volumealsa_state_changed(VolumeALSAPlugin * vol, gpointer _backend)
 {
-    vol->valid = asound_is_valid(vol->backend);
-    vol->has_mute = asound_has_mute(vol->backend);
-    vol->mute = asound_is_muted(vol->backend);
-    vol->scaled_volume = asound_get_volume(vol->backend);
+    vol->valid = volume_control_backend_is_valid(vol->backend);
+    vol->has_mute = volume_control_backend_has_mute(vol->backend);
+    vol->mute = volume_control_backend_is_muted(vol->backend);
+    vol->scaled_volume = volume_control_backend_get_volume(vol->backend);
     volumealsa_update_display(vol, FALSE);
 }
 
@@ -459,7 +459,7 @@ static void volumealsa_popup_map(GtkWidget * widget, VolumeALSAPlugin * vol)
 /* Handler for "value_changed" signal on popup window vertical scale. */
 static void volumealsa_popup_scale_changed(GtkRange * range, VolumeALSAPlugin * vol)
 {
-    asound_set_volume(vol->backend, gtk_range_get_value(range));
+    volume_control_backend_set_volume(vol->backend, gtk_range_get_value(range));
 }
 
 /* Handler for "scroll-event" signal on popup window vertical scale. */
@@ -483,7 +483,7 @@ static void volumealsa_popup_mute_toggled(GtkWidget * widget, VolumeALSAPlugin *
 {
     /* Get the state of the mute toggle. */
     gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-    asound_set_mute(vol->backend, active);
+    volume_control_backend_set_mute(vol->backend, active);
 }
 
 /* Build the window that appears when the top level widget is clicked. */
@@ -555,10 +555,6 @@ static int volumealsa_constructor(Plugin * p)
     vol->plugin = p;
     plugin_set_priv(p, vol);
 
-    vol->backend = g_new0(backend_alsa_t, 1);
-    vol->backend->frontend_callback_state_changed = volumealsa_state_changed;
-    vol->backend->frontend = vol;
-
     vol->volume_control_command = NULL;
     vol->alpha_blending_enabled = TRUE;
 
@@ -586,7 +582,11 @@ static int volumealsa_constructor(Plugin * p)
 
     volumealsa_load_icons(vol);
 
-    asound_initialize(vol->backend);
+    extern void volume_control_backend_alsa_new(volume_control_backend_t * backend);
+    vol->backend = volume_control_backend_new();
+    vol->backend->frontend = vol;
+    vol->backend->frontend_callback_state_changed = (frontend_callback_state_changed_t) volumealsa_state_changed;
+    volume_control_backend_alsa_new(vol->backend);
 
     volumealsa_update_display(vol, TRUE);
     gtk_widget_show_all(pwid);
@@ -600,8 +600,7 @@ static void volumealsa_destructor(Plugin * p)
 
     g_signal_handler_disconnect(gtk_icon_theme_get_default(), vol->theme_changed_handler_id);
 
-    asound_destroy(vol->backend);
-    g_free(vol->backend);
+    volume_control_backend_free(vol->backend);
     vol->backend = NULL;
 
     /* If the dialog box is open, dismiss it. */

@@ -10,7 +10,7 @@ module_LTLIBRARIES = volumealsa.la
 
 moduledir = $(pkglibdir)/plugins
 
-volumealsa_la_SOURCES = volumealsa.c
+volumealsa_la_SOURCES = volumealsa.c backend.c backend_alsa.c
 
 volumealsa_la_LIBADD = -lasound $(PACKAGE_LIBS)
 

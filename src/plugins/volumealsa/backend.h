@@ -43,7 +43,7 @@ struct volume_control_backend_impl_vtable {
 struct volume_control_backend {
     volume_control_backend_impl_vtable_t * impl_vtable;
     gpointer impl;
-    gboolean (*notify_state_changed)(volume_control_backend_t * backend);
+    void (*notify_state_changed)(volume_control_backend_t * backend);
 #ifndef BACKEND_IMPLEMENTATION
     gpointer frontend;
     frontend_callback_state_changed_t frontend_callback_state_changed;

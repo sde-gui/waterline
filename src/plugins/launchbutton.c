@@ -44,8 +44,6 @@
 
 #include <waterline/gtkcompat.h>
 
-#include <waterline/dbg.h>
-
 struct _lb_t;
 
 typedef struct {

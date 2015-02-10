@@ -37,9 +37,6 @@
 
 #include <glib-object.h>
 
-//#define DEBUG
-#include <waterline/dbg.h>
-
 static GList * pcl = NULL;			/* List of PluginClass structures */
 
 static PluginClass * register_plugin_class(PluginClass * pc, gboolean dynamic);

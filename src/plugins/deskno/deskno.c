@@ -38,8 +38,6 @@
 
 #include <waterline/gtkcompat.h>
 
-#include <waterline/dbg.h>
-
 /* Private context for desktop number plugin. */
 typedef struct {
     Panel * panel;			/* Back pointer to Panel */

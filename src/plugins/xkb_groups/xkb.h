@@ -31,8 +31,6 @@
 #include <waterline/panel.h>
 #include <waterline/ev.h>
 
-#include <waterline/dbg.h>
-
 typedef struct {
 
     /* Plugin interface. */

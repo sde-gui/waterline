@@ -46,8 +46,6 @@
 #include <waterline/panel.h>
 #include "panel_internal.h"
 #include <waterline/Xsupport.h>
-#include <waterline/dbg.h>
-
 #include <waterline/gtkcompat.h>
 
 /********************************************************************/

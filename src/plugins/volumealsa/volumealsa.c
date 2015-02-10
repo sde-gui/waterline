@@ -34,7 +34,6 @@
 #include <waterline/misc.h>
 #include <waterline/paths.h>
 #include <waterline/plugin.h>
-#include <waterline/dbg.h>
 
 #include <sde-utils.h>
 

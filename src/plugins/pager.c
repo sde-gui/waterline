@@ -38,8 +38,6 @@
 #include <waterline/plugin.h>
 #include <waterline/Xsupport.h>
 
-#include <waterline/dbg.h>
-
 struct _task;
 struct _desk;
 struct _pager;

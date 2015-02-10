@@ -36,8 +36,6 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include <waterline/dbg.h>
-
 void restart(void);
 void gtk_run(void);
 static void logout(void);
@@ -56,11 +54,8 @@ void restart(void)
 {
     /* This is defined in panel.c */
     extern gboolean is_restarting;
-    ENTER;
     is_restarting = TRUE;
-
     gtk_main_quit();
-    RET();
 }
 
 void logout(void)

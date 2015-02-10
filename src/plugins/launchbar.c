@@ -52,8 +52,6 @@
 #include <waterline/plugin.h>
 #include "menu-policy.h"
 
-#include <waterline/dbg.h>
-
 #include <waterline/gtkcompat.h>
 
 #define PANEL_ICON_SIZE 24 /* icons size in configuration dialog. FIXME: read icon size from gtk */

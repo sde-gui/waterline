@@ -53,10 +53,6 @@
 #include <waterline/Xsupport.h>
 #include "icon.xpm"
 
-//#define DEBUG
-
-#include <waterline/dbg.h>
-
 /******************************************************************************/
 
 enum TASKBAR_MODE {
@@ -877,8 +873,6 @@ static void taskbar_recompute_fold_by_count(TaskbarPlugin * tb)
     if (!tb->grouped_tasks)
         return;
 
-    ENTER;
-
     TaskClass * tc;
 
     for (tc = tb->task_class_list; tc != NULL; tc = tc->task_class_flink)
@@ -918,7 +912,6 @@ static void taskbar_recompute_fold_by_count(TaskbarPlugin * tb)
         }
     } while (total_visible_count > tb->_panel_fold_threshold && max_visible_count > 1) ;
 
-    RET();
 }
 
 /******************************************************************************/
@@ -1141,8 +1134,6 @@ static void task_button_redraw(Task * tk)
 {
     TaskbarPlugin * tb = tk->tb;
 
-    ENTER;
-
     if (task_is_visible(tk))
     {
         task_button_redraw_button_state(tk, tb);
@@ -1159,7 +1150,6 @@ static void task_button_redraw(Task * tk)
         icon_grid_set_visible(tb->icon_grid, tk->button, FALSE);
     }
 
-    RET();
 }
 
 /* Redraw all tasks in the taskbar. */
@@ -1167,8 +1157,6 @@ static void taskbar_redraw(TaskbarPlugin * tb)
 {
     if (!tb->icon_grid)
         return;
-
-    ENTER;
 
     icon_grid_defer_updates(tb->icon_grid);
 
@@ -1184,7 +1172,6 @@ static void taskbar_redraw(TaskbarPlugin * tb)
 
     taskbar_update_x_window_position(tb);
 
-    RET();
 }
 
 /******************************************************************************/
@@ -1274,7 +1261,6 @@ static void task_set_names(Task * tk, Atom source)
 /* Unlink a task from the class list because its class changed or it was deleted. */
 static void task_unlink_class(Task * tk)
 {
-    ENTER;
     TaskClass * tc = tk->task_class;
     if (tc != NULL)
     {
@@ -1309,13 +1295,11 @@ static void task_unlink_class(Task * tk)
         /* Recompute group visibility. */
         recompute_group_visibility_for_class(tk->tb, tc);
     }
-    RET();
 }
 
 /* Enter class with specified name. */
 static TaskClass * taskbar_enter_class(TaskbarPlugin * tb, char * class_name, gboolean * name_consumed)
 {
-    ENTER;
     /* Find existing entry or insertion point. */
     *name_consumed = FALSE;
     TaskClass * tc_pred = NULL;
@@ -1324,7 +1308,7 @@ static TaskClass * taskbar_enter_class(TaskbarPlugin * tb, char * class_name, gb
     {
         int status = strcmp(class_name, tc->class_name);
         if (status == 0)
-            RET(tc);
+            return tc;
         if (status < 0)
             break;
     }
@@ -1343,11 +1327,11 @@ static TaskClass * taskbar_enter_class(TaskbarPlugin * tb, char * class_name, gb
         tc->task_class_flink = tc_pred->task_class_flink;
 	tc_pred->task_class_flink = tc;
     }
-    RET(tc);
+    return tc;
 }
 
-static gchar* task_read_wm_class(Task * tk) {
-    ENTER;
+static gchar* task_read_wm_class(Task * tk)
+{
     /* Read the WM_CLASS property. */
     XClassHint ch;
     ch.res_name = NULL;
@@ -1370,7 +1354,7 @@ static gchar* task_read_wm_class(Task * tk) {
     if (ch.res_name != NULL)
         XFree(ch.res_name);
 
-    RET(res_class);
+    return res_class;
 }
 
 static void task_update_wm_class(Task * tk) {
@@ -1384,8 +1368,6 @@ static void task_update_wm_class(Task * tk) {
 /* Set the class associated with a task. */
 static void task_set_class(Task * tk)
 {
-    ENTER;
-
     g_assert(tk != NULL);
 
     gchar * class_name = NULL;
@@ -1454,7 +1436,6 @@ static void task_set_class(Task * tk)
         }
     }
 
-    RET();
 }
 
 static void task_set_override_class(Task * tk, char * class_name)
@@ -1490,8 +1471,6 @@ static Task * task_lookup(TaskbarPlugin * tb, Window win)
 /* Delete a task and optionally unlink it from the task list. */
 static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 {
-    ENTER;
-
     su_log_debug("Deleting task %s (0x%x)\n", tk->name, (int)tk);
 
     if (tk->run_path && tk->run_path != (gchar *)-1)
@@ -1593,15 +1572,12 @@ static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 
     taskbar_recompute_fold_by_count(tb);
     taskbar_notify_panel_class_visibility_changed(tb, FALSE);
-
-    RET();
 }
 
 /******************************************************************************/
 
 static gboolean task_update_thumbnail_preview_real(Task * tk)
 {
-    ENTER;
     tk->update_thumbnail_preview_idle = 0;
 
     if (tk->thumbnail_preview)
@@ -1622,7 +1598,7 @@ static gboolean task_update_thumbnail_preview_real(Task * tk)
         }
     }
 
-    RET(FALSE);
+    return FALSE;
 }
 
 static void task_update_thumbnail_preview(Task * tk)
@@ -1641,8 +1617,6 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         tk->update_composite_thumbnail_timeout = 0;
         return FALSE;
     }
-
-    ENTER;
 
     if (tk->backing_pixmap != 0)
     {
@@ -1729,17 +1703,15 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
 
     tk->update_composite_thumbnail_idle = 0;
 
-    RET(FALSE);
+    return FALSE;
 }
 
 static gboolean task_update_composite_thumbnail_timeout(Task * tk)
 {
-    ENTER;
-
     if (!tk->tb->thumbnails || !tk->require_update_composite_thumbnail)
     {
         tk->update_composite_thumbnail_timeout = 0;
-        RET(FALSE);
+        return FALSE;
     }
 
     tk->update_composite_thumbnail_repeat_count++;
@@ -1753,7 +1725,7 @@ static gboolean task_update_composite_thumbnail_timeout(Task * tk)
     if (tk->update_composite_thumbnail_idle == 0)
         tk->update_composite_thumbnail_idle = g_idle_add((GSourceFunc) task_update_composite_thumbnail_real, tk);
 
-    RET(TRUE);
+    return TRUE;
 }
 
 static void task_update_composite_thumbnail(Task * tk)
@@ -1884,8 +1856,6 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
     if (tk->icon_pixbuf)
         return;
 
-    ENTER;
-
     GdkPixbuf * pixbuf = NULL;
 
     if (tb->thumbnails && tb->use_thumbnails_as_icons)
@@ -1923,9 +1893,6 @@ static void task_create_icons(Task * tk, Atom source, int icon_size)
     }
 
     tk->icon_pixbuf = pixbuf;
-
-    RET();
-
 }
 
 static void task_update_icon(Task * tk, Atom source, gboolean forse_icon_erase)
@@ -2060,8 +2027,6 @@ static void task_clear_urgency(Task * tk)
 /* Remove the grouped-task popup menu from the screen. */
 static void taskbar_group_menu_destroy(TaskbarPlugin * tb)
 {
-    ENTER;
-
     if (tb->hide_popup_delay_timer != 0)
     {
 	g_source_remove(tb->hide_popup_delay_timer);
@@ -2075,8 +2040,6 @@ static void taskbar_group_menu_destroy(TaskbarPlugin * tb)
         gtk_widget_destroy(tb->group_menu);
         tb->group_menu = NULL;
     }
-
-    RET();
 }
 
 static void task_show_window_list_helper(Task * tk_cursor, GtkWidget * menu, TaskbarPlugin * tb)
@@ -2125,8 +2088,6 @@ static void group_menu_size_allocate(GtkWidget * w, GtkAllocation * alloc, Taskb
 
 static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean similar, gboolean menu_opened_as_popup)
 {
-    ENTER;
-
     TaskbarPlugin * tb = tk->tb;
     TaskClass * tc = tk->task_class;
 
@@ -2177,8 +2138,6 @@ static void task_show_window_list(Task * tk, GdkEventButton * event, gboolean si
 
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL,
         (GtkMenuPositionFunc) taskbar_popup_set_position, (gpointer) tk, event_button, event_time);
-
-    RET();
 }
 
 /******************************************************************************/
@@ -2699,8 +2658,6 @@ static gboolean preview_panel_motion_event(GtkWidget * widget, GdkEventMotion * 
 
 static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 {
-    ENTER;
-
     GtkWidget * win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_decorated(GTK_WINDOW(win), FALSE);
     gtk_window_set_resizable(GTK_WINDOW(win), FALSE);
@@ -2747,8 +2704,6 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 */
 
     tb->preview_panel_window = win;
-
-    RET();
 }
 
 static void taskbar_hide_preview_panel(TaskbarPlugin * tb)
@@ -2848,8 +2803,6 @@ static void _remove_from_container(GtkWidget * widget, gpointer data)
 
 static void task_show_preview_panel(Task * tk)
 {
-    ENTER;
-
     TaskbarPlugin * tb = tk->tb;
 
     if (!tb->preview_panel_window)
@@ -2916,10 +2869,6 @@ static void task_show_preview_panel(Task * tk)
     gtk_widget_show_all(tb->preview_panel_window);
 
     gtk_window_move(GTK_WINDOW(tb->preview_panel_window), px, py);
-
-    //g_print("%d, %d\n", px, py);
-
-    RET();
 }
 
 /******************************************************************************/
@@ -2958,8 +2907,6 @@ static void taskbar_hide_popup_timeout(TaskbarPlugin * tb);
 
 static void taskbar_check_hide_popup(TaskbarPlugin * tb)
 {
-    ENTER;
-
     gboolean from_group_menu = tb->group_menu_opened_as_popup;
 
     int x = 0, y = 0;
@@ -2970,7 +2917,7 @@ static void taskbar_check_hide_popup(TaskbarPlugin * tb)
     if (!tk)
     {
         taskbar_hide_popup(tb);
-        RET();
+        return;
     }
 
     gtk_widget_get_pointer(tk->button, &x, &y);
@@ -3002,9 +2949,6 @@ static void taskbar_check_hide_popup(TaskbarPlugin * tb)
 	    tb->hide_popup_delay_timer = 0;
 	}
     }
-
-
-    RET();
 }
 
 static void taskbar_show_popup(Task * tk)
@@ -3621,8 +3565,6 @@ static void taskbar_update_separators(TaskbarPlugin * tb)
     if (!tb->use_group_separators)
         return;
 
-    ENTER;
-
     Task * tk_cursor;
     Task * tk_prev = NULL;
 
@@ -3642,8 +3584,6 @@ static void taskbar_update_separators(TaskbarPlugin * tb)
         }
         tk_prev = tk_cursor;
     }
-
-    RET();
 }
 
 /******************************************************************************/
@@ -3876,20 +3816,16 @@ again: ;
 
 static void task_update_grouping(Task * tk, int group_by)
 {
-//    ENTER;
-//    DBG("group_by = %d, tb->_group_by = %d\n", group_by, tk->tb->_group_by);
     if (tk->tb->_group_by == group_by || group_by < 0)
     {
         task_set_class(tk);
         task_reorder(tk, FALSE);
         taskbar_redraw(tk->tb);
     }
-//    RET();
 }
 
 static void task_update_sorting(Task * tk, int sort_by)
 {
-//    ENTER;
     int i;
     for (i = 0; i < 3; i++)
     {
@@ -3900,7 +3836,6 @@ static void task_update_sorting(Task * tk, int sort_by)
            break;
         }
     }
-//    RET();
 }
 
 /******************************************************************************/
@@ -3912,8 +3847,6 @@ static void task_update_sorting(Task * tk, int sort_by)
 /* Handler for "client-list" event from root window listener. */
 static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    ENTER;
-
     gboolean redraw = FALSE;
 
     /* Get the NET_CLIENT_LIST property. */
@@ -4027,8 +3960,6 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
         taskbar_redraw(tb);
         taskbar_notify_panel_class_visibility_changed(tb, FALSE);
     }
-
-    RET();
 }
 
 /* Display given window as active. */
@@ -4104,8 +4035,6 @@ static void taskbar_set_active_window(TaskbarPlugin * tb, Window f)
 /* Set given desktop as current. */
 static void taskbar_set_current_desktop(TaskbarPlugin * tb, int desktop)
 {
-    ENTER;
-
     icon_grid_defer_updates(tb->icon_grid);
 
     /* Store the local copy of current desktops.  Redisplay the taskbar. */
@@ -4117,15 +4046,11 @@ static void taskbar_set_current_desktop(TaskbarPlugin * tb, int desktop)
     icon_grid_resume_updates(tb->icon_grid);
 
     taskbar_notify_panel_class_visibility_changed(tb, FALSE);
-
-    RET();
 }
 
 /* Switch to deferred desktop and window. */
 static gboolean taskbar_switch_desktop_and_window(TaskbarPlugin * tb)
 {
-    ENTER;
-
     icon_grid_defer_updates(tb->icon_grid);
 
     if (tb->deferred_current_desktop >= 0) {
@@ -4141,14 +4066,12 @@ static gboolean taskbar_switch_desktop_and_window(TaskbarPlugin * tb)
 
     icon_grid_resume_updates(tb->icon_grid);
 
-    RET(FALSE);
+    return FALSE;
 }
 
 /* Handler for "current-desktop" event from root window listener. */
 static void taskbar_net_current_desktop(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    ENTER;
-
     int desktop = get_net_current_desktop();
 
     int desktop_switch_timeout = 350;
@@ -4160,8 +4083,6 @@ static void taskbar_net_current_desktop(GtkWidget * widget, TaskbarPlugin * tb)
     } else {
         taskbar_set_current_desktop(tb, desktop);
     }
-
-    RET();
 }
 
 /* Handler for "number-of-desktops" event from root window listener. */
@@ -4176,8 +4097,6 @@ static void taskbar_net_number_of_desktops(GtkWidget * widget, TaskbarPlugin * t
 /* Handler for "active-window" event from root window listener. */
 static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    ENTER;
-
     /* Get active window. */
     Window * p = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
     Window w = p ? *p : 0;
@@ -4201,8 +4120,6 @@ static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
             taskbar_switch_desktop_and_window(tb);
         }
     }
-
-    RET();
 }
 
 /* Determine if the "urgency" hint is set on a window. */

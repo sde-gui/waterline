@@ -51,8 +51,6 @@
 #include "menu-policy.h"
 #include "commands.h"
 
-#include <waterline/dbg.h>
-
 extern void gtk_run(void); /* FIXME! */
 
 #define DEFAULT_MENU_ICON "start-here"
@@ -129,7 +127,6 @@ menu_destructor(Plugin *p)
     g_free(m->fname);
     g_free(m->caption);
     g_free(m);
-    RET();
 }
 
 static void spawn_app(GtkWidget *widget, gpointer data)
@@ -178,8 +175,6 @@ static void show_menu( GtkWidget* widget, Plugin* p, int btn, guint32 time )
 static gboolean
 my_button_pressed(GtkWidget *widget, GdkEventButton *event, Plugin* plugin)
 {
-    ENTER;
-
     menup *m = PRIV(plugin);
 
     /* Standard right-click handling. */
@@ -199,7 +194,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, Plugin* plugin)
             show_menu( widget, plugin, event->button, event->time );
         }
     }
-    RET(TRUE);
+    return TRUE;
 }
 
 static
@@ -215,7 +210,6 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
     char* title = NULL;
     menup *m;
 
-    ENTER;
     m = PRIV(p);
     m->menu = menu;
 
@@ -239,14 +233,12 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
           G_CALLBACK (my_button_pressed), p);
     g_object_set_data(G_OBJECT(m->img), "plugin", p);
 
-    RET(m->img);
+    return m->img;
 }
 
 
 static GtkWidget * read_item(Plugin *p, json_t * json_item)
 {
-    ENTER;
-
     menup * m = PRIV(p);
 
     GtkWidget * item;

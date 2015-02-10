@@ -25,7 +25,6 @@
 
 #include <waterline/defaultapplications.h>
 #include <waterline/paths.h>
-#include <waterline/dbg.h>
 #include <waterline/misc.h>
 
 /********************************************************************/

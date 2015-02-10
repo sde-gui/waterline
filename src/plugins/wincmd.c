@@ -32,8 +32,6 @@
 #include <waterline/plugin.h>
 #include <waterline/Xsupport.h>
 
-#include <waterline/dbg.h>
-
 /* Commands that can be issued. */
 typedef enum {
     WC_NONE,

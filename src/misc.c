@@ -45,8 +45,6 @@
 #include <waterline/panel.h>
 #include "panel_internal.h"
 #include <waterline/Xsupport.h>
-#include <waterline/dbg.h>
-
 #include <waterline/gtkcompat.h>
 
 /********************************************************************/
@@ -60,8 +58,6 @@ guint32 gcolor2rgb24(const GdkColor *color)
     guint32 i;
     guint16 r, g, b;
 
-    ENTER;
-
     r = color->red * 0xFF / 0xFFFF;
     g = color->green * 0xFF / 0xFFFF;
     b = color->blue * 0xFF / 0xFFFF;
@@ -72,7 +68,7 @@ guint32 gcolor2rgb24(const GdkColor *color)
     i <<= 8;
     i |= b & 0xFF;
 
-    RET(i);
+    return i;
 }
 
 /********************************************************************/

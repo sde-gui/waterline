@@ -28,8 +28,6 @@
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
 
-#include <waterline/dbg.h>
-
 /* Private context for space plugin. */
 typedef struct {
     int size;				/* Size of spacer */

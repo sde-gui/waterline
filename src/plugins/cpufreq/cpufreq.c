@@ -34,7 +34,6 @@
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
 #include <waterline/gtkcompat.h>
-#include <waterline/dbg.h>
 
 #define SYSFS_CPU_DIRECTORY "/sys/devices/system/cpu"
 #define SCALING_GOV         "scaling_governor"
@@ -327,13 +326,11 @@ update_tooltip(cpufreq *cf)
     get_cur_freq(cf);
     get_cur_governor(cf);
 
-    ENTER;
-
     tooltip = g_strdup_printf("Frequency: %d MHz\nGovernor: %s", 
                               cf->cur_freq / 1000, cf->cur_governor);
     gtk_widget_set_tooltip_text(cf->main, tooltip);
     g_free(tooltip);
-    RET(TRUE);
+    return TRUE;
 }
 
 static int
@@ -342,7 +339,6 @@ cpufreq_constructor(Plugin *p)
     cpufreq *cf;
 //    GtkWidget *button;
 
-    ENTER;
     cf = g_new0(cpufreq, 1);
     cf->governors = NULL;
     cf->cpus = NULL;
@@ -395,10 +391,10 @@ cpufreq_constructor(Plugin *p)
 
     gtk_widget_show(cf->namew);
 
-    RET(TRUE);
+    return TRUE;
 
 /*error:
-    RET(FALSE);*/
+    return FALSE;*/
 }
 
 
@@ -406,8 +402,6 @@ cpufreq_constructor(Plugin *p)
 static void applyConfig(Plugin* p) { }
 
 static void config(Plugin *p, GtkWindow* parent) {
-    ENTER;
-
     GtkWidget *dialog;
     cpufreq *cf = PRIV(p);
     dialog = create_generic_config_dialog(_(plugin_class(p)->name),
@@ -418,7 +412,6 @@ static void config(Plugin *p, GtkWindow* parent) {
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));
 
-    RET();
 }
 */
 static void

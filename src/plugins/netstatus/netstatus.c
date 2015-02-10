@@ -32,8 +32,6 @@
 
 #include <waterline/gtkcompat.h>
 
-#include <waterline/dbg.h>
-
 #include "netstatus-icon.h"
 #include "netstatus-dialog.h"
 
@@ -62,15 +60,12 @@ static void
 netstatus_destructor(Plugin *p)
 {
     netstatus *ns = PRIV(p);
-
-    ENTER;
     /* The widget is destroyed in plugin_stop().
     gtk_widget_destroy(ns->mainw);
     */
     g_free( ns->iface );
     g_free( ns->config_tool );
     g_free(ns);
-    RET();
 }
 
 static void on_response( GtkDialog* dlg, gint response, netstatus *ns )
@@ -127,7 +122,6 @@ netstatus_constructor(Plugin *p)
     netstatus *ns;
     NetstatusIface* iface;
 
-    ENTER;
     ns = g_new0(netstatus, 1);
     g_return_val_if_fail(ns != NULL, 0);
     plugin_set_priv(p, ns);
@@ -153,7 +147,7 @@ netstatus_constructor(Plugin *p)
 
     plugin_set_widget(p, ns->mainw);
 
-    RET(1);
+    return 1;
 }
 
 static void apply_config(Plugin* p)

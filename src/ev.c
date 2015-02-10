@@ -36,9 +36,6 @@
 #include <waterline/ev.h>
 #include <waterline/misc.h>
 
-//#define DEBUG
-#include <waterline/dbg.h>
-
 
 struct _FbEvClass {
     GObjectClass   parent_class;
@@ -234,63 +231,50 @@ void fb_ev_emit_destroy(FbEv *ev, Window win)
 static void
 ev_current_desktop(FbEv *ev, gpointer p)
 {
-    ENTER;
     ev->current_desktop = -1;
-    RET();
 }
 
 static void
 ev_active_window(FbEv *ev, gpointer p)
 {
-    ENTER;
 //    ev->active_window = None;		// Wrecks fb_ev_active window
-    RET();
 }
 
 static void
 ev_number_of_desktops(FbEv *ev, gpointer p)
 {
-    ENTER;
     ev->number_of_desktops = -1;
-    RET();
 }
 
 static void
 ev_desktop_names(FbEv *ev, gpointer p)
 {
-    ENTER;
     if (ev->desktop_names) {
         g_strfreev (ev->desktop_names);
         ev->desktop_names = NULL;
     }
-    RET();
 }
 static void
 ev_client_list(FbEv *ev, gpointer p)
 {
-    ENTER;
     if (ev->client_list) {
         XFree(ev->client_list);
         ev->client_list = NULL;
     }
-    RET();
 }
 
 static void
 ev_client_list_stacking(FbEv *ev, gpointer p)
 {
-    ENTER;
     if (ev->client_list_stacking) {
         XFree(ev->client_list_stacking);
         ev->client_list_stacking = NULL;
     }
-    RET();
 }
 
 int
 fb_ev_current_desktop(FbEv *ev)
 {
-    ENTER;
     if (ev->current_desktop == -1) {
         guint32 *data;
 
@@ -301,14 +285,13 @@ fb_ev_current_desktop(FbEv *ev)
         } else
             ev->current_desktop = 0;              
     }
-    RET(ev->current_desktop);
+    return ev->current_desktop;
 }
         
 int
 fb_ev_number_of_desktops(FbEv *ev)
 {
-    ENTER;
-     if (ev->number_of_desktops == -1) {
+    if (ev->number_of_desktops == -1) {
         guint32 *data;
 
         data = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL, 0);
@@ -318,8 +301,7 @@ fb_ev_number_of_desktops(FbEv *ev)
         } else
             ev->number_of_desktops = 0;              
     }
-    RET(ev->number_of_desktops);
-
+    return ev->number_of_desktops;
 }
 
 Window *fb_ev_active_window(FbEv *ev)

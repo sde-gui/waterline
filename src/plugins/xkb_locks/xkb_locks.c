@@ -32,7 +32,6 @@
 
 #define PLUGIN_PRIV_TYPE xkb_locks_t
 
-#include <waterline/dbg.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/paths.h>

@@ -42,7 +42,6 @@
 #include <waterline/fb_button.h>
 #include <waterline/plugin.h>
 #include <waterline/libsmfm.h>
-#include <waterline/dbg.h>
 
 #include <waterline/gtkcompat.h>
 

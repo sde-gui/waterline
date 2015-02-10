@@ -23,9 +23,8 @@
 #include <gdk/gdkx.h>
 #include <string.h>
 #include <sde-utils-gtk.h>
-
+#include <sde-utils.h>
 #include <waterline/Xsupport.h>
-#include <waterline/dbg.h>
 
 /* if current window manager is EWMH conforming. */
 gboolean is_ewmh_supported;
@@ -115,7 +114,6 @@ text_property_to_utf8 (const XTextProperty *prop)
   int count;
   char *retval;
 
-  ENTER;
   list = NULL;
   count = gdk_text_property_to_utf8_list (gdk_x11_xatom_to_atom (prop->encoding),
                                           prop->format,
@@ -132,7 +130,7 @@ text_property_to_utf8 (const XTextProperty *prop)
 
   g_strfreev (list);
 
-  RET(retval);
+  return retval;
 }
 
 char *
@@ -141,7 +139,6 @@ get_textproperty(Window win, Atom atom)
     XTextProperty text_prop;
     char *retval;
 
-    ENTER;
     if (XGetTextProperty(GDK_DISPLAY(), win, &text_prop, atom)) {
         su_log_debug("format=%d enc=%d nitems=%d value=%s   \n",
               text_prop.format,
@@ -151,10 +148,10 @@ get_textproperty(Window win, Atom atom)
         retval = text_property_to_utf8 (&text_prop);
         if (text_prop.nitems > 0)
             XFree (text_prop.value);
-        RET(retval);
+        return retval;
 
     }
-    RET(NULL);
+    return NULL;
 }
 
 
@@ -164,15 +161,14 @@ get_net_number_of_desktops()
     int desknum;
     guint32 *data;
 
-    ENTER;
     data = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_NUMBER_OF_DESKTOPS,
           XA_CARDINAL, 0);
     if (!data)
-        RET(0);
+        return 0;
 
     desknum = *data;
     XFree (data);
-    RET(desknum);
+    return desknum;
 }
 
 
@@ -182,14 +178,13 @@ get_net_current_desktop ()
     int desk;
     guint32 *data;
 
-    ENTER;
     data = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
     if (!data)
-        RET(0);
+        return 0;
 
     desk = *data;
     XFree (data);
-    RET(desk);
+    return desk;
 }
 
 int
@@ -198,13 +193,12 @@ get_net_wm_desktop(Window win)
     int desk = 0;
     guint32 *data;
 
-    ENTER;
     data = get_xaproperty (win, a_NET_WM_DESKTOP, XA_CARDINAL, 0);
     if (data) {
         desk = *data;
         XFree (data);
     }
-    RET(desk);
+    return desk;
 }
 
 void
@@ -220,13 +214,12 @@ get_net_wm_pid(Window win)
     GPid pid = 0;
     guint32 *data;
 
-    ENTER;
     data = get_xaproperty (win, a_NET_WM_PID, XA_CARDINAL, 0);
     if (data) {
         pid = *data;
         XFree (data);
     }
-    RET(pid);
+    return pid;
 }
 
 void
@@ -235,11 +228,9 @@ get_net_wm_state(Window win, NetWMState *nws)
     Atom *state;
     int num3;
 
-    ENTER;
-
     memset(nws, 0, sizeof(*nws));
     if (!(state = get_xaproperty(win, a_NET_WM_STATE, XA_ATOM, &num3)))
-        RET();
+        return;
 
     su_log_debug2( "%x: netwm state = { ", (unsigned int)win);
     while (--num3 >= 0) {
@@ -289,7 +280,6 @@ get_net_wm_state(Window win, NetWMState *nws)
     }
     XFree(state);
     su_log_debug2( "}\n");
-    RET();
 }
 
 void
@@ -343,13 +333,12 @@ get_wm_state (Window win)
     unsigned long *data;
     int ret = 0;
 
-    ENTER;
     data = get_xaproperty (win, aWM_STATE, aWM_STATE, 0);
     if (data) {
         ret = data[0];
         XFree (data);
     }
-    RET(ret);
+    return ret;
 }
 
 typedef enum
@@ -450,8 +439,6 @@ static int _net_supported_nitems = 0;
 
 void update_net_supported()
 {
-    ENTER;
-
     if (_net_supported)
     {
         XFree(_net_supported);
@@ -460,8 +447,6 @@ void update_net_supported()
     }
 
     _net_supported = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_SUPPORTED, XA_ATOM, &_net_supported_nitems);
-
-    RET();
 }
 
 gboolean check_net_supported(Atom atom)

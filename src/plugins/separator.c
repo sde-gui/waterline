@@ -16,15 +16,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <glib/gi18n.h>
 #include <waterline/global.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
-
-#include <glib/gi18n.h>
-
-#include <waterline/dbg.h>
-
 #include <waterline/gtkcompat.h>
 
 static int separator_constructor(Plugin * p);

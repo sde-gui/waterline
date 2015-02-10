@@ -32,8 +32,6 @@
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
 #include <waterline/gtkcompat.h>
-#include <waterline/dbg.h>
-
 
 #define PROC_THERMAL_DIRECTORY "/proc/acpi/thermal_zone/" /* must be slash-terminated */
 #define PROC_THERMAL_TEMPF  "temperature"
@@ -230,7 +228,6 @@ update_display(thermal *th)
     else
         color = th->cl_normal;
 
-    ENTER;
     if(temp == -1)
         panel_draw_label_text(plugin_panel(th->plugin), th->namew, "NA", STYLE_BOLD | STYLE_CUSTOM_COLOR);
     else
@@ -240,7 +237,7 @@ update_display(thermal *th)
         g_free(buffer);
     }
 
-    RET(TRUE);
+    return TRUE;
 }
 
 /* FIXME: поменять здесь везде работу с char[] и sprintf на gchar* и g_strdup_printf. */
@@ -320,7 +317,6 @@ thermal_constructor(Plugin *p)
 {
     thermal *th;
 
-    ENTER;
     th = g_new0(thermal, 1);
     th->plugin = p;
     plugin_set_priv(p, th);
@@ -360,28 +356,22 @@ thermal_constructor(Plugin *p)
     update_display(th);
     th->timer = g_timeout_add(1000, (GSourceFunc) update_display, (gpointer)th);
 
-    RET(TRUE);
+    return TRUE;
 }
 
 static void applyConfig(Plugin* p)
 {
-
     thermal *th = PRIV(p);
-
-    ENTER;
 
     if (th->normal_color) gdk_color_parse(th->normal_color, &th->cl_normal);
     if (th->warning1_color) gdk_color_parse(th->warning1_color, &th->cl_warning1);
     if (th->warning2_color) gdk_color_parse(th->warning2_color, &th->cl_warning2);
 
     sensor_changed(th);
-
-    RET();
 }
 
-static void config(Plugin *p, GtkWindow* parent) {
-    ENTER;
-
+static void config(Plugin *p, GtkWindow* parent)
+{
     GtkWidget *dialog;
     thermal *th = PRIV(p);
     dialog = create_generic_config_dialog(_(plugin_class(p)->name),
@@ -402,8 +392,6 @@ static void config(Plugin *p, GtkWindow* parent) {
             NULL);
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));
-
-    RET();
 }
 
 static void
@@ -411,7 +399,6 @@ thermal_destructor(Plugin *p)
 {
   thermal *th = PRIV(p);
 
-  ENTER;
   th = (thermal *) PRIV(p);
   g_free(th->sensor);
   g_free(th->normal_color);
@@ -419,7 +406,6 @@ thermal_destructor(Plugin *p)
   g_free(th->warning2_color);
   g_source_remove(th->timer);
   g_free(th);
-  RET();
 }
 
 static void save_config( Plugin* p)

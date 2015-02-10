@@ -31,8 +31,6 @@
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
 
-#include <waterline/dbg.h>
-
 #include "volume-impl.h"
 
 #include "volume_xpm.h"
@@ -56,14 +54,12 @@ volume_destructor(Plugin *p)
 {
     volume_t *vol = PRIV(p);
 
-    ENTER;
     if (vol->dlg)
         gtk_widget_destroy(vol->dlg);
     gtk_widget_destroy(vol->mainw);
     if (mixer_fd)
         close(mixer_fd);
     g_free(vol);
-    RET();
 }
 
 static void update_icon (Plugin* p)
@@ -255,7 +251,6 @@ static int volume_constructor(Plugin *p)
     curr_image = NULL;
     skip_botton1_event = FALSE;
 
-    ENTER;
     vol = g_new0(volume_t, 1);
     g_return_val_if_fail(vol != NULL, 0);
     plugin_set_priv(p, vol);
@@ -263,7 +258,7 @@ static int volume_constructor(Plugin *p)
     /* check if OSS mixer device could be open */
     mixer_fd = open ("/dev/mixer", O_RDWR, 0);
     if (mixer_fd < 0) {
-        RET(0);
+        return 0;
     }
 
     vol->mainw = gtk_event_box_new();
@@ -292,7 +287,7 @@ static int volume_constructor(Plugin *p)
     gtk_widget_set_tooltip_text(vol->mainw, _("Volume control"));
 
     plugin_set_widget(p, vol->mainw);
-    RET(1);
+    return 1;
 }
 
 

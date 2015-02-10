@@ -39,8 +39,6 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include <waterline/dbg.h>
-
 enum{
     COL_NAME,
     COL_EXPAND,

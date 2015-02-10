@@ -44,9 +44,6 @@
 #include <waterline/misc.h>
 #include "bg.h"
 #include <waterline/Xsupport.h>
-
-#include <waterline/dbg.h>
-
 #include <waterline/gtkcompat.h>
 
 /******************************************************************************/
@@ -300,7 +297,6 @@ static void make_round_corners(Panel *p)
     GdkColor white = { 1, 0xffff, 0xffff, 0xffff};
     int w, h, r, br;
 
-    ENTER;
     w = p->aw;
     h = p->ah;
     r = p->round_corners_radius;
@@ -326,8 +322,6 @@ static void make_round_corners(Panel *p)
     gtk_widget_shape_combine_mask(p->topgwin, b, 0, 0);
     g_object_unref(gc);
     g_object_unref(b);
-
-    RET();
 }
 
 /******************************************************************************/
@@ -894,15 +888,13 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
     Window win;
     XEvent *ev = (XEvent *) xevent;
 
-    ENTER;
-
     if (ev->type != PropertyNotify )
     {
         if( ev->type == DestroyNotify )
         {
             fb_ev_emit_destroy( fbev, ((XDestroyWindowEvent*)ev)->window );
         }
-        RET(GDK_FILTER_CONTINUE);
+        return GDK_FILTER_CONTINUE;
     }
 
     at = ev->xproperty.atom;
@@ -1094,8 +1086,7 @@ gboolean panel_is_composite_available(Panel * p)
 
 static gint panel_delete_event(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
-    ENTER;
-    RET(FALSE);
+    return FALSE;
 }
 
 static gint panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
@@ -1103,7 +1094,7 @@ static gint panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer d
     //Panel *p = (Panel *) data;
     //if (!p->self_destroy)
     gtk_main_quit();
-    RET(FALSE);
+    return FALSE;
 }
 
 static void on_root_bg_changed(FbBg *bg, Panel* p)
@@ -1276,7 +1267,6 @@ static void panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
 /* Calculate real width of a horizontal panel (or height of a vertical panel) */
 static void calculate_width(int scrw, int wtype, int align, int margin, int *panw, int *x)
 {
-    ENTER;
     su_log_debug2("panw=%d, margin=%d scrw=%d\n", *panw, margin, scrw);
     //scrw -= 2;
     if (wtype == WIDTH_PERCENT) {
@@ -1307,7 +1297,6 @@ static void calculate_width(int scrw, int wtype, int align, int margin, int *pan
             *x = 0;
     } else if (align == ALIGN_CENTER)
         *x += (scrw - *panw) / 2;
-    RET();
 }
 
 /* Calculate panel size and position with given margins. */
@@ -1315,8 +1304,6 @@ static void calculate_width(int scrw, int wtype, int align, int margin, int *pan
 void calculate_position(Panel *np, int margin_top, int margin_bottom)
 {
     int sswidth, ssheight, minx, miny;
-
-    ENTER;
 
     GdkScreen * screen = gtk_widget_get_screen(np->topgwin);
 
@@ -1391,7 +1378,6 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
         np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));
     }
     //g_debug("%s - x=%d y=%d w=%d h=%d\n", __FUNCTION__, np->ax, np->ay, np->aw, np->ah);
-    RET();
 }
 
 /* Calculate panel size and position. */
@@ -1449,8 +1435,6 @@ void update_panel_geometry(Panel* p)
 
 static gint panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
 {
-    ENTER;
-
     if (p->oriented_width_type == WIDTH_REQUEST)
         p->oriented_width = (p->orientation == ORIENT_HORIZ) ? req->width : req->height;
     if (p->oriented_height_type == HEIGHT_REQUEST)
@@ -1459,7 +1443,7 @@ static gint panel_size_req(GtkWidget *widget, GtkRequisition *req, Panel *p)
     req->width  = p->aw;
     req->height = p->ah;
 
-    RET( TRUE );
+    return TRUE;
 }
 
 static void panel_size_position_changed(Panel *p, gboolean position_changed)
@@ -1498,8 +1482,6 @@ static void panel_size_position_changed(Panel *p, gboolean position_changed)
 
 static gint panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 {
-    ENTER;
-
     if (p->oriented_width_type == WIDTH_REQUEST)
         p->oriented_width = (p->orientation == ORIENT_HORIZ) ? a->width : a->height;
     if (p->oriented_height_type == HEIGHT_REQUEST)
@@ -1512,7 +1494,7 @@ static gint panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 
     /* a->x and a->y always contain 0. */
     if (a->width == p->cw && a->height == p->ch) {
-        RET(TRUE);
+        return TRUE;
     }
 
     p->cw = a->width;
@@ -1522,20 +1504,18 @@ static gint panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 
     panel_size_position_changed(p , FALSE);
 
-    RET(TRUE);
+    return TRUE;
 }
 
 /* configure-event signal handler */
 
 static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, Panel *p)
 {
-    ENTER;
-
     gboolean position_changed = e->x != p->cx || e->y != p->cy;
     gboolean size_changed = e->width != p->cw || e->height != p->ch;
 
     if (!position_changed && !size_changed)
-        RET(TRUE);
+        return TRUE;
 
     p->cw = e->width;
     p->ch = e->height;
@@ -1546,7 +1526,7 @@ static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e,
 
     panel_size_position_changed(p, position_changed);
 
-    RET(FALSE);
+    return FALSE;
 }
 
 static void panel_screen_monitors_changed_event(GdkScreen * _screen, Panel * panel)
@@ -1873,8 +1853,6 @@ panel_force_pango_initialization(Panel * p)
 static void
 panel_start_gui(Panel *p)
 {
-    ENTER;
-
     p->curdesk = get_net_current_desktop();
     p->desknum = get_net_number_of_desktops();
     p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
@@ -2006,8 +1984,6 @@ panel_start_gui(Panel *p)
     panel_set_desktop_icon_overlap_mode(p);
 
     panel_force_pango_initialization(p);
-
-    RET();
 }
 
 /* Exchange the "width" and "height" terminology for vertical and horizontal panels. */
@@ -2335,8 +2311,6 @@ delete_plugin(gpointer data, gpointer udata)
 
 static void panel_destroy(Panel *p)
 {
-    ENTER;
-
     json_decref(p->json);
 
     g_signal_handlers_disconnect_by_func(G_OBJECT(p->screen), panel_screen_monitors_changed_event, p);
@@ -2392,7 +2366,6 @@ static void panel_destroy(Panel *p)
 
     g_free( p->name );
     g_free(p);
-    RET();
 }
 
 Panel* panel_new( const char* config_file, const char* config_name )

@@ -34,8 +34,6 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include <waterline/dbg.h>
-
 static void notify_apply_config( GtkWidget* widget )
 {
     GSourceFunc apply_func;

@@ -30,12 +30,8 @@
 #include <gdk/gdkx.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
-
 #include "bg.h"
-
-//#define DEBUG
-#include <waterline/dbg.h>
-
+#include <sde-utils.h>
 
 enum {
     CHANGED,
@@ -100,7 +96,6 @@ static void
 fb_bg_class_init (FbBgClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    ENTER;
     signals [CHANGED] =
         g_signal_new ("changed",
               G_OBJECT_CLASS_TYPE (object_class),
@@ -111,7 +106,6 @@ fb_bg_class_init (FbBgClass *klass)
               G_TYPE_NONE, 0);
     klass->changed = fb_bg_changed;
     object_class->finalize = fb_bg_finalize;
-    RET();
 }
 
 static void
@@ -120,7 +114,6 @@ fb_bg_init (FbBg *bg)
     XGCValues  gcv;
     uint mask;
 
-    ENTER;
     bg->dpy = GDK_DISPLAY();
     bg->xroot = DefaultRootWindow(bg->dpy);
     bg->id = gdk_x11_get_xatom_by_name("_XROOTPMAP_ID");
@@ -134,18 +127,14 @@ fb_bg_init (FbBg *bg)
         mask |= GCTile ;
     }
     bg->gc = XCreateGC (bg->dpy, bg->xroot, mask, &gcv) ;
-    RET();
 }
 
 static void
 fb_bg_finalize (GObject *object)
 {
     FbBg *bg;
-
-    ENTER;
     bg = FB_BG (object);
     XFreeGC(bg->dpy, bg->gc);
-    RET();
 }
 
 
@@ -154,7 +143,6 @@ fb_bg_get_xrootpmap(FbBg *bg)
 {
     Pixmap ret = None;
 
-    ENTER;
     if (bg->id) {
         int  act_format, c = 2 ;
         u_long  nitems ;
@@ -174,8 +162,7 @@ fb_bg_get_xrootpmap(FbBg *bg)
             }
         } while (--c > 0);
     }
-    RET(ret);
-
+    return ret;
 }
 
 
@@ -189,13 +176,11 @@ fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget)
     guint  width, height, border, depth;
     int  x, y;
 
-    ENTER;
-
     win =  GDK_WINDOW_XWINDOW(widget->window);
     if (!XGetGeometry(bg->dpy, win, &dummy, &x, &y, &width, &height, &border,
               &depth)) {
         su_log_debug("XGetGeometry failed\n");
-        RET(NULL);
+        return NULL;
     }
     XTranslateCoordinates(bg->dpy, win, bg->xroot, 0, 0, &x, &y, &dummy);
     su_log_debug("win=%x %dx%d%+d%+d\n", win, width, height, x, y);
@@ -206,7 +191,7 @@ fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget)
 
     if (!gbgpix) {
         su_print_error_message("gdk_pixmap_new failed\n");
-        RET(NULL);
+        return NULL;
     }
 
     bgpix =  gdk_x11_drawable_get_xid(gbgpix);
@@ -226,14 +211,12 @@ fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget)
         gbgpix = pix;
     }
 
-    RET(gbgpix);
+    return gbgpix;
 }
 
 void
 fb_bg_composite(GdkDrawable *base, GdkGC *gc, guint32 tintcolor, gint alpha)
 {
-    ENTER;
-
     GdkPixbuf *ret, *ret2;
     int w, h;
 
@@ -243,27 +226,25 @@ fb_bg_composite(GdkDrawable *base, GdkGC *gc, guint32 tintcolor, gint alpha)
 
     ret = gdk_pixbuf_get_from_drawable (NULL, base, cmap, 0, 0, 0, 0, w, h);
     if (!ret)
-        RET();
+        return;
 
     ret2 = gdk_pixbuf_composite_color_simple(ret, w, h,
           GDK_INTERP_HYPER, 255-alpha, MIN(w, h), tintcolor, tintcolor);
 
     if (!ret2) {
         g_object_unref(ret);
-        RET();
+        return;
     }
     //gdk_pixbuf_render_to_drawable (ret2, base, gc, 0, 0, 0, 0, w, h, GDK_RGB_DITHER_NONE, 0, 0);
     gdk_draw_pixbuf (base, gc, ret2, 0, 0, 0, 0, w, h, GDK_RGB_DITHER_NONE, 0, 0);
     g_object_unref(ret);
     g_object_unref(ret2);
-    RET();
 }
 
 
 static void
 fb_bg_changed(FbBg *bg)
 {
-    ENTER;
     bg->pixmap = fb_bg_get_xrootpmap(bg);
     if (bg->pixmap != None) {
         XGCValues  gcv;
@@ -272,19 +253,15 @@ fb_bg_changed(FbBg *bg)
         XChangeGC(bg->dpy, bg->gc, GCTile, &gcv);
         su_log_debug("changed\n");
     }
-    RET();
 }
 
 inline void fb_bg_notify_changed_bg(FbBg *bg)
 {
-    ENTER;
     g_signal_emit (bg, signals [CHANGED], 0);
-    RET();
 }
 
 FbBg *fb_bg_get_for_display(void)
 {
-    ENTER;
     if (!default_bg)
     {
         default_bg = fb_bg_new();
@@ -293,19 +270,18 @@ FbBg *fb_bg_get_for_display(void)
     }
     else
         g_object_ref(default_bg);
-    RET(default_bg);
+    return default_bg;
 }
 
 GdkPixmap *
 fb_bg_get_pix_from_file(GtkWidget *widget, const char *filename)
 {
-    ENTER;
     GdkPixbuf *pixbuf;
     GdkPixmap *pixmap;
 
     pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
     if (!pixbuf) {
-        RET(widget->style->bg_pixmap[0]);
+        return widget->style->bg_pixmap[0];
     }
     pixmap = gdk_pixmap_new(widget->window, gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf), -1);
 /*    gdk_pixbuf_render_to_drawable(pixbuf,pixmap,
@@ -326,5 +302,5 @@ fb_bg_get_pix_from_file(GtkWidget *widget, const char *filename)
         GDK_RGB_DITHER_NORMAL,0,0);
 
     g_object_unref( pixbuf );
-    RET(pixmap);
+    return pixmap;
 }

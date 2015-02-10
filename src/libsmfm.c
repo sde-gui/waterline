@@ -20,9 +20,8 @@
 #include <config.h>
 #endif
 
-#include <waterline/dbg.h>
 #include <waterline/libsmfm.h>
-
+#include <sde-utils.h>
 #include <gtk/gtk.h>
 
 

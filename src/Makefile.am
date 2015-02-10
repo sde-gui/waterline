@@ -50,7 +50,6 @@ if BUILD_PLUGIN_LOADER
 DYNAMIC_FLAGS = -export-dynamic
 waterline_includedir = $(pkgincludedir)/waterline
 waterline_include_HEADERS = \
-	$(top_srcdir)/include/waterline/waterline/dbg.h \
 	$(top_srcdir)/include/waterline/waterline/defaultapplications.h \
 	$(top_srcdir)/include/waterline/waterline/ev.h \
 	$(top_srcdir)/include/waterline/waterline/fb_button.h \

@@ -38,8 +38,6 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include <waterline/dbg.h>
-
 static void save_global_config();
 
 /******************************************************************************/
@@ -325,7 +323,7 @@ void panel_save_configuration(Panel* p)
     save_global_config();
     p->config_changed = 0;
 
-    RET();
+    return;
 
 err:
     if (fp)
@@ -334,7 +332,6 @@ err:
     g_free( file_name );
     g_free( bak_file_path );
     g_free( bak_file_name );
-    RET();
 }
 
 const char general_group[] = "General";

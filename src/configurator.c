@@ -39,8 +39,6 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include <waterline/dbg.h>
-
 static gboolean initialized = FALSE;
 
 static void (*_panel_configure)(Panel* p, int sel_page);

@@ -38,8 +38,6 @@
 
 #define BORDER_SIZE 0
 
-#include <waterline/dbg.h>
-
 typedef unsigned long long CPUTick;			/* Value from /proc/stat */
 
 enum {

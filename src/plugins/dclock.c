@@ -31,9 +31,6 @@
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
-
-#include <waterline/dbg.h>
-
 #include <waterline/gtkcompat.h>
 
 #define DEFAULT_TIP_FORMAT    "%A %x"

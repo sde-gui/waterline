@@ -47,7 +47,6 @@
 #define PLUGIN_PRIV_TYPE BatteryPlugin
 
 #include <waterline/gtkcompat.h>
-#include <waterline/dbg.h>
 #include "battery.h"
 #include <waterline/misc.h>
 #include <waterline/panel.h>
@@ -460,11 +459,9 @@ static gint buttonPressEvent(GtkWidget *widget, GdkEventButton *event,
 static gint configureEvent(GtkWidget *widget, GdkEventConfigure *event,
         BatteryPlugin *iplugin) {
 
-    ENTER;
-
     if (iplugin->width == widget->allocation.width && iplugin->height == widget->allocation.height)
     {
-        RET(TRUE);
+        return TRUE;
     }
 
     //g_print("allocation: %d, %d\n", widget->allocation.width, widget->allocation.height);
@@ -488,8 +485,7 @@ static gint configureEvent(GtkWidget *widget, GdkEventConfigure *event,
     /* Perform an update so the bar will look right in its new orientation */
     update_display(iplugin);
 
-    RET(TRUE);
-
+    return TRUE;
 }
 
 static void sizeRequest(GtkWidget * widget, GtkRequisition * requisition, BatteryPlugin *iplugin)
@@ -499,24 +495,18 @@ static void sizeRequest(GtkWidget * widget, GtkRequisition * requisition, Batter
     //g_print("requisition: %d, %d\n", iplugin->bar_preferred_width, iplugin->bar_preferred_height);
 }
 
-static gint exposeEvent(GtkWidget *widget, GdkEventExpose *event, BatteryPlugin *iplugin) {
-
-    ENTER;
-
+static gint exposeEvent(GtkWidget *widget, GdkEventExpose *event, BatteryPlugin *iplugin)
+{
     gdk_draw_drawable (widget->window, iplugin->drawingArea->style->black_gc,
             iplugin->pixmap, event->area.x, event->area.y, event->area.x,
             event->area.y, event->area.width, event->area.height);
-
-    RET(FALSE);
-
+    return FALSE;
 }
 
 
 static int
 constructor(Plugin *p)
 {
-    ENTER;
-
     BatteryPlugin *iplugin;
     iplugin = g_new0(BatteryPlugin, 1);
     plugin_set_priv(p, iplugin);
@@ -576,18 +566,13 @@ constructor(Plugin *p)
     /* Start the update loop */
     iplugin->timer = g_timeout_add_seconds( 3, (GSourceFunc) update_timout, (gpointer) iplugin);
 
-    RET(TRUE);
-
-/*error:
-    RET(FALSE);*/
+    return TRUE;
 }
 
 
 static void
 destructor(Plugin *p)
 {
-    ENTER;
-
     BatteryPlugin * iplugin = PRIV(p);
 
     if (iplugin->pixmap)
@@ -600,16 +585,11 @@ destructor(Plugin *p)
     if (iplugin->timer)
         g_source_remove(iplugin->timer);
     g_free(iplugin);
-
-    RET();
-
 }
 
 
-static void battery_indicator_panel_configuration_changed(Plugin *p) {
-
-    ENTER;
-
+static void battery_indicator_panel_configuration_changed(Plugin *p)
+{
     BatteryPlugin *b = PRIV(p);
 
     b->orientation = plugin_get_orientation(p);
@@ -629,29 +609,22 @@ static void battery_indicator_panel_configuration_changed(Plugin *p) {
             b->bar_preferred_height = 5;
     }
     gtk_widget_queue_resize(b->drawingArea);
-
-    RET();
 }
 
 
 static void applyConfig(Plugin* p)
 {
-    ENTER;
-
     BatteryPlugin *b = PRIV(p);
 
     /* Make sure the border value is acceptable */
     b->border_width = MAX(0, b->border_width);
 
     update_display(b);
-
-    RET();
 }
 
 
-static void config(Plugin *p, GtkWindow* parent) {
-    ENTER;
-
+static void config(Plugin *p, GtkWindow* parent)
+{
     GtkWidget *dialog;
     BatteryPlugin *b = PRIV(p);
     dialog = create_generic_config_dialog(_(plugin_class(p)->name),
@@ -674,12 +647,11 @@ static void config(Plugin *p, GtkWindow* parent) {
             NULL);
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));
-
-    RET();
 }
 
 
-static void save(Plugin* p) {
+static void save(Plugin* p)
+{
     BatteryPlugin *iplugin = PRIV(p);
     su_json_write_options(plugin_inner_json(p), option_definitions, iplugin);
 }

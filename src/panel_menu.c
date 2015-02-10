@@ -32,9 +32,6 @@
 #include <waterline/misc.h>
 #include "bg.h"
 #include <waterline/Xsupport.h>
-
-#include <waterline/dbg.h>
-
 #include <waterline/gtkcompat.h>
 
 /******************************************************************************/

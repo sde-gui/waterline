@@ -39,8 +39,6 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include <waterline/dbg.h>
-
 enum{
     COL_NAME,
     COL_EXPAND,
@@ -315,20 +313,14 @@ static void gobelow_toggle(GtkToggleButton *widget, Panel *p)
 
 static void stretch_background_toggle(GtkWidget * w, Panel*  p)
 {
-    ENTER;
-
     gboolean t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
 
     p->stretch_background = t;
     panel_update_background(p);
-
-    RET();
 }
 
 static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
 {
-    ENTER;
-
     int alpha = gtk_range_get_value(GTK_RANGE(w));
 
     if (p->alpha != alpha)
@@ -339,14 +331,10 @@ static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
         GtkWidget* tr = (GtkWidget*)g_object_get_data(G_OBJECT(w), "tint_clr");
         gtk_color_button_set_alpha(GTK_COLOR_BUTTON(tr), 256 * p->alpha);
     }
-
-    RET();
 }
 
 static void rgba_transparency_toggle(GtkWidget * w, Panel*  p)
 {
-    ENTER;
-
     gboolean t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
 
     p->rgba_transparency = t;
@@ -354,16 +342,12 @@ static void rgba_transparency_toggle(GtkWidget * w, Panel*  p)
 
     GtkWidget* alpha_scale = (GtkWidget*)g_object_get_data(G_OBJECT(w), "alpha_scale");
     gtk_widget_set_sensitive(alpha_scale, p->rgba_transparency);
-
-    RET();
 }
 
 static void bgcolor_toggle( GtkWidget *b, Panel* p)
 {
     GtkWidget* tr = (GtkWidget*)g_object_get_data(G_OBJECT(b), "tint_clr");
     gboolean t;
-
-    ENTER;
 
     t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b));
     gtk_widget_set_sensitive(tr, t);
@@ -374,7 +358,6 @@ static void bgcolor_toggle( GtkWidget *b, Panel* p)
         p->background = 0;
         panel_update_background( p );
     }
-    RET();
 }
 
 static void background_file_helper(Panel * p, GtkWidget * toggle, GtkFileChooser * file_chooser)
@@ -413,7 +396,6 @@ static void background_changed(GtkFileChooser *file_chooser,  Panel* p )
 static void
 background_disable_toggle( GtkWidget *b, Panel* p )
 {
-    ENTER;
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b))) {
         if (p->background!=0||p->transparent!=0) {
             p->background = 0;
@@ -422,8 +404,6 @@ background_disable_toggle( GtkWidget *b, Panel* p )
             panel_update_background( p );
         }
     }
-
-    RET();
 }
 
 static void
@@ -632,7 +612,6 @@ update_opt_menu(GtkWidget *w, int ind)
 {
     int i;
 
-    ENTER;
     /* this trick will trigger "changed" signal even if active entry is
      * not actually changing */
     i = gtk_combo_box_get_active(GTK_COMBO_BOX(w));
@@ -641,7 +620,6 @@ update_opt_menu(GtkWidget *w, int ind)
         gtk_combo_box_set_active(GTK_COMBO_BOX(w), i);
     }
     gtk_combo_box_set_active(GTK_COMBO_BOX(w), ind);
-    RET();
 }
 #if 0
 static void
@@ -649,7 +627,6 @@ update_toggle_button(GtkWidget *w, gboolean n)
 {
     gboolean c;
 
-    ENTER;
     /* this trick will trigger "changed" signal even if active entry is
      * not actually changing */
     c = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
@@ -657,7 +634,6 @@ update_toggle_button(GtkWidget *w, gboolean n)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), !n);
     }
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), n);
-    RET();
 }
 #endif
 

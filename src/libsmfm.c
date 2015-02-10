@@ -21,7 +21,7 @@
 #endif
 
 #include <waterline/dbg.h>
-#include <waterline/libfm.h>
+#include <waterline/libsmfm.h>
 
 #include <gtk/gtk.h>
 
@@ -30,18 +30,18 @@ static gboolean (*__fm_gtk_init)(void * config) = NULL;
 
 static GtkMenu * (*__fm_get_gtk_file_menu_for_string)(GtkWindow* parent, const char * url) = NULL;
 
-static gboolean libfm_initialized = FALSE;
-static gboolean libfm_initialization_failed = FALSE;
+static gboolean libsmfm_initialized = FALSE;
+static gboolean libsmfm_initialization_failed = FALSE;
 
 gboolean wtl_fm_init(void)
 {
-    if (libfm_initialization_failed)
+    if (libsmfm_initialization_failed)
         return FALSE;
 
-    if (libfm_initialized)
+    if (libsmfm_initialized)
         return TRUE;
 
-    GModule * libfm = g_module_open("libsmfm-gtk2.so.4", 0);
+    GModule * libsmfm = g_module_open("libsmfm-gtk2.so.4", 0);
 /*
     if (!libfm)
     {
@@ -53,13 +53,13 @@ gboolean wtl_fm_init(void)
         libfm = g_module_open("libfm-gtk.so.2", 0);
     }
 */
-    if (!libfm)
+    if (!libsmfm)
     {
         su_print_error_message("Failed load libsmfm-gtk2.so.4");
         goto fail;
     }
 
-#define bind_name(name) if (! g_module_symbol(libfm, #name, (gpointer * ) &__##name) ) \
+#define bind_name(name) if (! g_module_symbol(libsmfm, #name, (gpointer * ) &__##name) ) \
 {\
     su_print_error_message("Failed resolve %s\n", #name); \
     goto fail;\
@@ -72,11 +72,11 @@ gboolean wtl_fm_init(void)
 
     __fm_gtk_init(NULL);
 
-     libfm_initialized = TRUE;
+     libsmfm_initialized = TRUE;
      return TRUE;
 
 fail:
-     libfm_initialization_failed = TRUE;
+     libsmfm_initialization_failed = TRUE;
      return FALSE;
 }
 

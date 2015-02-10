@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __WATERLINE__LIBFM_H
-#define __WATERLINE__LIBFM_H
+#ifndef __WATERLINE__LIBSMFM_H
+#define __WATERLINE__LIBSMFM_H
 
 #include <gtk/gtk.h>
 

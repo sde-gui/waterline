@@ -5,7 +5,7 @@
 src/bg.c
 src/configurator.c
 src/defaultapplications.c
-src/libfm.c
+src/libsmfm.c
 src/window-icons.c
 src/paths.c
 src/openbox-integration.c

@@ -29,7 +29,7 @@ waterline_SOURCES = \
 	misc.c \
 	fb_button.c \
 	defaultapplications.c \
-	libfm.c \
+	libsmfm.c \
 	window-icons.c \
 	openbox-integration.c \
 	bg.c bg.h  \
@@ -57,7 +57,7 @@ waterline_include_HEADERS = \
 	$(top_srcdir)/include/waterline/waterline/global.h \
 	$(top_srcdir)/include/waterline/waterline/gtkcompat.h \
 	$(top_srcdir)/include/waterline/waterline/menu-cache-compat.h \
-	$(top_srcdir)/include/waterline/waterline/libfm.h \
+	$(top_srcdir)/include/waterline/waterline/libsmfm.h \
 	$(top_srcdir)/include/waterline/waterline/misc.h \
 	$(top_srcdir)/include/waterline/waterline/panel.h \
 	$(top_srcdir)/include/waterline/waterline/paths.h \

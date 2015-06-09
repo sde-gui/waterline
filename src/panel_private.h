@@ -42,6 +42,9 @@ struct _Panel {
 
     char * widget_name;
 
+    gboolean is_composited;
+    guint composite_check_timeout;
+
     FbBg *bg;
     int alpha;
     GdkColor tint_color;

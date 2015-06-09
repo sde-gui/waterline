@@ -33,7 +33,7 @@
 /* Support for external plugin versioning.
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */
 #define PLUGINCLASS_MAGIC ((unsigned long)0x7bd4370f)
-#define PLUGINCLASS_VERSION 4
+#define PLUGINCLASS_VERSION 5
 #define PLUGINCLASS_BASE_SIZE ((unsigned short) (uintptr_t) & ((PluginClass*)0)->__end_of_required_part)
 #define PLUGINCLASS_VERSIONING \
     structure_magic : PLUGINCLASS_MAGIC, \
@@ -91,6 +91,7 @@ struct _PluginClass {
     void (*add_launch_item)(struct _Plugin * plugin, const char * name);
     int  (*get_priority_of_launch_item_adding)(struct _Plugin * plugin);
     void (*popup_menu_hook)(struct _Plugin * plugin, GtkMenu * menu);
+    void (*compositing_mode_changed)(struct _Plugin * plugin);
 
     gboolean (*is_application_class_visible)(struct _Plugin * plugin, const char * class_name);
     void (*application_class_visibility_changed)(struct _Plugin * plugin);

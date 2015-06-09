@@ -495,6 +495,9 @@ typedef struct _taskbar {
     gboolean colorize_buttons_prev;
     gboolean use_group_separators_prev;
 
+    gboolean _thumbnails_prev;
+    gboolean _use_thumbnails_as_icons_prev;
+
     int sort_settings_hash;
 
     /* Deferred window switching data. */
@@ -4985,6 +4988,8 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     tb->show_icons  = tb->show_icons_titles != SHOW_TITLES;
     tb->show_titles = tb->show_icons_titles != SHOW_ICONS;
 
+    tb->thumbnails = (tb->thumbnails_preview || tb->use_thumbnails_as_icons) && panel_is_composited(plugin_panel(tb->plug));
+
     tb->rebuild_gui = tb->_mode != tb->mode;
     tb->rebuild_gui |= tb->show_all_desks_prev_value != tb->show_all_desks;
     tb->rebuild_gui |= tb->_group_fold_threshold != tb->group_fold_threshold;
@@ -4994,6 +4999,8 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     tb->rebuild_gui |= tb->show_mapped_prev != tb->show_mapped;
     tb->rebuild_gui |= tb->sort_settings_hash != sort_settings_hash;
     tb->rebuild_gui |= tb->colorize_buttons_prev != tb->colorize_buttons;
+    tb->rebuild_gui |= tb->_thumbnails_prev != tb->thumbnails;
+    tb->rebuild_gui |= tb->_use_thumbnails_as_icons_prev != tb->use_thumbnails_as_icons;
 
     if (tb->rebuild_gui) {
         tb->_mode = tb->mode;
@@ -5005,6 +5012,8 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
         tb->show_mapped_prev = tb->show_mapped;
         tb->sort_settings_hash = sort_settings_hash;
         tb->colorize_buttons_prev = tb->colorize_buttons;
+        tb->_thumbnails_prev = tb->thumbnails;
+        tb->_use_thumbnails_as_icons_prev = tb->use_thumbnails_as_icons;
     }
 
     tb->_show_close_buttons = tb->show_close_buttons && !(tb->grouped_tasks && tb->_group_fold_threshold == 1);
@@ -5015,8 +5024,6 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     gboolean recompute_visibility = tb->_unfold_focused_group != unfold_focused_group;
     recompute_visibility |= tb->_show_single_group != show_single_group;
     recompute_visibility |= tb->use_group_separators_prev != tb->use_group_separators;
-
-    tb->thumbnails = (tb->thumbnails_preview || tb->use_thumbnails_as_icons) && panel_is_composited(plugin_panel(tb->plug));
 
     if (tb->dim_iconified_prev != tb->dim_iconified)
     {
@@ -5414,6 +5421,12 @@ static void taskbar_panel_configuration_changed(Plugin * p)
     taskbar_redraw(tb);
 }
 
+static void taskbar_compositing_mode_changed(Plugin * p)
+{
+    //TaskbarPlugin * tb = PRIV(p);
+    taskbar_apply_configuration(p);
+}
+
 /******************************************************************************/
 
 static Task * taskbar_get_task_by_position(TaskbarPlugin * tb, int position)
@@ -5600,6 +5613,7 @@ PluginClass taskbar_plugin_class = {
     config : taskbar_configure,
     save : taskbar_save_configuration,
     panel_configuration_changed : taskbar_panel_configuration_changed,
+    compositing_mode_changed : taskbar_compositing_mode_changed,
     run_command : taskbar_run_command,
     is_application_class_visible : taskbar_is_application_class_visible,
     popup_menu_hook : taskbar_popup_menu_hook

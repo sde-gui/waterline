@@ -77,6 +77,9 @@ static void panel_size_position_changed(Panel *p, gboolean position_changed);
 extern void panel_calculate_position(Panel *p);
 extern void update_panel_geometry(Panel* p);
 
+static void panel_notify_plugins_on_configuration_change(Panel * p);
+static void panel_notify_plugins_on_compositing_mode_change(Panel * p);
+
 /******************************************************************************/
 
 /* Globals */
@@ -1850,6 +1853,18 @@ panel_force_pango_initialization(Panel * p)
     initialized = 1;
 }
 
+static gboolean panel_on_composite_check_timeout(Panel * p)
+{
+    gboolean is_composited = panel_is_composited(p);
+    if (p->is_composited != is_composited)
+    {
+        p->is_composited = is_composited;
+        panel_update_background(p);
+        panel_notify_plugins_on_compositing_mode_change(p);
+    }
+    return TRUE;
+}
+
 static void
 panel_start_gui(Panel *p)
 {
@@ -1984,6 +1999,12 @@ panel_start_gui(Panel *p)
     panel_set_desktop_icon_overlap_mode(p);
 
     panel_force_pango_initialization(p);
+
+    p->is_composited = panel_is_composited(p);
+    if (panel_is_composite_available(p))
+    {
+        p->composite_check_timeout = g_timeout_add(3 * 1000, (GSourceFunc) panel_on_composite_check_timeout, p);
+    }
 }
 
 /* Exchange the "width" and "height" terminology for vertical and horizontal panels. */
@@ -2146,10 +2167,32 @@ void panel_update_toplevel_alignment(Panel *p)
         gtk_alignment_set(GTK_ALIGNMENT(p->toplevel_alignment), 0.5, align, 1, scale);
 }
 
-void panel_set_panel_configuration_changed(Panel *p)
+static void panel_notify_plugins_on_configuration_change(Panel *p)
 {
     GList* l;
+    for (l = p->plugins; l; l = l->next) {
+        Plugin* pl = (Plugin*)l->data;
+        if (pl->class->panel_configuration_changed) {
+            pl->class->panel_configuration_changed(pl);
+        }
+    }
+}
 
+static void panel_notify_plugins_on_compositing_mode_change(Panel *p)
+{
+    GList* l;
+    for (l = p->plugins; l; l = l->next) {
+        Plugin* pl = (Plugin*)l->data;
+        if (pl->class->compositing_mode_changed) {
+            pl->class->compositing_mode_changed(pl);
+        } else if (pl->class->panel_configuration_changed) {
+            pl->class->panel_configuration_changed(pl);
+        }
+    }
+}
+
+void panel_set_panel_configuration_changed(Panel *p)
+{
     panel_set_desktop_icon_overlap_mode(p);
 
     if (p->toplevel_alignment)
@@ -2190,18 +2233,7 @@ void panel_set_panel_configuration_changed(Panel *p)
         panel_update_toplevel_alignment(p);
     }
 
-
-    /* NOTE: This loop won't be executed when panel started since
-       plugins are not loaded at that time.
-       This is used when the orientation of the panel is changed
-       from the config dialog, and plugins should be re-layout.
-    */
-    for( l = p->plugins; l; l = l->next ) {
-        Plugin* pl = (Plugin*)l->data;
-        if( pl->class->panel_configuration_changed ) {
-            pl->class->panel_configuration_changed( pl );
-        }
-    }
+    panel_notify_plugins_on_configuration_change(p);
 }
 
 static int
@@ -2318,6 +2350,9 @@ static void panel_destroy(Panel *p)
 
     if (p->set_wm_strut_idle)
         g_source_remove(p->set_wm_strut_idle);
+
+    if (p->composite_check_timeout)
+        g_source_remove(p->composite_check_timeout);
 
     if (p->hide_timeout)
         g_source_remove(p->hide_timeout);

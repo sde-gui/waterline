@@ -609,10 +609,9 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         _("Font")          , &dc->font          , (GType)CONF_TYPE_STR,
         _("Action when clicked"), &dc->action, (GType)CONF_TYPE_STR,
         "tooltip-text", _("Default action: display calendar"), (GType)CONF_TYPE_SET_PROPERTY,
-        "", 0, (GType)CONF_TYPE_END_TABLE,
-
         _("Timezone")  , &dc->timezone , (GType)CONF_TYPE_STR,
         "completion-list", (gpointer)dclock_get_timezones(dc), (GType)CONF_TYPE_SET_PROPERTY,
+        "", 0, (GType)CONF_TYPE_END_TABLE,
         NULL);
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));

@@ -38,7 +38,7 @@
 
 #define BORDER_SIZE 0
 
-typedef unsigned long long CPUTick;			/* Value from /proc/stat */
+typedef unsigned long long CPUTick; /* Value from /proc/stat */
 
 enum {
     CPU_SAMPLE_S,
@@ -52,7 +52,7 @@ typedef struct {
 } CPUSample;
 
 struct cpu_stat {
-    CPUTick u, n, s, i, io;				/* User, nice, system, idle, io wait */
+    CPUTick u, n, s, i, io; /* User, nice, system, idle, io wait */
 };
 
 /* Private context for CPU plugin. */
@@ -64,15 +64,15 @@ typedef struct {
     double background_color[3];
 
     GtkWidget * frame;
-    GtkWidget * da;				/* Drawing area */
-    GdkPixmap * pixmap;				/* Pixmap to be drawn on drawing area */
+    GtkWidget * da;     /* Drawing area */
+    GdkPixmap * pixmap; /* Pixmap to be drawn on drawing area */
 
-    guint timer;				/* Timer for periodic update */
-    CPUSample * stats_cpu;			/* Ring buffer of CPU utilization values */
-    unsigned int ring_cursor;			/* Cursor for ring buffer */
-    int pixmap_width;				/* Width of drawing area pixmap; also size of ring buffer; does not include border size */
-    int pixmap_height;				/* Height of drawing area pixmap; does not include border size */
-    struct cpu_stat previous_cpu_stat;		/* Previous value of cpu_stat */
+    guint timer;                /* Timer for periodic update */
+    CPUSample * stats_cpu;      /* Ring buffer of CPU utilization values */
+    unsigned int ring_cursor;   /* Cursor for ring buffer */
+    int pixmap_width;           /* Width of drawing area pixmap; also size of ring buffer; does not include border size */
+    int pixmap_height;          /* Height of drawing area pixmap; does not include border size */
+    struct cpu_stat previous_cpu_stat; /* Previous value of cpu_stat */
 
     char * fg_color_io;
     char * fg_color_nice;
@@ -132,7 +132,7 @@ static void draw_samples(CPUPlugin * c, cairo_t * cr, double color[3], int index
 
         /* Increment and wrap drawing cursor. */
         drawing_cursor += 1;
-	if (drawing_cursor >= c->pixmap_width)
+        if (drawing_cursor >= c->pixmap_width)
             drawing_cursor = 0;
     }
 }

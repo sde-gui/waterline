@@ -558,7 +558,7 @@ update_size_and_orientation (NaTray *tray)
  */
 static void
 na_tray_expose_icon (GtkWidget *widget,
-		     gpointer   data)
+                     gpointer   data)
 {
   cairo_t *cr = data;
 
@@ -570,15 +570,15 @@ na_tray_expose_icon (GtkWidget *widget,
 
       gdk_cairo_set_source_pixmap (cr,
                                    gtk_widget_get_window (widget),
-				   allocation.x,
-				   allocation.y);
+                                   allocation.x,
+                                   allocation.y);
       cairo_paint (cr);
     }
 }
 
 static void
 na_tray_expose_box (GtkWidget      *box,
-		    GdkEventExpose *event)
+                    GdkEventExpose *event)
 {
   cairo_t *cr = gdk_cairo_create (gtk_widget_get_window (box));
 
@@ -693,7 +693,7 @@ na_tray_constructor (GType type,
       else
         {
           g_printerr ("System tray didn't get the system tray manager selection for screen %d\n",
-		      screen_number);
+                      screen_number);
           g_object_unref (tray_manager);
         }
     }
@@ -754,9 +754,9 @@ na_tray_dispose (GObject *object)
 
 static void
 na_tray_set_property (GObject      *object,
-		      guint         prop_id,
-		      const GValue *value,
-		      GParamSpec   *pspec)
+                      guint         prop_id,
+                      const GValue *value,
+                      GParamSpec   *pspec)
 {
   NaTray *tray = NA_TRAY (object);
   NaTrayPrivate *priv = tray->priv;
@@ -806,41 +806,41 @@ na_tray_class_init (NaTrayClass *klass)
     (gobject_class,
      PROP_ORIENTATION,
      g_param_spec_enum ("orientation", "orientation", "orientation",
-		        GTK_TYPE_ORIENTATION,
-			GTK_ORIENTATION_HORIZONTAL,
-			G_PARAM_WRITABLE |
-			G_PARAM_CONSTRUCT_ONLY |
-			G_PARAM_STATIC_NAME |
-			G_PARAM_STATIC_NICK |
-			G_PARAM_STATIC_BLURB));
+                        GTK_TYPE_ORIENTATION,
+                        GTK_ORIENTATION_HORIZONTAL,
+                        G_PARAM_WRITABLE |
+                        G_PARAM_CONSTRUCT_ONLY |
+                        G_PARAM_STATIC_NAME |
+                        G_PARAM_STATIC_NICK |
+                        G_PARAM_STATIC_BLURB));
   
   g_object_class_install_property
     (gobject_class,
      PROP_SCREEN,
      g_param_spec_object ("screen", "screen", "screen",
-			  GDK_TYPE_SCREEN,
-			  G_PARAM_WRITABLE |
-			  G_PARAM_CONSTRUCT_ONLY |
-			  G_PARAM_STATIC_NAME |
-			  G_PARAM_STATIC_NICK |
-			  G_PARAM_STATIC_BLURB));
+                          GDK_TYPE_SCREEN,
+                          G_PARAM_WRITABLE |
+                          G_PARAM_CONSTRUCT_ONLY |
+                          G_PARAM_STATIC_NAME |
+                          G_PARAM_STATIC_NICK |
+                          G_PARAM_STATIC_BLURB));
 
   g_type_class_add_private (gobject_class, sizeof (NaTrayPrivate));
 }
 
 NaTray *
 na_tray_new_for_screen (GdkScreen      *screen,
-		        GtkOrientation  orientation)
+                        GtkOrientation  orientation)
 {
   return g_object_new (NA_TYPE_TRAY,
-		       "screen", screen,
-		       "orientation", orientation,
-		       NULL);
+                       "screen", screen,
+                       "orientation", orientation,
+                       NULL);
 }
 
 void
 na_tray_set_orientation (NaTray         *tray,
-			 GtkOrientation  orientation)
+                         GtkOrientation  orientation)
 {
   NaTrayPrivate *priv = tray->priv;
 

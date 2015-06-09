@@ -180,7 +180,7 @@ static int initialize_keyboard_description(xkb_groups_t * xkb)
                         else if ((*p < 'a') || (*p > 'z'))
                             *p = '\0';
                     }
-		    
+
                     /* Crosscheck the group count determined from the "ctrls" structure,
                      * that determined from the "groups" vector, and that determined from the "symbols" string.
                      * The "ctrls" structure is considered less reliable because it has been observed to be incorrect. */

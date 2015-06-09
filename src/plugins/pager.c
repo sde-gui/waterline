@@ -42,50 +42,50 @@ struct _task;
 struct _desk;
 struct _pager;
 
-#define ALL_DESKTOPS   0xFFFFFFFF		/* 64-bit clean */
+#define ALL_DESKTOPS   0xFFFFFFFF /* 64-bit clean */
 #define BORDER_WIDTH   2
 
 /* Structure representing a "task", an open window. */
 typedef struct _task {
-    struct _task * task_flink;			/* Forward link of task list */
-    Window win;					/* X window ID */
-    int x;					/* Geometry as reported by X server */
+    struct _task * task_flink; /* Forward link of task list */
+    Window win;                /* X window ID */
+    int x;                     /* Geometry as reported by X server */
     int y;
     guint w;
     guint h;
-    int stacking;				/* Stacking order as reported by NET_WM_CLIENT_STACKING */
-    int desktop;				/* Desktop that contains task */
-    int ws;					/* WM_STATE value */
-    NetWMState nws;				/* NET_WM_STATE value */
-    NetWMWindowType nwwt;			/* NET_WM_WINDOW_TYPE value */
-    guint focused : 1;				/* True if window has focus */
-    guint present_in_client_list : 1;		/* State during WM_CLIENT_LIST processing to detect deletions */
+    int stacking;              /* Stacking order as reported by NET_WM_CLIENT_STACKING */
+    int desktop;               /* Desktop that contains task */
+    int ws;                    /* WM_STATE value */
+    NetWMState nws;            /* NET_WM_STATE value */
+    NetWMWindowType nwwt;      /* NET_WM_WINDOW_TYPE value */
+    guint focused : 1;         /* True if window has focus */
+    guint present_in_client_list : 1; /* State during WM_CLIENT_LIST processing to detect deletions */
 } PagerTask;
 
 /* Structure representing a desktop. */
 typedef struct _desk {
-    struct _pager * pg;				/* Back pointer to plugin context */
-    GtkWidget * da;				/* Drawing area */
-    GdkPixmap * pixmap;				/* Pixmap to be drawn on drawing area */
-    int desktop_number;				/* Desktop number */
-    gboolean dirty;				/* True if needs to be recomputed */
-    gfloat scale_x;				/* Horizontal scale factor */
-    gfloat scale_y;				/* Vertical scale factor */
+    struct _pager * pg;        /* Back pointer to plugin context */
+    GtkWidget * da;            /* Drawing area */
+    GdkPixmap * pixmap;        /* Pixmap to be drawn on drawing area */
+    int desktop_number;        /* Desktop number */
+    gboolean dirty;            /* True if needs to be recomputed */
+    gfloat scale_x;            /* Horizontal scale factor */
+    gfloat scale_y;            /* Vertical scale factor */
 } PagerDesk;
 
 /* Private context for pager plugin. */
 typedef struct _pager {
-    Plugin * plugin;				/* Back pointer to plugin */
-    IconGrid * icon_grid;			/* Container widget */
-    int desk_extent;				/* Extent of desks vector */
-    PagerDesk * * desks;			/* Vector of desktop structures */
-    guint number_of_desktops;			/* Number of desktops, from NET_WM_NUMBER_OF_DESKTOPS */
-    guint current_desktop;			/* Current desktop, from NET_WM_CURRENT_DESKTOP */
-    gfloat aspect_ratio;			/* Aspect ratio of screen image */
-    int client_count;				/* Count of tasks in stacking order */
-    PagerTask * * tasks_in_stacking_order;	/* Vector of tasks in stacking order */
-    PagerTask * task_list;			/* Tasks in window ID order */
-    PagerTask * focused_task;			/* Task that has focus */
+    Plugin * plugin;                /* Back pointer to plugin */
+    IconGrid * icon_grid;           /* Container widget */
+    int desk_extent;                /* Extent of desks vector */
+    PagerDesk * * desks;            /* Vector of desktop structures */
+    guint number_of_desktops;       /* Number of desktops, from NET_WM_NUMBER_OF_DESKTOPS */
+    guint current_desktop;          /* Current desktop, from NET_WM_CURRENT_DESKTOP */
+    gfloat aspect_ratio;            /* Aspect ratio of screen image */
+    int client_count;               /* Count of tasks in stacking order */
+    PagerTask * * tasks_in_stacking_order; /* Vector of tasks in stacking order */
+    PagerTask * task_list;          /* Tasks in window ID order */
+    PagerTask * focused_task;       /* Task that has focus */
 } PagerPlugin;
 
 static gboolean task_is_visible(PagerTask * tk);

@@ -25,9 +25,9 @@
 
 #define BUF_SIZE 1024
 #define ACPI_PATH_SYS_POWER_SUPPY   "/sys/class/power_supply"
-#define MIN_CAPACITY	 0.01
+#define MIN_CAPACITY     0.01
 #define MIN_PRESENT_RATE 0.01
-#define BATTERY_DESC	"Battery"
+#define BATTERY_DESC     "Battery"
 
 #include <glib.h>
 #include <waterline/misc.h>
@@ -35,7 +35,7 @@
 typedef struct battery {
     int battery_num;
     /* path to battery dir */
-    const gchar * path;			
+    const gchar * path;
     /* sysfs file contents */
     int charge_now;
     int energy_now;

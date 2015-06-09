@@ -218,12 +218,12 @@ struct _task;
 
 /* Structure representing a class. */
 typedef struct _task_class {
-    struct _task_class * task_class_flink;	/* Forward link */
-    char * class_name;				/* Class name */
-    struct _task * task_class_head;		/* Head of list of tasks with this class */
-    struct _task * visible_task;		/* Task that is visible in current desktop, if any */
-    char * visible_name;			/* Name that will be visible for grouped tasks */
-    int visible_count;				/* Count of tasks that are visible in current desktop */
+    struct _task_class * task_class_flink; /* Forward link */
+    char * class_name;                     /* Class name */
+    struct _task * task_class_head;        /* Head of list of tasks with this class */
+    struct _task * visible_task;           /* Task that is visible in current desktop, if any */
+    char * visible_name;                   /* Name that will be visible for grouped tasks */
+    int visible_count;                     /* Count of tasks that are visible in current desktop */
     int timestamp;
 
     int manual_order;
@@ -237,31 +237,31 @@ typedef struct _task_class {
 /* Structure representing a "task", an open window. */
 typedef struct _task {
 
-    struct _task * task_flink;			/* Forward link to next task in X window ID order */
-    struct _taskbar * tb;			/* Back pointer to taskbar */
-    Window win;					/* X window ID */
+    struct _task * task_flink;         /* Forward link to next task in X window ID order */
+    struct _taskbar * tb;              /* Back pointer to taskbar */
+    Window win;                        /* X window ID */
 
 
-    char * name;				/* Taskbar label when normal, from WM_NAME or NET_WM_NAME */
-    char * name_iconified;			/* Taskbar label when iconified */
-    char * name_shaded;				/* Taskbar label when shaded */
-    Atom name_source;				/* Atom that is the source of taskbar label */
+    char * name;                    /* Taskbar label when normal, from WM_NAME or NET_WM_NAME */
+    char * name_iconified;          /* Taskbar label when iconified */
+    char * name_shaded;             /* Taskbar label when shaded */
+    Atom name_source;               /* Atom that is the source of taskbar label */
     gboolean name_changed;
 
     char * wm_class;
 
-    TaskClass * task_class;			/* Task class (group) */
-    struct _task * task_class_flink;		/* Forward link to task in same class */
+    TaskClass * task_class;          /* Task class (group) */
+    struct _task * task_class_flink; /* Forward link to task in same class */
     char * override_class_name;
 
-    GtkWidget * button;				/* Button representing task in taskbar */
-    GtkWidget * container;			/* Container for image, label and close button. */
-    GtkWidget * image;				/* Icon for task, child of button */
-    Atom image_source;				/* Atom that is the source of taskbar icon */
-    GtkWidget * label;				/* Label for task, child of button */
-    GtkWidget * button_close;			/* Close button */
+    GtkWidget * button;             /* Button representing task in taskbar */
+    GtkWidget * container;          /* Container for image, label and close button. */
+    GtkWidget * image;              /* Icon for task, child of button */
+    Atom image_source;              /* Atom that is the source of taskbar icon */
+    GtkWidget * label;              /* Label for task, child of button */
+    GtkWidget * button_close;       /* Close button */
 
-    GtkWidget * new_group_dlg;			/* Move to new group dialog */
+    GtkWidget * new_group_dlg;      /* Move to new group dialog */
 
     GtkAllocation button_alloc;
     GtkAllocation button_close_alloc;
@@ -269,17 +269,17 @@ typedef struct _task {
     guint update_icon_idle_cb;
 
 
-    int desktop;				/* Desktop that contains task, needed to switch to it on Raise */
-    guint flash_timeout;			/* Timer for urgency notification */
-    unsigned int focused : 1;			/* True if window has focus */
-    unsigned int iconified : 1;			/* True if window is iconified, from WM_STATE */
-    unsigned int maximized : 1;			/* True if window is maximized, from WM_STATE */
-    unsigned int decorated : 1;			/* True if window is decorated, from _MOTIF_WM_HINTS or _OB_WM_STATE_UNDECORATED */
-    unsigned int shaded : 1;			/* True if window is shaded, from WM_STATE */
-    unsigned int urgency : 1;			/* True if window has an urgency hint, from WM_HINTS */
-    unsigned int flash_state : 1;		/* One-bit counter to flash taskbar */
-    unsigned int entered_state : 1;		/* True if cursor is inside taskbar button */
-    unsigned int present_in_client_list : 1;	/* State during WM_CLIENT_LIST processing to detect deletions */
+    int desktop;                        /* Desktop that contains task, needed to switch to it on Raise */
+    guint flash_timeout;                /* Timer for urgency notification */
+    unsigned int focused : 1;           /* True if window has focus */
+    unsigned int iconified : 1;         /* True if window is iconified, from WM_STATE */
+    unsigned int maximized : 1;         /* True if window is maximized, from WM_STATE */
+    unsigned int decorated : 1;         /* True if window is decorated, from _MOTIF_WM_HINTS or _OB_WM_STATE_UNDECORATED */
+    unsigned int shaded : 1;            /* True if window is shaded, from WM_STATE */
+    unsigned int urgency : 1;           /* True if window has an urgency hint, from WM_HINTS */
+    unsigned int flash_state : 1;       /* One-bit counter to flash taskbar */
+    unsigned int entered_state : 1;     /* True if cursor is inside taskbar button */
+    unsigned int present_in_client_list : 1; /* State during WM_CLIENT_LIST processing to detect deletions */
 
     unsigned int deferred_iconified_update : 1;
 
@@ -334,27 +334,27 @@ typedef struct _task {
 /* Private context for taskbar plugin. */
 typedef struct _taskbar {
 
-    Plugin * plug;				/* Back pointer to Plugin */
-    Task * task_list;				/* List of tasks to be displayed in taskbar */
-    TaskClass * task_class_list;		/* Window class list */
-    IconGrid * icon_grid;			/* Manager for taskbar buttons */
+    Plugin * plug;               /* Back pointer to Plugin */
+    Task * task_list;            /* List of tasks to be displayed in taskbar */
+    TaskClass * task_class_list; /* Window class list */
+    IconGrid * icon_grid;        /* Manager for taskbar buttons */
 
     int task_timestamp;                         /* To sort tasks and task classes by creation time. */
 
-    GdkPixbuf * custom_fallback_pixbuf;		/* Custom fallback task icon when none is available */
-    GdkPixbuf * fallback_pixbuf;		/* Default fallback task icon when none is available */
+    GdkPixbuf * custom_fallback_pixbuf; /* Custom fallback task icon when none is available */
+    GdkPixbuf * fallback_pixbuf;        /* Default fallback task icon when none is available */
 
     /* Geometry */
 
-    int icon_size;				/* Size of task icons (from panel settings) */
-    int expected_icon_size;			/* Expected icon size (from task button allocation data) */
+    int icon_size;          /* Size of task icons (from panel settings) */
+    int expected_icon_size; /* Expected icon size (from task button allocation data) */
     int extra_size;
 
     /* Context menu */
 
     gchar ** menu_config;
-    GtkWidget * menu;				/* Popup menu for task control (Close, Raise, etc.) */
-    GtkWidget * workspace_submenu;		/* Workspace submenu of the task control menu */
+    GtkWidget * menu;                  /* Popup menu for task control (Close, Raise, etc.) */
+    GtkWidget * workspace_submenu;     /* Workspace submenu of the task control menu */
     GtkWidget * close_menuitem;
     GtkWidget * close2_menuitem;
     GtkWidget * move_to_this_workspace_menuitem;
@@ -372,7 +372,7 @@ typedef struct _taskbar {
 
     /* Task popup: group menu or preview panel. */
 
-    GtkWidget * group_menu;			/* Group menu */
+    GtkWidget * group_menu;              /* Group menu */
     GtkAllocation group_menu_alloc;
     gboolean group_menu_opened_as_popup;
 
@@ -391,18 +391,18 @@ typedef struct _taskbar {
 
     /* NETWM stuff */
 
-    gboolean use_net_active;			/* NET_WM_ACTIVE_WINDOW is supported by the window manager */
-    gboolean net_active_checked;		/* True if use_net_active is valid */
+    gboolean use_net_active;            /* NET_WM_ACTIVE_WINDOW is supported by the window manager */
+    gboolean net_active_checked;        /* True if use_net_active is valid */
 
     char * * desktop_names;
     int number_of_desktop_names;
-    int number_of_desktops;			/* Number of desktops, from NET_WM_NUMBER_OF_DESKTOPS */
-    int current_desktop;			/* Current desktop, from NET_WM_CURRENT_DESKTOP */
-    Task * focused;				/* Task that has focus */
-    Task * focused_previous;			/* Task that had focus just before panel got it */
-    Task * menutask;				/* Task for which popup menu is open */
+    int number_of_desktops;        /* Number of desktops, from NET_WM_NUMBER_OF_DESKTOPS */
+    int current_desktop;           /* Current desktop, from NET_WM_CURRENT_DESKTOP */
+    Task * focused;                /* Task that has focus */
+    Task * focused_previous;       /* Task that had focus just before panel got it */
+    Task * menutask;               /* Task for which popup menu is open */
 
-    guint dnd_delay_timer;			/* Timer for drag and drop delay */
+    guint dnd_delay_timer;         /* Timer for drag and drop delay */
 
     /* User preferences */
 
@@ -423,17 +423,17 @@ typedef struct _taskbar {
 
     int mouse_over_action;
 
-    gboolean show_all_desks;			/* User preference: show windows from all desktops */
-    gboolean show_mapped;			/* User preference: show mapped windows */
-    gboolean show_iconified;			/* User preference: show iconified windows */
-    int show_icons_titles;			/* User preference: show icons, titles */
+    gboolean show_all_desks;         /* User preference: show windows from all desktops */
+    gboolean show_mapped;            /* User preference: show mapped windows */
+    gboolean show_iconified;         /* User preference: show iconified windows */
+    int show_icons_titles;           /* User preference: show icons, titles */
 
     char* custom_fallback_icon; /* User preference: use as fallback icon */
 
-    gboolean show_close_buttons;		/* User preference: show close button */
+    gboolean show_close_buttons; /* User preference: show close button */
 
-    gboolean show_urgency_all_desks;		/* User preference: show windows from other workspaces if they set urgent hint*/
-    gboolean use_urgency_hint;			/* User preference: windows with urgency will flash */
+    gboolean show_urgency_all_desks; /* User preference: show windows from other workspaces if they set urgent hint*/
+    gboolean use_urgency_hint;       /* User preference: windows with urgency will flash */
     gboolean flat_inactive_buttons;
     gboolean flat_active_button;
 
@@ -454,9 +454,9 @@ typedef struct _taskbar {
     int group_fold_threshold;                   /* User preference: threshold for fold grouped tasks into one button */
     int panel_fold_threshold;
     int group_by;                               /* User preference: attr to group tasks by */
-    gboolean manual_grouping;			/* User preference: manual grouping */
-    gboolean unfold_focused_group;		/* User preference: autounfold group of focused window */
-    gboolean show_single_group;			/* User preference: show windows of the active group only  */
+    gboolean manual_grouping;                   /* User preference: manual grouping */
+    gboolean unfold_focused_group;              /* User preference: autounfold group of focused window */
+    gboolean show_single_group;                 /* User preference: show windows of the active group only  */
 
     int sort_by[3];
     gboolean sort_reverse[3];
@@ -464,8 +464,8 @@ typedef struct _taskbar {
     gboolean rearrange;
 
 
-    int task_width_max;				/* Maximum width of a taskbar button in horizontal orientation */
-    int spacing;				/* Spacing between taskbar buttons */
+    int task_width_max;                         /* Maximum width of a taskbar button in horizontal orientation */
+    int spacing;                                /* Spacing between taskbar buttons */
 
     gboolean use_x_net_wm_icon_geometry;
     gboolean use_x_window_position;
@@ -474,13 +474,13 @@ typedef struct _taskbar {
 
 
     /* Effective config values, evaluated from "User preference" variables: */
-    gboolean grouped_tasks;			/* Group task of the same class into single button. */
-    gboolean single_window;			/* Show only current window button. */
-    gboolean rebuild_gui;			/* Force gui rebuild (when configuration changed) */
-    gboolean show_all_desks_prev_value;         /* Value of show_all_desks from last gui rebuild */
-    gboolean show_icons;			/* Show icons */
-    gboolean show_titles;			/* Show title labels */
-    gboolean _show_close_buttons;               /* Show close buttons */
+    gboolean grouped_tasks;         /* Group task of the same class into single button. */
+    gboolean single_window;         /* Show only current window button. */
+    gboolean rebuild_gui;           /* Force gui rebuild (when configuration changed) */
+    gboolean show_all_desks_prev_value; /* Value of show_all_desks from last gui rebuild */
+    gboolean show_icons;            /* Show icons */
+    gboolean show_titles;           /* Show title labels */
+    gboolean _show_close_buttons;   /* Show close buttons */
     int _group_fold_threshold;
     int _panel_fold_threshold;
     int _group_by;
@@ -599,8 +599,8 @@ static gchar *taskbar_rc = "style 'taskbar-style'\n"
 #define OPEN_GROUP_MENU_DELAY 500
 #define TASK_WIDTH_MAX       200
 #define TASK_PADDING         4
-#define ALL_WORKSPACES       0xFFFFFFFF		/* 64-bit clean */
-#define ICON_ONLY_EXTRA      6		/* Amount needed to have button lay out symmetrically */
+#define ALL_WORKSPACES       0xFFFFFFFF /* 64-bit clean */
+#define ICON_ONLY_EXTRA      6          /* Amount needed to have button lay out symmetrically */
 #define BUTTON_HEIGHT_EXTRA  4          /* Amount needed to have button not clip icon */
 
 static void set_timer_on_task(Task * tk);
@@ -850,9 +850,9 @@ static gboolean task_is_visible(Task * tk)
 static int task_button_is_really_flat(Task * tk)
 {
     TaskbarPlugin * tb = tk->tb;
-    return ( tb->single_window ) ||
-		(tb->flat_inactive_buttons && !tk->focused ) ||
-		(tb->flat_active_button && tk->focused );
+    return (tb->single_window) ||
+        (tb->flat_inactive_buttons && !tk->focused) ||
+        (tb->flat_active_button && tk->focused);
 }
 
 /******************************************************************************/
@@ -1325,7 +1325,7 @@ static TaskClass * taskbar_enter_class(TaskbarPlugin * tb, char * class_name, gb
     else
     {
         tc->task_class_flink = tc_pred->task_class_flink;
-	tc_pred->task_class_flink = tc;
+        tc_pred->task_class_flink = tc;
     }
     return tc;
 }
@@ -1462,7 +1462,7 @@ static Task * task_lookup(TaskbarPlugin * tb, Window win)
     for (tk = tb->task_list; tk != NULL; tk = tk->task_flink)
     {
         if (tk->win == win)
-	    return tk;
+        return tk;
     }
     return NULL;
 }
@@ -2029,8 +2029,8 @@ static void taskbar_group_menu_destroy(TaskbarPlugin * tb)
 {
     if (tb->hide_popup_delay_timer != 0)
     {
-	g_source_remove(tb->hide_popup_delay_timer);
-	tb->hide_popup_delay_timer = 0;
+        g_source_remove(tb->hide_popup_delay_timer);
+        tb->hide_popup_delay_timer = 0;
     }
 
     tb->group_menu_opened_as_popup = FALSE;
@@ -2184,7 +2184,7 @@ static void task_shade(Task * tk)
 {
     /* Toggle the shaded state of the window. */
     Xclimsg(tk->win, a_NET_WM_STATE,
-                2,		/* a_NET_WM_STATE_TOGGLE */
+                2, /* a_NET_WM_STATE_TOGGLE */
                 a_NET_WM_STATE_SHADED,
                 0, 0, 0);
 }
@@ -2199,7 +2199,7 @@ static void task_fullscreen(Task * tk)
 {
     /* Toggle the fullscreen state of the window. */
     Xclimsg(tk->win, a_NET_WM_STATE,
-                2,		/* a_NET_WM_STATE_TOGGLE */
+                2, /* a_NET_WM_STATE_TOGGLE */
                 a_NET_WM_STATE_FULLSCREEN,
                 0, 0, 0);
 }
@@ -2415,11 +2415,11 @@ static void task_raise(Task * tk, GdkEventButton * event)
         else
             XMapRaised(gdk_x11_get_default_xdisplay(), tk->win);
 
-	/* There is a race condition between the X server actually executing the XMapRaised and this code executing XSetInputFocus.
-	 * If the window is not viewable, the XSetInputFocus will fail with BadMatch. */
-	XWindowAttributes attr;
-	XGetWindowAttributes(gdk_x11_get_default_xdisplay(), tk->win, &attr);
-	if (attr.map_state == IsViewable)
+    /* There is a race condition between the X server actually executing the XMapRaised and this code executing XSetInputFocus.
+     * If the window is not viewable, the XSetInputFocus will fail with BadMatch. */
+    XWindowAttributes attr;
+    XGetWindowAttributes(gdk_x11_get_default_xdisplay(), tk->win, &attr);
+    if (attr.map_state == IsViewable)
             XSetInputFocus(gdk_x11_get_default_xdisplay(), tk->win, RevertToNone, time);
     }
 
@@ -2937,17 +2937,17 @@ static void taskbar_check_hide_popup(TaskbarPlugin * tb)
 
     if (out)
     {
-    	if (tb->hide_popup_delay_timer == 0)
-	    tb->hide_popup_delay_timer =
-		g_timeout_add(OPEN_GROUP_MENU_DELAY / 2, (GSourceFunc) taskbar_hide_popup_timeout, tb);
+        if (tb->hide_popup_delay_timer == 0)
+        tb->hide_popup_delay_timer =
+        g_timeout_add(OPEN_GROUP_MENU_DELAY / 2, (GSourceFunc) taskbar_hide_popup_timeout, tb);
     }
     else
     {
-	if (tb->hide_popup_delay_timer != 0)
-	{
-	    g_source_remove(tb->hide_popup_delay_timer);
-	    tb->hide_popup_delay_timer = 0;
-	}
+        if (tb->hide_popup_delay_timer != 0)
+        {
+            g_source_remove(tb->hide_popup_delay_timer);
+            tb->hide_popup_delay_timer = 0;
+        }
     }
 }
 
@@ -3302,9 +3302,9 @@ static void taskbar_button_enter(GtkWidget * widget, Task * tk)
     popup |= (tb->open_group_menu_on_mouse_over && task_class_is_folded(tb, tk->task_class));
     if (popup)
     {
-	if (tk->show_popup_delay_timer == 0)
-	    tk->show_popup_delay_timer =
-		g_timeout_add(OPEN_GROUP_MENU_DELAY, (GSourceFunc) taskbar_show_popup_timeout, tk);
+        if (tk->show_popup_delay_timer == 0)
+            tk->show_popup_delay_timer =
+                g_timeout_add(OPEN_GROUP_MENU_DELAY, (GSourceFunc) taskbar_show_popup_timeout, tk);
     }
 }
 
@@ -5038,8 +5038,8 @@ static void taskbar_config_updated(TaskbarPlugin * tb)
     if (recompute_visibility)
     {
         tb->_unfold_focused_group = unfold_focused_group;
-	tb->_show_single_group = show_single_group;
-	tb->use_group_separators_prev = tb->use_group_separators;
+        tb->_show_single_group = show_single_group;
+        tb->use_group_separators_prev = tb->use_group_separators;
         recompute_group_visibility_on_current_desktop(tb);
         taskbar_redraw(tb);
     }

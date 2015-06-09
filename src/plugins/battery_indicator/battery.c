@@ -2,9 +2,9 @@
  *
  *      Copyright 2009 Juergen Hötzel <juergen@archlinux.org>
  *
- * 	Parts shameless stolen and glibified from acpi package  
- * 	Copyright (C) 2001  Grahame Bowland <grahame@angrygoats.net>
- *	(C) 2008-2009  Michael Meskes  <meskes@debian.org> 
+ *      Parts shameless stolen and glibified from acpi package  
+ *      Copyright (C) 2001  Grahame Bowland <grahame@angrygoats.net>
+ *      (C) 2008-2009  Michael Meskes  <meskes@debian.org> 
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -85,9 +85,9 @@ static gchar* parse_info_file(battery * b, const char * sys_file)
 }
 
 /* get_gint_from_infofile():
- * 	If the sys_file exists, then its value is converted to an int,
- * 	divided by 1000, and returned.
- * 	Failure is indicated by returning -1. */
+ *      If the sys_file exists, then its value is converted to an int,
+ *      divided by 1000, and returned.
+ *      Failure is indicated by returning -1. */
 static gint get_gint_from_infofile(battery * b, const char * sys_file)
 {
     gint value = -1;

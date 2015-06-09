@@ -52,7 +52,7 @@ static const char *network_config_tools[] = {
 #endif
 
 #define UNKNOWN_STR(t,s) G_STMT_START {       \
-	if (!((t) = (s))) (t) = _("Unknown"); \
+        if (!((t) = (s))) (t) = _("Unknown"); \
 } G_STMT_END
 
 typedef struct
@@ -123,7 +123,7 @@ netstatus_dialog_update_state (NetstatusDialogData *data)
   
   state = netstatus_iface_get_state (data->iface);
   gtk_label_set_text (GTK_LABEL (data->status),
-		      netstatus_get_state_string (state));
+                      netstatus_get_state_string (state));
 }
 
 static void
@@ -136,7 +136,7 @@ netstatus_dialog_update_name (NetstatusDialogData *data)
   if (!iface_name)
     {
       gtk_window_set_title (GTK_WINDOW (data->dialog),
-			    _("Connection Properties"));
+                            _("Connection Properties"));
     }
   else
     {
@@ -153,14 +153,14 @@ netstatus_dialog_update_name (NetstatusDialogData *data)
 
 static inline void
 print_packets_string (GString *str,
-		      gulong   packets)
+                      gulong   packets)
 {
   g_string_printf (str, ngettext ("%lu packet", "%lu packets", packets), packets);
 }
 
 static inline void
 print_bytes_string (GString *str,
-		    guint64  bytes)
+                    guint64  bytes)
 {
   const char * format = NULL;
   guint64 b1;
@@ -189,7 +189,7 @@ netstatus_dialog_update_activity (NetstatusDialogData *data)
   print_packets_string (str, stats.out_packets);
   print_bytes_string (str, stats.out_bytes);
   gtk_label_set_text (GTK_LABEL (data->sent), str->str);
-	
+        
   print_packets_string (str, stats.in_packets);
   print_bytes_string (str, stats.in_bytes);
   gtk_label_set_text (GTK_LABEL (data->received), str->str);
@@ -210,7 +210,7 @@ netstatus_dialog_update_signal_strength (NetstatusDialogData *data)
       signal_strength = netstatus_iface_get_signal_strength (data->iface);
 
       gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (data->signal_strength_bar),
-				     signal_strength == 0 ? 0.0 : signal_strength / 100.0);
+                                     signal_strength == 0 ? 0.0 : signal_strength / 100.0);
 
       str = g_strdup_printf ("%d%%\n", signal_strength);
       gtk_label_set_text (GTK_LABEL (data->signal_strength_label), str);
@@ -236,61 +236,61 @@ netstatus_dialog_update_inet4_support (NetstatusDialogData *data)
 
       /* Address */
       if (addr)
-	{
-	  gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 0, 6);
-	  gtk_label_set_text (GTK_LABEL (data->inet4_addr), addr);
-	  gtk_widget_show (data->inet4_addr);
-	  gtk_widget_show (data->inet4_addr_title);
-	}
+        {
+          gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 0, 6);
+          gtk_label_set_text (GTK_LABEL (data->inet4_addr), addr);
+          gtk_widget_show (data->inet4_addr);
+          gtk_widget_show (data->inet4_addr_title);
+        }
       else
-	{
-	  gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 0, 0);
-	  gtk_widget_hide (data->inet4_addr);
-	  gtk_widget_hide (data->inet4_addr_title);
-	}
+        {
+          gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 0, 0);
+          gtk_widget_hide (data->inet4_addr);
+          gtk_widget_hide (data->inet4_addr_title);
+        }
 
       /* Destination */
       if (dest)
-	{
-	  gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 1, 6);
-	  gtk_label_set_text (GTK_LABEL (data->inet4_dest), dest);
-	  gtk_widget_show (data->inet4_dest);
-	  gtk_widget_show (data->inet4_dest_title);
-	}
+        {
+          gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 1, 6);
+          gtk_label_set_text (GTK_LABEL (data->inet4_dest), dest);
+          gtk_widget_show (data->inet4_dest);
+          gtk_widget_show (data->inet4_dest_title);
+        }
       else
-	{
-	  gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 1, 0);
-	  gtk_widget_hide (data->inet4_dest);
-	  gtk_widget_hide (data->inet4_dest_title);
-	}
+        {
+          gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 1, 0);
+          gtk_widget_hide (data->inet4_dest);
+          gtk_widget_hide (data->inet4_dest_title);
+        }
 
       /* Broadcast */
       if (bcast)
-	{
-	  gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 2, 6);
-	  gtk_label_set_text (GTK_LABEL (data->inet4_bcast), bcast);
-	  gtk_widget_show (data->inet4_bcast);
-	  gtk_widget_show (data->inet4_bcast_title);
-	}
+        {
+          gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 2, 6);
+          gtk_label_set_text (GTK_LABEL (data->inet4_bcast), bcast);
+          gtk_widget_show (data->inet4_bcast);
+          gtk_widget_show (data->inet4_bcast_title);
+        }
       else
-	{
-	  gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 2, 0);
-	  gtk_widget_hide (data->inet4_bcast);
-	  gtk_widget_hide (data->inet4_bcast_title);
-	}
+        {
+          gtk_table_set_row_spacing (GTK_TABLE (data->inet4_table), 2, 0);
+          gtk_widget_hide (data->inet4_bcast);
+          gtk_widget_hide (data->inet4_bcast_title);
+        }
 
       /* Subnet Mask */
       if (mask)
-	{
-	  gtk_label_set_text (GTK_LABEL (data->inet4_mask), mask);
-	  gtk_widget_show (data->inet4_mask);
-	  gtk_widget_show (data->inet4_mask_title);
-	}
+        {
+          gtk_label_set_text (GTK_LABEL (data->inet4_mask), mask);
+          gtk_widget_show (data->inet4_mask);
+          gtk_widget_show (data->inet4_mask_title);
+        }
       else
-	{
-	  gtk_widget_hide (data->inet4_mask);
-	  gtk_widget_hide (data->inet4_mask_title);
-	}
+        {
+          gtk_widget_hide (data->inet4_mask);
+          gtk_widget_hide (data->inet4_mask_title);
+        }
 
       g_free (addr);
       g_free (dest);
@@ -320,9 +320,9 @@ netstatus_dialog_update_device_support (NetstatusDialogData *data)
       
       /* Address */
       if (addr)
-	gtk_label_set_text (GTK_LABEL (data->dev_addr), addr);
+        gtk_label_set_text (GTK_LABEL (data->dev_addr), addr);
       else
-	gtk_label_set_text (GTK_LABEL (data->dev_addr), _("Unknown"));
+        gtk_label_set_text (GTK_LABEL (data->dev_addr), _("Unknown"));
 
       g_free (addr);
     }
@@ -350,8 +350,8 @@ netstatus_dialog_update_device_info (NetstatusDialogData *data)
 */
 static void
 netstatus_dialog_iface_state_changed (NetstatusIface      *iface,
-				      GParamSpec          *pspec,
-				      NetstatusDialogData *data)
+                                      GParamSpec          *pspec,
+                                      NetstatusDialogData *data)
 {
   netstatus_dialog_update_state (data);
   netstatus_dialog_update_inet4_support (data);
@@ -361,24 +361,24 @@ netstatus_dialog_iface_state_changed (NetstatusIface      *iface,
 
 static void
 netstatus_dialog_iface_stats_changed (NetstatusIface      *iface,
-				      GParamSpec          *pspec,
-				      NetstatusDialogData *data)
+                                      GParamSpec          *pspec,
+                                      NetstatusDialogData *data)
 {
   netstatus_dialog_update_activity (data);
 }
 
 static void
 netstatus_dialog_iface_signal_strength_changed (NetstatusIface      *iface,
-						GParamSpec          *pspec,
-						NetstatusDialogData *data)
+                                                GParamSpec          *pspec,
+                                                NetstatusDialogData *data)
 {
   netstatus_dialog_update_signal_strength (data);
 }
 
 static void
 netstatus_dialog_iface_name_changed (NetstatusIface      *iface,
-				     GParamSpec          *pspec,
-				     NetstatusDialogData *data)
+                                     GParamSpec          *pspec,
+                                     NetstatusDialogData *data)
 {
   netstatus_dialog_update_name (data);
   netstatus_dialog_update_signal_strength (data);
@@ -387,7 +387,7 @@ netstatus_dialog_iface_name_changed (NetstatusIface      *iface,
 
 static void
 netstatus_dialog_set_iface_name (NetstatusDialogData *data,
-				 GtkEntry            *entry)
+                                 GtkEntry            *entry)
 {
   const char *iface_name;
 
@@ -397,47 +397,47 @@ netstatus_dialog_set_iface_name (NetstatusDialogData *data,
       netstatus_iface_set_name (data->iface, iface_name);
 
       gtk_widget_set_sensitive (data->configure_button,
-				!netstatus_iface_get_is_loopback (data->iface));
+                                !netstatus_iface_get_is_loopback (data->iface));
     }
 }
 
 static void
 netstatus_dialog_response (GtkWidget *dialog,
-			   int        response)
+                           int        response)
 {
   switch (response)
     {
     case GTK_RESPONSE_HELP:
       {
-	GError    *error = NULL;
-	GdkScreen *screen;
+        GError    *error = NULL;
+        GdkScreen *screen;
 
-	screen = gtk_window_get_screen (GTK_WINDOW (dialog));
+        screen = gtk_window_get_screen (GTK_WINDOW (dialog));
 
-	// gnome_help_display_on_screen ("gnome-netstatus", "gnome-netstatus-props", screen, &error);
+        // gnome_help_display_on_screen ("gnome-netstatus", "gnome-netstatus-props", screen, &error);
 
-	if (error)
-	  {
-	    GtkWidget *message_dialog;
+        if (error)
+          {
+            GtkWidget *message_dialog;
                                                                               
-	    message_dialog = gtk_message_dialog_new (GTK_WINDOW (dialog),
-						     GTK_DIALOG_DESTROY_WITH_PARENT,
-						     GTK_MESSAGE_ERROR,
-						     GTK_BUTTONS_CLOSE,
-						     _("There was an error displaying help:\n%s"),
-						     error->message);
+            message_dialog = gtk_message_dialog_new (GTK_WINDOW (dialog),
+                                                     GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                     GTK_MESSAGE_ERROR,
+                                                     GTK_BUTTONS_CLOSE,
+                                                     _("There was an error displaying help:\n%s"),
+                                                     error->message);
 
-	    gtk_window_set_resizable (GTK_WINDOW (message_dialog), FALSE);
-	    gtk_window_set_screen (GTK_WINDOW (message_dialog), screen);
-	    
-	    g_signal_connect (message_dialog, "response",
-			      G_CALLBACK (gtk_widget_destroy),
-			      NULL);
-	    
-	    gtk_widget_show (message_dialog);
+            gtk_window_set_resizable (GTK_WINDOW (message_dialog), FALSE);
+            gtk_window_set_screen (GTK_WINDOW (message_dialog), screen);
+            
+            g_signal_connect (message_dialog, "response",
+                              G_CALLBACK (gtk_widget_destroy),
+                              NULL);
+            
+            gtk_widget_show (message_dialog);
 
-	    g_error_free (error);
-	  }
+            g_error_free (error);
+          }
       }
       break;
     default:
@@ -488,7 +488,7 @@ netstatus_dialog_destroy (GtkWidget *dialog)
 
 static gboolean
 netstatus_dialog_check_config_tool (NetstatusDialogData *dialog_data,
-				    const char          *config_tool)
+                                    const char          *config_tool)
 {
   char     **argv = NULL;
   gboolean   found = FALSE;
@@ -500,12 +500,12 @@ netstatus_dialog_check_config_tool (NetstatusDialogData *dialog_data,
       g_assert (argv != NULL);
 
       if ((path = g_find_program_in_path (argv [0])))
-	{
-	  if (dialog_data->config_tool)
-	    g_free (dialog_data->config_tool);
-	  dialog_data->config_tool = g_strdup (config_tool);
-	  found = TRUE;
-	}
+        {
+          if (dialog_data->config_tool)
+            g_free (dialog_data->config_tool);
+          dialog_data->config_tool = g_strdup (config_tool);
+          found = TRUE;
+        }
 
       g_free (path);
       g_strfreev (argv);
@@ -517,15 +517,15 @@ netstatus_dialog_check_config_tool (NetstatusDialogData *dialog_data,
 /*
 static void
 netstatus_dialog_config_tool_notify (GConfClient         *client,
-				     guint                cnx_id,
-				     GConfEntry          *entry,
-				     NetstatusDialogData *dialog_data)
+                                     guint                cnx_id,
+                                     GConfEntry          *entry,
+                                     NetstatusDialogData *dialog_data)
 {
   if (!entry->value || !entry->value->type == GCONF_VALUE_STRING)
     return;
 
   netstatus_dialog_check_config_tool (dialog_data,
-				      gconf_value_get_string (entry->value));
+                                      gconf_value_get_string (entry->value));
 }
 */
 
@@ -539,19 +539,19 @@ netstatus_dialog_detect_configuration_tool (NetstatusDialogData *dialog_data)
   dialog_data->client = gconf_client_get_default ();
 
   gconf_client_add_dir (dialog_data->client,
-			NETWORK_CONFIG_TOOL_DIR,
-			GCONF_CLIENT_PRELOAD_NONE,
-			NULL);
+                        NETWORK_CONFIG_TOOL_DIR,
+                        GCONF_CLIENT_PRELOAD_NONE,
+                        NULL);
 
   dialog_data->listener =
     gconf_client_notify_add (dialog_data->client,
-			     NETWORK_CONFIG_TOOL_KEY,
-			     (GConfClientNotifyFunc) netstatus_dialog_config_tool_notify,
-			     dialog_data, NULL, NULL);
+                             NETWORK_CONFIG_TOOL_KEY,
+                             (GConfClientNotifyFunc) netstatus_dialog_config_tool_notify,
+                             dialog_data, NULL, NULL);
 
   config_tool = gconf_client_get_string (dialog_data->client,
-					 NETWORK_CONFIG_TOOL_KEY,
-					 NULL);
+                                         NETWORK_CONFIG_TOOL_KEY,
+                                         NULL);
   if (netstatus_dialog_check_config_tool (dialog_data, config_tool))
     {
       g_free (config_tool);
@@ -561,14 +561,14 @@ netstatus_dialog_detect_configuration_tool (NetstatusDialogData *dialog_data)
   for (i = 0; i < G_N_ELEMENTS (network_config_tools); i++)
     {
       if (netstatus_dialog_check_config_tool (dialog_data, network_config_tools [i]))
-	break;
+        break;
     }
   */
 }
 
 static void
 netstatus_iface_configure (GtkWidget           *configure_button,
-			   NetstatusDialogData *dialog_data)
+                           NetstatusDialogData *dialog_data)
 {
   GError     *error;
   GString    *command;
@@ -590,10 +590,10 @@ netstatus_iface_configure (GtkWidget           *configure_button,
       command = g_string_append_c (command, ' ');
 
       if (!strcmp (argv [i], "%i"))
-	command = g_string_append (command,
-				   netstatus_iface_get_name (dialog_data->iface));
+        command = g_string_append (command,
+                                   netstatus_iface_get_name (dialog_data->iface));
       else
-	command = g_string_append (command, argv [i]);
+        command = g_string_append (command, argv [i]);
     }
 
   error = NULL;
@@ -602,13 +602,13 @@ netstatus_iface_configure (GtkWidget           *configure_button,
       GtkWidget *error_dialog;
 
       error_dialog = gtk_message_dialog_new (NULL,
-					     GTK_DIALOG_DESTROY_WITH_PARENT,
-					     GTK_MESSAGE_ERROR,
-					     GTK_BUTTONS_OK,
-					     _("Failed to launch time configuration tool: %s"),
-					     error->message);
+                                             GTK_DIALOG_DESTROY_WITH_PARENT,
+                                             GTK_MESSAGE_ERROR,
+                                             GTK_BUTTONS_OK,
+                                             _("Failed to launch time configuration tool: %s"),
+                                             error->message);
       g_signal_connect (error_dialog, "response",
-			G_CALLBACK (gtk_widget_destroy), NULL);
+                        G_CALLBACK (gtk_widget_destroy), NULL);
 
       GdkScreen  *screen = gtk_window_get_screen (GTK_WINDOW (dialog_data->dialog));
       gtk_window_set_resizable (GTK_WINDOW (error_dialog), FALSE);
@@ -629,7 +629,7 @@ netstatus_dialog_setup_configure_button (NetstatusDialogData *data)
   data->configure_button = (GtkWidget*)gtk_builder_get_object(data->builder, "configure_button");
 
   g_signal_connect (data->configure_button, "clicked",
-		    G_CALLBACK (netstatus_iface_configure), data);
+                    G_CALLBACK (netstatus_iface_configure), data);
 
   netstatus_dialog_detect_configuration_tool (data);
 
@@ -637,7 +637,7 @@ netstatus_dialog_setup_configure_button (NetstatusDialogData *data)
     gtk_widget_hide (data->configure_button);
 
   gtk_widget_set_sensitive (data->configure_button,
-			    !netstatus_iface_get_is_loopback (data->iface));
+                            !netstatus_iface_get_is_loopback (data->iface));
 }
 
 static void
@@ -738,8 +738,8 @@ netstatus_dialog_set_icon (GtkWidget *dialog)
   if ((icon_info = gtk_icon_theme_lookup_icon (icon_theme, "gnome-netstatus-tx", 48, 0)))
     {
       gtk_window_set_icon_from_file (GTK_WINDOW (dialog),
-				     gtk_icon_info_get_filename (icon_info),
-				     NULL);
+                                     gtk_icon_info_get_filename (icon_info),
+                                     NULL);
       gtk_icon_info_free (icon_info);
     }
 }
@@ -760,8 +760,8 @@ netstatus_dialog_iface_list_monitor (NetstatusDialogData *data)
       model = (GtkListStore*)gtk_combo_box_get_model(GTK_COMBO_BOX(data->name));
       gtk_list_store_clear(model);
       g_signal_handlers_block_by_func (data->name_entry,
-				       G_CALLBACK (netstatus_dialog_set_iface_name), data);
-				       
+                                       G_CALLBACK (netstatus_dialog_set_iface_name), data);
+                                       
       for (l = iface_names; l; l = l->next)
         {
           GtkTreeIter it;
@@ -773,7 +773,7 @@ netstatus_dialog_iface_list_monitor (NetstatusDialogData *data)
       netstatus_dialog_update_name (data);
 
       g_signal_handlers_unblock_by_func (data->name_entry,
-					 G_CALLBACK (netstatus_dialog_set_iface_name), data);
+                                         G_CALLBACK (netstatus_dialog_set_iface_name), data);
     }
 
   data->n_ifaces = n_ifaces;
@@ -815,40 +815,40 @@ netstatus_dialog_new (NetstatusIface *iface)
 
   data->iface = g_object_ref (iface);
   netstatus_connect_signal_while_alive (data->iface,
-					"notify::state",
-					G_CALLBACK (netstatus_dialog_iface_state_changed),
-					data,
-					data->dialog);
+                                        "notify::state",
+                                        G_CALLBACK (netstatus_dialog_iface_state_changed),
+                                        data,
+                                        data->dialog);
 
   netstatus_connect_signal_while_alive (data->iface,
-					"notify::stats",
-					G_CALLBACK (netstatus_dialog_iface_stats_changed),
-					data,
-					data->dialog);
+                                        "notify::stats",
+                                        G_CALLBACK (netstatus_dialog_iface_stats_changed),
+                                        data,
+                                        data->dialog);
 
   netstatus_connect_signal_while_alive (data->iface,
-					"notify::name",
-					G_CALLBACK (netstatus_dialog_iface_name_changed),
-					data,
-					data->dialog);
+                                        "notify::name",
+                                        G_CALLBACK (netstatus_dialog_iface_name_changed),
+                                        data,
+                                        data->dialog);
   
   netstatus_connect_signal_while_alive (data->iface,
-					"notify::wireless",
-					G_CALLBACK (netstatus_dialog_iface_signal_strength_changed),
-					data,
-					data->dialog);
+                                        "notify::wireless",
+                                        G_CALLBACK (netstatus_dialog_iface_signal_strength_changed),
+                                        data,
+                                        data->dialog);
 
   netstatus_connect_signal_while_alive (data->iface,
-					"notify::signal-strength",
-					G_CALLBACK (netstatus_dialog_iface_signal_strength_changed),
-					data,
-					data->dialog);
+                                        "notify::signal-strength",
+                                        G_CALLBACK (netstatus_dialog_iface_signal_strength_changed),
+                                        data,
+                                        data->dialog);
 
   g_signal_connect (data->dialog, "response",
-		    G_CALLBACK (netstatus_dialog_response), NULL);
+                    G_CALLBACK (netstatus_dialog_response), NULL);
 
   g_signal_connect (data->dialog, "destroy",
-		    G_CALLBACK (netstatus_dialog_destroy), NULL);
+                    G_CALLBACK (netstatus_dialog_destroy), NULL);
 
   netstatus_dialog_setup_connection (data);
   netstatus_dialog_setup_activity (data);
@@ -858,13 +858,13 @@ netstatus_dialog_new (NetstatusIface *iface)
   netstatus_dialog_setup_configure_button (data);
 
   data->iface_list_monitor = g_timeout_add (2 * 1000,
-					    (GSourceFunc) netstatus_dialog_iface_list_monitor,
-					    data);
+                                            (GSourceFunc) netstatus_dialog_iface_list_monitor,
+                                            data);
   netstatus_dialog_iface_list_monitor (data);
 
   g_signal_connect_swapped (data->name_entry, "changed",
-			    G_CALLBACK (netstatus_dialog_set_iface_name),
-			    data);
+                            G_CALLBACK (netstatus_dialog_set_iface_name),
+                            data);
 
   g_object_unref(data->builder);
   data->builder = NULL;

@@ -47,14 +47,14 @@
 
 static inline gboolean
 parse_stats (char    *buf,
-	     int      prx_idx,
-	     int      ptx_idx,
-	     gulong  *in_packets,
-	     gulong  *out_packets,
-	     int      brx_idx,
-	     int      btx_idx,
-	     gulong  *in_bytes,
-	     gulong  *out_bytes)
+             int      prx_idx,
+             int      ptx_idx,
+             gulong  *in_packets,
+             gulong  *out_packets,
+             int      brx_idx,
+             int      btx_idx,
+             gulong  *in_bytes,
+             gulong  *out_bytes)
 {
   char *p;
   int   i;
@@ -63,13 +63,13 @@ parse_stats (char    *buf,
   for (i = 0; p; i++, p = strtok (NULL, " \t\n"))
     {
       if (i == prx_idx)
-	*in_packets = g_ascii_strtoull (p, NULL, 10);
+        *in_packets = g_ascii_strtoull (p, NULL, 10);
       if (i == ptx_idx)
-	*out_packets = g_ascii_strtoull (p, NULL, 10);
+        *out_packets = g_ascii_strtoull (p, NULL, 10);
       if (i == brx_idx)
-	*in_bytes = g_ascii_strtoull (p, NULL, 10);
+        *in_bytes = g_ascii_strtoull (p, NULL, 10);
       if (i == btx_idx)
-	*out_bytes = g_ascii_strtoull (p, NULL, 10);
+        *out_bytes = g_ascii_strtoull (p, NULL, 10);
     }
 
   if (i <= prx_idx || i <= ptx_idx || i <= brx_idx || i <=btx_idx)
@@ -91,9 +91,9 @@ parse_iface_name (const char *buf)
 
       p2 = strchr (p1, ':');
       if (p2)
-	*p2++ = '\0';
+        *p2++ = '\0';
       else
-	*p1++ = '\0';
+        *p1++ = '\0';
 
       return p2 ? p2 : p1;
     }
@@ -108,10 +108,10 @@ parse_iface_name (const char *buf)
 
 static inline void
 parse_stats_header (char *buf,
-		    int  *prx_idx,
-		    int  *ptx_idx,
-		    int  *brx_idx,
-		    int  *btx_idx)
+                    int  *prx_idx,
+                    int  *ptx_idx,
+                    int  *brx_idx,
+                    int  *btx_idx)
 {
   char *p;
   int   i;
@@ -124,19 +124,19 @@ parse_stats_header (char *buf,
   for (i = 0; p; i++, p = strtok (NULL, "| \t\n"))
     {
       if (!strcmp (p, "packets"))
-	{
-	  if (*prx_idx == -1)
-	    *prx_idx = i;
-	  else
-	    *ptx_idx = i;
-	}
+        {
+          if (*prx_idx == -1)
+            *prx_idx = i;
+          else
+            *ptx_idx = i;
+        }
       else if (!strcmp (p, "bytes"))
-	{
-	  if (*brx_idx == -1)
-	    *brx_idx = i;
-	  else
-	    *btx_idx = i;
-	}
+        {
+          if (*brx_idx == -1)
+            *brx_idx = i;
+          else
+            *btx_idx = i;
+        }
     }
 }
 
@@ -153,10 +153,10 @@ get_proc_net_dev_fh (void)
 
 char *
 netstatus_sysdeps_read_iface_statistics (const char  *iface,
-					 gulong      *in_packets,
-					 gulong      *out_packets,
-					 gulong      *in_bytes,
-					 gulong      *out_bytes)
+                                         gulong      *in_packets,
+                                         gulong      *out_packets,
+                                         gulong      *in_bytes,
+                                         gulong      *out_bytes)
 {
   FILE *fh;
   char  buf [512];
@@ -178,7 +178,7 @@ netstatus_sysdeps_read_iface_statistics (const char  *iface,
   fh = get_proc_net_dev_fh ();
   if (!fh)
     return g_strdup_printf (_("Cannot open /proc/net/dev: %s"),
-			    g_strerror (errno));
+                            g_strerror (errno));
 
   fgets (buf, sizeof (buf), fh);
   fgets (buf, sizeof (buf), fh);
@@ -195,30 +195,30 @@ netstatus_sysdeps_read_iface_statistics (const char  *iface,
 
       name = buf;
       while (g_ascii_isspace (name [0]))
-	name++;
+        name++;
 
       stats = parse_iface_name (name);
       if (!stats)
-	{
-	  if (!error_message)
-	    error_message = g_strdup_printf (_("Could not parse interface name from '%s'"), buf);
-	  continue;
-	}
+        {
+          if (!error_message)
+            error_message = g_strdup_printf (_("Could not parse interface name from '%s'"), buf);
+          continue;
+        }
 
       if (strcmp (name, iface) != 0)
-	continue;
+        continue;
 
       if (!parse_stats (stats,
-			prx_idx, ptx_idx, in_packets, out_packets,
-			brx_idx, btx_idx, in_bytes, out_bytes))
-	{
-	  if (error_message)
-	    g_free (error_message);
-	  error_message = g_strdup_printf (_("Could not parse interface statistics from '%s'. "
-					     "prx_idx = %d; ptx_idx = %d; brx_idx = %d; btx_idx = %d;"),
-					   buf, prx_idx, ptx_idx, brx_idx, btx_idx);
-	  continue;
-	}
+                        prx_idx, ptx_idx, in_packets, out_packets,
+                        brx_idx, btx_idx, in_bytes, out_bytes))
+        {
+          if (error_message)
+            g_free (error_message);
+          error_message = g_strdup_printf (_("Could not parse interface statistics from '%s'. "
+                                             "prx_idx = %d; ptx_idx = %d; brx_idx = %d; btx_idx = %d;"),
+                                           buf, prx_idx, ptx_idx, brx_idx, btx_idx);
+          continue;
+        }
 
       break;
     }
@@ -234,8 +234,8 @@ netstatus_sysdeps_read_iface_statistics (const char  *iface,
 
 static inline gboolean
 parse_wireless (char  *buf,
-		int    link_idx,
-		int   *link)
+                int    link_idx,
+                int   *link)
 {
   char *p;
   int   i;
@@ -244,7 +244,7 @@ parse_wireless (char  *buf,
   for (i = 0; p; i++, p = strtok (NULL, " \t\n"))
     {
       if (i == link_idx)
-	*link = g_ascii_strtoull (p, NULL, 10);
+        *link = g_ascii_strtoull (p, NULL, 10);
     }
 
   if (i <= link_idx)
@@ -264,9 +264,9 @@ parse_wireless_header (char *buf)
   for (i = 0; p; i++, p = strtok (NULL, "| \t\n"))
     {
       if (!strcmp (p, "link"))
-	{
-	  return i;
-	}
+        {
+          return i;
+        }
     }
 
   return -1;
@@ -285,8 +285,8 @@ get_proc_net_wireless_fh (void)
 
 char *
 netstatus_sysdeps_read_iface_wireless_details (const char *iface,
-					       gboolean   *is_wireless,
-					       int        *signal_strength)
+                                               gboolean   *is_wireless,
+                                               int        *signal_strength)
 {
   FILE *fh;
   char  buf [512];
@@ -321,27 +321,27 @@ netstatus_sysdeps_read_iface_wireless_details (const char *iface,
 
       name = buf;
       while (g_ascii_isspace (name [0]))
-	name++;
+        name++;
 
       details = parse_iface_name (name);
       if (!details)
-	{
-	  if (!error_message)
-	    error_message = g_strdup_printf (_("Could not parse interface name from '%s'"), buf);
-	  continue;
-	}
+        {
+          if (!error_message)
+            error_message = g_strdup_printf (_("Could not parse interface name from '%s'"), buf);
+          continue;
+        }
 
       if (strcmp (name, iface) != 0)
-	continue;
+        continue;
 
       if (!parse_wireless (details, link_idx, &link))
-	{
-	  if (error_message)
-	    g_free (error_message);
-	  error_message = g_strdup_printf (_("Could not parse wireless details from '%s'. link_idx = %d;"),
-					   buf, link_idx);
-	  continue;
-	}
+        {
+          if (error_message)
+            g_free (error_message);
+          error_message = g_strdup_printf (_("Could not parse wireless details from '%s'. link_idx = %d;"),
+                                           buf, link_idx);
+          continue;
+        }
 
       /* Stolen from the wireless applet */
       *signal_strength = (int) rint ((log (link) / log (92)) * 100.0);
@@ -361,10 +361,10 @@ netstatus_sysdeps_read_iface_wireless_details (const char *iface,
 
 static inline void
 parse_header (char *buf,
-	      int  *prx_idx,
-	      int  *ptx_idx,
-	      int  *brx_idx,
-	      int  *btx_idx)
+              int  *prx_idx,
+              int  *ptx_idx,
+              int  *brx_idx,
+              int  *btx_idx)
 {
    char *p;
    int   i;
@@ -376,29 +376,29 @@ parse_header (char *buf,
    for (i = 0; p; i++, p = strtok (NULL, " \t\n"))
      {
         if (!strcmp (p, "Ipkts"))
-	  {
-	     *prx_idx = i;
-	  }
-	else if (!strcmp (p, "Ibytes"))
-	  {
-	     *brx_idx = i;
-	  }
-	else if (!strcmp (p, "Opkts"))
-	  {
-	     *ptx_idx = i;
-	  }
-	else if (!strcmp (p, "Obytes"))
-	  {
-	     *btx_idx = i;
-	  }
+          {
+             *prx_idx = i;
+          }
+        else if (!strcmp (p, "Ibytes"))
+          {
+             *brx_idx = i;
+          }
+        else if (!strcmp (p, "Opkts"))
+          {
+             *ptx_idx = i;
+          }
+        else if (!strcmp (p, "Obytes"))
+          {
+             *btx_idx = i;
+          }
      }
 }
 
 static inline gboolean
 wireless_getval (const char      *iface,
-		 gpointer         req,
-		 unsigned long    req_type,
-		 char           **error)
+                 gpointer         req,
+                 unsigned long    req_type,
+                 char           **error)
 {
   struct ifreq ifr;
   int          s;
@@ -428,7 +428,7 @@ wireless_getval (const char      *iface,
 
 static inline char *
 get_an_data (const char *iface,
-	     int        *signal_strength)
+             int        *signal_strength)
 {
 #ifdef AN_RID_RSSI_MAP
   struct an_ltv_rssi_map  an_rssimap;
@@ -469,7 +469,7 @@ get_an_data (const char *iface,
 
 static inline char *
 get_wi_data (const char *iface,
-	     int        *signal_strength)
+             int        *signal_strength)
 {
   struct wi_req  wreq;
   int            level;
@@ -508,7 +508,7 @@ get_wi_data (const char *iface,
             return error;
           nstations = *(int *) wreq.wi_val;
           if (nstations > 0)
-	    {
+            {
               w = (struct wi_apinfo *)(((char *) &wreq.wi_val) + sizeof (int));
               signal_strength = (long int) w->signal;
             }
@@ -517,7 +517,7 @@ get_wi_data (const char *iface,
             last_scan = now;
           }
         else
-	  {
+          {
             signal_strength = cached;
           }
     }
@@ -530,8 +530,8 @@ get_wi_data (const char *iface,
 
 char *
 netstatus_sysdeps_read_iface_wireless_details (const char *iface,
-					       gboolean   *is_wireless,
-					       int        *signal_strength)
+                                               gboolean   *is_wireless,
+                                               int        *signal_strength)
 {
   char *error_message = NULL;
 
@@ -569,10 +569,10 @@ netstatus_sysdeps_read_iface_wireless_details (const char *iface,
 
 char *
 netstatus_sysdeps_read_iface_statistics (const char *iface,
-					 gulong     *in_packets,
-					 gulong     *out_packets,
-					 gulong     *in_bytes,
-					 gulong     *out_bytes)
+                                         gulong     *in_packets,
+                                         gulong     *out_packets,
+                                         gulong     *in_bytes,
+                                         gulong     *out_bytes)
 {
   GError  *error;
   char    *command_line;
@@ -596,8 +596,8 @@ netstatus_sysdeps_read_iface_statistics (const char *iface,
   if (!g_shell_parse_argv (command_line, NULL, &argv, &error))
     {
       error_message = g_strdup_printf (_("Could not parse command line '%s': %s"),
-				       command_line,
-				       error->message);
+                                       command_line,
+                                       error->message);
       g_error_free (error);
       g_free (command_line);
       
@@ -607,16 +607,16 @@ netstatus_sysdeps_read_iface_statistics (const char *iface,
 
   error = NULL;
   if (g_spawn_async_with_pipes (NULL,
-				argv,
-				NULL,
-				0,
-				NULL,
-				NULL,
-				NULL,
-				NULL,
-				&pipe_out,
-				NULL,
-				&error))
+                                argv,
+                                NULL,
+                                0,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                &pipe_out,
+                                NULL,
+                                &error))
     {
       GIOChannel *channel;
       char       *buf;
@@ -630,27 +630,27 @@ netstatus_sysdeps_read_iface_statistics (const char *iface,
       g_free (buf);
 
       if (prx_idx == -1 || ptx_idx == -1 ||
-	  brx_idx == -1 || btx_idx == -1)
-	{
-	  error_message = g_strdup (_("Could not parse 'netstat' output. Unknown format"));
-	  goto error_shutdown;
-	}
+          brx_idx == -1 || btx_idx == -1)
+        {
+          error_message = g_strdup (_("Could not parse 'netstat' output. Unknown format"));
+          goto error_shutdown;
+        }
 
       g_io_channel_read_line (channel, &buf, NULL, NULL, NULL);
 
       if (!parse_stats (buf,
-			prx_idx, ptx_idx, in_packets, out_packets,
-			brx_idx, btx_idx, in_bytes, out_bytes))
-	{
-	  error_message = g_strdup_printf (_("Could not parse interface statistics from '%s'. "
-					     "prx_idx = %d; ptx_idx = %d; brx_idx = %d; btx_idx = %d;"),
-					   buf, prx_idx, ptx_idx, brx_idx, btx_idx);
-	}
+                        prx_idx, ptx_idx, in_packets, out_packets,
+                        brx_idx, btx_idx, in_bytes, out_bytes))
+        {
+          error_message = g_strdup_printf (_("Could not parse interface statistics from '%s'. "
+                                             "prx_idx = %d; ptx_idx = %d; brx_idx = %d; btx_idx = %d;"),
+                                           buf, prx_idx, ptx_idx, brx_idx, btx_idx);
+        }
       else if (*in_packets == -1 || *out_packets == -1 || *in_bytes == -1 || *out_bytes == -1)
-	{
-	  error_message = g_strdup_printf ("Could not obtain information on interface '%s' from netstat",
-					   iface);
-	}
+        {
+          error_message = g_strdup_printf ("Could not obtain information on interface '%s' from netstat",
+                                           iface);
+        }
 
       g_free (buf);
 
@@ -661,7 +661,7 @@ netstatus_sysdeps_read_iface_statistics (const char *iface,
   else
     {
       error_message = g_strdup_printf ("Error running /usr/bin/netstat for '%s': %s", 
-				       iface, error->message);
+                                       iface, error->message);
       g_error_free (error);
     }
 

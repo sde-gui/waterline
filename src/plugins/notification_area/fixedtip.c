@@ -72,12 +72,12 @@ na_fixed_tip_class_init (NaFixedTipClass *class)
 {
   fixedtip_signals[CLICKED] =
     g_signal_new ("clicked",
-		  G_OBJECT_CLASS_TYPE (class),
-		  G_SIGNAL_RUN_LAST,
-		  G_STRUCT_OFFSET (NaFixedTipClass, clicked),
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE, 0);
+                  G_OBJECT_CLASS_TYPE (class),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NaFixedTipClass, clicked),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 
   g_type_class_add_private (class, sizeof (NaFixedTipPrivate));
 }
@@ -138,12 +138,12 @@ na_fixed_tip_position (NaFixedTip *fixedtip)
   gtk_widget_size_request (GTK_WIDGET (fixedtip), &req);
 
   gdk_window_get_origin (parent_window, &root_x, &root_y);
-	#if GTK_CHECK_VERSION(3, 0, 0)
-		parent_width = gdk_window_get_width(parent_window);
-		parent_height = gdk_window_get_height(parent_window);
-	#else
-		gdk_drawable_get_size(GDK_DRAWABLE(parent_window), &parent_width, &parent_height);
-	#endif
+        #if GTK_CHECK_VERSION(3, 0, 0)
+                parent_width = gdk_window_get_width(parent_window);
+                parent_height = gdk_window_get_height(parent_window);
+        #else
+                gdk_drawable_get_size(GDK_DRAWABLE(parent_window), &parent_width, &parent_height);
+        #endif
 
 
   screen_width = gdk_screen_get_width (screen);

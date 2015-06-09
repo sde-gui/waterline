@@ -34,8 +34,8 @@ struct _Panel {
     GdkScreen * screen;
     GtkStyle * defstyle;
 
-    GtkWidget * toplevel_alignment;	/* Widget containing plugin_box */
-    GtkWidget * plugin_box;			/* Widget containing plugins */
+    GtkWidget * toplevel_alignment; /* Widget containing plugin_box */
+    GtkWidget * plugin_box;         /* Widget containing plugins */
 
     GtkRequisition requisition;
     GtkWidget *(*my_box_new) (gboolean, gint);
@@ -71,7 +71,7 @@ struct _Panel {
 
     int preferred_icon_size;
 
-    gulong strut_size;			/* Values for WM_STRUT_PARTIAL */
+    gulong strut_size; /* Values for WM_STRUT_PARTIAL */
     gulong strut_lower;
     gulong strut_upper;
     int strut_edge;
@@ -118,7 +118,7 @@ struct _Panel {
     int panel_drag_move_start_edge_margin;
     int panel_drag_move_start_align_margin;
 
-    GList * plugins;			/* List of all plugins */
+    GList * plugins; /* List of all plugins */
 
     json_t * json;
 

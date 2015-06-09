@@ -153,8 +153,9 @@ static void on_menu_item_properties(GtkMenuItem* item, MenuCacheApp* app)
      * applications dirs, where should we store the user-specific file?
     */
     char* ifile = menu_cache_item_get_file_path(MENU_CACHE_ITEM(app));
-    char* ofile = g_build_filename(g_get_user_data_dir(), "applications",
-				   menu_cache_item_get_file_basename(MENU_CACHE_ITEM(app)), NULL);
+    char* ofile = g_build_filename(
+        g_get_user_data_dir(), "applications",
+        menu_cache_item_get_file_basename(MENU_CACHE_ITEM(app)), NULL);
     char* argv[] = {
         "lxshortcut",
         "-i",
@@ -354,40 +355,40 @@ static int load_menu(menup* m, MenuCacheDir* dir, GtkWidget* menu, int pos )
 {
     GSList * l;
     /* number of visible entries */
-    gint count = 0;		
+    gint count = 0;
     for( l = menu_cache_dir_get_children(dir); l; l = l->next )
     {
         MenuCacheItem* item = MENU_CACHE_ITEM(l->data);
-	
-        gboolean is_visible = ((menu_cache_item_get_type(item) != MENU_CACHE_TYPE_APP) || 
-			       (panel_menu_item_evaluate_visibility(item, m->visibility_flags)));
-	
-	if (is_visible) 
-	{
+
+        gboolean is_visible = ((menu_cache_item_get_type(item) != MENU_CACHE_TYPE_APP) ||
+            (panel_menu_item_evaluate_visibility(item, m->visibility_flags)));
+
+        if (is_visible)
+        {
             GtkWidget * mi = create_item(item);
-	    count++;
+            count++;
             if (mi != NULL)
                 gtk_menu_shell_insert( (GtkMenuShell*)menu, mi, pos );
                 if( pos >= 0 )
                     ++pos;
-		/* process subentries */
-		if (menu_cache_item_get_type(item) == MENU_CACHE_TYPE_DIR) 
-		{
+            /* process subentries */
+            if (menu_cache_item_get_type(item) == MENU_CACHE_TYPE_DIR) 
+            {
                     GtkWidget* sub = gtk_menu_new();
-		    /*  always pass -1 for position */
-		    gint s_count = load_menu( m, MENU_CACHE_DIR(item), sub, -1 );    
+                    /*  always pass -1 for position */
+                    gint s_count = load_menu( m, MENU_CACHE_DIR(item), sub, -1 );
                     if (s_count) 
-			gtk_menu_item_set_submenu( GTK_MENU_ITEM(mi), sub );	    
-		    else 
-		    {
-			/* don't keep empty submenus */
-			gtk_widget_destroy( sub );
-			gtk_widget_destroy( mi );
-			if (pos > 0)
-			    pos--;
-		    }
-		}
-	}
+                        gtk_menu_item_set_submenu( GTK_MENU_ITEM(mi), sub );
+                    else
+                    {
+                        /* don't keep empty submenus */
+                        gtk_widget_destroy( sub );
+                        gtk_widget_destroy( mi );
+                        if (pos > 0)
+                            pos--;
+                    }
+            }
+        }
     }
     return count;
 }

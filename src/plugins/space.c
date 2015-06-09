@@ -30,7 +30,7 @@
 
 /* Private context for space plugin. */
 typedef struct {
-    int size;				/* Size of spacer */
+    int size; /* Size of spacer */
 } SpacePlugin;
 
 static int space_constructor(Plugin * p);
@@ -107,7 +107,7 @@ static void space_configure(Plugin * p, GtkWindow * parent)
         _("Size"), &sp->size, (GType)CONF_TYPE_INT,  NULL);
     if (dialog)
     {
-        gtk_widget_set_size_request(GTK_WIDGET(dialog), 200, -1);	/* Improve geometry */
+        gtk_widget_set_size_request(GTK_WIDGET(dialog), 200, -1); /* Improve geometry */
         gtk_window_present(GTK_WINDOW(dialog));
     }
 }

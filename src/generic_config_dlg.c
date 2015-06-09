@@ -446,8 +446,8 @@ GtkWidget* create_generic_config_dialog( const char* title, GtkWidget* parent,
                   G_CALLBACK(on_enum_changed), val );
                 break;
             default:
-	        g_printerr("Invalid CONF_TYPE: %d (text: %s)\n", type, name);
-	        break;
+                g_printerr("Invalid CONF_TYPE: %d (text: %s)\n", type, name);
+                break;
         }
 
         GtkWidget* label = NULL;

@@ -59,13 +59,13 @@ na_tray_child_realize (GtkWidget *widget)
       gdk_window_set_composited (window, TRUE);
 
       child->parent_relative_bg = FALSE;
-	}
-	#if GTK_CHECK_VERSION(3, 0, 0)
-		else if (visual == gdk_window_get_visual(gdk_window_get_parent(window)))
-	#else
-		else if (visual == gdk_drawable_get_visual(GDK_DRAWABLE(gdk_window_get_parent(window))))
-	#endif
-	{
+    }
+    #if GTK_CHECK_VERSION(3, 0, 0)
+        else if (visual == gdk_window_get_visual(gdk_window_get_parent(window)))
+    #else
+        else if (visual == gdk_drawable_get_visual(GDK_DRAWABLE(gdk_window_get_parent(window))))
+    #endif
+    {
       /* Otherwise, if the visual matches the visual of the parent window, we
        * can use a parent-relative background and fake transparency. */
       gdk_window_set_back_pixmap (window, NULL, TRUE);
@@ -141,9 +141,9 @@ na_tray_child_size_allocate (GtkWidget      *widget,
   gtk_widget_get_allocation (widget, &widget_allocation);
 
   moved = (allocation->x != widget_allocation.x ||
-	   allocation->y != widget_allocation.y);
+           allocation->y != widget_allocation.y);
   resized = (allocation->width != widget_allocation.width ||
-	     allocation->height != widget_allocation.height);
+             allocation->height != widget_allocation.height);
 
   /* When we are allocating the widget while mapped we need special handling
    * for both real and fake transparency.

@@ -34,25 +34,25 @@
 typedef struct {
 
     /* Plugin interface. */
-    Plugin * plugin;				/* Back pointer to Plugin */
-    GtkWidget * btn;				/* Top level button */
-    GtkWidget * label;				/* Label containing country name */
-    GtkWidget * image;				/* Image containing country flag */
-    gboolean display_as_text;			/* Display layout as image or text */
-    gboolean per_window_layout;			/* Enable per application (window) layout) */
-    gint default_group;				/* Default group for "locale per process" */
-    guint source_id;				/* Source ID for channel listening to XKB events */
-    GtkWidget * config_dlg;			/* Configuration dialog */
-    GtkWidget * per_app_default_layout_menu;	/* Combo box of all available layouts */
+    Plugin * plugin;                /* Back pointer to Plugin */
+    GtkWidget * btn;                /* Top level button */
+    GtkWidget * label;              /* Label containing country name */
+    GtkWidget * image;              /* Image containing country flag */
+    gboolean display_as_text;       /* Display layout as image or text */
+    gboolean per_window_layout;     /* Enable per application (window) layout) */
+    gint default_group;             /* Default group for "locale per process" */
+    guint source_id;                /* Source ID for channel listening to XKB events */
+    GtkWidget * config_dlg;         /* Configuration dialog */
+    GtkWidget * per_app_default_layout_menu; /* Combo box of all available layouts */
 
     /* Mechanism. */
-    int base_event_code;			/* Result of initializing Xkb extension */
+    int base_event_code;            /* Result of initializing Xkb extension */
     int base_error_code;
-    int current_group_xkb_no;			/* Current layout */
-    int group_count;				/* Count of groups as returned by Xkb */
-    char * group_names[XkbNumKbdGroups];	/* Group names as returned by Xkb */
-    char * symbol_names[XkbNumKbdGroups];	/* Symbol names as returned by Xkb */
-    GHashTable * group_hash_table;		/* Hash table to correlate application with layout */
+    int current_group_xkb_no;       /* Current layout */
+    int group_count;                /* Count of groups as returned by Xkb */
+    char * group_names[XkbNumKbdGroups];  /* Group names as returned by Xkb */
+    char * symbol_names[XkbNumKbdGroups]; /* Symbol names as returned by Xkb */
+    GHashTable * group_hash_table;  /* Hash table to correlate application with layout */
 
 } xkb_groups_t;
 

@@ -88,27 +88,27 @@ static const char desktop_ent[] = "Desktop Entry";
  * Note that the launch parameters come from the specified desktop file, or from the configuration file.
  * This structure is also used during the "add to launchbar" dialog to hold menu items. */
 typedef struct {
-    Plugin * plugin;			/* Back pointer to plugin */
-    GtkWidget * widget;			/* Pointer to button */
-    GtkWidget * image_widget;		/* Pointer to image */
-    gchar * desktop_id;			/* Name of application (desktop file name less the .desktop) */
-    gchar * image;			/* Image icon (from Icon entry) */
-    gchar * action;			/* Action (from Exec entry) */
-    gchar * tooltip;			/* Tooltip (from Name entry) */
+    Plugin * plugin;            /* Back pointer to plugin */
+    GtkWidget * widget;         /* Pointer to button */
+    GtkWidget * image_widget;   /* Pointer to image */
+    gchar * desktop_id;         /* Name of application (desktop file name less the .desktop) */
+    gchar * image;              /* Image icon (from Icon entry) */
+    gchar * action;             /* Action (from Exec entry) */
+    gchar * tooltip;            /* Tooltip (from Name entry) */
     gchar * tooltip_markup;
-    guchar use_terminal : 1;		/* True if Terminal=true or from configuration file */
-    guchar customize_image : 1;		/* True if image icon from configuration file */
-    guchar customize_action : 1;	/* True if action from configuration file */
-    guchar customize_tooltip : 1;	/* True if tooltip from configuration file */
-    guchar customize_terminal : 1;	/* True if use_terminal from configuration file */
+    guchar use_terminal : 1;        /* True if Terminal=true or from configuration file */
+    guchar customize_image : 1;     /* True if image icon from configuration file */
+    guchar customize_action : 1;    /* True if action from configuration file */
+    guchar customize_tooltip : 1;   /* True if tooltip from configuration file */
+    guchar customize_terminal : 1;  /* True if use_terminal from configuration file */
 } LaunchButton;
 
 /* Private context for launchbar plugin. */
 typedef struct {
-    IconGrid * icon_grid;		/* Icon grid managing the container */
-    GSList * buttons;			/* Launchbar buttons */
-    GtkWidget * config_dlg;		/* Configuration dialog */
-    LaunchButton * bootstrap_button;	/* Bootstrapping button for empty launchbar */
+    IconGrid * icon_grid;       /* Icon grid managing the container */
+    GSList * buttons;           /* Launchbar buttons */
+    GtkWidget * config_dlg;     /* Configuration dialog */
+    LaunchButton * bootstrap_button; /* Bootstrapping button for empty launchbar */
 } LaunchbarPlugin;
 
 static void launchbutton_free(LaunchButton * btn);
@@ -184,7 +184,7 @@ static gboolean launchbutton_press_event(GtkWidget * widget, GdkEventButton * ev
 
     if (event->button == 1)    /* left button */
     {
-        if (b->desktop_id == NULL)	/* The bootstrap button */
+        if (b->desktop_id == NULL) /* The bootstrap button */
             launchbar_configure(b->plugin, NULL);
         else if (b->action != NULL)
             wtl_launch_app(b->action, NULL, b->use_terminal);
@@ -263,7 +263,7 @@ static void launchbutton_build_bootstrap(Plugin * p)
         /* Create an event box. */
         GtkWidget * event_box = gtk_event_box_new();
         gtk_container_set_border_width(GTK_CONTAINER(event_box), 0);
-	gtk_widget_set_can_focus(event_box, FALSE);
+        gtk_widget_set_can_focus(event_box, FALSE);
         lb->bootstrap_button->widget = event_box;
         g_signal_connect(event_box, "button-press-event", G_CALLBACK(launchbutton_press_event), lb->bootstrap_button);
 
@@ -292,7 +292,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
         GKeyFile * desktop = g_key_file_new();
 
         gchar * desktop_file = NULL;
-        gboolean loaded;	
+        gboolean loaded;
         if (g_path_is_absolute(btn->desktop_id))
         {
             desktop_file = g_strdup(btn->desktop_id);

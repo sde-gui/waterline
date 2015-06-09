@@ -17,7 +17,7 @@
  * 02111-1307, USA.
 
  * Authors:
- *	Mark McLoughlin <mark@skynet.ie>
+ *  Mark McLoughlin <mark@skynet.ie>
  */
 
 #ifndef __NETSTATUS_ICON_H__
@@ -62,19 +62,19 @@ extern SYMBOL_HIDDEN GtkWidget *     netstatus_icon_new                  (Netsta
 extern SYMBOL_HIDDEN void            netstatus_icon_invoke               (NetstatusIcon  *icon);
 
 extern SYMBOL_HIDDEN void            netstatus_icon_set_iface            (NetstatusIcon  *icon,
-						     NetstatusIface *interface);
+                                                                          NetstatusIface *interface);
 extern SYMBOL_HIDDEN NetstatusIface *netstatus_icon_get_iface            (NetstatusIcon  *icon);
 
 extern SYMBOL_HIDDEN void            netstatus_icon_set_orientation      (NetstatusIcon  *icon,
-						     GtkOrientation  orientation);
+                                                                          GtkOrientation  orientation);
 extern SYMBOL_HIDDEN GtkOrientation  netstatus_icon_get_orientation      (NetstatusIcon  *icon);
 
 extern SYMBOL_HIDDEN void            netstatus_icon_set_tooltips_enabled (NetstatusIcon  *icon,
-						     gboolean        enabled);
+                                                                          gboolean        enabled);
 extern SYMBOL_HIDDEN gboolean        netstatus_icon_get_tooltips_enabled (NetstatusIcon  *icon);
 
 extern SYMBOL_HIDDEN void            netstatus_icon_set_show_signal      (NetstatusIcon  *icon,
-						     gboolean        show_signal);
+                                                                          gboolean        show_signal);
 extern SYMBOL_HIDDEN gboolean        netstatus_icon_get_show_signal      (NetstatusIcon  *icon);
 
 G_END_DECLS

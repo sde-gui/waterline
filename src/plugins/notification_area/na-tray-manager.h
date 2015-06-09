@@ -35,14 +35,14 @@
 extern "C" {
 #endif
 
-#define NA_TYPE_TRAY_MANAGER			(na_tray_manager_get_type ())
-#define NA_TRAY_MANAGER(obj)			(G_TYPE_CHECK_INSTANCE_CAST ((obj), NA_TYPE_TRAY_MANAGER, NaTrayManager))
-#define NA_TRAY_MANAGER_CLASS(klass)		(G_TYPE_CHECK_CLASS_CAST ((klass), NA_TYPE_TRAY_MANAGER, NaTrayManagerClass))
-#define NA_IS_TRAY_MANAGER(obj)			(G_TYPE_CHECK_INSTANCE_TYPE ((obj), NA_TYPE_TRAY_MANAGER))
-#define NA_IS_TRAY_MANAGER_CLASS(klass)		(G_TYPE_CHECK_CLASS_TYPE ((klass), NA_TYPE_TRAY_MANAGER))
-#define NA_TRAY_MANAGER_GET_CLASS(obj)		(G_TYPE_INSTANCE_GET_CLASS ((obj), NA_TYPE_TRAY_MANAGER, NaTrayManagerClass))
+#define NA_TYPE_TRAY_MANAGER                    (na_tray_manager_get_type ())
+#define NA_TRAY_MANAGER(obj)                    (G_TYPE_CHECK_INSTANCE_CAST ((obj), NA_TYPE_TRAY_MANAGER, NaTrayManager))
+#define NA_TRAY_MANAGER_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), NA_TYPE_TRAY_MANAGER, NaTrayManagerClass))
+#define NA_IS_TRAY_MANAGER(obj)                 (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NA_TYPE_TRAY_MANAGER))
+#define NA_IS_TRAY_MANAGER_CLASS(klass)         (G_TYPE_CHECK_CLASS_TYPE ((klass), NA_TYPE_TRAY_MANAGER))
+#define NA_TRAY_MANAGER_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), NA_TYPE_TRAY_MANAGER, NaTrayManagerClass))
 
-typedef struct _NaTrayManager	    NaTrayManager;
+typedef struct _NaTrayManager       NaTrayManager;
 typedef struct _NaTrayManagerClass  NaTrayManagerClass;
 
 struct _NaTrayManager
@@ -67,19 +67,19 @@ struct _NaTrayManagerClass
   GObjectClass parent_class;
 
   void (* tray_icon_added)   (NaTrayManager      *manager,
-			      NaTrayChild        *child);
+                              NaTrayChild        *child);
   void (* tray_icon_removed) (NaTrayManager      *manager,
-			      NaTrayChild        *child);
+                              NaTrayChild        *child);
 
   void (* message_sent)      (NaTrayManager      *manager,
-			      NaTrayChild        *child,
-			      const gchar        *message,
-			      glong               id,
-			      glong               timeout);
+                              NaTrayChild        *child,
+                              const gchar        *message,
+                              glong               id,
+                              glong               timeout);
 
   void (* message_cancelled) (NaTrayManager      *manager,
-			      NaTrayChild        *child,
-			      glong               id);
+                              NaTrayChild        *child,
+                              glong               id);
 
   void (* lost_selection)    (NaTrayManager      *manager);
 };

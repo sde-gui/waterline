@@ -376,7 +376,7 @@ static void xkb_groups_configure(Plugin * p, GtkWindow * parent)
     g_signal_connect(xkb_groups->config_dlg, "response", G_CALLBACK(xkb_groups_configuration_response), xkb_groups);
 
     /* Display the dialog. */
-    gtk_widget_set_size_request(GTK_WIDGET(xkb_groups->config_dlg), 400, -1);	/* Improve geometry */
+    gtk_widget_set_size_request(GTK_WIDGET(xkb_groups->config_dlg), 400, -1); /* Improve geometry */
     gtk_widget_show_all(xkb_groups->config_dlg);
     gtk_window_present(GTK_WINDOW(xkb_groups->config_dlg));
 }

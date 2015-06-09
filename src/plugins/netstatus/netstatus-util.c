@@ -46,8 +46,8 @@ netstatus_setup_debug_flags (void)
 
   if (env_str)
     _netstatus_debug_flags |= g_parse_debug_string (env_str,
-						    debug_keys,
-						    G_N_ELEMENTS (debug_keys));
+        debug_keys,
+        G_N_ELEMENTS (debug_keys));
 }
 #endif /* G_ENABLE_DEBUG */
 
@@ -72,8 +72,8 @@ netstatus_g_error_get_type (void)
 
   if (type_id == 0)
     type_id = g_boxed_type_register_static ("NetstatusGError",
-					    (GBoxedCopyFunc) g_error_copy,
-					    (GBoxedFreeFunc) g_error_free);
+        (GBoxedCopyFunc) g_error_copy,
+        (GBoxedFreeFunc) g_error_free);
 
   return type_id;
 }
@@ -97,8 +97,8 @@ netstatus_stats_get_type (void)
 
   if (type_id == 0)
     type_id = g_boxed_type_register_static ("NetstatusStats",
-					    (GBoxedCopyFunc) netstatus_stats_copy,
-					    (GBoxedFreeFunc) netstatus_stats_free);
+        (GBoxedCopyFunc) netstatus_stats_copy,
+        (GBoxedFreeFunc) netstatus_stats_free);
 
   return type_id;
 }
@@ -107,7 +107,7 @@ netstatus_stats_get_type (void)
  */
 void
 netstatus_adopt_error (GError         *error,
-		       NetstatusError  code)
+                       NetstatusError  code)
 {
   g_return_if_fail (error != NULL);
 
@@ -117,10 +117,10 @@ netstatus_adopt_error (GError         *error,
 
 void
 netstatus_connect_signal_while_alive (gpointer    object,
-				      const char *detailed_signal,
-				      GCallback   func,
-				      gpointer    func_data,
-				      gpointer    alive_object)
+                                      const char *detailed_signal,
+                                      GCallback   func,
+                                      gpointer    func_data,
+                                      gpointer    alive_object)
 {
   GClosure *closure;
   GType     type;
@@ -132,7 +132,7 @@ netstatus_connect_signal_while_alive (gpointer    object,
   if (!g_signal_parse_name (detailed_signal, type, &signal_id, &detail, FALSE))
     {
       g_warning (G_STRLOC ": unable to parse signal \"%s\" for type \"%s\"",
-		 detailed_signal, g_type_name (type));
+                 detailed_signal, g_type_name (type));
       return;
     }
 
@@ -176,7 +176,7 @@ netstatus_get_state_string (NetstatusState state)
 
 GList *
 netstatus_list_insert_unique (GList *list,
-			      char  *str)
+                              char  *str)
 {
   GList *l;
 

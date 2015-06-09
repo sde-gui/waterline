@@ -17,7 +17,7 @@
  * 02111-1307, USA.
  *
  * Authors:
- *	Mark McLoughlin <mark@skynet.ie>
+ *  Mark McLoughlin <mark@skynet.ie>
  */
 
 #include <config.h>
@@ -92,8 +92,7 @@ enum {
 };
 
 static void netstatus_icon_init_pixbufs (NetstatusIcon *icon);
-static void netstatus_icon_scale_icons  (NetstatusIcon *icon,
-					 int            height);
+static void netstatus_icon_scale_icons  (NetstatusIcon *icon, int height);
 
 static GObjectClass *parent_class;
 static guint icon_signals [LAST_SIGNAL] = { 0 };
@@ -105,13 +104,8 @@ netstatus_icon_get_default_pixbuf (NetstatusIcon *icon __attribute__((unused)))
 
   if (!fallback_pixbuf)
     {
-      fallback_pixbuf = gdk_pixbuf_new_from_inline (-1,
-						    fallback_icon_data,
-						    FALSE,
-						    NULL);
-      g_object_add_weak_pointer (G_OBJECT (fallback_pixbuf),
-				 (gpointer) &fallback_pixbuf);
-
+      fallback_pixbuf = gdk_pixbuf_new_from_inline (-1, fallback_icon_data, FALSE, NULL);
+      g_object_add_weak_pointer (G_OBJECT (fallback_pixbuf), (gpointer) &fallback_pixbuf);
       return fallback_pixbuf;
    }
 
@@ -119,8 +113,7 @@ netstatus_icon_get_default_pixbuf (NetstatusIcon *icon __attribute__((unused)))
 }
 
 static void
-netstatus_icon_theme_changed (NetstatusIcon *icon,
-			      GtkIconTheme  *icon_theme __attribute__((unused)))
+netstatus_icon_theme_changed (NetstatusIcon *icon, GtkIconTheme  *icon_theme __attribute__((unused)))
 {
   int i;
 
@@ -161,17 +154,16 @@ netstatus_icon_get_icon_theme (NetstatusIcon *icon)
       icon->priv->icon_theme = gtk_icon_theme_get_for_screen (screen);
 
       g_signal_connect_object (icon->priv->icon_theme, "changed",
-			       G_CALLBACK (netstatus_icon_theme_changed),
-			       icon,
-			       G_CONNECT_SWAPPED);
+          G_CALLBACK (netstatus_icon_theme_changed),
+          icon,
+          G_CONNECT_SWAPPED);
     }
 
   return icon->priv->icon_theme;
 }
 
 static char *
-netstatus_icon_lookup_icon_theme (NetstatusIcon *icon,
-				  const char    *icon_name)
+netstatus_icon_lookup_icon_theme (NetstatusIcon *icon, const char *icon_name)
 {
   GtkIconTheme *icon_theme;
   GtkIconInfo  *icon_info;
@@ -189,9 +181,7 @@ netstatus_icon_lookup_icon_theme (NetstatusIcon *icon,
 }
 
 static void
-netstatus_icon_init_pixbuf (NetstatusIcon  *icon,
-			    GdkPixbuf     **pixbuf,
-			    const char     *icon_name)
+netstatus_icon_init_pixbuf (NetstatusIcon  *icon, GdkPixbuf **pixbuf, const char *icon_name)
 {
   char *filename;
 
@@ -204,12 +194,12 @@ netstatus_icon_init_pixbuf (NetstatusIcon  *icon,
       error = NULL;
       *pixbuf = gdk_pixbuf_new_from_file (filename, &error);
       if (error)
-	{
-	  netstatus_adopt_error (error, NETSTATUS_ERROR_ICONS);
-	  netstatus_iface_set_error (icon->priv->iface, error);
-	  g_error_free (error);
+        {
+          netstatus_adopt_error (error, NETSTATUS_ERROR_ICONS);
+          netstatus_iface_set_error (icon->priv->iface, error);
+          g_error_free (error);
 
-	}
+        }
 
       g_free (filename);
     }
@@ -256,8 +246,7 @@ rotate_pixbuf (GdkPixbuf *pixbuf)
 }
 
 static void
-netstatus_icon_rotate_signal_icons (NetstatusIcon  *icon,
-				    GtkOrientation  orientation)
+netstatus_icon_rotate_signal_icons (NetstatusIcon  *icon, GtkOrientation orientation)
 {
   int i;
 
@@ -269,20 +258,20 @@ netstatus_icon_rotate_signal_icons (NetstatusIcon  *icon,
       GdkPixbuf *pixbuf;
 
       if (orientation == GTK_ORIENTATION_HORIZONTAL)
-	{
-	  pixbuf = g_object_ref (icon->priv->signal_icons [i]);
-	}
+        {
+          pixbuf = g_object_ref (icon->priv->signal_icons [i]);
+        }
       else /* if (orientation == GTK_ORIENTATION_VERTICAL) */
-	{
-	  pixbuf = rotate_pixbuf (icon->priv->signal_icons [i]);
-	}
+        {
+          pixbuf = rotate_pixbuf (icon->priv->signal_icons [i]);
+        }
 
       if (icon->priv->rotated_signal_icons [i])
-	g_object_unref (icon->priv->rotated_signal_icons [i]);
+          g_object_unref (icon->priv->rotated_signal_icons [i]);
       icon->priv->rotated_signal_icons [i] = pixbuf;
 
       if (icon->priv->scaled_signal_icons [i])
-	g_object_unref (icon->priv->scaled_signal_icons [i]);
+          g_object_unref (icon->priv->scaled_signal_icons [i]);
       icon->priv->scaled_signal_icons [i] = NULL;
     }
 }
@@ -291,56 +280,56 @@ static void
 netstatus_icon_init_pixbufs (NetstatusIcon *icon)
 {
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->icons [NETSTATUS_STATE_DISCONNECTED],
-			      "gnome-netstatus-disconn");
+    &icon->priv->icons [NETSTATUS_STATE_DISCONNECTED],
+    "gnome-netstatus-disconn");
   icon->priv->scaled_icons [NETSTATUS_STATE_DISCONNECTED] = NULL;
 
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->icons [NETSTATUS_STATE_IDLE],
-			      "gnome-netstatus-idle");
+    &icon->priv->icons [NETSTATUS_STATE_IDLE],
+    "gnome-netstatus-idle");
   icon->priv->scaled_icons [NETSTATUS_STATE_IDLE] = NULL;
 
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->icons [NETSTATUS_STATE_TX],
-			      "gnome-netstatus-tx");
+    &icon->priv->icons [NETSTATUS_STATE_TX],
+    "gnome-netstatus-tx");
   icon->priv->scaled_icons [NETSTATUS_STATE_TX] = NULL;
 
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->icons [NETSTATUS_STATE_RX],
-			      "gnome-netstatus-rx");
+    &icon->priv->icons [NETSTATUS_STATE_RX],
+    "gnome-netstatus-rx");
   icon->priv->scaled_icons [NETSTATUS_STATE_RX] = NULL;
 
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->icons [NETSTATUS_STATE_TX_RX],
-			      "gnome-netstatus-txrx");
+    &icon->priv->icons [NETSTATUS_STATE_TX_RX],
+    "gnome-netstatus-txrx");
   icon->priv->scaled_icons [NETSTATUS_STATE_TX_RX] = NULL;
 
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->icons [NETSTATUS_STATE_ERROR],
-			      "gnome-netstatus-error");
+    &icon->priv->icons [NETSTATUS_STATE_ERROR],
+    "gnome-netstatus-error");
   icon->priv->scaled_icons [NETSTATUS_STATE_ERROR] = NULL;
 
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->signal_icons [NETSTATUS_SIGNAL_0_24],
-			      "gnome-netstatus-0-24");
+    &icon->priv->signal_icons [NETSTATUS_SIGNAL_0_24],
+    "gnome-netstatus-0-24");
   icon->priv->rotated_signal_icons [NETSTATUS_SIGNAL_0_24] = NULL;
   icon->priv->scaled_signal_icons  [NETSTATUS_SIGNAL_0_24] = NULL;
 
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->signal_icons [NETSTATUS_SIGNAL_25_49],
-			      "gnome-netstatus-25-49");
+    &icon->priv->signal_icons [NETSTATUS_SIGNAL_25_49],
+    "gnome-netstatus-25-49");
   icon->priv->rotated_signal_icons [NETSTATUS_SIGNAL_25_49] = NULL;
   icon->priv->scaled_signal_icons  [NETSTATUS_SIGNAL_25_49] = NULL;
 
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->signal_icons [NETSTATUS_SIGNAL_50_74],
-			      "gnome-netstatus-50-74");
+    &icon->priv->signal_icons [NETSTATUS_SIGNAL_50_74],
+    "gnome-netstatus-50-74");
   icon->priv->rotated_signal_icons [NETSTATUS_SIGNAL_50_74] = NULL;
   icon->priv->scaled_signal_icons  [NETSTATUS_SIGNAL_50_74] = NULL;
 
   netstatus_icon_init_pixbuf (icon,
-			      &icon->priv->signal_icons [NETSTATUS_SIGNAL_75_100],
-			      "gnome-netstatus-75-100");
+    &icon->priv->signal_icons [NETSTATUS_SIGNAL_75_100],
+    "gnome-netstatus-75-100");
   icon->priv->rotated_signal_icons [NETSTATUS_SIGNAL_75_100] = NULL;
   icon->priv->scaled_signal_icons  [NETSTATUS_SIGNAL_75_100] = NULL;
 
@@ -372,8 +361,8 @@ netstatus_icon_update_image (NetstatusIcon *icon)
 
 static void
 netstatus_update_tooltip (NetstatusIface *iface __attribute__((unused)),
-			  GParamSpec     *pspec __attribute__((unused)),
-			  NetstatusIcon  *icon)
+    GParamSpec     *pspec __attribute__((unused)),
+    NetstatusIcon  *icon)
 {
   char * tip = NULL;
 
@@ -394,10 +383,10 @@ netstatus_update_tooltip (NetstatusIface *iface __attribute__((unused)),
      if (netstatus_iface_get_inet4_details (icon->priv->iface, &addr, NULL, NULL, &mask))
      {
          if (addr && mask)
-	 {
-	     char * s = g_strdup_printf (_("%s\nIPv4 Address: %s/%s"), tip, addr, mask);
-	     g_free(tip);
-	     tip = s;
+         {
+           char * s = g_strdup_printf (_("%s\nIPv4 Address: %s/%s"), tip, addr, mask);
+           g_free(tip);
+           tip = s;
          }
 
          g_free (addr);
@@ -452,16 +441,16 @@ netstatus_update_tooltip (NetstatusIface *iface __attribute__((unused)),
 
 static void
 netstatus_icon_name_changed (NetstatusIface *iface,
-			     GParamSpec     *pspec,
-			     NetstatusIcon  *icon)
+    GParamSpec     *pspec,
+    NetstatusIcon  *icon)
 {
     netstatus_update_tooltip(iface, pspec, icon);
 }
 
 static void
 netstatus_icon_state_changed (NetstatusIface *iface,
-			      GParamSpec     *pspec,
-			      NetstatusIcon  *icon)
+    GParamSpec     *pspec,
+    NetstatusIcon  *icon)
 {
   NetstatusState state;
 
@@ -480,8 +469,8 @@ netstatus_icon_state_changed (NetstatusIface *iface,
 
 static void
 netstatus_icon_stats_changed (NetstatusIface *iface,
-			      GParamSpec     *pspec,
-			      NetstatusIcon  *icon)
+    GParamSpec     *pspec,
+    NetstatusIcon  *icon)
 {
   g_return_if_fail (NETSTATUS_IS_ICON (icon));
 
@@ -490,8 +479,8 @@ netstatus_icon_stats_changed (NetstatusIface *iface,
 
 static void
 netstatus_icon_is_wireless_changed (NetstatusIface *iface,
-				    GParamSpec     *pspec __attribute__((unused)),
-				    NetstatusIcon  *icon)
+    GParamSpec     *pspec __attribute__((unused)),
+    NetstatusIcon  *icon)
 {
   if (netstatus_iface_get_is_wireless (iface) && icon->priv->show_signal)
     gtk_widget_show (icon->priv->signal_image);
@@ -501,8 +490,8 @@ netstatus_icon_is_wireless_changed (NetstatusIface *iface,
 
 static void
 netstatus_icon_signal_changed (NetstatusIface *iface,
-			       GParamSpec     *pspec __attribute__((unused)),
-			       NetstatusIcon  *icon)
+    GParamSpec     *pspec __attribute__((unused)),
+    NetstatusIcon  *icon)
 {
   NetstatusSignal signal_strength;
   int             percent;
@@ -539,16 +528,11 @@ netstatus_icon_destroy (GtkObject *widget)
     {
       g_assert (icon->priv->iface != NULL);
       g_assert (icon->priv->name_changed_id != 0);
-      g_signal_handler_disconnect (icon->priv->iface,
-				   icon->priv->state_changed_id);
-      g_signal_handler_disconnect (icon->priv->iface,
-				   icon->priv->stats_changed_id);
-      g_signal_handler_disconnect (icon->priv->iface,
-				   icon->priv->name_changed_id);
-      g_signal_handler_disconnect (icon->priv->iface,
-				   icon->priv->wireless_changed_id);
-      g_signal_handler_disconnect (icon->priv->iface,
-				   icon->priv->signal_changed_id);
+      g_signal_handler_disconnect (icon->priv->iface, icon->priv->state_changed_id);
+      g_signal_handler_disconnect (icon->priv->iface, icon->priv->stats_changed_id);
+      g_signal_handler_disconnect (icon->priv->iface, icon->priv->name_changed_id);
+      g_signal_handler_disconnect (icon->priv->iface, icon->priv->wireless_changed_id);
+      g_signal_handler_disconnect (icon->priv->iface, icon->priv->signal_changed_id);
     }
   icon->priv->state_changed_id    = 0;
   icon->priv->stats_changed_id    = 0;
@@ -563,9 +547,9 @@ netstatus_icon_destroy (GtkObject *widget)
 
 static GdkPixbuf *
 scale_pixbuf (GdkPixbuf      *pixbuf,
-	      GtkOrientation  orientation,
-	      int             size,
-	      gboolean        retain_aspect)
+    GtkOrientation  orientation,
+    int             size,
+    gboolean        retain_aspect)
 {
   GdkPixbuf *retval;
   int        orig_size;
@@ -597,36 +581,32 @@ scale_pixbuf (GdkPixbuf      *pixbuf,
       scale = (double) size / orig_size;
 
       if (retain_aspect)
-	{
-	  scaled_width  = orig_width  * scale;
-	  scaled_height = orig_height * scale;
-	}
+        {
+          scaled_width  = orig_width  * scale;
+          scaled_height = orig_height * scale;
+        }
       else
-	{
-	  if (orientation == GTK_ORIENTATION_HORIZONTAL)
-	    {
-	      scaled_width  = orig_width;
-	      scaled_height = orig_height * scale;
-	    }
-	  else /* if (orientation == GTK_ORIENTATION_VERTICAL) */
-	    {
-	      scaled_width  = orig_width * scale;
-	      scaled_height = orig_height;
-	    }
-	}
+        {
+          if (orientation == GTK_ORIENTATION_HORIZONTAL)
+            {
+              scaled_width  = orig_width;
+              scaled_height = orig_height * scale;
+            }
+          else /* if (orientation == GTK_ORIENTATION_VERTICAL) */
+            {
+              scaled_width  = orig_width * scale;
+              scaled_height = orig_height;
+            }
+        }
 
-      retval = gdk_pixbuf_scale_simple (pixbuf,
-					scaled_width,
-					scaled_height,
-					GDK_INTERP_BILINEAR);
+      retval = gdk_pixbuf_scale_simple (pixbuf, scaled_width, scaled_height, GDK_INTERP_BILINEAR);
     }
 
   return retval;
 }
 
 static void
-netstatus_icon_scale_icons (NetstatusIcon  *icon,
-			    int             size)
+netstatus_icon_scale_icons (NetstatusIcon *icon, int size)
 {
   int i;
 
@@ -638,21 +618,21 @@ netstatus_icon_scale_icons (NetstatusIcon  *icon,
   for (i = 0; i < NETSTATUS_STATE_LAST; i++)
     {
       if (icon->priv->scaled_icons [i])
-	g_object_unref (icon->priv->scaled_icons [i]);
+          g_object_unref (icon->priv->scaled_icons [i]);
       icon->priv->scaled_icons [i] = scale_pixbuf (icon->priv->icons [i],
-						   icon->priv->orientation,
-						   size,
-						   TRUE);
+          icon->priv->orientation,
+          size,
+          TRUE);
     }
 
   for (i = 0; i < NETSTATUS_SIGNAL_LAST; i++)
     {
       if (icon->priv->scaled_signal_icons [i])
-	g_object_unref (icon->priv->scaled_signal_icons [i]);
+          g_object_unref (icon->priv->scaled_signal_icons [i]);
       icon->priv->scaled_signal_icons [i] = scale_pixbuf (icon->priv->rotated_signal_icons [i],
-							  icon->priv->orientation,
-							  size,
-							  TRUE);
+          icon->priv->orientation,
+          size,
+          TRUE);
     }
 
   netstatus_icon_update_image (icon);
@@ -665,8 +645,7 @@ get_box_class (GtkOrientation orientation)
 }
 
 static void
-netstatus_icon_size_request (GtkWidget      *widget,
-			     GtkRequisition *requisition)
+netstatus_icon_size_request (GtkWidget *widget, GtkRequisition *requisition)
 {
   NetstatusIcon *icon = NETSTATUS_ICON (widget);
   GObjectClass  *klass;
@@ -680,8 +659,7 @@ netstatus_icon_size_request (GtkWidget      *widget,
 }
 
 static void
-netstatus_icon_size_allocate (GtkWidget     *widget,
-			      GtkAllocation *allocation)
+netstatus_icon_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 {
   NetstatusIcon *icon = (NetstatusIcon *) widget;
   GtkAllocation  child_allocation;
@@ -731,11 +709,11 @@ netstatus_icon_size_allocate (GtkWidget     *widget,
   if (gtk_widget_get_realized (widget))
   {
       if (icon->priv->event_window != NULL)
-	gdk_window_move_resize (icon->priv->event_window,
-				child_allocation.x,
-				child_allocation.y,
-				child_allocation.width,
-				child_allocation.height);
+          gdk_window_move_resize (icon->priv->event_window,
+              child_allocation.x,
+              child_allocation.y,
+              child_allocation.width,
+              child_allocation.height);
   }
 
   if (GTK_WIDGET_CLASS (klass)->size_allocate)
@@ -851,8 +829,7 @@ netstatus_icon_unmap (GtkWidget *widget)
 }
 
 static gboolean
-netstatus_icon_button_press_event (GtkWidget      *widget,
-				   GdkEventButton *event)
+netstatus_icon_button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
   if (event->button == 1)
     {
@@ -865,9 +842,9 @@ netstatus_icon_button_press_event (GtkWidget      *widget,
 #if 0
 static void
 netstatus_icon_set_property (GObject      *object,
-			     guint         prop_id,
-			     const GValue *value,
-			     GParamSpec   *pspec)
+    guint         prop_id,
+    const GValue *value,
+    GParamSpec   *pspec)
 {
   NetstatusIcon *icon;
 
@@ -897,9 +874,9 @@ netstatus_icon_set_property (GObject      *object,
 
 static void
 netstatus_icon_get_property (GObject    *object,
-			     guint       prop_id,
-			     GValue     *value,
-			     GParamSpec *pspec)
+    guint       prop_id,
+    GValue     *value,
+    GParamSpec *pspec)
 {
   NetstatusIcon *icon;
 
@@ -941,11 +918,11 @@ netstatus_icon_finalize (GObject *object)
   for (i = 0; i < NETSTATUS_STATE_LAST; i++)
     {
       if (icon->priv->icons [i])
-	g_object_unref (icon->priv->icons [i]);
+          g_object_unref (icon->priv->icons [i]);
       icon->priv->icons [i] = NULL;
 
       if (icon->priv->scaled_icons [i])
-	g_object_unref (icon->priv->scaled_icons [i]);
+          g_object_unref (icon->priv->scaled_icons [i]);
       icon->priv->scaled_icons [i] = NULL;
     }
 
@@ -982,12 +959,12 @@ netstatus_icon_class_init (NetstatusIconClass *klass)
   widget_class->button_press_event = netstatus_icon_button_press_event;
 #if 0
   g_object_class_install_property (gobject_class,
-				   PROP_IFACE,
-				   g_param_spec_object ("iface",
-							_("Interface"),
-							_("The current interface the icon is monitoring."),
-							NETSTATUS_TYPE_IFACE,
-							G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                   PROP_IFACE,
+                                   g_param_spec_object ("iface",
+                                           _("Interface"),
+                                           _("The current interface the icon is monitoring."),
+                                           NETSTATUS_TYPE_IFACE,
+                                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
   g_object_class_install_property (gobject_class,
                                    PROP_ORIENTATION,
@@ -1001,33 +978,33 @@ netstatus_icon_class_init (NetstatusIconClass *klass)
   g_object_class_install_property (gobject_class,
                                    PROP_TOOLTIPS_ENABLED,
                                    g_param_spec_boolean ("tooltips-enabled",
-							 _("Tooltips Enabled"),
-							 _("Whether or not the icon's tooltips are enabled."),
-							 TRUE,
-							 G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                        _("Tooltips Enabled"),
+                                        _("Whether or not the icon's tooltips are enabled."),
+                                        TRUE,
+                                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
   g_object_class_install_property (gobject_class,
                                    PROP_SHOW_SIGNAL,
                                    g_param_spec_boolean ("show-signal",
-							 _("Show Signal"),
-							 _("Whether or not the signal strength should be displayed."),
-							 TRUE,
-							 G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                        _("Show Signal"),
+                                        _("Whether or not the signal strength should be displayed."),
+                                        TRUE,
+                                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 #endif
 
   icon_signals [INVOKED] =
     g_signal_new ("invoked",
-		  G_OBJECT_CLASS_TYPE (gobject_class),
-		  G_SIGNAL_RUN_FIRST,
-		  G_STRUCT_OFFSET (NetstatusIconClass, invoked),
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE, 0);
+        G_OBJECT_CLASS_TYPE (gobject_class),
+        G_SIGNAL_RUN_FIRST,
+        G_STRUCT_OFFSET (NetstatusIconClass, invoked),
+        NULL, NULL,
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 0);
 }
 
 static void
 netstatus_icon_instance_init (NetstatusIcon      *icon,
-			      NetstatusIconClass *klass __attribute__((unused)))
+    NetstatusIconClass *klass __attribute__((unused)))
 {
   icon->priv = g_new0 (NetstatusIconPrivate, 1);
 
@@ -1052,7 +1029,7 @@ netstatus_icon_instance_init (NetstatusIcon      *icon,
   icon->priv->tooltips_enabled = TRUE;
 
   gtk_widget_add_events (GTK_WIDGET (icon),
-			 GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+    GDK_BUTTON_PRESS_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
 
 }
 
@@ -1098,7 +1075,7 @@ netstatus_icon_invoke (NetstatusIcon *icon)
   if (netstatus_iface_get_state (icon->priv->iface) != NETSTATUS_STATE_ERROR)
     {
       if (icon->priv->error_dialog)
-	gtk_widget_destroy (icon->priv->error_dialog);
+          gtk_widget_destroy (icon->priv->error_dialog);
       icon->priv->error_dialog = NULL;
 
       g_signal_emit (icon, icon_signals [INVOKED], 0);
@@ -1112,35 +1089,30 @@ netstatus_icon_invoke (NetstatusIcon *icon)
 
       if (icon->priv->error_dialog)
         {
-	  gtk_window_set_screen (GTK_WINDOW (icon->priv->error_dialog),
-				 gtk_widget_get_screen (GTK_WIDGET (icon)));
+          gtk_window_set_screen (GTK_WINDOW (icon->priv->error_dialog), gtk_widget_get_screen (GTK_WIDGET (icon)));
           gtk_window_present (GTK_WINDOW (icon->priv->error_dialog));
           return;
         }
 
       icon->priv->error_dialog =
-	gtk_message_dialog_new (NULL, 0,
-				GTK_MESSAGE_ERROR,
-				GTK_BUTTONS_CLOSE,
-				_("Please contact your system administrator to resolve the following problem:\n\n%s"),
-				error->message);
+          gtk_message_dialog_new (NULL, 0,
+              GTK_MESSAGE_ERROR,
+              GTK_BUTTONS_CLOSE,
+              _("Please contact your system administrator to resolve the following problem:\n\n%s"),
+              error->message);
 
       gtk_window_set_screen (GTK_WINDOW (icon->priv->error_dialog),
-			     gtk_widget_get_screen (GTK_WIDGET (icon)));
+          gtk_widget_get_screen (GTK_WIDGET (icon)));
 
-      g_signal_connect (icon->priv->error_dialog, "response",
-			G_CALLBACK (gtk_widget_destroy), NULL);
-      g_signal_connect (icon->priv->error_dialog, "destroy",
-                        G_CALLBACK (gtk_widget_destroyed),
-			&icon->priv->error_dialog);
+      g_signal_connect (icon->priv->error_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
+      g_signal_connect (icon->priv->error_dialog, "destroy", G_CALLBACK (gtk_widget_destroyed), &icon->priv->error_dialog);
 
       gtk_widget_show (icon->priv->error_dialog);
     }
 }
 
 void
-netstatus_icon_set_iface (NetstatusIcon  *icon,
-			  NetstatusIface *iface)
+netstatus_icon_set_iface (NetstatusIcon *icon, NetstatusIface *iface)
 {
 
   g_return_if_fail (NETSTATUS_IS_ICON (icon));
@@ -1152,36 +1124,36 @@ netstatus_icon_set_iface (NetstatusIcon  *icon,
       old_iface = icon->priv->iface;
 
       if (icon->priv->state_changed_id)
-	{
-	  g_assert (icon->priv->iface != NULL);
-	  g_assert (icon->priv->name_changed_id != 0);
-	  g_signal_handler_disconnect (icon->priv->iface,
-				       icon->priv->state_changed_id);
-	  g_signal_handler_disconnect (icon->priv->iface,
-				       icon->priv->name_changed_id);
-	  g_signal_handler_disconnect (icon->priv->iface,
-				       icon->priv->wireless_changed_id);
-	  g_signal_handler_disconnect (icon->priv->iface,
-				       icon->priv->signal_changed_id);
-	}
+        {
+          g_assert (icon->priv->iface != NULL);
+          g_assert (icon->priv->name_changed_id != 0);
+          g_signal_handler_disconnect (icon->priv->iface,
+                                       icon->priv->state_changed_id);
+          g_signal_handler_disconnect (icon->priv->iface,
+                                       icon->priv->name_changed_id);
+          g_signal_handler_disconnect (icon->priv->iface,
+                                       icon->priv->wireless_changed_id);
+          g_signal_handler_disconnect (icon->priv->iface,
+                                       icon->priv->signal_changed_id);
+        }
 
       if (iface)
-	g_object_ref (iface);
+        g_object_ref (iface);
       icon->priv->iface = iface;
 
       if (old_iface)
-	g_object_unref (old_iface);
+        g_object_unref (old_iface);
 
       icon->priv->state_changed_id     = g_signal_connect (icon->priv->iface, "notify::state",
-							   G_CALLBACK (netstatus_icon_state_changed), icon);
+                                                           G_CALLBACK (netstatus_icon_state_changed), icon);
       icon->priv->stats_changed_id     = g_signal_connect (icon->priv->iface, "notify::stats",
-							   G_CALLBACK (netstatus_icon_stats_changed), icon);
+                                                           G_CALLBACK (netstatus_icon_stats_changed), icon);
       icon->priv->name_changed_id      = g_signal_connect (icon->priv->iface, "notify::name",
-							   G_CALLBACK (netstatus_icon_name_changed), icon);
+                                                           G_CALLBACK (netstatus_icon_name_changed), icon);
       icon->priv->wireless_changed_id  = g_signal_connect (icon->priv->iface, "notify::wireless",
-							   G_CALLBACK (netstatus_icon_is_wireless_changed), icon);
+                                                           G_CALLBACK (netstatus_icon_is_wireless_changed), icon);
       icon->priv->signal_changed_id    = g_signal_connect (icon->priv->iface, "notify::signal-strength",
-							   G_CALLBACK (netstatus_icon_signal_changed), icon);
+                                                           G_CALLBACK (netstatus_icon_signal_changed), icon);
 
       netstatus_icon_state_changed       (icon->priv->iface, NULL, icon);
       netstatus_icon_stats_changed       (icon->priv->iface, NULL, icon);
@@ -1203,7 +1175,7 @@ netstatus_icon_get_iface (NetstatusIcon *icon)
 
 void
 netstatus_icon_set_orientation (NetstatusIcon  *icon,
-				GtkOrientation  orientation)
+                                GtkOrientation  orientation)
 {
   g_return_if_fail (NETSTATUS_IS_ICON (icon));
 
@@ -1232,7 +1204,7 @@ netstatus_icon_get_orientation (NetstatusIcon *icon)
 
 void
 netstatus_icon_set_tooltips_enabled (NetstatusIcon *icon,
-				     gboolean       enabled)
+                                     gboolean       enabled)
 {
   g_return_if_fail (NETSTATUS_IS_ICON (icon));
 
@@ -1255,7 +1227,7 @@ netstatus_icon_get_tooltips_enabled (NetstatusIcon *icon)
 
 void
 netstatus_icon_set_show_signal (NetstatusIcon *icon,
-				gboolean       show_signal)
+                                gboolean       show_signal)
 {
   g_return_if_fail (NETSTATUS_IS_ICON (icon));
 
@@ -1266,9 +1238,9 @@ netstatus_icon_set_show_signal (NetstatusIcon *icon,
       icon->priv->show_signal = show_signal;
 
       if (show_signal && netstatus_iface_get_is_wireless (icon->priv->iface))
-	gtk_widget_show (icon->priv->signal_image);
+        gtk_widget_show (icon->priv->signal_image);
       else
-	gtk_widget_hide (icon->priv->signal_image);
+        gtk_widget_hide (icon->priv->signal_image);
 
       /* g_object_notify (G_OBJECT (icon), "show-signal"); */
     }

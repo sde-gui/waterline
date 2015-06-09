@@ -56,11 +56,11 @@ static int xkb_error_base = 0;
 
 /* Private context for keyboard LED plugin. */
 typedef struct {
-    Plugin * plugin;				/* Back pointer to plugin */
-    IconGrid * icon_grid;			/* Icon grid manager */
-    GtkWidget *indicator_image[3];		/* Image for each indicator */
-    unsigned int current_state;			/* Current LED state, bit encoded */
-    gboolean visible[3];			/* True if control is visible (per user configuration) */
+    Plugin * plugin;                /* Back pointer to plugin */
+    IconGrid * icon_grid;           /* Icon grid manager */
+    GtkWidget *indicator_image[3];  /* Image for each indicator */
+    unsigned int current_state;     /* Current LED state, bit encoded */
+    gboolean visible[3];            /* True if control is visible (per user configuration) */
 } xkb_leds_t;
 
 static void xkb_leds_update_image(xkb_leds_t * kl, int i, unsigned int state);

@@ -307,37 +307,34 @@ void update_display(BatteryPlugin *iplugin) {
 
         gtk_label_set_text(GTK_LABEL(iplugin->label), _("N/A"));
 
-	return;
+        return;
     }
-    
+
     /* fixme: only one battery supported */
 
     int rate = iplugin->b->current_now;
     gboolean isCharging = battery_is_charging ( b );
     
     /* Consider running the alarm command */
-    if ( !isCharging && rate > 0 &&
-	( ( battery_get_remaining( b ) / 60 ) < iplugin->alarmTime ) )
+    if ( !isCharging && rate > 0 && ( ( battery_get_remaining( b ) / 60 ) < iplugin->alarmTime ) )
     {
-	/* Shrug this should be done using glibs process functions */
-	/* Alarms should not run concurrently; determine whether an alarm is
-	   already running */
-	int alarmCanRun;
-	sem_getvalue(&(iplugin->alarmProcessLock), &alarmCanRun);
-	
-	/* Run the alarm command if it isn't already running */
-	if (alarmCanRun) {
-	    
-	    Alarm *a = (Alarm *) malloc(sizeof(Alarm));
-	    a->command = iplugin->alarmCommand;
-	    a->lock = &(iplugin->alarmProcessLock);
-	    
-	    /* Manage the alarm process in a new thread, which which will be
-	       responsible for freeing the alarm struct it's given */
-	    pthread_t alarmThread;
-	    pthread_create(&alarmThread, NULL, alarmProcess, a);
-	    
-	}
+        /* Shrug this should be done using glibs process functions */
+        /* Alarms should not run concurrently; determine whether an alarm is
+           already running */
+        int alarmCanRun;
+        sem_getvalue(&(iplugin->alarmProcessLock), &alarmCanRun);
+
+        /* Run the alarm command if it isn't already running */
+        if (alarmCanRun) {
+            Alarm *a = (Alarm *) malloc(sizeof(Alarm));
+            a->command = iplugin->alarmCommand;
+            a->lock = &(iplugin->alarmProcessLock);
+
+            /* Manage the alarm process in a new thread, which which will be
+               responsible for freeing the alarm struct it's given */
+            pthread_t alarmThread;
+            pthread_create(&alarmThread, NULL, alarmProcess, a);
+        }
     }
 
     /* Make a tooltip string, and display remaining charge time if the battery
@@ -513,10 +510,6 @@ constructor(Plugin *p)
 
     /* get available battery */
     iplugin->b = battery_get ();
-
-    /* no battery available */
-/*    if ( iplugin->b == NULL )
-	goto error;*/
 
     GtkWidget * pwid = gtk_event_box_new();
     plugin_set_widget(p, pwid);

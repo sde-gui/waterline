@@ -47,7 +47,6 @@ typedef struct _NetstatusIfacePrivate NetstatusIfacePrivate;
 struct _NetstatusIface
 {
   GObject                 parent_instance; 
-	
   NetstatusIfacePrivate  *priv;
 };
 
@@ -64,27 +63,27 @@ extern SYMBOL_HIDDEN NetstatusIface *       netstatus_iface_new                 
 
 extern SYMBOL_HIDDEN G_CONST_RETURN char *  netstatus_iface_get_name              (NetstatusIface  *iface);
 extern SYMBOL_HIDDEN void                   netstatus_iface_set_name              (NetstatusIface  *iface,
-                                                                    		       const char      *name);
+                                                                                   const char      *name);
 extern SYMBOL_HIDDEN NetstatusState         netstatus_iface_get_state             (NetstatusIface  *iface);
 extern SYMBOL_HIDDEN void                   netstatus_iface_get_statistics        (NetstatusIface  *iface,
-                                                                    		       NetstatusStats  *stats);
+                                                                                   NetstatusStats  *stats);
 extern SYMBOL_HIDDEN gboolean               netstatus_iface_get_is_wireless       (NetstatusIface  *iface);
 extern SYMBOL_HIDDEN int                    netstatus_iface_get_signal_strength   (NetstatusIface  *iface);
 
 extern SYMBOL_HIDDEN void                   netstatus_iface_set_error             (NetstatusIface  *iface,
-                                                							       const GError    *error);
+                                                                                   const GError    *error);
 extern SYMBOL_HIDDEN G_CONST_RETURN GError *netstatus_iface_get_error             (NetstatusIface  *iface);
 extern SYMBOL_HIDDEN void                   netstatus_iface_clear_error           (NetstatusIface  *iface,
-                                                							       NetstatusError   code);
+                                                                                   NetstatusError   code);
 
 extern SYMBOL_HIDDEN gboolean               netstatus_iface_get_inet4_details     (NetstatusIface  *iface,
-							      char           **addr,
-							      char           **dest,
-							      char           **bcast,
-							      char           **mask);
+                                                                                   char           **addr,
+                                                                                   char           **dest,
+                                                                                   char           **bcast,
+                                                                                   char           **mask);
 extern SYMBOL_HIDDEN gboolean               netstatus_iface_get_device_details    (NetstatusIface  *iface,
-							      const char     **hw_name,
-							      char           **hw_addr);
+                                                                                   const char     **hw_name,
+                                                                                   char           **hw_addr);
 
 //gchar *                netstatus_iface_get_device_info       (NetstatusIface  *iface);
 

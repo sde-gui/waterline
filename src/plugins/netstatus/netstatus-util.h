@@ -53,7 +53,7 @@ typedef enum {
   NETSTATUS_ERROR_NO_INTERFACES    = 6, /* No interfaces found */
   NETSTATUS_ERROR_WIRELESS_DETAILS = 7  /* Error finding wireless details
                                          * (not an error if iface isn't wireless)
-					 */
+                                         */
 } NetstatusError;
 
 typedef enum {
@@ -73,18 +73,18 @@ extern SYMBOL_HIDDEN GQuark               netstatus_error_quark                (
 extern SYMBOL_HIDDEN GType                netstatus_g_error_get_type           (void);
 extern SYMBOL_HIDDEN GType                netstatus_stats_get_type             (void);
 extern SYMBOL_HIDDEN void                 netstatus_adopt_error                (GError         *error,
-							   NetstatusError  code);
+                                                           NetstatusError  code);
 
 extern SYMBOL_HIDDEN G_CONST_RETURN char *netstatus_get_state_string           (NetstatusState  state);
 
 extern SYMBOL_HIDDEN GList               *netstatus_list_insert_unique         (GList          *list,
-							   char           *str);
+                                                           char           *str);
 
 extern SYMBOL_HIDDEN void                 netstatus_connect_signal_while_alive (gpointer        object,
-							   const char     *detailed_signal,
-							   GCallback       func,
-							   gpointer        func_data,
-							   gpointer        alive_object);
+                                                           const char     *detailed_signal,
+                                                           GCallback       func,
+                                                           gpointer        func_data,
+                                                           gpointer        alive_object);
 
 #ifdef G_ENABLE_DEBUG
 

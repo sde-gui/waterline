@@ -472,24 +472,24 @@ gboolean is_xcomposite_available(void)
 
     if (result < 0)
     {
-	int event_base, error_base, major, minor;
-	if (!XCompositeQueryExtension(GDK_DISPLAY(), &event_base, &error_base))
-	{
-	    result = FALSE;
-	}
-	else
-	{
-	    major = 0, minor = 2;
-	    XCompositeQueryVersion(GDK_DISPLAY(), &major, &minor);
-	    if (! (major > 0 || minor >= 2))
-	    {
-		result = FALSE;
-	    }
-	    else
-	    {
-		result = TRUE;
-	    }
-	}
+        int event_base, error_base, major, minor;
+        if (!XCompositeQueryExtension(GDK_DISPLAY(), &event_base, &error_base))
+        {
+            result = FALSE;
+        }
+        else
+        {
+            major = 0, minor = 2;
+            XCompositeQueryVersion(GDK_DISPLAY(), &major, &minor);
+            if (! (major > 0 || minor >= 2))
+            {
+                result = FALSE;
+            }
+            else
+            {
+                result = TRUE;
+            }
+        }
     }
 
     return result;
@@ -1037,7 +1037,7 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
             pixmap = gdk_pixbuf_new_from_data(
                 pixdata,
                 GDK_COLORSPACE_RGB,
-                TRUE, 8,	/* has_alpha, bits_per_sample */
+                TRUE, 8, /* has_alpha, bits_per_sample */
                 best_w, best_h, best_w * 4,
                 (GdkPixbufDestroyNotify) g_free,
                 NULL);

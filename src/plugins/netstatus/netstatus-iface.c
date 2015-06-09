@@ -85,17 +85,17 @@ struct _NetstatusIfacePrivate
 };
 
 static void     netstatus_iface_instance_init   (NetstatusIface      *iface,
-						 NetstatusIfaceClass *klass);
+                                                 NetstatusIfaceClass *klass);
 static void     netstatus_iface_class_init      (NetstatusIfaceClass *klass);
 static void     netstatus_iface_finalize        (GObject             *object);
 static void     netstatus_iface_set_property    (GObject             *object,
-						 guint                property_id,
-						 const GValue        *value,
-						 GParamSpec          *pspec);
+                                                 guint                property_id,
+                                                 const GValue        *value,
+                                                 GParamSpec          *pspec);
 static void     netstatus_iface_get_property    (GObject             *object,
-						 guint                property_id,
-						 GValue              *value,
-						 GParamSpec          *pspec);
+                                                 guint                property_id,
+                                                 GValue              *value,
+                                                 GParamSpec          *pspec);
 static gboolean netstatus_iface_monitor_timeout (NetstatusIface      *iface);
 static void     netstatus_iface_init_monitor    (NetstatusIface      *iface);
 
@@ -127,7 +127,7 @@ netstatus_iface_get_type (void)
 
 static void
 netstatus_iface_instance_init (NetstatusIface      *iface,
-			       NetstatusIfaceClass *klass __attribute__((unused)))
+                               NetstatusIfaceClass *klass __attribute__((unused)))
 {
   iface->priv = g_new0 (NetstatusIfacePrivate, 1);
   iface->priv->state = NETSTATUS_STATE_DISCONNECTED;
@@ -145,55 +145,55 @@ netstatus_iface_class_init (NetstatusIfaceClass *klass)
   gobject_class->set_property = netstatus_iface_set_property;
 
   g_object_class_install_property (gobject_class,
-				   PROP_NAME,
-				   g_param_spec_string ("name",
-							_("Name"),
-							_("The interface name"),
-							NULL,
-							G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                   PROP_NAME,
+                                   g_param_spec_string ("name",
+                                                        _("Name"),
+                                                        _("The interface name"),
+                                                        NULL,
+                                                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
   g_object_class_install_property (gobject_class,
-				   PROP_STATE,
-				   g_param_spec_enum ("state",
-						      _("State"),
-						      _("The interface state"),
-						      NETSTATUS_TYPE_STATE,
-						      NETSTATUS_STATE_DISCONNECTED,
-						      G_PARAM_READABLE));
+                                   PROP_STATE,
+                                   g_param_spec_enum ("state",
+                                                      _("State"),
+                                                      _("The interface state"),
+                                                      NETSTATUS_TYPE_STATE,
+                                                      NETSTATUS_STATE_DISCONNECTED,
+                                                      G_PARAM_READABLE));
 
   g_object_class_install_property (gobject_class,
-				   PROP_STATS,
-				   g_param_spec_boxed ("stats",
-						       _("Stats"),
-						       _("The interface packets/bytes statistics"),
-						       NETSTATUS_TYPE_STATS,
-						       G_PARAM_READABLE));
+                                   PROP_STATS,
+                                   g_param_spec_boxed ("stats",
+                                                       _("Stats"),
+                                                       _("The interface packets/bytes statistics"),
+                                                       NETSTATUS_TYPE_STATS,
+                                                       G_PARAM_READABLE));
 
   g_object_class_install_property (gobject_class,
-				   PROP_WIRELESS,
-				   g_param_spec_boolean ("wireless",
-							 _("Wireless"),
-							 _("Whether the interface is a wireless interface"),
-							 FALSE,
-							 G_PARAM_READABLE));
+                                   PROP_WIRELESS,
+                                   g_param_spec_boolean ("wireless",
+                                                         _("Wireless"),
+                                                         _("Whether the interface is a wireless interface"),
+                                                         FALSE,
+                                                         G_PARAM_READABLE));
 
   g_object_class_install_property (gobject_class,
-				   PROP_SIGNAL_STRENGTH,
-				   g_param_spec_int ("signal-strength",
-						     _("Signal"),
-						     _("Wireless signal strength percentage"),
-						     0,
-						     100,
-						     0,
-						     G_PARAM_READABLE));
+                                   PROP_SIGNAL_STRENGTH,
+                                   g_param_spec_int ("signal-strength",
+                                                     _("Signal"),
+                                                     _("Wireless signal strength percentage"),
+                                                     0,
+                                                     100,
+                                                     0,
+                                                     G_PARAM_READABLE));
 
   g_object_class_install_property (gobject_class,
-				   PROP_ERROR,
-				   g_param_spec_boxed ("error",
-						       _("Error"),
-						       _("The current error condition"),
-						       NETSTATUS_TYPE_G_ERROR,
-						       G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                   PROP_ERROR,
+                                   g_param_spec_boxed ("error",
+                                                       _("Error"),
+                                                       _("The current error condition"),
+                                                       NETSTATUS_TYPE_G_ERROR,
+                                                       G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 }
 
 static void
@@ -227,9 +227,9 @@ netstatus_iface_finalize (GObject *object)
 
 static void 
 netstatus_iface_set_property (GObject      *object,
-			      guint         property_id,
-			      const GValue *value,
-			      GParamSpec   *pspec)
+                              guint         property_id,
+                              const GValue *value,
+                              GParamSpec   *pspec)
 {
   NetstatusIface *iface = (NetstatusIface *) object;
 
@@ -249,9 +249,9 @@ netstatus_iface_set_property (GObject      *object,
 
 static void
 netstatus_iface_get_property (GObject    *object,
-			      guint       property_id,
-			      GValue     *value,
-			      GParamSpec *pspec)
+                              guint       property_id,
+                              GValue     *value,
+                              GParamSpec *pspec)
 {
   NetstatusIface *iface = (NetstatusIface *) object;
   
@@ -284,13 +284,13 @@ NetstatusIface *
 netstatus_iface_new (const char *name)
 {
   return g_object_new (NETSTATUS_TYPE_IFACE,
-		       "name", name,
-		       NULL);
+                       "name", name,
+                       NULL);
 }
 
 void
 netstatus_iface_set_name (NetstatusIface *iface,
-			  const char     *name)
+                          const char     *name)
 {
   g_return_if_fail (NETSTATUS_IS_IFACE (iface));
 
@@ -331,7 +331,7 @@ netstatus_iface_get_state (NetstatusIface *iface)
 
 void
 netstatus_iface_get_statistics (NetstatusIface *iface,
-				NetstatusStats *stats)
+                                NetstatusStats *stats)
 {
   g_return_if_fail (NETSTATUS_IS_IFACE (iface));
 
@@ -357,7 +357,7 @@ netstatus_iface_get_signal_strength (NetstatusIface *iface)
 
 void
 netstatus_iface_set_error (NetstatusIface *iface,
-			   const GError   *error)
+                           const GError   *error)
 {
   g_return_if_fail (NETSTATUS_IS_IFACE (iface));
 
@@ -383,7 +383,7 @@ netstatus_iface_get_error (NetstatusIface *iface)
 
 void
 netstatus_iface_clear_error (NetstatusIface *iface,
-			     NetstatusError  code)
+                             NetstatusError  code)
 {
   g_return_if_fail (NETSTATUS_IS_IFACE (iface));
 
@@ -402,9 +402,9 @@ netstatus_iface_clear_error (NetstatusIface *iface,
 
 static void
 netstatus_iface_set_polling_error (NetstatusIface *iface,
-				   NetstatusError  code,
-				   const char     *format,
-				   ...)
+                                   NetstatusError  code,
+                                   const char     *format,
+                                   ...)
 {
   GError  *error;
   va_list  args;
@@ -435,9 +435,9 @@ netstatus_iface_get_sockfd (NetstatusIface *iface)
   if ((fd = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
     {
       netstatus_iface_set_polling_error (iface,
-					 NETSTATUS_ERROR_SOCKET,
-					 _("Unable to open socket: %s"),
-					 g_strerror (errno));
+                                         NETSTATUS_ERROR_SOCKET,
+                                         _("Unable to open socket: %s"),
+                                         g_strerror (errno));
       return 0;
     }
 
@@ -451,23 +451,23 @@ netstatus_iface_get_sockfd (NetstatusIface *iface)
 
 static gboolean
 netstatus_iface_poll_iface_statistics (NetstatusIface *iface,
-				       gulong         *in_packets,
-				       gulong         *out_packets,
-				       gulong         *in_bytes,
-				       gulong         *out_bytes)
+                                       gulong         *in_packets,
+                                       gulong         *out_packets,
+                                       gulong         *in_bytes,
+                                       gulong         *out_bytes)
 {
   char *error_message;
 
   error_message = netstatus_sysdeps_read_iface_statistics (iface->priv->name,
-							   in_packets,
-							   out_packets,
-							   in_bytes,
-							   out_bytes);
+                                                           in_packets,
+                                                           out_packets,
+                                                           in_bytes,
+                                                           out_bytes);
   if (error_message)
     {
       netstatus_iface_set_polling_error (iface,
-					 NETSTATUS_ERROR_STATISTICS,
-					 error_message);
+                                         NETSTATUS_ERROR_STATISTICS,
+                                         error_message);
       g_free (error_message);
       
       return FALSE;
@@ -497,17 +497,17 @@ netstatus_iface_poll_state (NetstatusIface *iface)
   if (ioctl (fd, SIOCGIFFLAGS, &if_req) < 0)
     {
       netstatus_iface_set_polling_error (iface,
-					 NETSTATUS_ERROR_IOCTL_IFFLAGS,
-					 _("SIOCGIFFLAGS error: %s"),
-					 g_strerror (errno));
+                                         NETSTATUS_ERROR_IOCTL_IFFLAGS,
+                                         _("SIOCGIFFLAGS error: %s"),
+                                         g_strerror (errno));
       return NETSTATUS_STATE_DISCONNECTED;
     }
 
   netstatus_iface_clear_error (iface, NETSTATUS_ERROR_IOCTL_IFFLAGS);
 
   dprintf (POLLING, "Interface is %sup and %srunning\n",
-	   if_req.ifr_flags & IFF_UP ? "" : "not ",
-	   if_req.ifr_flags & IFF_RUNNING ? "" : "not ");
+           if_req.ifr_flags & IFF_UP ? "" : "not ",
+           if_req.ifr_flags & IFF_RUNNING ? "" : "not ");
 
   if (!(if_req.ifr_flags & IFF_UP) || !(if_req.ifr_flags & IFF_RUNNING))
     return NETSTATUS_STATE_DISCONNECTED;
@@ -516,11 +516,11 @@ netstatus_iface_poll_state (NetstatusIface *iface)
     return NETSTATUS_STATE_IDLE;
 
   dprintf (POLLING, "Packets in: %ld out: %ld. Prev in: %ld out: %ld\n",
-	   in_packets, out_packets,
-	   iface->priv->stats.in_packets, iface->priv->stats.out_packets);
+           in_packets, out_packets,
+           iface->priv->stats.in_packets, iface->priv->stats.out_packets);
   dprintf (POLLING, "Bytes in: %ld out: %ld. Prev in: %ld out: %ld\n",
-	   in_bytes, out_bytes,
-	   iface->priv->stats.in_bytes, iface->priv->stats.out_bytes);
+           in_bytes, out_bytes,
+           iface->priv->stats.in_bytes, iface->priv->stats.out_bytes);
   
   rx = in_packets  > iface->priv->stats.in_packets;
   tx = out_packets > iface->priv->stats.out_packets;
@@ -551,20 +551,20 @@ netstatus_iface_poll_state (NetstatusIface *iface)
 
 static gboolean
 netstatus_iface_poll_wireless_details (NetstatusIface *iface,
-				       int            *signal_strength)
+                                       int            *signal_strength)
 {
   char     *error_message;
   gboolean  is_wireless;
 
   error_message = netstatus_sysdeps_read_iface_wireless_details (iface->priv->name,
-								 &is_wireless,
-								 signal_strength);
+                                                                 &is_wireless,
+                                                                 signal_strength);
 
   if (error_message)
     {
       netstatus_iface_set_polling_error (iface,
-					 NETSTATUS_ERROR_WIRELESS_DETAILS,
-					 error_message);
+                                         NETSTATUS_ERROR_WIRELESS_DETAILS,
+                                         error_message);
       g_free (error_message);
       
       return FALSE;
@@ -585,15 +585,15 @@ netstatus_iface_increase_poll_delay_in_error (NetstatusIface *iface)
       dprintf (POLLING, "Interface in error state\n");
 
       if (!iface->priv->error_polling &&
-	  ++polls_in_error >= NETSTATUS_IFACE_POLLS_IN_ERROR)
-	{
-	  dprintf (POLLING, "Increasing polling delay after too many errors\n");
-	  iface->priv->error_polling = TRUE;
-	  g_source_remove (iface->priv->monitor_id);
-	  iface->priv->monitor_id = g_timeout_add (NETSTATUS_IFACE_ERROR_POLL_DELAY,
-						   (GSourceFunc) netstatus_iface_monitor_timeout,
-						   iface);
-	}
+          ++polls_in_error >= NETSTATUS_IFACE_POLLS_IN_ERROR)
+        {
+          dprintf (POLLING, "Increasing polling delay after too many errors\n");
+          iface->priv->error_polling = TRUE;
+          g_source_remove (iface->priv->monitor_id);
+          iface->priv->monitor_id = g_timeout_add (NETSTATUS_IFACE_ERROR_POLL_DELAY,
+                                                   (GSourceFunc) netstatus_iface_monitor_timeout,
+                                                   iface);
+        }
     }
   else if (iface->priv->error_polling)
     {
@@ -604,8 +604,8 @@ netstatus_iface_increase_poll_delay_in_error (NetstatusIface *iface)
 
       g_source_remove (iface->priv->monitor_id);
       iface->priv->monitor_id = g_timeout_add (NETSTATUS_IFACE_POLL_DELAY,
-					       (GSourceFunc) netstatus_iface_monitor_timeout,
-					       iface);
+                                               (GSourceFunc) netstatus_iface_monitor_timeout,
+                                               iface);
     }
 }
 
@@ -670,8 +670,8 @@ netstatus_iface_init_monitor (NetstatusIface *iface)
     {
       dprintf (POLLING, "Initialising monitor with delay of %d\n", NETSTATUS_IFACE_POLL_DELAY);
       iface->priv->monitor_id = g_timeout_add (NETSTATUS_IFACE_POLL_DELAY,
-					       (GSourceFunc) netstatus_iface_monitor_timeout,
-					       iface);
+                                               (GSourceFunc) netstatus_iface_monitor_timeout,
+                                               iface);
 
       netstatus_iface_monitor_timeout (iface);
     }
@@ -695,10 +695,10 @@ netstatus_iface_get_device_info(NetstatusIface  *iface)
 */
 gboolean
 netstatus_iface_get_inet4_details (NetstatusIface  *iface,
-				   char           **addr,
-				   char           **dest,
-				   char           **bcast,
-				   char           **mask)
+                                   char           **addr,
+                                   char           **dest,
+                                   char           **bcast,
+                                   char           **mask)
 {
   struct ifreq if_req;
   int          fd;
@@ -717,7 +717,7 @@ netstatus_iface_get_inet4_details (NetstatusIface  *iface,
   if ((fd = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
     {
       g_warning (G_STRLOC ": unable to open AF_INET socket: %s\n",
-		 g_strerror (errno));
+                 g_strerror (errno));
       return FALSE;
     }
   
@@ -770,12 +770,12 @@ static char *
 print_mac_addr (guchar *p)
 {
   return g_strdup_printf ("%02X:%02X:%02X:%02X:%02X:%02X",
-			  p [0] & 0377,
-			  p [1] & 0377,
-			  p [2] & 0377,
-			  p [3] & 0377,
-			  p [4] & 0377,
-			  p [5] & 0377);
+                          p [0] & 0377,
+                          p [1] & 0377,
+                          p [2] & 0377,
+                          p [3] & 0377,
+                          p [4] & 0377,
+                          p [5] & 0377);
 }
 
 static char *
@@ -816,12 +816,12 @@ print_ax25_addr (guchar *p)
       char c = (p [i] & 0377) >> 1;
 
       if (c == ' ')
-	{
-	  retval = str->str;
-	  g_string_free (str, FALSE);
-	  
-	  return retval;
-	}
+        {
+          retval = str->str;
+          g_string_free (str, FALSE);
+          
+          return retval;
+        }
 
       g_string_append_c (str, c);
     }
@@ -1035,8 +1035,8 @@ static struct HwType
 
 static struct HwType *
 netstatus_iface_get_hw_details (NetstatusIface  *iface,
-				char           **hw_addr)
-				
+                                char           **hw_addr)
+                                
 {
 #ifdef SIOCGIFHWADDR
   static struct HwType *hw_type = NULL;
@@ -1053,7 +1053,7 @@ netstatus_iface_get_hw_details (NetstatusIface  *iface,
   if ((fd = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
     {
       g_warning (G_STRLOC ": unable to open AF_INET socket: %s\n",
-		 g_strerror (errno));
+                 g_strerror (errno));
       return NULL;
     }
   
@@ -1062,7 +1062,7 @@ netstatus_iface_get_hw_details (NetstatusIface  *iface,
   if (ioctl (fd, SIOCGIFHWADDR, &if_req) < 0)
     {
       g_warning (G_STRLOC ": unable to obtain hardware address: %s\n",
-		 g_strerror (errno));
+                 g_strerror (errno));
       close (fd);
       return NULL;
     }
@@ -1079,7 +1079,7 @@ netstatus_iface_get_hw_details (NetstatusIface  *iface,
   if (!hw_type || !hw_type->hw_name)
     {
       g_warning (G_STRLOC ": no support for hardware type %d\n",
-		 if_req.ifr_hwaddr.sa_family);
+                 if_req.ifr_hwaddr.sa_family);
       return NULL;
     }
 
@@ -1112,8 +1112,8 @@ netstatus_iface_get_is_loopback (NetstatusIface *iface)
 
 gboolean
 netstatus_iface_get_device_details (NetstatusIface  *iface,
-				    const char     **hw_name,
-				    char           **hw_addr)
+                                    const char     **hw_name,
+                                    char           **hw_addr)
 {
   struct HwType *hw_type;
 
@@ -1150,7 +1150,7 @@ netstatus_iface_get_device_details (NetstatusIface  *iface,
  */
 static struct ifconf *
 get_ifconf (int      fd,
-	    GError **error)
+            GError **error)
 {
   struct ifconf  if_conf;
   struct ifconf *retval;
@@ -1165,26 +1165,26 @@ get_ifconf (int      fd,
       if_conf.ifc_buf = g_malloc0 (len);
 
       if (ioctl (fd, SIOCGIFCONF, &if_conf) < 0)
-	{
-	  if (errno != EINVAL || lastlen != 0)
-	    {
-	      g_free (if_conf.ifc_buf);
+        {
+          if (errno != EINVAL || lastlen != 0)
+            {
+              g_free (if_conf.ifc_buf);
 
-	      if (error)
-		*error = g_error_new (NETSTATUS_ERROR,
-				      NETSTATUS_ERROR_IOCTL_IFCONF,
-				      _("SIOCGIFCONF error: %s"),
-				      g_strerror (errno));
-				      
-	      return NULL;
-	    }
-	}
+              if (error)
+                *error = g_error_new (NETSTATUS_ERROR,
+                                      NETSTATUS_ERROR_IOCTL_IFCONF,
+                                      _("SIOCGIFCONF error: %s"),
+                                      g_strerror (errno));
+                                      
+              return NULL;
+            }
+        }
       else
-	{
-	  if (if_conf.ifc_len == lastlen)
-	    break;
-	  lastlen = if_conf.ifc_len;
-	}
+        {
+          if (if_conf.ifc_len == lastlen)
+            break;
+          lastlen = if_conf.ifc_len;
+        }
 
       g_free (if_conf.ifc_buf);
       if_conf.ifc_buf = NULL;
@@ -1213,10 +1213,10 @@ netstatus_list_interface_names (GError **error)
   if ((fd = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
     {
       if (error)
-	*error = g_error_new (NETSTATUS_ERROR,
-			      NETSTATUS_ERROR_SOCKET,
-			      _("Unable to open socket: %s"),
-			      g_strerror (errno));
+        *error = g_error_new (NETSTATUS_ERROR,
+                              NETSTATUS_ERROR_SOCKET,
+                              _("Unable to open socket: %s"),
+                              g_strerror (errno));
       return NULL;
     }
 
@@ -1237,24 +1237,24 @@ netstatus_list_interface_names (GError **error)
       p += sizeof (if_req->ifr_name) + NETSTATUS_SA_LEN (&if_req->ifr_addr);
 
       if (ioctl (fd, SIOCGIFFLAGS, if_req) < 0)
-	{
-	  if (error)
-	    *error = g_error_new (NETSTATUS_ERROR,
-				  NETSTATUS_ERROR_IOCTL_IFFLAGS,
-				  _("SIOCGIFFLAGS error: %s"),
-				  g_strerror (errno));
-	}
+        {
+          if (error)
+            *error = g_error_new (NETSTATUS_ERROR,
+                                  NETSTATUS_ERROR_IOCTL_IFFLAGS,
+                                  _("SIOCGIFFLAGS error: %s"),
+                                  g_strerror (errno));
+        }
       else
-	{
-	  loopback = (if_req->ifr_flags & IFF_LOOPBACK);
-	}
+        {
+          loopback = (if_req->ifr_flags & IFF_LOOPBACK);
+        }
 
       if (!loopback)
-	interfaces = netstatus_list_insert_unique (interfaces,
-						   g_strdup (if_req->ifr_name));
+        interfaces = netstatus_list_insert_unique (interfaces,
+                                                   g_strdup (if_req->ifr_name));
       else
-	loopbacks  = netstatus_list_insert_unique (loopbacks,
-						   g_strdup (if_req->ifr_name));
+        loopbacks  = netstatus_list_insert_unique (loopbacks,
+                                                   g_strdup (if_req->ifr_name));
     }
 
   interfaces = g_list_concat (interfaces, loopbacks);
@@ -1265,8 +1265,8 @@ netstatus_list_interface_names (GError **error)
 
   if (!interfaces && error)
     *error = g_error_new (NETSTATUS_ERROR,
-			  NETSTATUS_ERROR_NO_INTERFACES,
-			  _("No network devices found"));
+                          NETSTATUS_ERROR_NO_INTERFACES,
+                          _("No network devices found"));
 
   return interfaces;
 }

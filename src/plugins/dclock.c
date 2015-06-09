@@ -43,7 +43,7 @@ typedef struct {
     Plugin * plugin;
     GtkWidget * label_box;
     GtkWidget * clock_labels[MAX_LABELS];
-    GtkWidget * clock_icon;
+    //GtkWidget * clock_icon;
     GtkWidget * calendar_window;
 
     char * clock_format;			/* Format string for clock value */
@@ -51,7 +51,6 @@ typedef struct {
     char * action;				/* Command to execute on a click */
     char * timezone;				/* Timezone */
     char * font;
-    gboolean icon_only;				/* True if icon only (no clock value) */
     guint timer;				/* Timer for periodic update */
     enum {
 	AWAITING_FIRST_CHANGE,			/* Experimenting to determine interval, waiting for first change */
@@ -85,7 +84,6 @@ static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(string, tooltip_format),
     SU_JSON_OPTION(string, action),
     SU_JSON_OPTION(string, font),
-    SU_JSON_OPTION(bool, icon_only),
     SU_JSON_OPTION(string, timezone),
     {0,}
 };
@@ -366,8 +364,7 @@ static gboolean dclock_update_display(DClockPlugin * dc)
     /* When we write the clock value, it causes the panel to do a full relayout.
      * Since this function may be called too often while the timing experiment is underway,
      * we take the trouble to check if the string actually changed first. */
-    if (( ! dc->icon_only)
-    && ((dc->prev_clock_value == NULL) || (strcmp(dc->prev_clock_value, clock_value) != 0)))
+    if ((dc->prev_clock_value == NULL) || (strcmp(dc->prev_clock_value, clock_value) != 0))
     {
         /* Convert "\n" escapes in the user's format string to newline characters. */
         char * newlines_converted = NULL;
@@ -440,7 +437,7 @@ static gboolean dclock_update_display(DClockPlugin * dc)
         }
         else
         {
-            if (((dc->icon_only) || (strcmp(dc->prev_clock_value, clock_value) == 0))
+            if ((strcmp(dc->prev_clock_value, clock_value) == 0)
             && (strcmp(dc->prev_tooltip_value, tooltip_value) == 0))
             {
                 dc->experiment_count += 1;
@@ -505,8 +502,8 @@ static int dclock_constructor(Plugin * p)
     gtk_container_add(GTK_CONTAINER(pwid), hbox);
     gtk_widget_show(hbox);
 
-    dc->clock_icon = gtk_image_new();
-    gtk_container_add(GTK_CONTAINER(hbox), dc->clock_icon);
+    //dc->clock_icon = gtk_image_new();
+    //gtk_container_add(GTK_CONTAINER(hbox), dc->clock_icon);
 
     dc->label_box = gtk_hbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(hbox), dc->label_box);
@@ -563,20 +560,8 @@ static void dclock_apply_configuration(Plugin * p)
 {
     DClockPlugin * dc = PRIV(p);
 
-    /* Set up the icon or the label as the displayable widget. */
-    if (dc->icon_only)
-    {
-        gchar * clock_icon_path = wtl_resolve_own_resource("", "images", "clock.png", 0);
-        panel_image_set_from_file(plugin_panel(p), dc->clock_icon, clock_icon_path);
-        g_free(clock_icon_path);
-        gtk_widget_show(dc->clock_icon);
-        gtk_widget_hide(dc->label_box);
-    }
-    else
-    {
-        gtk_widget_show(dc->label_box);
-        gtk_widget_hide(dc->clock_icon);
-    }
+    gtk_widget_show(dc->label_box);
+
 /*
     if (plugin_get_orientation(dc->plugin) == ORIENT_HORIZ)
         gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
@@ -625,8 +610,6 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
         _("Action when clicked"), &dc->action, (GType)CONF_TYPE_STR,
         "tooltip-text", _("Default action: display calendar"), (GType)CONF_TYPE_SET_PROPERTY,
         "", 0, (GType)CONF_TYPE_END_TABLE,
-
-        _("Tooltip only"), &dc->icon_only, (GType)CONF_TYPE_BOOL,
 
         _("Timezone")  , &dc->timezone , (GType)CONF_TYPE_STR,
         "completion-list", (gpointer)dclock_get_timezones(dc), (GType)CONF_TYPE_SET_PROPERTY,

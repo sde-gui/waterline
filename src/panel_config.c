@@ -126,7 +126,6 @@ static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(string, background_file),
     SU_JSON_OPTION(int, alpha),
     SU_JSON_OPTION(color, background_color),
-    SU_JSON_OPTION(bool, rgba_transparency),
     SU_JSON_OPTION(bool, stretch_background),
 
     SU_JSON_OPTION2(string, widget_name, "GtkWidgetName"),

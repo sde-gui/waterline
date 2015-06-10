@@ -1107,6 +1107,8 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
 {
     GdkPixmap * pixmap = NULL;
 
+    p->rgba_transparency = (p->alpha < 255) && panel_is_composited(p);
+
     /* Free p->bg if it is not going to be used. */
     if ((p->background_mode != BACKGROUND_IMAGE) && (p->bg != NULL))
     {

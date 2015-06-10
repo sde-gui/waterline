@@ -333,17 +333,6 @@ static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
     }
 }
 
-static void rgba_transparency_toggle(GtkWidget * w, Panel*  p)
-{
-    gboolean t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
-
-    p->rgba_transparency = t;
-    panel_update_background(p);
-
-    GtkWidget* alpha_scale = (GtkWidget*)g_object_get_data(G_OBJECT(w), "alpha_scale");
-    gtk_widget_set_sensitive(alpha_scale, p->rgba_transparency);
-}
-
 static void background_color_toggled(GtkWidget * b, Panel * p)
 {
     GtkWidget* tr = (GtkWidget*)g_object_get_data(G_OBJECT(b), "background_color");
@@ -782,21 +771,17 @@ void panel_initialize_pref_dialog(Panel * p)
     GtkWidget * alpha_scale = (GtkWidget*)gtk_builder_get_object(builder, "alpha_scale");
     gtk_range_set_range(GTK_RANGE(alpha_scale), 0, 255);
     gtk_range_set_value(GTK_RANGE(alpha_scale), p->alpha);
-    gtk_widget_set_sensitive(alpha_scale, p->rgba_transparency);
     g_object_set_data(G_OBJECT(alpha_scale), "background_color", background_color);
     g_object_set_data(G_OBJECT(background_color), "alpha_scale", alpha_scale);
     g_signal_connect(alpha_scale, "value-changed", G_CALLBACK(alpha_scale_value_changed), p);
-
-    /* rgba_transparency */
-    GtkWidget * rgba_transparency = (GtkWidget*)gtk_builder_get_object(builder, "rgba_transparency");
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rgba_transparency), p->rgba_transparency);
-    g_object_set_data(G_OBJECT(rgba_transparency), "alpha_scale", alpha_scale);
-    g_signal_connect(rgba_transparency, "toggled", G_CALLBACK(rgba_transparency_toggle), p);
 
     /* stretch_background */
     GtkWidget * stretch_background = (GtkWidget*)gtk_builder_get_object(builder, "stretch_background");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(stretch_background), p->stretch_background);
     g_signal_connect(stretch_background, "toggled", G_CALLBACK(stretch_background_toggle), p);
+
+    w = (GtkWidget*)gtk_builder_get_object(builder, "opacity_info_label");
+    gtk_widget_set_visible(w, !panel_is_composited(p));
 
     /* background */
     {

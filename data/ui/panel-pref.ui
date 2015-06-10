@@ -993,14 +993,12 @@
                                 <property name="can_focus">False</property>
                                 <property name="spacing">40</property>
                                 <child>
-                                  <object class="GtkCheckButton" id="rgba_transparency">
-                                    <property name="label" translatable="yes">RGBA transparency</property>
+                                  <object class="GtkLabel" id="label30">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Requires compositing manager</property>
-                                    <property name="use_underline">True</property>
-                                    <property name="draw_indicator">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">Opacity:</property>
+                                    <property name="use_markup">True</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -1025,6 +1023,21 @@
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
                                 <property name="position">4</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="opacity_info_label">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="xalign">0</property>
+                                <property name="label" translatable="yes">&lt;i&gt;A compositing window manager is required
+for the true transparency support.&lt;/i&gt;</property>
+                                <property name="use_markup">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">5</property>
                               </packing>
                             </child>
                           </object>

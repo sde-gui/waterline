@@ -95,6 +95,13 @@ static su_enum_pair output_target_pair[] = {
     { 0, NULL},
 };
 
+static su_enum_pair background_mode_pair[] = {
+    { BACKGROUND_SYSTEM, "system" },
+    { BACKGROUND_IMAGE, "image" },
+    { BACKGROUND_COLOR,  "color" },
+    { 0, NULL},
+};
+
 /******************************************************************************/
 
 #define SU_JSON_OPTION_STRUCTURE Panel
@@ -115,16 +122,12 @@ static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(bool, round_corners),
     SU_JSON_OPTION(int, round_corners_radius),
 
+    SU_JSON_OPTION_ENUM(background_mode_pair, background_mode),
+    SU_JSON_OPTION(string, background_file),
+    SU_JSON_OPTION(int, alpha),
+    SU_JSON_OPTION(color, background_color),
     SU_JSON_OPTION(bool, rgba_transparency),
     SU_JSON_OPTION(bool, stretch_background),
-
-    SU_JSON_OPTION(bool, background),
-    SU_JSON_OPTION(string, background_file),
-
-    SU_JSON_OPTION(bool, transparent),
-    SU_JSON_OPTION(int, alpha),
-
-    SU_JSON_OPTION(color, tint_color),
 
     SU_JSON_OPTION2(string, widget_name, "GtkWidgetName"),
 

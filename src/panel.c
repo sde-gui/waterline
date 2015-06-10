@@ -247,9 +247,9 @@ static Panel* panel_allocate(void)
     p->gobelow = FALSE;
     p->visible = TRUE;
     p->height_when_hidden = 1;
-    p->transparent = 0;
+    p->background_mode = BACKGROUND_SYSTEM;
     p->alpha = 255;
-    gdk_color_parse("white", &p->tint_color);
+    gdk_color_parse("white", &p->background_color);
     p->use_font_color = 0;
     gdk_color_parse("black", &p->font_color);
     p->use_font_size = 0;
@@ -278,8 +278,6 @@ static void panel_normalize_configuration(Panel* p)
         else if (p->oriented_height > PANEL_HEIGHT_MAX)
             p->oriented_height = PANEL_HEIGHT_MAX;
     }
-    if (p->background)
-        p->transparent = 0;
 }
 
 /******************************************************************************/
@@ -993,9 +991,9 @@ static gboolean panel_expose_event(GtkWidget *widget, GdkEventExpose *event, Pan
     cr = gdk_cairo_create(widget->window); /* create cairo context */
 
     float a = (float) p->alpha / 255;
-    float r = (float) p->tint_color.red / 65535;
-    float g = (float) p->tint_color.green / 65535;
-    float b = (float) p->tint_color.blue / 65535;
+    float r = (float) p->background_color.red / 65535;
+    float g = (float) p->background_color.green / 65535;
+    float b = (float) p->background_color.blue / 65535;
 
     if (p->background_pixmap)
     {
@@ -1017,7 +1015,7 @@ static gboolean panel_expose_event(GtkWidget *widget, GdkEventExpose *event, Pan
         cairo_paint_with_alpha(cr, a);
 */
     }
-    else if (p->transparent)
+    else if (p->background_mode == BACKGROUND_COLOR)
     {
         cairo_set_source_rgba(cr, r, g, b, a);
         cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
@@ -1110,7 +1108,7 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
     GdkPixmap * pixmap = NULL;
 
     /* Free p->bg if it is not going to be used. */
-    if (( ! p->transparent) && (p->bg != NULL))
+    if ((p->background_mode != BACKGROUND_IMAGE) && (p->bg != NULL))
     {
         g_signal_handlers_disconnect_by_func(G_OBJECT(p->bg), on_root_bg_changed, p);
         g_object_unref(p->bg);
@@ -1136,13 +1134,13 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         }
     }
 
-    if (p->background)
+    if (p->background_mode == BACKGROUND_IMAGE)
     {
         /* User specified background pixmap. */
         if (p->background_file != NULL)
             pixmap = fb_bg_get_pix_from_file(widget, p->background_file);
     }
-    else if (p->transparent && !p->rgba_transparency)
+    else if (p->background_mode == BACKGROUND_COLOR && !p->rgba_transparency)
     {
         /* Transparent.  Determine the appropriate value from the root pixmap. */
         if (p->bg == NULL)
@@ -1152,9 +1150,9 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         }
         pixmap = fb_bg_get_xroot_pix_for_win(p->bg, widget);
         if ((pixmap != NULL) && (pixmap != GDK_NO_BG) && (p->alpha != 0))
-            fb_bg_composite(pixmap, widget->style->black_gc, gcolor2rgb24(&p->tint_color), p->alpha);
+            fb_bg_composite(pixmap, widget->style->black_gc, gcolor2rgb24(&p->background_color), p->alpha);
     }
-    else if (!p->background && !p->transparent)
+    else if (p->background_mode == BACKGROUND_SYSTEM)
     {
         if (p->stretch_background)
         {

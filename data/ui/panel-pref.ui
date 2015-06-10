@@ -863,7 +863,7 @@
                             <property name="can_focus">False</property>
                             <property name="spacing">2</property>
                             <child>
-                              <object class="GtkRadioButton" id="bg_none">
+                              <object class="GtkRadioButton" id="bg_mode_system">
                                 <property name="label" translatable="yes">System theme</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -884,14 +884,14 @@
                                 <property name="can_focus">False</property>
                                 <property name="spacing">10</property>
                                 <child>
-                                  <object class="GtkRadioButton" id="bg_transparency">
-                                    <property name="label" translatable="yes">Solid color (with opacity)</property>
+                                  <object class="GtkRadioButton" id="bg_mode_color">
+                                    <property name="label" translatable="yes">Solid color</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
                                     <property name="use_underline">True</property>
                                     <property name="draw_indicator">True</property>
-                                    <property name="group">bg_none</property>
+                                    <property name="group">bg_mode_system</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -900,7 +900,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkColorButton" id="tint_clr">
+                                  <object class="GtkColorButton" id="background_color">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
@@ -926,14 +926,14 @@
                                 <property name="can_focus">False</property>
                                 <property name="spacing">40</property>
                                 <child>
-                                  <object class="GtkRadioButton" id="bg_image">
+                                  <object class="GtkRadioButton" id="bg_mode_image">
                                     <property name="label" translatable="yes">Image</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
                                     <property name="use_underline">True</property>
                                     <property name="draw_indicator">True</property>
-                                    <property name="group">bg_none</property>
+                                    <property name="group">bg_mode_system</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>

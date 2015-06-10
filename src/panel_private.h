@@ -25,6 +25,7 @@
 #include <waterline/typedef.h>
 #include "bg.h"
 
+enum { BACKGROUND_SYSTEM, BACKGROUND_IMAGE, BACKGROUND_COLOR };
 
 struct _Panel {
     char* name;
@@ -46,8 +47,11 @@ struct _Panel {
     guint composite_check_timeout;
 
     FbBg *bg;
+
+    int background_mode;
     int alpha;
-    GdkColor tint_color;
+    GdkColor background_color;
+
     GdkColor font_color;
 
     int round_corners_radius;
@@ -89,8 +93,6 @@ struct _Panel {
     gboolean use_font_color;
     gboolean use_font_size;
     int font_size;
-    gboolean transparent;
-    gboolean background;
     guint spacing;
 
     gboolean gobelow;

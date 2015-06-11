@@ -92,7 +92,7 @@ static void dirmenu_menuitem_open_directory(GtkWidget * item, Plugin * p);
 static void dirmenu_menuitem_open_in_terminal(GtkWidget * item, Plugin * p);
 static void dirmenu_menuitem_select(GtkMenuItem * item, Plugin * p);
 static void dirmenu_menuitem_deselect(GtkMenuItem * item, Plugin * p);
-void dirmenu_menu_selection_done(GtkWidget * menu, Plugin * p);
+static void dirmenu_menu_selection_done(GtkWidget * menu, Plugin * p);
 static void dirmenu_popup_set_position(GtkWidget * menu, gint * px, gint * py, gboolean * push_in, Plugin * p);
 static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean open_at_top, GtkWidget * parent_item);
 static void dirmenu_show_menu(Plugin * p, int btn, guint32 time);
@@ -294,7 +294,7 @@ static void dirmenu_menuitem_deselect(GtkMenuItem * item, Plugin * p)
 }
 
 /* Handler for selection-done event on popup menu. */
-void dirmenu_menu_selection_done(GtkWidget * menu, Plugin * p)
+static void dirmenu_menu_selection_done(GtkWidget * menu, Plugin * p)
 {
     gtk_widget_destroy(menu);
 }

@@ -60,8 +60,8 @@ static void panel_destroy(Panel *p);
 static int panel_start(Panel *p, const char * configuration, const char * source);
 static void panel_start_gui(Panel *p);
 static void panel_size_position_changed(Panel *p, gboolean position_changed);
+static void panel_calculate_position(Panel *p);
 
-extern void panel_calculate_position(Panel *p);
 extern void update_panel_geometry(Panel* p);
 
 static void panel_notify_plugins_on_configuration_change(Panel * p);
@@ -93,11 +93,11 @@ static gboolean force_composite_disabled = FALSE;
 
 /******************************************************************************/
 
-const char * __license = "This program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n";
+const char * wtl_license = "This program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n";
 
-const char * __website = "http://dev.make-linux.org/projects/waterline";
-const char * __email = "igeekless@gmail.com";
-const char * __bugreporting = "http://dev.make-linux.org/projects/waterline/issues";
+const char * wtl_website = "http://dev.make-linux.org/projects/waterline";
+const char * wtl_email = "igeekless@gmail.com";
+const char * wtl_bugreporting = "http://dev.make-linux.org/projects/waterline/issues";
 
 /******************************************************************************/
 
@@ -1291,7 +1291,7 @@ static void calculate_width(int scrw, int wtype, int align, int margin, int *pan
 
 /* Calculate panel size and position with given margins. */
 
-void calculate_position(Panel *np, int margin_top, int margin_bottom)
+static void calculate_position(Panel *np, int margin_top, int margin_bottom)
 {
     int sswidth, ssheight, minx, miny;
 
@@ -1372,7 +1372,7 @@ void calculate_position(Panel *np, int margin_top, int margin_bottom)
 
 /* Calculate panel size and position. */
 
-void panel_calculate_position(Panel *p)
+static void panel_calculate_position(Panel *p)
 {
     int margin_top = 0;
     int margin_bottom = 0;
@@ -1690,7 +1690,7 @@ static gboolean panel_motion_notify_event(GtkWidget * widget, GdkEventButton * e
 /******************************************************************************/
 
 /* If there is a panel on this edge and it is not the panel being configured, set the edge unavailable. */
-gboolean panel_edge_available(Panel* p, int edge)
+static gboolean panel_edge_available(Panel* p, int edge)
 {
     GSList* l;
     for (l = get_all_panels(); l != NULL; l = l->next)
@@ -2595,9 +2595,9 @@ static void usage(gboolean error)
     if (!error)
     {
         print(_("Report bugs to: <%s> or <%s>\nProgram home page: <%s>"),
-            __bugreporting,
-            __email,
-            __website);
+            wtl_bugreporting,
+            wtl_email,
+            wtl_website);
     }
     print("\n\n");
 }
@@ -2659,7 +2659,7 @@ int main(int argc, char *argv[], char *env[])
                 "Copyright (C) 2006 Jim Huang (aka jserv)\n"
                 "Copyright (C) 2002 Anatoly Asviyan (aka Arsen)\n"
                 "Copyright (C) 2000 Peter Zelezny\n");
-            printf("\n%s", __license);
+            printf("\n%s", wtl_license);
             exit(0);
         } else if (!strcmp(argv[i], "--log")) {
             NEXT_ARGUMENT("missing log level\n")

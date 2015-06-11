@@ -78,14 +78,14 @@ err:
     g_free(path);
 }
 
-void panel_configure(Panel* p, int sel_page)
+SYMBOL_HIDDEN void panel_configure(Panel* p, int sel_page)
 {
     load_implementation();
     if (_panel_configure)
         _panel_configure(p, sel_page);
 }
 
-void configurator_remove_plugin_from_list(Panel * p, Plugin * pl)
+SYMBOL_HIDDEN void configurator_remove_plugin_from_list(Panel * p, Plugin * pl)
 {
     load_implementation();
     if (_configurator_remove_plugin_from_list)

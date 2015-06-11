@@ -65,17 +65,16 @@ enum {
     EV_LAST_SIGNAL
 };
 
-GType fb_ev_get_type       (void);
-FbEv *fb_ev_new(void);
-void fb_ev_notify_changed_ev(FbEv *ev);
-void fb_ev_emit(FbEv *ev, int signal);
-void fb_ev_emit_destroy(FbEv *ev, Window win);
+extern GType  fb_ev_get_type(void);
+extern FbEv * fb_ev_new(void);
+extern void fb_ev_emit(FbEv *ev, int signal);
+extern void fb_ev_emit_destroy(FbEv *ev, Window win);
 
 extern int fb_ev_current_desktop(FbEv *ev);
 extern int fb_ev_number_of_desktops(FbEv *ev);
-extern Window *fb_ev_active_window(FbEv *ev);
-extern Window *fb_ev_client_list(FbEv *ev);
-extern Window *fb_ev_client_list_stacking(FbEv *ev);
+extern Window * fb_ev_active_window(FbEv *ev);
+extern Window * fb_ev_client_list(FbEv *ev);
+extern Window * fb_ev_client_list_stacking(FbEv *ev);
 
 
 #endif /* __FB_EV_H__ */

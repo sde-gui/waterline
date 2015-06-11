@@ -145,7 +145,7 @@ static void generic_config_dlg_response(GtkWidget * widget, int response, Plugin
     gtk_widget_destroy(widget);
 }
 
-gboolean  completion_match_cb(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter, gpointer user_data)
+static gboolean  completion_match_cb(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter, gpointer user_data)
 {
     gboolean ret = FALSE;
 

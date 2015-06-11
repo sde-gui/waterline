@@ -35,6 +35,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
+#include <waterline/symbol_visibility.h>
 
 #define FB_TYPE_BG         (fb_bg_get_type ())
 #define FB_BG(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o),      \
@@ -54,11 +55,11 @@
 typedef struct _FbBgClass FbBgClass;
 typedef struct _FbBg      FbBg;
 
-GType fb_bg_get_type       (void);
+extern SYMBOL_HIDDEN GType fb_bg_get_type       (void);
 #define fb_bg_new() (FbBg *)g_object_new(FB_TYPE_BG, NULL)
-void fb_bg_composite(GdkDrawable *base, GdkGC *gc, guint32 tintcolor, gint alpha);
-GdkPixmap *fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget);
-void fb_bg_notify_changed_bg(FbBg *bg);
-FbBg *fb_bg_get_for_display(void);
-GdkPixmap *fb_bg_get_pix_from_file(GtkWidget *widget, const char *filename);
+extern SYMBOL_HIDDEN void fb_bg_composite(GdkDrawable *base, GdkGC *gc, guint32 tintcolor, gint alpha);
+extern SYMBOL_HIDDEN GdkPixmap *fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget);
+extern SYMBOL_HIDDEN void fb_bg_notify_changed_bg(FbBg *bg);
+extern SYMBOL_HIDDEN FbBg * fb_bg_get_for_display(void);
+extern SYMBOL_HIDDEN GdkPixmap * fb_bg_get_pix_from_file(GtkWidget *widget, const char *filename);
 #endif /* __FB_BG_H__ */

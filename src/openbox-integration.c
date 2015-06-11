@@ -24,7 +24,7 @@
 #include <waterline/Xsupport.h>
 #include <waterline/misc.h>
 
-gchar * ob_get_current_theme(void)
+static gchar * ob_get_current_theme(void)
 {
     if (!check_net_supported(a_OB_THEME))
         return NULL;
@@ -32,7 +32,7 @@ gchar * ob_get_current_theme(void)
     return get_utf8_property(GDK_ROOT_WINDOW(), a_OB_THEME);
 }
 
-gchar * ob_find_file_for_theme(const char * name, const char * target_file_name)
+static gchar * ob_find_file_for_theme(const char * name, const char * target_file_name)
 {
     if (name[0] == '/')
     {

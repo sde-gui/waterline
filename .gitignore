@@ -27,3 +27,5 @@ Makefile.in
 /ltmain.sh
 /missing
 /depcomp
+/symbols_from_headers
+/symbols_from_bin_waterline

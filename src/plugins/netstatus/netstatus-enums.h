@@ -4,7 +4,7 @@
 #ifndef __NETSTATUS_ENUMS_H__
 #define __NETSTATUS_ENUMS_H__ 1
 
-#include <waterline/misc.h>
+#include <waterline/symbol_visibility.h>
 
 G_BEGIN_DECLS
 

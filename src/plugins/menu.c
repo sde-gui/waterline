@@ -40,6 +40,7 @@
 
 #define PLUGIN_PRIV_TYPE menup
 
+#include <waterline/symbol_visibility.h>
 #include <waterline/gtkcompat.h>
 #include <waterline/global.h>
 #include <waterline/panel.h>
@@ -50,8 +51,6 @@
 #include "bg.h"
 #include "menu-policy.h"
 #include "commands.h"
-
-extern void gtk_run(void); /* FIXME! */
 
 #define DEFAULT_MENU_ICON "start-here"
 
@@ -187,7 +186,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, Plugin* plugin)
     {
         if (m->has_run_command && event->button == 2)
         {
-            gtk_run();
+            wtl_show_run_box();
         }
         else
         {
@@ -439,7 +438,7 @@ static void menu_panel_configuration_changed(Plugin * p)
     apply_config(p);
 }
 
-PluginClass menu_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass menu_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 

@@ -55,41 +55,38 @@ typedef struct {
 } NetWMWindowType;
 
 
-void Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4);
-void Xclimsgwm(Window win, Atom type, Atom arg);
+extern void Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4);
+extern void Xclimsgwm(Window win, Atom type, Atom arg);
 
-char *get_textproperty(Window win, Atom prop);
-char **get_utf8_property_list(Window win, Atom atom, int *count);
+extern char * get_textproperty(Window win, Atom prop);
+extern char ** get_utf8_property_list(Window win, Atom atom, int *count);
 
 //Window Select_Window(Display *dpy);
-int get_net_number_of_desktops();
-int get_net_current_desktop ();
-int get_net_wm_desktop(Window win);
-void set_net_wm_desktop(Window win, int num);
-int get_wm_state (Window win);
-void get_net_wm_state(Window win, NetWMState *nws);
-void get_net_wm_window_type(Window win, NetWMWindowType *nwwt);
-GPid get_net_wm_pid(Window win);
+extern int get_net_number_of_desktops();
+extern int get_net_current_desktop ();
+extern int get_net_wm_desktop(Window win);
+extern void set_net_wm_desktop(Window win, int num);
+extern int get_wm_state (Window win);
+extern void get_net_wm_state(Window win, NetWMState *nws);
+extern void get_net_wm_window_type(Window win, NetWMWindowType *nwwt);
+extern GPid get_net_wm_pid(Window win);
 
-void set_decorations (Window win, gboolean decorate);
-int get_mvm_decorations(Window win);
-gboolean get_decorations (Window win, NetWMState * nws);
+extern void set_decorations (Window win, gboolean decorate);
+extern int get_mvm_decorations(Window win);
+extern gboolean get_decorations (Window win, NetWMState * nws);
 
-void update_net_supported();
-gboolean check_net_supported(Atom atom);
+extern void update_net_supported();
+extern gboolean check_net_supported(Atom atom);
 
-gboolean is_xcomposite_available(void);
+extern gboolean is_xcomposite_available(void);
 
-void wm_noinput(Window w);
+extern void wm_noinput(Window w);
 
-GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
+extern GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 
-/* if current window manager is EWMH conforming. */
-extern gboolean is_ewmh_supported;
-
-gboolean get_net_showing_desktop_supported(void);
-gboolean get_net_showing_desktop(void);
-void set_net_showing_desktop(gboolean value);
+extern gboolean get_net_showing_desktop_supported(void);
+extern gboolean get_net_showing_desktop(void);
+extern void set_net_showing_desktop(gboolean value);
 
 static inline void * get_xaproperty(Window xid, Atom prop, Atom type, int * nitems)
 {

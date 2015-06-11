@@ -23,6 +23,7 @@
 #include <waterline/libsmfm.h>
 #include <sde-utils.h>
 #include <gtk/gtk.h>
+#include "wtl_private.h"
 
 
 static gboolean (*__fm_gtk_init)(void * config) = NULL;

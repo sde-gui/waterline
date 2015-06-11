@@ -44,6 +44,7 @@
 
 #define PLUGIN_PRIV_TYPE LaunchbarPlugin
 
+#include <waterline/symbol_visibility.h>
 #include <waterline/global.h>
 #include <waterline/panel.h>
 #include <waterline/paths.h>
@@ -941,7 +942,7 @@ static void launchbar_application_class_visibility_changed(struct _Plugin * plug
 }
 
 /* Plugin descriptor. */
-PluginClass launchbar_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass launchbar_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 

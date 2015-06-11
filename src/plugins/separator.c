@@ -17,6 +17,7 @@
  */
 
 #include <glib/gi18n.h>
+#include <waterline/symbol_visibility.h>
 #include <waterline/global.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
@@ -82,7 +83,7 @@ static void separator_panel_configuration_changed(Plugin * p)
 }
 
 /* Plugin descriptor. */
-PluginClass separator_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass separator_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 

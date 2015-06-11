@@ -219,7 +219,7 @@ static void setup_auto_complete_with_data(ThreadData* data)
     g_object_unref( comp );
 }
 
-void thread_data_free(ThreadData* data)
+static void thread_data_free(ThreadData* data)
 {
     g_slist_foreach(data->files, (GFunc)g_free, NULL);
     g_slist_free(data->files);
@@ -440,7 +440,7 @@ static void on_entry_changed( GtkEntry* entry, GtkImage* widget )
     }
 }
 
-void gtk_run()
+void wtl_show_run_box(void)
 {
     GtkWidget *entry, *hbox, *img, *comment_label;
 

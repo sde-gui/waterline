@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include <waterline/typedef.h>
+#include <waterline/symbol_visibility.h>
 
 #define PANEL_HEIGHT_MAX              200	/* Maximum height of panel */
 #define PANEL_HEIGHT_MIN              16	/* Minimum height of panel */
@@ -38,8 +39,6 @@ extern void update_panel_geometry(Panel* p);
 extern void panel_adjust_geometry_terminology(Panel *p);
 extern void panel_update_toplevel_alignment(Panel *p);
 extern void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow * window);
-extern void panel_establish_autohide(Panel *p);
-extern void panel_set_dock_type(Panel *p);
 extern void panel_set_panel_configuration_changed(Panel *p);
 extern void panel_update_background(Panel* p);
 extern void panel_autohide_conditions_changed(Panel* p);
@@ -47,14 +46,14 @@ extern void panel_require_update_background(Panel* p);
 
 extern Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name);
 
-extern int panel_get_icon_size(Panel * p);
-extern int panel_get_orientation(Panel * p);
+extern SYMBOL_HIDDEN int panel_get_icon_size(Panel * p);
+extern SYMBOL_HIDDEN int panel_get_orientation(Panel * p);
 
-extern GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin);
-extern void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event);
+extern SYMBOL_HIDDEN GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin);
+extern SYMBOL_HIDDEN void panel_show_panel_menu(Panel * panel, Plugin * plugin, GdkEventButton * event);
 
-extern void panel_button_press_hack(Panel *panel);
-extern gboolean panel_handle_drag_move(Panel * panel, GdkEventButton * event);
+extern SYMBOL_HIDDEN void panel_button_press_hack(Panel *panel);
+extern SYMBOL_HIDDEN gboolean panel_handle_drag_move(Panel * panel, GdkEventButton * event);
 
 //#pragma GCC visibility pop
 

@@ -26,6 +26,7 @@
 
 #define PLUGIN_PRIV_TYPE WinCmdPlugin
 
+#include <waterline/symbol_visibility.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/fb_button.h>
@@ -200,7 +201,7 @@ static void wincmd_panel_configuration_changed(Plugin * p)
 }
 
 /* Plugin descriptor. */
-PluginClass wincmd_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass wincmd_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 

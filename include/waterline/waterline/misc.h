@@ -51,17 +51,17 @@ enum {
     CONF_TYPE_SET_PROPERTY
 };
 
-GtkWidget *_gtk_image_new_from_file_scaled(const gchar *file, gint width,
+extern GtkWidget * _gtk_image_new_from_file_scaled(const gchar *file, gint width,
                                            gint height, gboolean keep_ratio, gboolean use_dummy_image);
-guint32 gcolor2rgb24(const GdkColor *color);
+extern guint32 gcolor2rgb24(const GdkColor *color);
 
-char* translate_exec_to_cmd( const char* exec, const char* icon,
+extern char* translate_exec_to_cmd( const char* exec, const char* icon,
                              const char* title, const char* fpath );
 
-void show_error( GtkWindow* parent_win, const char* msg );
+extern void show_error( GtkWindow* parent_win, const char* msg );
 
 /* Parameters: const char* name, gpointer ret_value, GType type, ....NULL */
-GtkWidget * create_generic_config_dialog(const char * title, GtkWidget * parent,
+extern GtkWidget * create_generic_config_dialog(const char * title, GtkWidget * parent,
     GSourceFunc apply_func, Plugin * plugin,
     const char * name, ...);
 
@@ -71,21 +71,21 @@ extern GdkPixbuf* wtl_load_icon2(const char* name, int width, int height, gboole
 
 extern void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size);
 
-gboolean wtl_launch_app(const char* exec, GList* files, gboolean in_terminal);
-gboolean wtl_launch(const char* exec, GList* files);
-void wtl_open_in_file_manager(const char * path);
-void wtl_open_in_terminal(const char * path);
-void wtl_open_web_link(const char * link);
+extern gboolean wtl_launch_app(const char* exec, GList* files, gboolean in_terminal);
+extern gboolean wtl_launch(const char* exec, GList* files);
+extern void wtl_open_in_file_manager(const char * path);
+extern void wtl_open_in_terminal(const char * path);
+extern void wtl_open_web_link(const char * link);
 
 typedef void (*EntryDialogCallback)(char * value, gpointer payload);
 
-GtkWidget* create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload);
+extern GtkWidget* create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload);
 
-gchar * panel_translate_directory_name(const gchar * name);
+extern gchar * panel_translate_directory_name(const gchar * name);
 
-void bring_to_current_desktop(GtkWidget * win);
+extern void bring_to_current_desktop(GtkWidget * win);
 
-gchar * wtl_tooltip_for_file_stat(struct stat * stat_data);
+extern gchar * wtl_tooltip_for_file_stat(struct stat * stat_data);
 
 
 extern void filemodestring (struct stat const *statp, char *str);
@@ -100,15 +100,15 @@ extern void filemodestring (struct stat const *statp, char *str);
 extern void strmode (mode_t mode, char *str);
 # endif
 
-void restore_grabs(GtkWidget *w, gpointer data);
+extern void restore_grabs(GtkWidget *w, gpointer data);
 
-gboolean is_my_own_window(Window window);
+extern gboolean is_my_own_window(Window window);
 
-void color_parse_d(const char * src, double dst[3]);
+extern void color_parse_d(const char * src, double dst[3]);
 
-gchar ** read_list_from_config(gchar * file_name);
+extern gchar ** read_list_from_config(gchar * file_name);
 
-const char * get_de_name(void);
+extern const char * get_de_name(void);
 
 
 static inline void cairo_set_source_gdkrgba(cairo_t * cr, GdkRGBA * rgba)
@@ -124,9 +124,9 @@ static inline void mix_rgba(GdkRGBA * result, GdkRGBA * a, GdkRGBA * b, double v
     result->alpha = a->alpha * v + b->alpha * (1.0 - v);
 }
 
-void rgba_to_color(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
-void color_to_rgba(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
+extern void rgba_to_color(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
+extern void color_to_rgba(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
 
-#define SYMBOL_HIDDEN __attribute__ ((visibility ("hidden")))
+extern void wtl_show_run_box(void);
 
 #endif

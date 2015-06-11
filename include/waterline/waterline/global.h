@@ -28,9 +28,7 @@
 
 #include "ev.h"
 
-extern int verbose;
-
-extern FbEv *fbev;
+extern FbEv * fbev;
 
 extern void panel_apply_icon(GtkWindow *w);
 
@@ -41,6 +39,6 @@ extern GSList * get_all_panels(void);
 
 extern const char* wtl_agent_id(void);
 
-int wtl_is_in_kiosk_mode(void);
+extern int wtl_is_in_kiosk_mode(void);
 
 #endif

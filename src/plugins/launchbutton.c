@@ -38,6 +38,7 @@
 
 #define PLUGIN_PRIV_TYPE lb_t
 
+#include <waterline/symbol_visibility.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/fb_button.h>
@@ -880,7 +881,7 @@ static void lb_panel_configuration_changed(Plugin * p)
 }
 
 
-PluginClass launchbutton_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass launchbutton_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 

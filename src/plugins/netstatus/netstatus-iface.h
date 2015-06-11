@@ -27,7 +27,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <waterline/misc.h>
+#include <waterline/symbol_visibility.h>
 
 #include "netstatus-util.h"
 

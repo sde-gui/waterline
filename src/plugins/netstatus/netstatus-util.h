@@ -25,7 +25,7 @@
 #define __NETSTATUS_UTIL_H__
 
 #include <glib-object.h>
-#include <waterline/misc.h>
+#include <waterline/symbol_visibility.h>
 
 G_BEGIN_DECLS
 

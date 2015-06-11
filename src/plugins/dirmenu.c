@@ -37,6 +37,7 @@
 
 #define PLUGIN_PRIV_TYPE DirMenuPlugin
 
+#include <waterline/symbol_visibility.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/fb_button.h>
@@ -1007,7 +1008,7 @@ static void dirmenu_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
 }
 
 /* Plugin descriptor. */
-PluginClass dirmenu_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass dirmenu_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 

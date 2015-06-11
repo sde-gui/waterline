@@ -25,7 +25,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
-#include <waterline/misc.h>
+#include <waterline/symbol_visibility.h>
 
 #ifdef __cplusplus
 extern "C" {

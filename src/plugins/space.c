@@ -24,6 +24,7 @@
 
 #define PLUGIN_PRIV_TYPE SpacePlugin
 
+#include <waterline/symbol_visibility.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
@@ -120,7 +121,7 @@ static void space_save_configuration(Plugin * p)
 }
 
 /* Plugin descriptor. */
-PluginClass space_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass space_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 

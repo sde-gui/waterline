@@ -23,6 +23,7 @@
 #endif
 
 #include "commands.h"
+#include "wtl_private.h"
 #include <waterline/global.h>
 #include <waterline/defaultapplications.h>
 #include <waterline/panel.h>
@@ -36,21 +37,19 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-void restart(void);
-void gtk_run(void);
 static void logout(void);
 
 Command commands[] = {
 #ifndef DISABLE_MENU
-    { "run", N_("Run"), gtk_run },
+    { "run", N_("Run"), wtl_show_run_box },
 #endif
-    { "restart", N_("Restart"), restart },
+    { "restart", N_("Restart"), wtl_restart },
     { "logout", N_("Logout"), logout },
     { NULL, NULL },
 };
 
 
-void restart(void)
+void wtl_restart(void)
 {
     /* This is defined in panel.c */
     extern gboolean is_restarting;

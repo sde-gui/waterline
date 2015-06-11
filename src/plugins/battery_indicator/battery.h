@@ -30,7 +30,7 @@
 #define BATTERY_DESC     "Battery"
 
 #include <glib.h>
-#include <waterline/misc.h>
+#include <waterline/symbol_visibility.h>
 
 typedef struct battery {
     int battery_num;

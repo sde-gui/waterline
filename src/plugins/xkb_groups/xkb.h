@@ -26,7 +26,7 @@
 
 #include <waterline/global.h>
 #include <waterline/plugin.h>
-#include <waterline/misc.h>
+#include <waterline/symbol_visibility.h>
 #include <waterline/paths.h>
 #include <waterline/panel.h>
 #include <waterline/ev.h>

@@ -26,9 +26,6 @@
 #include <sde-utils.h>
 #include <waterline/Xsupport.h>
 
-/* if current window manager is EWMH conforming. */
-gboolean is_ewmh_supported;
-
 void
 Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4)
 {

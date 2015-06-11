@@ -27,6 +27,7 @@
 
 #define PLUGIN_PRIV_TYPE DClockPlugin
 
+#include <waterline/symbol_visibility.h>
 #include <waterline/paths.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
@@ -684,7 +685,7 @@ static void dclock_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
 }
 
 /* Plugin descriptor. */
-PluginClass dclock_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass dclock_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 

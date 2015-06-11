@@ -23,6 +23,7 @@
 #include <jansson.h>
 #include <sde-utils-jansson.h>
 #include <waterline/typedef.h>
+#include <waterline/symbol_visibility.h>
 #include "bg.h"
 
 enum { BACKGROUND_SYSTEM, BACKGROUND_IMAGE, BACKGROUND_COLOR };
@@ -177,9 +178,6 @@ struct {
 
 /* panel_config.c */
 
-extern void load_global_config(void);
-extern void free_global_config(void);
-extern void enable_kiosk_mode(void);
 extern void panel_save_configuration(Panel* panel);
 
 extern void panel_read_global_configuration_from_json_object(Panel *p);
@@ -192,7 +190,7 @@ extern void configurator_remove_plugin_from_list(Panel * p, Plugin * pl);
 
 extern void create_empty_panel(void);
 extern void delete_panel(Panel * panel);
-extern int panel_count(void);
+extern SYMBOL_HIDDEN int panel_count(void);
 
 extern gboolean quit_in_menu;
 

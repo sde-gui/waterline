@@ -39,6 +39,7 @@
 #include "plugin_private.h"
 #include <waterline/paths.h>
 #include <waterline/panel.h>
+#include "wtl_private.h"
 #include "panel_internal.h"
 #include "panel_private.h"
 #include <waterline/misc.h>
@@ -50,20 +51,6 @@
 
 #define PANEL_ICON_SIZE               24	/* Default size of panel icons */
 #define PANEL_HEIGHT_DEFAULT          26	/* Default height of horizontal panel */
-
-/******************************************************************************/
-
-/* defined in gtk-run.c */
-
-extern void gtk_run(void);
-
-/* defined in misc.c */
-
-extern void wtl_fm_init(void);
-
-/* defined in commands.c */
-
-extern void restart(void);
 
 /******************************************************************************/
 
@@ -86,7 +73,7 @@ static void panel_notify_plugins_on_compositing_mode_change(Panel * p);
 
 static gchar version[] = VERSION;
 gchar *cprofile = "default"; /* used in path.c */
-gchar *force_colormap = "rgba";
+static gchar *force_colormap = "rgba";
 
 gboolean quit_in_menu = FALSE;
 static GtkWindowGroup* window_group; /* window group used to limit the scope of model dialog. */
@@ -444,14 +431,14 @@ static gboolean panel_set_wm_strut_real(Panel *p)
     return FALSE;
 }
 
-void panel_set_wm_strut(Panel *p)
+static void panel_set_wm_strut(Panel *p)
 {
     if (p->set_wm_strut_idle == 0)
         p->set_wm_strut_idle = g_idle_add_full( G_PRIORITY_LOW,
             (GSourceFunc)panel_set_wm_strut_real, p, NULL );
 }
 
-void panel_set_dock_type(Panel *p)
+static void panel_set_dock_type(Panel *p)
 {
     Atom state = a_NET_WM_WINDOW_TYPE_DOCK;
     XChangeProperty(GDK_DISPLAY(), p->topxwin,
@@ -459,7 +446,7 @@ void panel_set_dock_type(Panel *p)
                     PropModeReplace, (unsigned char *) &state, 1);
 }
 
-void panel_set_wm_state(Panel *p)
+static void panel_set_wm_state(Panel *p)
 {
     gboolean below = (p->visibility_mode == VISIBILITY_BELOW) || p->gobelow;
 
@@ -599,7 +586,7 @@ static gboolean panel_drag_motion(GtkWidget *widget, GdkDragContext *drag_contex
     return TRUE;
 }
 
-void panel_establish_autohide(Panel *p)
+static void panel_establish_autohide(Panel *p)
 {
     if (p->visibility_mode == VISIBILITY_AUTOHIDE || p->visibility_mode == VISIBILITY_GOBELOW)
     {
@@ -804,7 +791,7 @@ static void cmd_panel(Panel * panel, char ** argv, int argc)
 static void cmd_run(char ** argv, int argc)
 {
 #ifndef DISABLE_MENU
-        gtk_run();
+        wtl_show_run_box();
 #endif
 }
 
@@ -845,7 +832,7 @@ static void cmd_config(char ** argv, int argc)
 
 static void cmd_restart(char ** argv, int argc)
 {
-    restart();
+    wtl_restart();
 }
 
 static void cmd_exit(char ** argv, int argc)
@@ -2277,7 +2264,7 @@ panel_parse_plugin(Panel *p, json_t * json_plugin)
     return 0;
 }
 
-gchar * format_json_error(const json_error_t * error, const char * source)
+static gchar * format_json_error(const json_error_t * error, const char * source)
 {
     gchar * result = g_strdup_printf("%s:%d:%d: %s",
         source ? source : error->source,
@@ -2403,7 +2390,7 @@ static void panel_destroy(Panel *p)
     g_free(p);
 }
 
-Panel* panel_new( const char* config_file, const char* config_name )
+static Panel * panel_new(const char * config_file, const char * config_name)
 {
     gchar * fp;
 
@@ -2681,7 +2668,7 @@ int main(int argc, char *argv[], char *env[])
             NEXT_ARGUMENT("missing profile name\n")
             cprofile = g_strdup(argv[i]);
         } else if (!strcmp(argv[i], "--kiosk-mode")) {
-            enable_kiosk_mode();
+            wtl_enable_kiosk_mode();
         } else if (!strcmp(argv[i], "--quit-in-menu")) {
             quit_in_menu = TRUE;
         } else if (!strcmp(argv[i], "--force-compositing-wm-disabled")) {
@@ -2718,7 +2705,7 @@ int main(int argc, char *argv[], char *env[])
 restart:
     is_restarting = FALSE;
 
-    load_global_config();
+    wtl_load_global_config();
 
 	/* NOTE: StructureNotifyMask is required by XRandR
 	 * See init_randr_support() in gdkscreen-x11.c of gtk+ for detail.
@@ -2742,7 +2729,7 @@ restart:
     g_slist_free( all_panels );
     all_panels = NULL;
 
-    free_global_config();
+    wtl_free_global_config();
 
     if( is_restarting )
         goto restart;

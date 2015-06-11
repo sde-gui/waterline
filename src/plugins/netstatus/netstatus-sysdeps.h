@@ -26,7 +26,7 @@
 #define __NETSTATUS_SYSDEPS_H__
 
 #include <glib.h>
-#include <waterline/misc.h>
+#include <waterline/symbol_visibility.h>
 
 G_BEGIN_DECLS
 

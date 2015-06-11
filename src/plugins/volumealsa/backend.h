@@ -17,7 +17,7 @@
  */
 
 #include <glib.h>
-#include <waterline/misc.h>
+#include <waterline/symbol_visibility.h>
 
 #ifndef WATERLINE_PLUGIN_VOLUME_CONTROL_BACKEND_H
 #define WATERLINE_PLUGIN_VOLUME_CONTROL_BACKEND_H

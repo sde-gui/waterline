@@ -26,6 +26,7 @@ MENU_SOURCES = \
 endif
 
 waterline_SOURCES = \
+	wtl_private.h \
 	misc.c \
 	fb_button.c \
 	defaultapplications.c \
@@ -62,6 +63,7 @@ waterline_include_HEADERS = \
 	$(top_srcdir)/include/waterline/waterline/paths.h \
 	$(top_srcdir)/include/waterline/waterline/plugin.h \
 	$(top_srcdir)/include/waterline/waterline/typedef.h \
+	$(top_srcdir)/include/waterline/waterline/symbol_visibility.h \
 	$(top_srcdir)/include/waterline/waterline/Xsupport.h
 endif
 waterline_LDFLAGS = $(DYNAMIC_FLAGS)

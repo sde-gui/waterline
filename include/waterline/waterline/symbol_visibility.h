@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2012 Vadim Ushakov
+ * Copyright (c) 2015 Vadim Ushakov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,15 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __WATERLINE__LIBSMFM_H
-#define __WATERLINE__LIBSMFM_H
+#ifndef __WATERLINE__SYMBOL_VISIBILITY_H
+#define __WATERLINE__SYMBOL_VISIBILITY_H
 
-#include <gtk/gtk.h>
+#define SYMBOL_HIDDEN __attribute__ ((visibility ("hidden")))
 
-extern GtkMenu * wtl_fm_file_menu_for_path(const char * path);
+#ifdef WTL_BUILTIN
+#define SYMBOL_PLUGIN_CLASS SYMBOL_HIDDEN
+#else
+#define SYMBOL_PLUGIN_CLASS
+#endif
 
 #endif

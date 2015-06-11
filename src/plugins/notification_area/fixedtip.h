@@ -24,7 +24,7 @@
 #define FIXED_TIP_H
 
 #include <gtk/gtk.h>
-#include <waterline/misc.h>
+#include <waterline/symbol_visibility.h>
 
 #ifdef __cplusplus
 extern "C" {

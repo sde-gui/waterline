@@ -22,14 +22,14 @@
 
 #include "typedef.h"
 
-GtkWidget * fb_button_new_from_file(gchar * image_file, int width, int height, Plugin * plugin);
-GtkWidget * fb_button_new_from_file_with_text(gchar * image_file, int width, int height, Plugin * plugin, const char * label);
-GtkWidget * fb_button_new_from_file_with_markup(gchar * image_file, int width, int height, Plugin * plugin, const char * label);
+extern GtkWidget * fb_button_new_from_file(gchar * image_file, int width, int height, Plugin * plugin);
+extern GtkWidget * fb_button_new_from_file_with_text(gchar * image_file, int width, int height, Plugin * plugin, const char * label);
+extern GtkWidget * fb_button_new_from_file_with_markup(gchar * image_file, int width, int height, Plugin * plugin, const char * label);
 
-void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation);
-void fb_button_set_from_file(GtkWidget* btn, const char* img_file, gint width, gint height);
+extern void fb_button_set_orientation(GtkWidget * btn, GtkOrientation orientation);
+extern void fb_button_set_from_file(GtkWidget* btn, const char* img_file, gint width, gint height);
 
-void fb_button_set_label_text(GtkWidget * btn, const char * label);
-void fb_button_set_label_markup(GtkWidget * btn, const char * label);
+extern void fb_button_set_label_text(GtkWidget * btn, const char * label);
+extern void fb_button_set_label_markup(GtkWidget * btn, const char * label);
 
 #endif

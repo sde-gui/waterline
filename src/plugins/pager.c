@@ -32,6 +32,7 @@
 
 #define PLUGIN_PRIV_TYPE PagerPlugin
 
+#include <waterline/symbol_visibility.h>
 #include <waterline/global.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
@@ -816,7 +817,7 @@ static void pager_panel_configuration_changed(Plugin * p)
 }
 
 /* Plugin descriptor. */
-PluginClass pager_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass pager_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2012 Vadim Ushakov
+ * Copyright (c) 2015 Vadim Ushakov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,19 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __WATERLINE__LIBSMFM_H
-#define __WATERLINE__LIBSMFM_H
+#ifndef WTL_PRIVATE_H
+#define WTL_PRIVATE_H
 
-#include <gtk/gtk.h>
+#include <glib.h>
+#include <waterline/typedef.h>
+#include <waterline/symbol_visibility.h>
 
-extern GtkMenu * wtl_fm_file_menu_for_path(const char * path);
+extern SYMBOL_HIDDEN gboolean wtl_fm_init(void);
+
+extern SYMBOL_HIDDEN void wtl_restart(void);
+
+extern SYMBOL_HIDDEN void wtl_load_global_config(void);
+extern SYMBOL_HIDDEN void wtl_free_global_config(void);
+extern SYMBOL_HIDDEN void wtl_enable_kiosk_mode(void);
 
 #endif

@@ -27,6 +27,7 @@
 #include <waterline/panel.h>
 #include "panel_internal.h"
 #include "panel_private.h"
+#include "wtl_private.h"
 #include <waterline/paths.h>
 #include <waterline/misc.h>
 #include <waterline/defaultapplications.h>
@@ -338,7 +339,8 @@ err:
 
 const char general_group[] = "General";
 const char command_group[] = "Command";
-void load_global_config()
+
+void wtl_load_global_config()
 {
     GKeyFile* kf = g_key_file_new();
     gchar * file = wtl_get_config_path("config", SU_PATH_CONFIG_USER);
@@ -390,7 +392,7 @@ static void save_global_config()
     g_free(file);
 }
 
-void free_global_config()
+void wtl_free_global_config()
 {
     g_free( global_config.file_manager_cmd );
     g_free( global_config.terminal_cmd );
@@ -424,7 +426,7 @@ extern int wtl_is_in_kiosk_mode(void)
     return global_config.kiosk_mode || global_config.arg_kiosk_mode;
 }
 
-extern void enable_kiosk_mode(void)
+extern void wtl_enable_kiosk_mode(void)
 {
     global_config.arg_kiosk_mode = 1;
 }

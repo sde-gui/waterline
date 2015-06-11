@@ -223,7 +223,7 @@ static void load_icon(GdkPixbuf ** p_pixbuf, int icon_size, ...)
 }
 
 
-static GdkPixbuf * volumealsa_load_icons(VolumeALSAPlugin * vol)
+static void volumealsa_load_icons(VolumeALSAPlugin * vol)
 {
     int icon_size = plugin_get_icon_size(vol->plugin);
 
@@ -345,7 +345,6 @@ static GdkPixbuf * volumealsa_get_icon_for_level(VolumeALSAPlugin * vol, int lev
     if (l > 1.0)
         l = 1.0;
 
-    int icon_size = plugin_get_icon_size(vol->plugin);
     GdkPixbuf * result = pixbuf_blend(pixbuf_level_low, pixbuf_level_high, l);
     if (!result)
         result = g_object_ref(pixbuf_level_high);
@@ -416,9 +415,9 @@ static void volumealsa_update_display(VolumeALSAPlugin * vol, gboolean force)
     if (!vol->displayed_valid)
         tooltip = g_strdup_printf(_("<i>An internal error occured.\nVolume Control is not functioning properly.</i>"));
     else if (vol->displayed_mute)
-        tooltip = g_strdup_printf(_("Volume <b>%ld%</b> (muted)"), vol->displayed_scaled_volume);
+        tooltip = g_strdup_printf(_("Volume <b>%ld%%</b> (muted)"), vol->displayed_scaled_volume);
     else
-        tooltip = g_strdup_printf(_("Volume <b>%ld%</b>"), vol->displayed_scaled_volume);
+        tooltip = g_strdup_printf(_("Volume <b>%ld%%</b>"), vol->displayed_scaled_volume);
     gtk_widget_set_tooltip_markup(plugin_widget(vol->plugin), tooltip);
     g_free(tooltip);
 }

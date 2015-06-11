@@ -187,7 +187,6 @@ static void on_add_plugin_menu_item_activate(GtkWidget * menu_item, GtkTreeView 
 
         {
             GtkTreePath* tree_path;
-            GtkTreeView* view;
             GtkTreeSelection* tree_sel;
             GtkTreeIter it;
             GtkTreeModel* model;
@@ -230,6 +229,12 @@ static void on_add_plugin(GtkButton * _button, GtkTreeView * _view)
                 case PLUGIN_CATEGORY_LAUNCHER:     label = _("Launchers"); break;
                 case PLUGIN_CATEGORY_SW_INDICATOR: label = _("Notifications and Indicators"); break;
                 case PLUGIN_CATEGORY_HW_INDICATOR: label = _("Hardware Monitoring and Control"); break;
+#ifdef PRODUCE_SWITCH_WARNING
+                case NR_PLUGIN_CATEGORY:
+#else
+                default:
+#endif
+                    label = _("Miscellaneous"); break;
             }
             submenus_mi[c] = gtk_menu_item_new_with_label(label);
             gtk_menu_item_set_submenu(GTK_MENU_ITEM(submenus_mi[c]), submenus[c]);

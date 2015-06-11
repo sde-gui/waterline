@@ -341,7 +341,7 @@ static void alsa_destroy(volume_control_backend_t * backend)
 
     if (impl->restart_idle != 0) {
         g_source_remove(impl->restart_idle);
-        impl->restart_idle != 0;
+        impl->restart_idle = 0;
     }
 
     g_free(impl);

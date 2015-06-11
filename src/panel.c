@@ -1827,7 +1827,7 @@ gboolean panel_image_set_icon_theme(Panel * p, GtkWidget * image, const gchar * 
 static void
 panel_force_pango_initialization(Panel * p)
 {
-    static initialized = 0;
+    static int initialized = 0;
     if (initialized)
         return;
 

@@ -10,6 +10,7 @@ moduledir = $(pkglibdir)/internals
 
 libconfigurator_la_SOURCES = \
 	configurator.c \
+	configurator_background.c \
 	configurator_plugin_list.c
 
 

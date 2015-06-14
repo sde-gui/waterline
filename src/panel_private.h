@@ -55,8 +55,6 @@ struct _Panel {
 
     GdkColor font_color;
 
-    int round_corners_radius;
-
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) */
     int align, edge, edge_margin, align_margin;
@@ -90,7 +88,6 @@ struct _Panel {
     gboolean config_changed;
     gboolean self_destroy;
     gboolean set_strut;
-    gboolean round_corners;
     gboolean use_font_color;
     gboolean use_font_size;
     int font_size;

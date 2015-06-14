@@ -228,8 +228,6 @@ static Panel* panel_allocate(void)
     p->oriented_height = PANEL_HEIGHT_DEFAULT;
     p->output_target = OUTPUT_PRIMARY_MONITOR;
     p->set_strut = 1;
-    p->round_corners = 0;
-    p->round_corners_radius = 7;
     p->autohide_visible = TRUE;
     p->gobelow = FALSE;
     p->visible = TRUE;
@@ -265,51 +263,6 @@ static void panel_normalize_configuration(Panel* p)
         else if (p->oriented_height > PANEL_HEIGHT_MAX)
             p->oriented_height = PANEL_HEIGHT_MAX;
     }
-}
-
-/******************************************************************************/
-
-/*= shape =*/
-
-static void make_round_corners(Panel *p)
-{
-    if (!p->round_corners || p->round_corners_radius < 1)
-    {
-        gtk_widget_shape_combine_mask(p->topgwin, NULL, 0, 0);
-        return;
-    }
-
-    GdkBitmap *b;
-    GdkGC* gc;
-    GdkColor black = { 0, 0, 0, 0};
-    GdkColor white = { 1, 0xffff, 0xffff, 0xffff};
-    int w, h, r, br;
-
-    w = p->aw;
-    h = p->ah;
-    r = p->round_corners_radius;
-    if (2*r > MIN(w, h)) {
-        r = MIN(w, h) / 2;
-        su_log_debug("chaning radius to %d\n", r);
-    }
-    b = gdk_pixmap_new(NULL, w, h, 1);
-    gc = gdk_gc_new(GDK_DRAWABLE(b));
-    gdk_gc_set_foreground(gc, &black);
-    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, 0, w, h);
-    gdk_gc_set_foreground(gc, &white);
-    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, r, 0, w-2*r, h);
-    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, r, r, h-2*r);
-    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, w-r, r, r, h-2*r);
-
-    br = 2 * r;
-    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, 0, br, br, 0*64, 360*64);
-    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, h-br-1, br, br, 0*64, 360*64);
-    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, 0, br, br, 0*64, 360*64);
-    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, h-br-1, br, br, 0*64, 360*64);
-
-    gtk_widget_shape_combine_mask(p->topgwin, b, 0, 0);
-    g_object_unref(gc);
-    g_object_unref(b);
 }
 
 /******************************************************************************/
@@ -1446,7 +1399,6 @@ static void panel_size_position_changed(Panel *p, gboolean position_changed)
 
     panel_set_wm_strut(p);
     panel_set_desktop_icon_overlap_mode(p);
-    make_round_corners(p);
 
     if (position_changed)
     {
@@ -1943,8 +1895,6 @@ panel_start_gui(Panel *p)
     gtk_alignment_set_padding(GTK_ALIGNMENT(p->toplevel_alignment),
         p->padding_top, p->padding_bottom, p->padding_left, p->padding_right);
     gtk_box_set_spacing(GTK_BOX(p->plugin_box), p->applet_spacing);
-
-    make_round_corners(p);
 
     p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
     su_log_debug("topxwin = %x\n", p->topxwin);

@@ -120,9 +120,6 @@ static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION_ENUM(output_target_pair, output_target),
     SU_JSON_OPTION(int, custom_monitor),
 
-    SU_JSON_OPTION(bool, round_corners),
-    SU_JSON_OPTION(int, round_corners_radius),
-
     SU_JSON_OPTION_ENUM(background_mode_pair, background_mode),
     SU_JSON_OPTION(string, background_file),
     SU_JSON_OPTION(int, alpha),

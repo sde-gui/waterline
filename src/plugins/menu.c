@@ -143,9 +143,9 @@ static void spawn_app(GtkWidget *widget, gpointer data)
 }
 
 
-static void run_command(GtkWidget *widget, void (*cmd)(void))
+static void run_command(GtkWidget *widget, const char * command)
 {
-    cmd();
+    wtl_command_run(command);
 }
 
 static void menu_pos(GtkWidget *menu, gint *px, gint *py, gboolean *push_in, Plugin * p)
@@ -241,7 +241,6 @@ static GtkWidget * read_item(Plugin *p, json_t * json_item)
     menup * m = PRIV(p);
 
     GtkWidget * item;
-    Command *cmd_entry = NULL;
 
     gchar * name = NULL;
     gchar * icon = NULL;
@@ -262,21 +261,13 @@ static GtkWidget * read_item(Plugin *p, json_t * json_item)
         m->has_run_command = TRUE;
     }
 
-    Command * tmp = NULL;
-
-    for (tmp = commands; tmp->name; tmp++)
+    if (wtl_command_exists(action))
     {
-        if (g_strcmp0(action, tmp->name) == 0)
-        {
-            cmd_entry = tmp;
-            break;
-        }
-    }
-
-    if (cmd_entry) /* built-in commands */
-    {
-        item = gtk_image_menu_item_new_with_label( _(cmd_entry->disp_name) );
-        g_signal_connect(G_OBJECT(item), "activate", (GCallback)run_command, cmd_entry->cmd);
+        const char * displayed_name = wtl_command_get_displayed_name(action);
+        if (!displayed_name)
+            displayed_name = action;
+        item = gtk_image_menu_item_new_with_label(displayed_name);
+        g_signal_connect(G_OBJECT(item), "activate", (GCallback)run_command, (gpointer) wtl_command_get_const_name(action));
     }
     else
     {

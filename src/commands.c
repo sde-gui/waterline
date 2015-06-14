@@ -37,9 +37,15 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
+typedef struct {
+    char * name;
+    char * disp_name;
+    void ( * cmd)(void);
+} Command;
+
 static void logout(void);
 
-Command commands[] = {
+static Command commands[] = {
 #ifndef DISABLE_MENU
     { "run", N_("Run"), wtl_show_run_box },
 #endif
@@ -47,6 +53,58 @@ Command commands[] = {
     { "logout", N_("Logout"), logout },
     { NULL, NULL },
 };
+
+const char * wtl_command_get_const_name(const char * command_name)
+{
+    Command * tmp = NULL;
+    for (tmp = commands; tmp->name; tmp++)
+    {
+        if (g_strcmp0(command_name, tmp->name) == 0)
+        {
+            return tmp->name;
+        }
+    }
+    return NULL;
+}
+
+const char * wtl_command_get_displayed_name(const char * command_name)
+{
+    Command * tmp = NULL;
+    for (tmp = commands; tmp->name; tmp++)
+    {
+        if (g_strcmp0(command_name, tmp->name) == 0)
+        {
+            return _(tmp->disp_name);
+        }
+    }
+    return NULL;
+}
+
+gboolean wtl_command_exists(const char * command_name)
+{
+    Command * tmp = NULL;
+    for (tmp = commands; tmp->name; tmp++)
+    {
+        if (g_strcmp0(command_name, tmp->name) == 0)
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+void wtl_command_run(const char * command_name)
+{
+    Command * tmp = NULL;
+    for (tmp = commands; tmp->name; tmp++)
+    {
+        if (g_strcmp0(command_name, tmp->name) == 0)
+        {
+            tmp->cmd();
+            break;
+        }
+    }
+}
 
 
 void wtl_restart(void)

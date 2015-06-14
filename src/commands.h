@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011 Vadim Ushakov
+ * Copyright (c) 2011-2015 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,13 +20,12 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+#include <glib.h>
 
-typedef struct {
-    char * name;
-    char * disp_name;
-    void ( * cmd)(void);
-} Command;
+const char * wtl_command_get_const_name(const char * command_name);
+const char * wtl_command_get_displayed_name(const char * command_name);
+gboolean wtl_command_exists(const char * command_name);
+void wtl_command_run(const char * command_name);
 
-extern Command commands[];
 
 #endif

@@ -29,7 +29,7 @@ static gchar * ob_get_current_theme(void)
     if (!check_net_supported(a_OB_THEME))
         return NULL;
 
-    return get_utf8_property(GDK_ROOT_WINDOW(), a_OB_THEME);
+    return wtl_x11_get_utf8_property(GDK_ROOT_WINDOW(), a_OB_THEME);
 }
 
 static gchar * ob_find_file_for_theme(const char * name, const char * target_file_name)

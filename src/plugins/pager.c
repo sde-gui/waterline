@@ -514,7 +514,7 @@ static GdkFilterReturn pager_event_filter(XEvent * xev, GdkEvent * event, PagerP
 /* Handler for "active-window" event from root window listener. */
 static void pager_net_active_window(FbEv * ev, PagerPlugin * pg)
 {
-    Window * focused_window = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
+    Window * focused_window = wtl_x11_get_xa_property(GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
     if (focused_window != NULL)
     {
         PagerTask * tk = task_lookup(pg, *focused_window);
@@ -546,7 +546,7 @@ static void pager_net_desktop_names(FbEv * fbev, PagerPlugin * pg)
     /* Get the NET_DESKTOP_NAMES property. */
     int number_of_desktop_names;
     char * * desktop_names;
-    desktop_names = get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &number_of_desktop_names);
+    desktop_names = wtl_x11_get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &number_of_desktop_names);
 
     /* Loop to copy the desktop names to the vector of labels.
      * If there are more desktops than labels, label the extras with a decimal number. */
@@ -634,7 +634,7 @@ static void pager_net_number_of_desktops(FbEv * ev, PagerPlugin * pg)
 static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
 {
     /* Get the NET_CLIENT_LIST_STACKING property. */
-    Window * client_list = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST_STACKING, XA_WINDOW, &pg->client_count);
+    Window * client_list = wtl_x11_get_xa_property(GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST_STACKING, XA_WINDOW, &pg->client_count);
     g_free(pg->tasks_in_stacking_order);
     /* g_new returns NULL if if n_structs == 0 */
     pg->tasks_in_stacking_order = g_new(PagerTask *, pg->client_count);

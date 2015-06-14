@@ -26,41 +26,18 @@
 #include <sde-utils.h>
 #include <waterline/Xsupport.h>
 
-void
-Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4)
+void * wtl_x11_get_xa_property(Window xid, Atom prop, Atom type, int * nitems)
 {
-    XClientMessageEvent xev;
-    xev.type = ClientMessage;
-    xev.window = win;
-    xev.message_type = type;
-    xev.format = 32;
-    xev.data.l[0] = l0;
-    xev.data.l[1] = l1;
-    xev.data.l[2] = l2;
-    xev.data.l[3] = l3;
-    xev.data.l[4] = l4;
-    XSendEvent(GDK_DISPLAY(), GDK_ROOT_WINDOW(), False,
-          (SubstructureNotifyMask | SubstructureRedirectMask),
-          (XEvent *) &xev);
+    return su_x11_get_xa_property(gdk_x11_get_default_xdisplay(), xid, prop, type, nitems);
 }
 
-void
-Xclimsgwm(Window win, Atom type, Atom arg)
+char * wtl_x11_get_utf8_property(Window win, Atom atom)
 {
-    XClientMessageEvent xev;
-
-    xev.type = ClientMessage;
-    xev.window = win;
-    xev.message_type = type;
-    xev.format = 32;
-    xev.data.l[0] = arg;
-    xev.data.l[1] = GDK_CURRENT_TIME;
-    XSendEvent(GDK_DISPLAY(), win, False, 0L, (XEvent *) &xev);
+    return su_x11_get_utf8_property(gdk_x11_get_default_xdisplay(), win, atom);
 }
 
 
-char **
-get_utf8_property_list(Window win, Atom atom, int *count)
+char ** wtl_x11_get_utf8_property_list(Window win, Atom atom, int *count)
 {
     Atom type;
     int format, i;
@@ -104,8 +81,7 @@ get_utf8_property_list(Window win, Atom atom, int *count)
 
 }
 
-static char*
-text_property_to_utf8 (const XTextProperty *prop)
+static char * text_property_to_utf8 (const XTextProperty *prop)
 {
   char **list;
   int count;
@@ -130,8 +106,7 @@ text_property_to_utf8 (const XTextProperty *prop)
   return retval;
 }
 
-char *
-get_textproperty(Window win, Atom atom)
+char * wtl_x11_get_text_property(Window win, Atom atom)
 {
     XTextProperty text_prop;
     char *retval;
@@ -151,6 +126,40 @@ get_textproperty(Window win, Atom atom)
     return NULL;
 }
 
+/****************************************************************************/
+
+void
+Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4)
+{
+    XClientMessageEvent xev;
+    xev.type = ClientMessage;
+    xev.window = win;
+    xev.message_type = type;
+    xev.format = 32;
+    xev.data.l[0] = l0;
+    xev.data.l[1] = l1;
+    xev.data.l[2] = l2;
+    xev.data.l[3] = l3;
+    xev.data.l[4] = l4;
+    XSendEvent(GDK_DISPLAY(), GDK_ROOT_WINDOW(), False,
+          (SubstructureNotifyMask | SubstructureRedirectMask),
+          (XEvent *) &xev);
+}
+
+void
+Xclimsgwm(Window win, Atom type, Atom arg)
+{
+    XClientMessageEvent xev;
+
+    xev.type = ClientMessage;
+    xev.window = win;
+    xev.message_type = type;
+    xev.format = 32;
+    xev.data.l[0] = arg;
+    xev.data.l[1] = GDK_CURRENT_TIME;
+    XSendEvent(GDK_DISPLAY(), win, False, 0L, (XEvent *) &xev);
+}
+
 
 int
 get_net_number_of_desktops()
@@ -158,7 +167,7 @@ get_net_number_of_desktops()
     int desknum;
     guint32 *data;
 
-    data = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_NUMBER_OF_DESKTOPS,
+    data = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_NUMBER_OF_DESKTOPS,
           XA_CARDINAL, 0);
     if (!data)
         return 0;
@@ -175,7 +184,7 @@ get_net_current_desktop ()
     int desk;
     guint32 *data;
 
-    data = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
+    data = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
     if (!data)
         return 0;
 
@@ -190,7 +199,7 @@ get_net_wm_desktop(Window win)
     int desk = 0;
     guint32 *data;
 
-    data = get_xaproperty (win, a_NET_WM_DESKTOP, XA_CARDINAL, 0);
+    data = wtl_x11_get_xa_property (win, a_NET_WM_DESKTOP, XA_CARDINAL, 0);
     if (data) {
         desk = *data;
         XFree (data);
@@ -211,7 +220,7 @@ get_net_wm_pid(Window win)
     GPid pid = 0;
     guint32 *data;
 
-    data = get_xaproperty (win, a_NET_WM_PID, XA_CARDINAL, 0);
+    data = wtl_x11_get_xa_property (win, a_NET_WM_PID, XA_CARDINAL, 0);
     if (data) {
         pid = *data;
         XFree (data);
@@ -226,7 +235,7 @@ get_net_wm_state(Window win, NetWMState *nws)
     int num3;
 
     memset(nws, 0, sizeof(*nws));
-    if (!(state = get_xaproperty(win, a_NET_WM_STATE, XA_ATOM, &num3)))
+    if (!(state = wtl_x11_get_xa_property(win, a_NET_WM_STATE, XA_ATOM, &num3)))
         return;
 
     su_log_debug2( "%x: netwm state = { ", (unsigned int)win);
@@ -286,7 +295,7 @@ get_net_wm_window_type(Window win, NetWMWindowType *nwwt)
     int num3;
 
     memset(nwwt, 0, sizeof(*nwwt));
-    if (!(state = get_xaproperty(win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num3)))
+    if (!(state = wtl_x11_get_xa_property(win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num3)))
         return;
 
     su_log_debug2( "%x: netwm state = { ", (unsigned int)win);
@@ -330,7 +339,7 @@ get_wm_state (Window win)
     unsigned long *data;
     int ret = 0;
 
-    data = get_xaproperty (win, aWM_STATE, aWM_STATE, 0);
+    data = wtl_x11_get_xa_property (win, aWM_STATE, aWM_STATE, 0);
     if (data) {
         ret = data[0];
         XFree (data);
@@ -388,7 +397,7 @@ get_mvm_decorations(Window win)
     struct MwmHints * hints;
     int nitems = 0;
 
-    hints = (struct MwmHints *) get_xaproperty(win, a_MOTIF_WM_HINTS, a_MOTIF_WM_HINTS, &nitems);
+    hints = (struct MwmHints *) wtl_x11_get_xa_property(win, a_MOTIF_WM_HINTS, a_MOTIF_WM_HINTS, &nitems);
 
     if (!hints || nitems < PROP_MOTIF_WM_HINTS_ELEMENTS)
     {
@@ -443,7 +452,7 @@ void update_net_supported()
         _net_supported_nitems = 0;
     }
 
-    _net_supported = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_SUPPORTED, XA_ATOM, &_net_supported_nitems);
+    _net_supported = wtl_x11_get_xa_property(GDK_ROOT_WINDOW(), a_NET_SUPPORTED, XA_ATOM, &_net_supported_nitems);
 }
 
 gboolean check_net_supported(Atom atom)
@@ -1281,7 +1290,7 @@ gboolean get_net_showing_desktop_supported(void)
 gboolean get_net_showing_desktop(void)
 {
     gboolean result;
-    guint32 * data = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_SHOWING_DESKTOP, XA_CARDINAL, 0);
+    guint32 * data = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_SHOWING_DESKTOP, XA_CARDINAL, 0);
     if (data)
     {
         result = *data;

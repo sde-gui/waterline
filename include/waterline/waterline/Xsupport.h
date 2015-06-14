@@ -55,11 +55,13 @@ typedef struct {
 } NetWMWindowType;
 
 
+extern void * wtl_x11_get_xa_property(Window xid, Atom prop, Atom type, int * nitems);
+extern char * wtl_x11_get_utf8_property(Window win, Atom atom);
+extern char * wtl_x11_get_text_property(Window win, Atom prop);
+extern char ** wtl_x11_get_utf8_property_list(Window win, Atom atom, int *count);
+
 extern void Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4);
 extern void Xclimsgwm(Window win, Atom type, Atom arg);
-
-extern char * get_textproperty(Window win, Atom prop);
-extern char ** get_utf8_property_list(Window win, Atom atom, int *count);
 
 //Window Select_Window(Display *dpy);
 extern int get_net_number_of_desktops();
@@ -87,15 +89,5 @@ extern GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required
 extern gboolean get_net_showing_desktop_supported(void);
 extern gboolean get_net_showing_desktop(void);
 extern void set_net_showing_desktop(gboolean value);
-
-static inline void * get_xaproperty(Window xid, Atom prop, Atom type, int * nitems)
-{
-    return su_x11_get_xa_property(gdk_x11_get_default_xdisplay(), xid, prop, type, nitems);
-}
-
-static inline void * get_utf8_property(Window win, Atom atom)
-{
-    return su_x11_get_utf8_property(gdk_x11_get_default_xdisplay(), win, atom);
-}
 
 #endif

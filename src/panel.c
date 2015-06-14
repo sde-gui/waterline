@@ -891,7 +891,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
             {
                 Panel* p = (Panel*)l->data;
                 g_free( p->workarea );
-                p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
+                p->workarea = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
                 /* print_wmdata(p); */
             }
         }
@@ -899,7 +899,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
         {
             int remote_command_argc = 0;;
             char ** remote_command_argv = NULL;
-            remote_command_argv = get_utf8_property_list(GDK_ROOT_WINDOW(), a_WATERLINE_TEXT_CMD, &remote_command_argc);
+            remote_command_argv = wtl_x11_get_utf8_property_list(GDK_ROOT_WINDOW(), a_WATERLINE_TEXT_CMD, &remote_command_argc);
             if (remote_command_argc > 0 && remote_command_argv)
             {
                 unsigned char b[1];
@@ -1809,7 +1809,7 @@ panel_start_gui(Panel *p)
 {
     p->curdesk = get_net_current_desktop();
     p->desknum = get_net_number_of_desktops();
-    p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
+    p->workarea = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
 
     /* main toplevel window */
     /* p->topgwin =  gtk_window_new(GTK_WINDOW_TOPLEVEL); */

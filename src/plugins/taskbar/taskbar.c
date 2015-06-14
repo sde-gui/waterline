@@ -1212,7 +1212,7 @@ static void task_set_names(Task * tk, Atom source)
      * If it is set, the window manager is displaying it as the window title. */
     if ((source == None) || (source == a_NET_WM_VISIBLE_NAME))
     {
-        name = get_utf8_property(tk->win,  a_NET_WM_VISIBLE_NAME);
+        name = wtl_x11_get_utf8_property(tk->win,  a_NET_WM_VISIBLE_NAME);
         if (name != NULL)
             tk->name_source = a_NET_WM_VISIBLE_NAME;
     }
@@ -1222,7 +1222,7 @@ static void task_set_names(Task * tk, Atom source)
     && ((source == None) || (source == a_NET_WM_NAME))
     && ((tk->name_source == None) || (tk->name_source == a_NET_WM_NAME) || (tk->name_source == XA_WM_NAME)))
     {
-        name = get_utf8_property(tk->win,  a_NET_WM_NAME);
+        name = wtl_x11_get_utf8_property(tk->win,  a_NET_WM_NAME);
         if (name != NULL)
             tk->name_source = a_NET_WM_NAME;
     }
@@ -1232,7 +1232,7 @@ static void task_set_names(Task * tk, Atom source)
     && ((source == None) || (source == XA_WM_NAME))
     && ((tk->name_source == None) || (tk->name_source == XA_WM_NAME)))
     {
-        name = get_textproperty(tk->win,  XA_WM_NAME);
+        name = wtl_x11_get_text_property(tk->win,  XA_WM_NAME);
         if (name != NULL)
             tk->name_source = XA_WM_NAME;
     }
@@ -3854,7 +3854,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
 
     /* Get the NET_CLIENT_LIST property. */
     int client_count;
-    Window * client_list = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &client_count);
+    Window * client_list = wtl_x11_get_xa_property(GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &client_count);
     if (client_list != NULL)
     {
         /* Loop over client list, correlating it with task list. */
@@ -4101,7 +4101,7 @@ static void taskbar_net_number_of_desktops(GtkWidget * widget, TaskbarPlugin * t
 static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
 {
     /* Get active window. */
-    Window * p = get_xaproperty(GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
+    Window * p = wtl_x11_get_xa_property(GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
     Window w = p ? *p : 0;
     XFree(p);
 
@@ -4129,7 +4129,7 @@ static void taskbar_net_active_window(GtkWidget * widget, TaskbarPlugin * tb)
 static gboolean task_has_urgency(Task * tk)
 {
     gboolean result = FALSE;
-    XWMHints * hints = (XWMHints *) get_xaproperty(tk->win, XA_WM_HINTS, XA_WM_HINTS, 0);
+    XWMHints * hints = (XWMHints *) wtl_x11_get_xa_property(tk->win, XA_WM_HINTS, XA_WM_HINTS, 0);
     if (hints != NULL)
     {
         if (hints->flags & XUrgencyHint)
@@ -4147,7 +4147,7 @@ static void taskbar_net_desktop_names(FbEv * fbev, TaskbarPlugin * tb)
         tb->desktop_names = NULL;
 
     /* Get the NET_DESKTOP_NAMES property. */
-    tb->desktop_names = get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &tb->number_of_desktop_names);
+    tb->desktop_names = wtl_x11_get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &tb->number_of_desktop_names);
 }
 
 /* Handle PropertyNotify event.

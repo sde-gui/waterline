@@ -68,7 +68,7 @@ static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
 {
     /* Get the list of all windows. */
     int client_count;
-    Window * client_list = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &client_count);
+    Window * client_list = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &client_count);
     if (client_list != NULL)
     {
         /* Loop over all windows. */

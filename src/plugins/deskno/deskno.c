@@ -89,7 +89,7 @@ static void deskno_redraw(GtkWidget * widget, DesknoPlugin * dc)
     dc->number_of_desktops = get_net_number_of_desktops();
     int number_of_desktop_names;
     char * * desktop_names;
-    desktop_names = get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &number_of_desktop_names);
+    desktop_names = wtl_x11_get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &number_of_desktop_names);
 
     /* Reallocate the vector of labels. */
     if (dc->desktop_labels != NULL)

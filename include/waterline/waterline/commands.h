@@ -22,10 +22,10 @@
 
 #include <glib.h>
 
-const char * wtl_command_get_const_name(const char * command_name);
-const char * wtl_command_get_displayed_name(const char * command_name);
-gboolean wtl_command_exists(const char * command_name);
-void wtl_command_run(const char * command_name);
+extern const char * wtl_command_get_const_name(const char * command_name);
+extern const char * wtl_command_get_displayed_name(const char * command_name);
+extern gboolean wtl_command_exists(const char * command_name);
+extern void wtl_command_run(const char * command_name);
 
 
 #endif

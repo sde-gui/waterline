@@ -22,13 +22,11 @@
 #include <config.h>
 #endif
 
-#include "commands.h"
 #include "wtl_private.h"
 #include <waterline/global.h>
 #include <waterline/defaultapplications.h>
-#include <waterline/panel.h>
-#include <waterline/plugin.h>
 #include <waterline/misc.h>
+#include <waterline/commands.h>
 #include "bg.h"
 #include <stdlib.h>
 #include <sys/types.h>

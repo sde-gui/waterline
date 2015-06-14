@@ -50,7 +50,7 @@
 #include <waterline/fb_button.h>
 #include "bg.h"
 #include "menu-policy.h"
-#include "commands.h"
+#include <waterline/commands.h>
 
 #define DEFAULT_MENU_ICON "start-here"
 

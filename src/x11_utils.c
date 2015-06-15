@@ -162,7 +162,6 @@ Xclimsgwm(Window win, Atom type, Atom arg)
     XSendEvent(wtl_x11_display(), win, False, 0L, (XEvent *) &xev);
 }
 
-
 int wtl_x11_get_net_number_of_desktops(void)
 {
     int desknum;
@@ -178,7 +177,6 @@ int wtl_x11_get_net_number_of_desktops(void)
     return desknum;
 }
 
-
 int wtl_x11_get_net_current_desktop(void)
 {
     int desk;
@@ -193,8 +191,7 @@ int wtl_x11_get_net_current_desktop(void)
     return desk;
 }
 
-int
-get_net_wm_desktop(Window win)
+int wtl_x11_get_net_wm_desktop(Window win)
 {
     int desk = 0;
     guint32 *data;
@@ -207,8 +204,7 @@ get_net_wm_desktop(Window win)
     return desk;
 }
 
-void
-set_net_wm_desktop(Window win, int num)
+void wtl_x11_set_net_wm_desktop(Window win, int num)
 {
     Xclimsg(win, a_NET_WM_DESKTOP, num, 0, 0, 0, 0);
 }

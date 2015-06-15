@@ -3901,7 +3901,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     tk->shaded    = nws.shaded;
                     tk->decorated = get_decorations(tk->win, &nws);
 
-                    tk->desktop = get_net_wm_desktop(tk->win);
+                    tk->desktop = wtl_x11_get_net_wm_desktop(tk->win);
                     tk->override_class_name = (char*) -1;
                     if (tb->use_urgency_hint)
                         tk->urgency = task_has_urgency(tk);
@@ -4182,7 +4182,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 if (at == a_NET_WM_DESKTOP)
                 {
                     /* Window changed desktop. */
-                    tk->desktop = get_net_wm_desktop(win);
+                    tk->desktop = wtl_x11_get_net_wm_desktop(win);
                     task_update_grouping(tk, GROUP_BY_WORKSPACE);
                     task_update_sorting(tk, SORT_BY_WORKSPACE);
                     taskbar_redraw(tb);
@@ -4369,13 +4369,13 @@ static void menu_undecorate_window(GtkWidget * widget, TaskbarPlugin * tb)
 static void menu_move_to_workspace(GtkWidget * widget, TaskbarPlugin * tb)
 {
     int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "num"));
-    set_net_wm_desktop(tb->menutask->win, num);
+    wtl_x11_set_net_wm_desktop(tb->menutask->win, num);
     taskbar_group_menu_destroy(tb);
 }
 
 static void menu_move_to_this_workspace(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    set_net_wm_desktop(tb->menutask->win, tb->current_desktop);
+    wtl_x11_set_net_wm_desktop(tb->menutask->win, tb->current_desktop);
     taskbar_group_menu_destroy(tb);
 }
 

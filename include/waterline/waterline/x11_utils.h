@@ -64,8 +64,8 @@ extern void Xclimsgwm(Window win, Atom type, Atom arg);
 
 extern int wtl_x11_get_net_number_of_desktops(void);
 extern int wtl_x11_get_net_current_desktop(void);
-extern int get_net_wm_desktop(Window win);
-extern void set_net_wm_desktop(Window win, int num);
+extern int wtl_x11_get_net_wm_desktop(Window win);
+extern void wtl_x11_set_net_wm_desktop(Window win, int num);
 extern int get_wm_state (Window win);
 extern void get_net_wm_state(Window win, NetWMState *nws);
 extern void get_net_wm_window_type(Window win, NetWMWindowType *nwwt);

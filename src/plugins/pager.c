@@ -475,7 +475,7 @@ static void pager_property_notify_event(PagerPlugin * pg, XEvent * ev)
                     /* Window changed desktop.
                      * Mark both old and new desktops for redraw. */
                     desk_set_dirty_by_win(pg, tk);
-                    tk->desktop = get_net_wm_desktop(tk->win);
+                    tk->desktop = wtl_x11_get_net_wm_desktop(tk->win);
                     desk_set_dirty_by_win(pg, tk);
                 }
 
@@ -683,7 +683,7 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
                 tk->present_in_client_list = TRUE;
                 tk->win = client_list[i];
                 tk->ws = get_wm_state(tk->win);
-                tk->desktop = get_net_wm_desktop(tk->win);
+                tk->desktop = wtl_x11_get_net_wm_desktop(tk->win);
                 get_net_wm_state(tk->win, &tk->nws);
                 get_net_wm_window_type(tk->win, &tk->nwwt);
                 task_get_geometry(tk);

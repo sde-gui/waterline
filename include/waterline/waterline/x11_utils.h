@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011 Vadim Ushakov
+ * Copyright (c) 2011-2015 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __WATERLINE__XSUPPORT_H
-#define __WATERLINE__XSUPPORT_H
+#ifndef __WATERLINE__X11_UTILS_H
+#define __WATERLINE__X11_UTILS_H
 
 #include <sde-utils-x11.h>
 #include <gdk/gdkx.h>

@@ -29,7 +29,7 @@
 
 #include <sde-utils.h>
 
-#include <waterline/Xsupport.h>
+#include <waterline/x11_utils.h>
 #include <waterline/misc.h>
 #include <waterline/menu-cache-compat.h>
 

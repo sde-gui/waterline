@@ -31,7 +31,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
-#include <waterline/Xsupport.h>
+#include <waterline/x11_utils.h>
 #include <waterline/x11_wrappers.h>
 #include <waterline/ev.h>
 #include <waterline/misc.h>

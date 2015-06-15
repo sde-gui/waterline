@@ -282,7 +282,7 @@ static gboolean applet_factory(MatePanelApplet* applet, const gchar* iid, gpoint
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
-#include <waterline/Xsupport.h>
+#include <waterline/x11_utils.h>
 //#include "bg.h"
 
 #include "na-tray-manager.h"

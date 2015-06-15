@@ -31,7 +31,7 @@
 #include <waterline/misc.h>
 #include <waterline/fb_button.h>
 #include <waterline/plugin.h>
-#include <waterline/Xsupport.h>
+#include <waterline/x11_utils.h>
 #include <waterline/x11_wrappers.h>
 
 /* Commands that can be issued. */

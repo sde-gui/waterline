@@ -31,7 +31,7 @@
 #include "panel_private.h"
 #include <waterline/misc.h>
 #include "bg.h"
-#include <waterline/Xsupport.h>
+#include <waterline/x11_utils.h>
 #include <waterline/gtkcompat.h>
 
 /******************************************************************************/

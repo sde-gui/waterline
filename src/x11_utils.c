@@ -24,7 +24,7 @@
 #include <string.h>
 #include <sde-utils-gtk.h>
 #include <sde-utils.h>
-#include <waterline/Xsupport.h>
+#include <waterline/x11_utils.h>
 #include <waterline/x11_wrappers.h>
 
 void * wtl_x11_get_xa_property(Window xid, Atom prop, Atom type, int * nitems)

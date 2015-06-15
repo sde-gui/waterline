@@ -21,7 +21,7 @@
 #endif
 
 #include <gtk/gtk.h>
-#include <waterline/Xsupport.h>
+#include <waterline/x11_utils.h>
 #include <waterline/misc.h>
 #include <string.h>
 

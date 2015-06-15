@@ -50,7 +50,7 @@
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
-#include <waterline/Xsupport.h>
+#include <waterline/x11_utils.h>
 #include <waterline/x11_wrappers.h>
 #include "icon.xpm"
 

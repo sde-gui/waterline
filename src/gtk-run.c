@@ -355,7 +355,7 @@ static gboolean run_command(gchar * command, GtkDialog* dialog)
     GError* err = NULL;
     if( !g_spawn_command_line_async( command, &err ) )
     {
-        show_error( GTK_WINDOW(dialog), err->message );
+        wtl_show_error_message(GTK_WINDOW(dialog), err->message);
         g_error_free( err );
         return FALSE;
     }

@@ -119,12 +119,12 @@ void logout(void)
     if (logout_command) {
         GError* err = NULL;
         if (!g_spawn_command_line_async(logout_command, &err)) {
-            show_error(NULL, err->message);
+            wtl_show_error_message(NULL, err->message);
             g_error_free(err);
         }
     }
     else {
-        show_error(NULL, _("Logout command is not set"));
+        wtl_show_error_message(NULL, _("Logout command is not set"));
     }
 }
 

@@ -58,7 +58,7 @@ extern guint32 gcolor2rgb24(const GdkColor *color);
 extern char* translate_exec_to_cmd( const char* exec, const char* icon,
                              const char* title, const char* fpath );
 
-extern void show_error( GtkWindow* parent_win, const char* msg );
+extern void wtl_show_error_message(GtkWindow * parent_window, const char * message);
 
 /* Parameters: const char* name, gpointer ret_value, GType type, ....NULL */
 extern GtkWidget * create_generic_config_dialog(const char * title, GtkWidget * parent,
@@ -86,19 +86,6 @@ extern gchar * panel_translate_directory_name(const gchar * name);
 extern void bring_to_current_desktop(GtkWidget * win);
 
 extern gchar * wtl_tooltip_for_file_stat(struct stat * stat_data);
-
-
-extern void filemodestring (struct stat const *statp, char *str);
-
-/* Get the declaration of strmode.  */
-# if HAVE_DECL_STRMODE
-#  include <string.h> /* MacOS X, FreeBSD, OpenBSD */
-#  include <unistd.h> /* NetBSD */
-# endif
-
-# if !HAVE_DECL_STRMODE
-extern void strmode (mode_t mode, char *str);
-# endif
 
 extern void restore_grabs(GtkWidget *w, gpointer data);
 

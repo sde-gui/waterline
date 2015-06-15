@@ -462,14 +462,14 @@ GtkWidget* create_entry_dialog(const char * title, const char * description, con
 
 /********************************************************************/
 
-void show_error( GtkWindow* parent_win, const char* msg )
+void wtl_show_error_message(GtkWindow * parent_window, const char * message)
 {
-    GtkWidget* dlg = gtk_message_dialog_new( parent_win,
-                                             GTK_DIALOG_MODAL,
-                                             GTK_MESSAGE_ERROR,
-                                             GTK_BUTTONS_OK, "%s", msg );
-    gtk_dialog_run( (GtkDialog*)dlg );
-    gtk_widget_destroy( dlg );
+    GtkWidget * dialog = gtk_message_dialog_new(parent_window,
+                                                GTK_DIALOG_MODAL,
+                                                GTK_MESSAGE_ERROR,
+                                                GTK_BUTTONS_OK, "%s", message);
+    gtk_dialog_run((GtkDialog *) dialog);
+    gtk_widget_destroy(dialog);
 }
 
 /********************************************************************/
@@ -489,6 +489,18 @@ void bring_to_current_desktop(GtkWidget * win)
 }
 
 /********************************************************************/
+
+/* Get the declaration of strmode.  */
+# if HAVE_DECL_STRMODE
+#  include <string.h> /* MacOS X, FreeBSD, OpenBSD */
+#  include <unistd.h> /* NetBSD */
+# endif
+
+# if !HAVE_DECL_STRMODE
+static void strmode (mode_t mode, char *str);
+# endif
+
+static void filemodestring (struct stat const *statp, char *str);
 
 static char * human_access (struct stat const *statbuf)
 {
@@ -570,8 +582,7 @@ gchar * wtl_tooltip_for_file_stat(struct stat * stat_data)
    'w' whiteout (4.4BSD)
    '?' some other file type  */
 
-static char
-ftypelet (mode_t bits)
+static char ftypelet (mode_t bits)
 {
   /* These are the most common, so test for them first.  */
   if (S_ISREG (bits))
@@ -612,8 +623,7 @@ ftypelet (mode_t bits)
 
 /* Like filemodestring, but rely only on MODE.  */
 
-void
-strmode (mode_t mode, char *str)
+static void strmode (mode_t mode, char *str)
 {
   str[0] = ftypelet (mode);
   str[1] = mode & S_IRUSR ? 'r' : '-';
@@ -682,8 +692,7 @@ strmode (mode_t mode, char *str)
 
    11   '\0'.  */
 
-void
-filemodestring (struct stat const *statp, char *str)
+static void filemodestring (struct stat const *statp, char *str)
 {
   strmode (statp->st_mode, str);
 

@@ -27,7 +27,7 @@
 
 static gchar * ob_get_current_theme(void)
 {
-    if (!check_net_supported(a_OB_THEME))
+    if (!wtl_x11_check_net_supported(a_OB_THEME))
         return NULL;
 
     return wtl_x11_get_utf8_property(wtl_x11_root(), a_OB_THEME);

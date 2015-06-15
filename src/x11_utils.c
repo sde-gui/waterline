@@ -425,7 +425,7 @@ get_mvm_decorations(Window win)
 
 gboolean get_decorations (Window win, NetWMState * nws)
 {
-    if (check_net_supported(a_OB_WM_STATE_UNDECORATED))
+    if (wtl_x11_check_net_supported(a_OB_WM_STATE_UNDECORATED))
     {
         NetWMState n;
         if (!nws)
@@ -457,7 +457,7 @@ void wtl_x11_update_net_supported(void)
     _net_supported = wtl_x11_get_xa_property(wtl_x11_root(), a_NET_SUPPORTED, XA_ATOM, &_net_supported_nitems);
 }
 
-gboolean check_net_supported(Atom atom)
+gboolean wtl_x11_check_net_supported(Atom atom)
 {
     if (_net_supported_nitems < 1 || !_net_supported_nitems)
         return FALSE;

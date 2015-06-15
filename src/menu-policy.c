@@ -36,7 +36,7 @@ MenuCache * panel_menu_cache_new(guint32* visibility_flags)
 
     if (visibility_flags)
     {
-        const char* de_name = get_de_name();
+        const char* de_name = wtl_get_de_name();
         if (de_name)
             *visibility_flags = menu_cache_get_desktop_env_flag(cache, de_name);
         else

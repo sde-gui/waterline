@@ -84,7 +84,7 @@ extern void color_parse_d(const char * src, double dst[3]);
 
 extern gchar ** read_list_from_config(gchar * file_name);
 
-extern const char * get_de_name(void);
+extern const char * wtl_get_de_name(void);
 
 
 static inline void cairo_set_source_gdkrgba(cairo_t * cr, GdkRGBA * rgba)

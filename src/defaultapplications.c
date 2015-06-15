@@ -77,7 +77,7 @@ const char * wtl_get_default_application(char * type)
             return result;
     }
 
-    const char * de_name = get_de_name();
+    const char * de_name = wtl_get_de_name();
 
 again: ;
 

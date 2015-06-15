@@ -25,7 +25,7 @@
 
 static char * de_name = NULL;
 
-const char * get_de_name(void)
+const char * wtl_get_de_name(void)
 {
     if (de_name)
         return de_name;

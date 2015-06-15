@@ -29,3 +29,4 @@ Makefile.in
 /depcomp
 /symbols_from_headers
 /symbols_from_bin_waterline
+/symbols_all

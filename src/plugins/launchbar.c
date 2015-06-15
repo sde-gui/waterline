@@ -49,6 +49,7 @@
 #include <waterline/panel.h>
 #include <waterline/paths.h>
 #include <waterline/misc.h>
+#include <waterline/launch.h>
 #include <waterline/fb_button.h>
 #include <waterline/plugin.h>
 #include "menu-policy.h"

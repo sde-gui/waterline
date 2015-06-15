@@ -31,6 +31,7 @@
 
 #include <waterline/x11_utils.h>
 #include <waterline/misc.h>
+#include <waterline/launch.h>
 #include <waterline/menu-cache-compat.h>
 
 static GtkWidget* win = NULL; /* the run dialog */

@@ -32,6 +32,7 @@
 #include <waterline/panel.h>
 #include <waterline/gtkcompat.h>
 #include <waterline/misc.h>
+#include <waterline/launch.h>
 #include <waterline/paths.h>
 #include <waterline/plugin.h>
 

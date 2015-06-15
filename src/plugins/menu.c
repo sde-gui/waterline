@@ -45,6 +45,7 @@
 #include <waterline/global.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
+#include <waterline/launch.h>
 #include <waterline/plugin.h>
 #include <waterline/paths.h>
 #include <waterline/fb_button.h>

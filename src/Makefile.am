@@ -28,6 +28,7 @@ endif
 waterline_SOURCES = \
 	wtl_private.h \
 	misc.c \
+	launch.c \
 	fb_button.c \
 	defaultapplications.c \
 	libsmfm.c \
@@ -60,6 +61,7 @@ waterline_include_HEADERS = \
 	$(top_srcdir)/include/waterline/waterline/gtkcompat.h \
 	$(top_srcdir)/include/waterline/waterline/menu-cache-compat.h \
 	$(top_srcdir)/include/waterline/waterline/libsmfm.h \
+	$(top_srcdir)/include/waterline/waterline/launch.h \
 	$(top_srcdir)/include/waterline/waterline/misc.h \
 	$(top_srcdir)/include/waterline/waterline/panel.h \
 	$(top_srcdir)/include/waterline/waterline/paths.h \

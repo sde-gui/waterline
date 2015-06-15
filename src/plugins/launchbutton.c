@@ -41,6 +41,7 @@
 #include <waterline/symbol_visibility.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
+#include <waterline/launch.h>
 #include <waterline/fb_button.h>
 
 #include <waterline/gtkcompat.h>

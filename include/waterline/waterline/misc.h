@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013 Vadim Ushakov
+ * Copyright (c) 2013-2015 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -55,9 +55,6 @@ extern GtkWidget * _gtk_image_new_from_file_scaled(const gchar *file, gint width
                                            gint height, gboolean keep_ratio, gboolean use_dummy_image);
 extern guint32 gcolor2rgb24(const GdkColor *color);
 
-extern char* translate_exec_to_cmd( const char* exec, const char* icon,
-                             const char* title, const char* fpath );
-
 extern void wtl_show_error_message(GtkWindow * parent_window, const char * message);
 
 /* Parameters: const char* name, gpointer ret_value, GType type, ....NULL */
@@ -71,17 +68,9 @@ extern GdkPixbuf* wtl_load_icon2(const char* name, int width, int height, gboole
 
 extern void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size);
 
-extern gboolean wtl_launch_app(const char* exec, GList* files, gboolean in_terminal);
-extern gboolean wtl_launch(const char* exec, GList* files);
-extern void wtl_open_in_file_manager(const char * path);
-extern void wtl_open_in_terminal(const char * path);
-extern void wtl_open_web_link(const char * link);
-
 typedef void (*EntryDialogCallback)(char * value, gpointer payload);
 
 extern GtkWidget* create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload);
-
-extern gchar * panel_translate_directory_name(const gchar * name);
 
 extern void bring_to_current_desktop(GtkWidget * win);
 

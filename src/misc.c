@@ -588,13 +588,6 @@ void restore_grabs(GtkWidget *w, gpointer data)
 
 /********************************************************************/
 
-gboolean is_my_own_window(Window window)
-{
-    return !!gdk_window_lookup(window);
-}
-
-/********************************************************************/
-
 void color_parse_d(const char * src, double dst[3])
 {
     GdkColor color;

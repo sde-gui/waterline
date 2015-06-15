@@ -3504,7 +3504,7 @@ static void task_build_gui(TaskbarPlugin * tb, Task * tk)
      *
      * Do not change event mask to gtk windows spawned by this gtk client
      * this breaks gtk internals */
-    if (!is_my_own_window(tk->win))
+    if (!wtl_x11_is_my_own_window(tk->win))
         XSelectInput(wtl_x11_display(), tk->win, PropertyChangeMask | StructureNotifyMask);
 
     /* Allocate a toggle button as the top level widget. */

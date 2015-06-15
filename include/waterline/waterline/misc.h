@@ -77,8 +77,6 @@ extern gchar * wtl_tooltip_for_file_stat(struct stat * stat_data);
 
 extern void restore_grabs(GtkWidget *w, gpointer data);
 
-extern gboolean is_my_own_window(Window window);
-
 extern void color_parse_d(const char * src, double dst[3]);
 
 extern gchar ** read_list_from_config(gchar * file_name);

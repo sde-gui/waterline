@@ -687,7 +687,7 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
                 get_net_wm_state(tk->win, &tk->nws);
                 get_net_wm_window_type(tk->win, &tk->nwwt);
                 task_get_geometry(tk);
-                if (!is_my_own_window(tk->win))
+                if (!wtl_x11_is_my_own_window(tk->win))
                     XSelectInput(wtl_x11_display(), tk->win, PropertyChangeMask | StructureNotifyMask);
                 desk_set_dirty_by_win(pg, tk);
 

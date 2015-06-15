@@ -1309,3 +1309,9 @@ void wtl_x11_set_net_showing_desktop(gboolean value)
     Xclimsg(wtl_x11_root(), a_NET_SHOWING_DESKTOP, value, 0, 0, 0, 0);
 }
 
+/****************************************************************************/
+
+gboolean wtl_x11_is_my_own_window(Window window)
+{
+    return !!gdk_window_lookup(window);
+}

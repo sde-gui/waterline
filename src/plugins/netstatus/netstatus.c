@@ -162,7 +162,7 @@ static void apply_config(Plugin* p)
 static void netstatus_config( Plugin* p, GtkWindow* parent  )
 {
     netstatus * ns = PRIV(p);
-    GtkWidget * dialog = create_generic_config_dialog(
+    GtkWidget * dialog = wtl_create_generic_config_dialog(
                 _(plugin_class(p)->name),
                 GTK_WIDGET(parent),
                 (GSourceFunc) apply_config, p,

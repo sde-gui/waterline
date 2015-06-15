@@ -383,7 +383,7 @@ static void na_configure(Plugin * p, GtkWindow * parent)
 {
     NAPlugin * iplugin = PRIV(p);
 
-    GtkWidget * dialog = create_generic_config_dialog(_(plugin_class(p)->name),
+    GtkWidget * dialog = wtl_create_generic_config_dialog(_(plugin_class(p)->name),
             GTK_WIDGET(parent),
             (GSourceFunc) na_panel_configuration_changed, (gpointer) p,
             _("Display in Frame"), &iplugin->display_in_frame, (GType)CONF_TYPE_BOOL,

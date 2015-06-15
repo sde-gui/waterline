@@ -101,7 +101,7 @@ static void space_apply_configuration(Plugin * p)
 static void space_configure(Plugin * p, GtkWindow * parent)
 {
     SpacePlugin * sp = PRIV(p);
-    GtkWidget * dialog = create_generic_config_dialog(
+    GtkWidget * dialog = wtl_create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) space_apply_configuration, (gpointer) p,

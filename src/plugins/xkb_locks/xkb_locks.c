@@ -282,7 +282,7 @@ static void xkb_locks_apply_configuration(Plugin * p)
 static void xkb_locks_configure(Plugin * p, GtkWindow * parent)
 {
     xkb_locks_t * xkb_locks = PRIV(p);
-    GtkWidget * dialog = create_generic_config_dialog(
+    GtkWidget * dialog = wtl_create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) xkb_locks_apply_configuration, (gpointer) p,

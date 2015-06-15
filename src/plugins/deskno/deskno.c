@@ -193,7 +193,7 @@ static void deskno_apply_configuration(Plugin * p)
 static void deskno_configure(Plugin * p, GtkWindow * parent)
 {
     DesknoPlugin * dc = PRIV(p);
-    GtkWidget * dialog = create_generic_config_dialog(
+    GtkWidget * dialog = wtl_create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) deskno_apply_configuration, (gpointer) p,

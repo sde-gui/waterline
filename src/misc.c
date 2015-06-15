@@ -246,7 +246,7 @@ static void entry_dlg_response(GtkWidget * widget, int response, gpointer p)
 }
 
 
-GtkWidget* create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload)
+GtkWidget* wtl_create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload)
 {
     GtkWidget* dlg = gtk_dialog_new_with_buttons( title, NULL, 0,
                                                  GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,

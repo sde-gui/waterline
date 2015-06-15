@@ -4416,7 +4416,7 @@ static void menu_move_to_new_group(GtkWidget * widget, TaskbarPlugin * tb)
         gtk_widget_destroy(tk->new_group_dlg),
         tk->new_group_dlg = NULL;
 
-    tk->new_group_dlg = create_entry_dialog(_("Move window to new group"), NULL, NULL, task_move_to_new_group_cb, tk);
+    tk->new_group_dlg = wtl_create_entry_dialog(_("Move window to new group"), NULL, NULL, task_move_to_new_group_cb, tk);
 
     taskbar_group_menu_destroy(tb);
 }
@@ -5273,7 +5273,7 @@ static void taskbar_configure(Plugin * p, GtkWindow * parent)
     int max_group_separator_size = 50;
 
     TaskbarPlugin * tb = PRIV(p);
-    GtkWidget* dialog = create_generic_config_dialog(
+    GtkWidget* dialog = wtl_create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
             (GSourceFunc) taskbar_apply_configuration, (gpointer) p,

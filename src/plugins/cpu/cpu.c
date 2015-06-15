@@ -387,7 +387,7 @@ static void cpu_configure(Plugin * p, GtkWindow * parent)
     int update_interval_min = 50;
     int update_interval_max = 5000;
 
-    GtkWidget * dialog = create_generic_config_dialog(
+    GtkWidget * dialog = wtl_create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
         (GSourceFunc) cpu_apply_configuration, (gpointer) p,

@@ -404,7 +404,7 @@ static void applyConfig(Plugin* p) { }
 static void config(Plugin *p, GtkWindow* parent) {
     GtkWidget *dialog;
     cpufreq *cf = PRIV(p);
-    dialog = create_generic_config_dialog(_(plugin_class(p)->name),
+    dialog = wtl_create_generic_config_dialog(_(plugin_class(p)->name),
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
             _("Remember governor and frequency"), &cf->remember, (GType)CONF_TYPE_BOOL,

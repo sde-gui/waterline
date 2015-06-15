@@ -57,20 +57,20 @@ extern GtkWidget * _gtk_image_new_from_file_scaled(const gchar *file, gint width
 extern void wtl_show_error_message(GtkWindow * parent_window, const char * message);
 
 /* Parameters: const char* name, gpointer ret_value, GType type, ....NULL */
-extern GtkWidget * create_generic_config_dialog(const char * title, GtkWidget * parent,
+extern GtkWidget * wtl_create_generic_config_dialog(const char * title, GtkWidget * parent,
     GSourceFunc apply_func, Plugin * plugin,
     const char * name, ...);
+
+
+typedef void (*EntryDialogCallback)(char * value, gpointer payload);
+
+extern GtkWidget* wtl_create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload);
 
 
 extern GdkPixbuf* wtl_load_icon(const char* name, int width, int height, gboolean use_fallback);
 extern GdkPixbuf* wtl_load_icon2(const char* name, int width, int height, gboolean use_fallback, gboolean * themed);
 
 extern void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size);
-
-typedef void (*EntryDialogCallback)(char * value, gpointer payload);
-
-extern GtkWidget* create_entry_dialog(const char * title, const char * description, const char * value, EntryDialogCallback callback, gpointer payload);
-
 extern void bring_to_current_desktop(GtkWidget * win);
 
 extern gchar * wtl_tooltip_for_file_stat(struct stat * stat_data);

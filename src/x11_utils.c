@@ -209,21 +209,6 @@ void wtl_x11_set_net_wm_desktop(Window win, int num)
     Xclimsg(win, a_NET_WM_DESKTOP, num, 0, 0, 0, 0);
 }
 
-
-GPid
-get_net_wm_pid(Window win)
-{
-    GPid pid = 0;
-    guint32 *data;
-
-    data = wtl_x11_get_xa_property (win, a_NET_WM_PID, XA_CARDINAL, 0);
-    if (data) {
-        pid = *data;
-        XFree (data);
-    }
-    return pid;
-}
-
 void
 get_net_wm_state(Window win, NetWMState *nws)
 {

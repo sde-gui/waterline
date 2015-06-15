@@ -72,22 +72,19 @@ static void panel_notify_plugins_on_compositing_mode_change(Panel * p);
 
 /* Globals */
 
-static gchar version[] = VERSION;
-gchar *cprofile = "default"; /* used in path.c */
-static gchar *force_colormap = "rgba";
 
+char * wtl_profile = "default"; /* used in path.c */
 gboolean quit_in_menu = FALSE;
-static GtkWindowGroup* window_group; /* window group used to limit the scope of model dialog. */
-
 FbEv *fbev = NULL;
-
-static GSList* all_panels = NULL;  /* a single-linked list storing all panels */
-
 gboolean is_restarting = FALSE;
-
 gchar * _wtl_agent_id = NULL;
 
 /******************************************************************************/
+
+static GSList* all_panels = NULL;  /* a single-linked list storing all panels */
+static gchar version[] = VERSION;
+static gchar *force_colormap = "rgba";
+static GtkWindowGroup* window_group; /* window group used to limit the scope of model dialog. */
 
 static gboolean force_compositing_wm_disabled = FALSE;
 static gboolean force_composite_disabled = FALSE;
@@ -2618,7 +2615,7 @@ int main(int argc, char *argv[], char *env[])
             su_log_level = atoi(argv[i]);
         } else if (!strcmp(argv[i], "--profile") || !strcmp(argv[i], "-p")) {
             NEXT_ARGUMENT("missing profile name\n")
-            cprofile = g_strdup(argv[i]);
+            wtl_profile = g_strdup(argv[i]);
         } else if (!strcmp(argv[i], "--kiosk-mode")) {
             wtl_enable_kiosk_mode();
         } else if (!strcmp(argv[i], "--quit-in-menu")) {

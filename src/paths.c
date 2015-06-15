@@ -24,10 +24,7 @@
 
 #include <waterline/paths.h>
 #include <waterline/global.h>
-
-/********************************************************************/
-
-extern gchar *cprofile;
+#include "wtl_private.h"
 
 /********************************************************************/
 
@@ -71,7 +68,7 @@ gchar * wtl_resolve_own_resource(const char * first_part, ...)
 
 gchar * wtl_get_config_path(const char* file_name, SU_PATH_CONFIG_TYPE config_type)
 {
-    return su_path_resolve_config(wtl_agent_id(), config_type, "sde/waterline" , cprofile, file_name, NULL);
+    return su_path_resolve_config(wtl_agent_id(), config_type, "sde/waterline", wtl_profile, file_name, NULL);
 }
 
 /********************************************************************/

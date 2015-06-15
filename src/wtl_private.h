@@ -34,4 +34,6 @@ extern SYMBOL_HIDDEN void wtl_enable_kiosk_mode(void);
 extern SYMBOL_HIDDEN gboolean wtl_x11_is_composite_available(void);
 extern SYMBOL_HIDDEN void wtl_x11_update_net_supported(void);
 
+extern SYMBOL_HIDDEN char * wtl_profile;
+
 #endif

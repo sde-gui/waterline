@@ -79,8 +79,6 @@ extern gboolean get_decorations (Window win, NetWMState * nws);
 extern void update_net_supported();
 extern gboolean check_net_supported(Atom atom);
 
-extern gboolean is_xcomposite_available(void);
-
 extern void wtl_x11_set_wmhints_no_input(Window w);
 extern void wtl_x11_set_win_hints_skip_focus(Window w);
 

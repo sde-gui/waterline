@@ -1019,7 +1019,7 @@ gboolean panel_is_composited(Panel * p)
 
 gboolean panel_is_composite_available(Panel * p)
 {
-    return !force_composite_disabled && is_xcomposite_available();
+    return !force_composite_disabled && wtl_x11_is_composite_available();
 }
 
 /******************************************************************************/

@@ -31,4 +31,6 @@ extern SYMBOL_HIDDEN void wtl_load_global_config(void);
 extern SYMBOL_HIDDEN void wtl_free_global_config(void);
 extern SYMBOL_HIDDEN void wtl_enable_kiosk_mode(void);
 
+extern SYMBOL_HIDDEN gboolean wtl_x11_is_composite_available(void);
+
 #endif

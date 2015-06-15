@@ -26,6 +26,7 @@
 #include <sde-utils.h>
 #include <waterline/x11_utils.h>
 #include <waterline/x11_wrappers.h>
+#include "wtl_private.h"
 
 void * wtl_x11_get_xa_property(Window xid, Atom prop, Atom type, int * nitems)
 {
@@ -473,7 +474,7 @@ gboolean check_net_supported(Atom atom)
 
 #include <X11/extensions/Xcomposite.h>
 
-gboolean is_xcomposite_available(void)
+gboolean wtl_x11_is_composite_available(void)
 {
     static int result = -1;
 

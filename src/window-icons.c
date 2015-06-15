@@ -120,7 +120,7 @@ static void load_window_action_icon_fallback(GtkImage * image, const char * name
 }
 
 
-void load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size)
+void wtl_load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size)
 {
     int w, h;
     gtk_icon_size_lookup(icon_size, &w, &h);

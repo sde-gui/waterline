@@ -3478,7 +3478,7 @@ static void task_build_gui_button_close(TaskbarPlugin * tb, Task* tk)
 
     /* Create close button. */
     tk->button_close = gtk_image_new_from_stock (GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
-    load_window_action_icon(GTK_IMAGE(tk->button_close), "close", GTK_ICON_SIZE_MENU);
+    wtl_load_window_action_icon(GTK_IMAGE(tk->button_close), "close", GTK_ICON_SIZE_MENU);
     gtk_box_pack_end(GTK_BOX(box), tk->button_close, TRUE, FALSE, 0);
     gtk_widget_set_tooltip_text (tk->button_close, _("Close window"));
     gtk_widget_show(tk->button_close);
@@ -4585,7 +4585,7 @@ static void menu_load_icon(GtkWidget * mi, const char * name)
         gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), GTK_WIDGET(image));
     }
 
-    load_window_action_icon(image, name, GTK_ICON_SIZE_MENU);
+    wtl_load_window_action_icon(image, name, GTK_ICON_SIZE_MENU);
 }
 
 static void task_adjust_menu(Task * tk, gboolean from_popup_menu)

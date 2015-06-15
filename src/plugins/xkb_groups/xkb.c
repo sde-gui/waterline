@@ -30,6 +30,7 @@
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
+#include <waterline/x11_wrappers.h>
 
 /* The X Keyboard Extension: Library Specification
  * http://www.xfree86.org/current/XKBlib.pdf */
@@ -93,7 +94,7 @@ static void refresh_group_xkb(xkb_groups_t * xkb)
     /* Get the current group number.
      * This shouldn't be necessary, but mask the group number down for safety. */
     XkbStateRec xkb_state;
-    XkbGetState(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, &xkb_state);
+    XkbGetState(wtl_x11_display(), XkbUseCoreKbd, &xkb_state);
     xkb->current_group_xkb_no = xkb_state.group & (XkbNumKbdGroups - 1);
 }
 
@@ -107,8 +108,8 @@ static int initialize_keyboard_description(xkb_groups_t * xkb)
     else
     {
         /* Read necessary values into the keyboard description. */
-        XkbGetControls(gdk_x11_get_default_xdisplay(), XkbAllControlsMask, xkb_desc);
-        XkbGetNames(gdk_x11_get_default_xdisplay(), XkbSymbolsNameMask | XkbGroupNamesMask, xkb_desc);
+        XkbGetControls(wtl_x11_display(), XkbAllControlsMask, xkb_desc);
+        XkbGetNames(wtl_x11_display(), XkbSymbolsNameMask | XkbGroupNamesMask, xkb_desc);
         if ((xkb_desc->names == NULL) || (xkb_desc->ctrls == NULL) || (xkb_desc->names->groups == NULL))
             g_warning("XkbGetControls/XkbGetNames failed\n");
         else
@@ -123,7 +124,7 @@ static int initialize_keyboard_description(xkb_groups_t * xkb)
                 if (group_source[i] != None)
                 {
                     xkb->group_count = i + 1;
-                    char * p = XGetAtomName(gdk_x11_get_default_xdisplay(), group_source[i]);
+                    char * p = XGetAtomName(wtl_x11_display(), group_source[i]);
                     xkb->group_names[i] = g_strdup(p);
                     XFree(p);
                 }
@@ -140,7 +141,7 @@ static int initialize_keyboard_description(xkb_groups_t * xkb)
              * This is a plus-sign separated string. */
             if (xkb_desc->names->symbols != None)
             {
-                char * symbol_string = XGetAtomName(gdk_x11_get_default_xdisplay(), xkb_desc->names->symbols);
+                char * symbol_string = XGetAtomName(wtl_x11_display(), xkb_desc->names->symbols);
                 if (symbol_string != NULL)
                 {
                     char * p = symbol_string;
@@ -260,7 +261,7 @@ void xkb_groups_mechanism_constructor(xkb_groups_t * xkb)
     int maj = XkbMajorVersion;
     int min = XkbMinorVersion;
     if ((XkbLibraryVersion(&maj, &min))
-    && (XkbQueryExtension(gdk_x11_get_default_xdisplay(), &opcode, &xkb->base_event_code, &xkb->base_error_code, &maj, &min)))
+    && (XkbQueryExtension(wtl_x11_display(), &opcode, &xkb->base_event_code, &xkb->base_error_code, &maj, &min)))
     {
         /* Read the keyboard description. */
         initialize_keyboard_description(xkb);
@@ -269,8 +270,8 @@ void xkb_groups_mechanism_constructor(xkb_groups_t * xkb)
         gdk_window_add_filter(NULL, (GdkFilterFunc) xkb_groups_event_filter, (gpointer) xkb);
 
         /* Specify events we will receive. */
-        XkbSelectEvents(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, XkbNewKeyboardNotifyMask, XkbNewKeyboardNotifyMask);
-        XkbSelectEventDetails(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, XkbStateNotify, XkbAllStateComponentsMask, XkbGroupStateMask);
+        XkbSelectEvents(wtl_x11_display(), XkbUseCoreKbd, XkbNewKeyboardNotifyMask, XkbNewKeyboardNotifyMask);
+        XkbSelectEventDetails(wtl_x11_display(), XkbUseCoreKbd, XkbStateNotify, XkbAllStateComponentsMask, XkbGroupStateMask);
 
         /* Get current state. */
         refresh_group_xkb(xkb);
@@ -313,7 +314,7 @@ int xkb_groups_change_group(xkb_groups_t * xkb, int increment)
     if (next_group >= xkb->group_count) next_group = 0;
 
     /* Execute the change. */
-    XkbLockGroup(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, next_group);
+    XkbLockGroup(wtl_x11_display(), XkbUseCoreKbd, next_group);
     refresh_group_xkb(xkb);
     xkb_groups_update(xkb);
     xkb_groups_enter_locale_by_process(xkb);
@@ -331,7 +332,7 @@ void xkb_groups_active_window_changed(xkb_groups_t * xkb, Window window)
 
     if (new_group_xkb_no < xkb->group_count)
     {
-        XkbLockGroup(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, new_group_xkb_no);
+        XkbLockGroup(wtl_x11_display(), XkbUseCoreKbd, new_group_xkb_no);
         refresh_group_xkb(xkb);
     }
 }

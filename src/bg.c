@@ -32,6 +32,7 @@
 #include <X11/Xatom.h>
 #include "bg.h"
 #include <sde-utils.h>
+#include <waterline/x11_wrappers.h>
 
 enum {
     CHANGED,
@@ -114,7 +115,7 @@ fb_bg_init (FbBg *bg)
     XGCValues  gcv;
     uint mask;
 
-    bg->dpy = GDK_DISPLAY();
+    bg->dpy = wtl_x11_display();
     bg->xroot = DefaultRootWindow(bg->dpy);
     bg->id = gdk_x11_get_xatom_by_name("_XROOTPMAP_ID");
     bg->pixmap = fb_bg_get_xrootpmap(bg);

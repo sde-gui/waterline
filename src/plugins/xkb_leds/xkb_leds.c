@@ -36,7 +36,7 @@
 #include <waterline/misc.h>
 #include <waterline/paths.h>
 #include <waterline/plugin.h>
-
+#include <waterline/x11_wrappers.h>
 #include <waterline/gtkcompat.h>
 
 static const char * on_icons[] = {
@@ -164,19 +164,19 @@ static int xkb_leds_constructor(Plugin * p)
         int min = XkbMinorVersion;
         if ( ! XkbLibraryVersion(&maj, &min))
             return 0;
-        if ( ! XkbQueryExtension(gdk_x11_get_default_xdisplay(), &opcode, &xkb_event_base, &xkb_error_base, &maj, &min))
+        if ( ! XkbQueryExtension(wtl_x11_display(), &opcode, &xkb_event_base, &xkb_error_base, &maj, &min))
             return 0;
     }
 
     /* Add GDK event filter and enable XkbIndicatorStateNotify events. */
     gdk_window_add_filter(NULL, (GdkFilterFunc) xkb_leds_event_filter, p);
-    if ( ! XkbSelectEvents(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, XkbIndicatorStateNotifyMask, XkbIndicatorStateNotifyMask))
+    if ( ! XkbSelectEvents(wtl_x11_display(), XkbUseCoreKbd, XkbIndicatorStateNotifyMask, XkbIndicatorStateNotifyMask))
         return 0;
 
     /* Get current indicator state and update display.
      * Force current state to differ in all bits so a full redraw will occur. */
     unsigned int current_state;
-    XkbGetIndicatorState(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, &current_state);
+    XkbGetIndicatorState(wtl_x11_display(), XkbUseCoreKbd, &current_state);
     kl->current_state = ~ current_state;
     xkb_leds_update_display(p, current_state);
 

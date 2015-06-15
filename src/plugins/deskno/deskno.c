@@ -35,7 +35,7 @@
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
 #include <waterline/Xsupport.h>
-
+#include <waterline/x11_wrappers.h>
 #include <waterline/gtkcompat.h>
 
 /* Private context for desktop number plugin. */
@@ -89,7 +89,7 @@ static void deskno_redraw(GtkWidget * widget, DesknoPlugin * dc)
     dc->number_of_desktops = get_net_number_of_desktops();
     int number_of_desktop_names;
     char * * desktop_names;
-    desktop_names = wtl_x11_get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &number_of_desktop_names);
+    desktop_names = wtl_x11_get_utf8_property_list(wtl_x11_root(), a_NET_DESKTOP_NAMES, &number_of_desktop_names);
 
     /* Reallocate the vector of labels. */
     if (dc->desktop_labels != NULL)
@@ -128,7 +128,7 @@ static gboolean deskno_button_press_event(GtkWidget * widget, GdkEventButton * e
         newdesk = 0;
 
     /* Ask the window manager to make the new desktop current. */
-    Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, newdesk, 0, 0, 0, 0);
+    Xclimsg(wtl_x11_root(), a_NET_CURRENT_DESKTOP, newdesk, 0, 0, 0, 0);
     return TRUE;
 }
 

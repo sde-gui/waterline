@@ -32,7 +32,7 @@
 #include <X11/Xatom.h>
 
 #include <waterline/Xsupport.h>
-
+#include <waterline/x11_wrappers.h>
 #include <waterline/ev.h>
 #include <waterline/misc.h>
 
@@ -213,7 +213,7 @@ fb_ev_emit(FbEv *ev, int signal)
     {
     	Window* win = None;
 		ev->active_window = None;
-		win = (Window*) wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
+		win = (Window*) wtl_x11_get_xa_property (wtl_x11_root(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
 		if (win) {
 			ev->active_window = *win;
 			/* g_debug( "WIN: %p", *win ); */
@@ -278,7 +278,7 @@ fb_ev_current_desktop(FbEv *ev)
     if (ev->current_desktop == -1) {
         guint32 *data;
 
-        data = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
+        data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
         if (data) {
             ev->current_desktop = *data;
             XFree (data);
@@ -294,7 +294,7 @@ fb_ev_number_of_desktops(FbEv *ev)
     if (ev->number_of_desktops == -1) {
         guint32 *data;
 
-        data = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL, 0);
+        data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL, 0);
         if (data) {
             ev->number_of_desktops = *data;
             XFree (data);

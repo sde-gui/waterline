@@ -25,15 +25,16 @@
 #include <sde-utils-gtk.h>
 #include <sde-utils.h>
 #include <waterline/Xsupport.h>
+#include <waterline/x11_wrappers.h>
 
 void * wtl_x11_get_xa_property(Window xid, Atom prop, Atom type, int * nitems)
 {
-    return su_x11_get_xa_property(gdk_x11_get_default_xdisplay(), xid, prop, type, nitems);
+    return su_x11_get_xa_property(wtl_x11_display(), xid, prop, type, nitems);
 }
 
 char * wtl_x11_get_utf8_property(Window win, Atom atom)
 {
-    return su_x11_get_utf8_property(gdk_x11_get_default_xdisplay(), win, atom);
+    return su_x11_get_utf8_property(wtl_x11_display(), win, atom);
 }
 
 
@@ -48,7 +49,7 @@ char ** wtl_x11_get_utf8_property_list(Window win, Atom atom, int *count)
     guchar *tmp = NULL;
 
     *count = 0;
-    result = XGetWindowProperty(GDK_DISPLAY(), win, atom, 0, G_MAXLONG, False,
+    result = XGetWindowProperty(wtl_x11_display(), win, atom, 0, G_MAXLONG, False,
           aUTF8_STRING, &type, &format, &nitems,
           &bytes_after, &tmp);
     if (result != Success || type != aUTF8_STRING || tmp == NULL)
@@ -111,7 +112,7 @@ char * wtl_x11_get_text_property(Window win, Atom atom)
     XTextProperty text_prop;
     char *retval;
 
-    if (XGetTextProperty(GDK_DISPLAY(), win, &text_prop, atom)) {
+    if (XGetTextProperty(wtl_x11_display(), win, &text_prop, atom)) {
         su_log_debug("format=%d enc=%d nitems=%d value=%s   \n",
               text_prop.format,
               text_prop.encoding,
@@ -141,7 +142,7 @@ Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4)
     xev.data.l[2] = l2;
     xev.data.l[3] = l3;
     xev.data.l[4] = l4;
-    XSendEvent(GDK_DISPLAY(), GDK_ROOT_WINDOW(), False,
+    XSendEvent(wtl_x11_display(), wtl_x11_root(), False,
           (SubstructureNotifyMask | SubstructureRedirectMask),
           (XEvent *) &xev);
 }
@@ -157,7 +158,7 @@ Xclimsgwm(Window win, Atom type, Atom arg)
     xev.format = 32;
     xev.data.l[0] = arg;
     xev.data.l[1] = GDK_CURRENT_TIME;
-    XSendEvent(GDK_DISPLAY(), win, False, 0L, (XEvent *) &xev);
+    XSendEvent(wtl_x11_display(), win, False, 0L, (XEvent *) &xev);
 }
 
 
@@ -167,7 +168,7 @@ get_net_number_of_desktops()
     int desknum;
     guint32 *data;
 
-    data = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_NUMBER_OF_DESKTOPS,
+    data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_NUMBER_OF_DESKTOPS,
           XA_CARDINAL, 0);
     if (!data)
         return 0;
@@ -184,7 +185,7 @@ get_net_current_desktop ()
     int desk;
     guint32 *data;
 
-    data = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
+    data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
     if (!data)
         return 0;
 
@@ -378,7 +379,7 @@ set_decorations (Window win, gboolean decorate)
     hints.decorations = decorate ? _MWM_DECOR_ALL : (_MWM_DECOR_BORDER | _MWM_DECOR_HANDLE) ;
 
     /* Set Motif hints, most window managers handle these */
-    XChangeProperty(GDK_DISPLAY(), win,
+    XChangeProperty(wtl_x11_display(), win,
                     a_MOTIF_WM_HINTS, 
                     a_MOTIF_WM_HINTS, 32, PropModeReplace, 
                     (unsigned char *)&hints, PROP_MOTIF_WM_HINTS_ELEMENTS);
@@ -452,7 +453,7 @@ void update_net_supported()
         _net_supported_nitems = 0;
     }
 
-    _net_supported = wtl_x11_get_xa_property(GDK_ROOT_WINDOW(), a_NET_SUPPORTED, XA_ATOM, &_net_supported_nitems);
+    _net_supported = wtl_x11_get_xa_property(wtl_x11_root(), a_NET_SUPPORTED, XA_ATOM, &_net_supported_nitems);
 }
 
 gboolean check_net_supported(Atom atom)
@@ -479,14 +480,14 @@ gboolean is_xcomposite_available(void)
     if (result < 0)
     {
         int event_base, error_base, major, minor;
-        if (!XCompositeQueryExtension(GDK_DISPLAY(), &event_base, &error_base))
+        if (!XCompositeQueryExtension(wtl_x11_display(), &event_base, &error_base))
         {
             result = FALSE;
         }
         else
         {
             major = 0, minor = 2;
-            XCompositeQueryVersion(GDK_DISPLAY(), &major, &minor);
+            XCompositeQueryVersion(wtl_x11_display(), &major, &minor);
             if (! (major > 0 || minor >= 2))
             {
                 result = FALSE;
@@ -929,7 +930,7 @@ static GdkPixbuf * get_net_wm_icon(Window task_win, int required_width, int requ
     gulong bytes_after;
     gulong * data = NULL;
     result = XGetWindowProperty(
-        GDK_DISPLAY(),
+        wtl_x11_display(),
         task_win,
         a_NET_WM_ICON,
         0, G_MAXLONG,
@@ -1070,7 +1071,7 @@ static GdkPixbuf * get_icon_from_pixmap_mask(Pixmap xpixmap, Pixmap xmask)
         int unused;
         unsigned int unused_2;
         result = XGetGeometry(
-            GDK_DISPLAY(), xpixmap,
+            wtl_x11_display(), xpixmap,
             &unused_win, &unused, &unused, &w, &h, &unused_2, &unused_2) ? Success : -1;
     }
 
@@ -1089,7 +1090,7 @@ static GdkPixbuf * get_icon_from_pixmap_mask(Pixmap xpixmap, Pixmap xmask)
         int unused;
         unsigned int unused_2;
         if (XGetGeometry(
-            GDK_DISPLAY(), xmask,
+            wtl_x11_display(), xmask,
             &unused_win, &unused, &unused, &w, &h, &unused_2, &unused_2))
         {
             /* Convert the X mask to a GDK pixmap. */
@@ -1113,7 +1114,7 @@ static GdkPixbuf * get_icon_from_wm_hints(Window task_win)
     GdkPixbuf * pixmap = NULL;
     int result;
 
-    XWMHints * hints = XGetWMHints(GDK_DISPLAY(), task_win);
+    XWMHints * hints = XGetWMHints(wtl_x11_display(), task_win);
     result = (hints != NULL) ? Success : -1;
     Pixmap xpixmap = None;
     Pixmap xmask = None;
@@ -1157,7 +1158,7 @@ static GdkPixbuf * get_icon_from_kwm_win_icon(Window task_win)
     Pixmap *icons = NULL;
     Atom kwin_win_icon_atom = gdk_x11_get_xatom_by_name("KWM_WIN_ICON");
     result = XGetWindowProperty(
-        GDK_DISPLAY(),
+        wtl_x11_display(),
         task_win,
         kwin_win_icon_atom,
         0, G_MAXLONG,
@@ -1272,12 +1273,12 @@ void wm_noinput(Window w)
     XWMHints wmhints;
     wmhints.flags = InputHint;
     wmhints.input = 0;
-    XSetWMHints (GDK_DISPLAY(), w, &wmhints);
+    XSetWMHints (wtl_x11_display(), w, &wmhints);
 
     #define WIN_HINTS_SKIP_FOCUS      (1<<0)    /* "alt-tab" skips this win */
     guint32 val = WIN_HINTS_SKIP_FOCUS;
-    XChangeProperty(GDK_DISPLAY(), w,
-          XInternAtom(GDK_DISPLAY(), "_WIN_HINTS", False), XA_CARDINAL, 32,
+    XChangeProperty(wtl_x11_display(), w,
+          XInternAtom(wtl_x11_display(), "_WIN_HINTS", False), XA_CARDINAL, 32,
           PropModeReplace, (unsigned char *) &val, 1);
 }
 
@@ -1290,7 +1291,7 @@ gboolean get_net_showing_desktop_supported(void)
 gboolean get_net_showing_desktop(void)
 {
     gboolean result;
-    guint32 * data = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_SHOWING_DESKTOP, XA_CARDINAL, 0);
+    guint32 * data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_SHOWING_DESKTOP, XA_CARDINAL, 0);
     if (data)
     {
         result = *data;
@@ -1301,6 +1302,6 @@ gboolean get_net_showing_desktop(void)
 
 void set_net_showing_desktop(gboolean value)
 {
-    Xclimsg(DefaultRootWindow(GDK_DISPLAY()), a_NET_SHOWING_DESKTOP, value, 0, 0, 0, 0);
+    Xclimsg(wtl_x11_root(), a_NET_SHOWING_DESKTOP, value, 0, 0, 0, 0);
 }
 

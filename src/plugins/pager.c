@@ -38,6 +38,7 @@
 #include <waterline/misc.h>
 #include <waterline/plugin.h>
 #include <waterline/Xsupport.h>
+#include <waterline/x11_wrappers.h>
 
 struct _task;
 struct _desk;
@@ -179,11 +180,11 @@ static void task_get_geometry(PagerTask * tk)
     XErrorHandler previous_error_handler = XSetErrorHandler(panel_handle_x_error_swallow_BadWindow_BadDrawable);
 
     XWindowAttributes win_attributes;
-    if (XGetWindowAttributes(gdk_x11_get_default_xdisplay(), tk->win, &win_attributes))
+    if (XGetWindowAttributes(wtl_x11_display(), tk->win, &win_attributes))
     {
         Window unused_win;
         int rx, ry;
-        XTranslateCoordinates(gdk_x11_get_default_xdisplay(), tk->win, win_attributes.root,
+        XTranslateCoordinates(wtl_x11_display(), tk->win, win_attributes.root,
               - win_attributes.border_width,
               - win_attributes.border_width,
               &rx, &ry, &unused_win);
@@ -196,7 +197,7 @@ static void task_get_geometry(PagerTask * tk)
     {
         Window unused_win;
         guint unused;
-        if ( ! XGetGeometry(gdk_x11_get_default_xdisplay(), tk->win,
+        if ( ! XGetGeometry(wtl_x11_display(), tk->win,
             &unused_win, &tk->x, &tk->y, &tk->w, &tk->h, &unused, &unused))
         {
             tk->x = tk->y = tk->w = tk->h = 2;
@@ -373,7 +374,7 @@ static gboolean desk_scroll_event(GtkWidget * widget, GdkEventScroll * event, Pa
     }
 
     /* Ask the window manager to make the new desktop current. */
-    Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, current_desktop, 0, 0, 0, 0);
+    Xclimsg(wtl_x11_root(), a_NET_CURRENT_DESKTOP, current_desktop, 0, 0, 0, 0);
     return TRUE;
 }
 
@@ -385,7 +386,7 @@ static gboolean desk_button_press_event(GtkWidget * widget, GdkEventButton * eve
         return TRUE;
 
     /* Ask the window manager to make the new desktop current. */
-    Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, d->desktop_number, 0, 0, 0, 0);
+    Xclimsg(wtl_x11_root(), a_NET_CURRENT_DESKTOP, d->desktop_number, 0, 0, 0, 0);
     return TRUE;
 }
 
@@ -446,7 +447,7 @@ static void pager_property_notify_event(PagerPlugin * pg, XEvent * ev)
     {
         Atom at = ev->xproperty.atom;
         Window win = ev->xproperty.window;
-        if (win != GDK_ROOT_WINDOW())
+        if (win != wtl_x11_root())
         {
             /* Look up task structure by X window handle. */
             PagerTask * tk = task_lookup(pg, win);
@@ -514,7 +515,7 @@ static GdkFilterReturn pager_event_filter(XEvent * xev, GdkEvent * event, PagerP
 /* Handler for "active-window" event from root window listener. */
 static void pager_net_active_window(FbEv * ev, PagerPlugin * pg)
 {
-    Window * focused_window = wtl_x11_get_xa_property(GDK_ROOT_WINDOW(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
+    Window * focused_window = wtl_x11_get_xa_property(wtl_x11_root(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
     if (focused_window != NULL)
     {
         PagerTask * tk = task_lookup(pg, *focused_window);
@@ -546,7 +547,7 @@ static void pager_net_desktop_names(FbEv * fbev, PagerPlugin * pg)
     /* Get the NET_DESKTOP_NAMES property. */
     int number_of_desktop_names;
     char * * desktop_names;
-    desktop_names = wtl_x11_get_utf8_property_list(GDK_ROOT_WINDOW(), a_NET_DESKTOP_NAMES, &number_of_desktop_names);
+    desktop_names = wtl_x11_get_utf8_property_list(wtl_x11_root(), a_NET_DESKTOP_NAMES, &number_of_desktop_names);
 
     /* Loop to copy the desktop names to the vector of labels.
      * If there are more desktops than labels, label the extras with a decimal number. */
@@ -634,7 +635,7 @@ static void pager_net_number_of_desktops(FbEv * ev, PagerPlugin * pg)
 static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
 {
     /* Get the NET_CLIENT_LIST_STACKING property. */
-    Window * client_list = wtl_x11_get_xa_property(GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST_STACKING, XA_WINDOW, &pg->client_count);
+    Window * client_list = wtl_x11_get_xa_property(wtl_x11_root(), a_NET_CLIENT_LIST_STACKING, XA_WINDOW, &pg->client_count);
     g_free(pg->tasks_in_stacking_order);
     /* g_new returns NULL if if n_structs == 0 */
     pg->tasks_in_stacking_order = g_new(PagerTask *, pg->client_count);
@@ -687,7 +688,7 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
                 get_net_wm_window_type(tk->win, &tk->nwwt);
                 task_get_geometry(tk);
                 if (!is_my_own_window(tk->win))
-                    XSelectInput(gdk_x11_get_default_xdisplay(), tk->win, PropertyChangeMask | StructureNotifyMask);
+                    XSelectInput(wtl_x11_display(), tk->win, PropertyChangeMask | StructureNotifyMask);
                 desk_set_dirty_by_win(pg, tk);
 
                 /* Link the task structure into the task list. */

@@ -36,7 +36,7 @@
 #include <waterline/misc.h>
 #include <waterline/paths.h>
 #include <waterline/plugin.h>
-
+#include <waterline/x11_wrappers.h>
 #include <waterline/gtkcompat.h>
 
 static const char * on_icons[] = {
@@ -118,7 +118,7 @@ static void xkb_locks_init_masks(xkb_locks_t * xkb_locks)
     xkb_locks->modifier_mask[2] = 1 << 7;
 
     XkbDescPtr xkb;
-    if ((xkb = XkbGetKeyboard(gdk_x11_get_default_xdisplay(), XkbAllComponentsMask, XkbUseCoreKbd)) != NULL)
+    if ((xkb = XkbGetKeyboard(wtl_x11_display(), XkbAllComponentsMask, XkbUseCoreKbd)) != NULL)
     {
         unsigned int mask;
         mask = xkb_mask_modifier(xkb, "Lock");
@@ -188,7 +188,7 @@ static gboolean xkb_locks_button_press_event(GtkWidget * widget, GdkEventButton 
                 break;
             }
         }
-        XkbLockModifiers(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, mask, mask & ~xkb_locks->locked_mods);
+        XkbLockModifiers(wtl_x11_display(), XkbUseCoreKbd, mask, mask & ~xkb_locks->locked_mods);
     }
 
     return FALSE;
@@ -242,7 +242,7 @@ static int xkb_locks_constructor(Plugin * p)
         int min = XkbMinorVersion;
         if (!XkbLibraryVersion(&maj, &min))
             return 0;
-        if (!XkbQueryExtension(gdk_x11_get_default_xdisplay(), &opcode, &xkb_event_base, &xkb_error_base, &maj, &min))
+        if (!XkbQueryExtension(wtl_x11_display(), &opcode, &xkb_event_base, &xkb_error_base, &maj, &min))
             return 0;
     }
 
@@ -250,11 +250,11 @@ static int xkb_locks_constructor(Plugin * p)
 
     /* Add GDK event filter and enable XkbIndicatorStateNotify events. */
     gdk_window_add_filter(NULL, (GdkFilterFunc) xkb_locks_event_filter, p);
-    if (!XkbSelectEvents(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, XkbStateNotifyMask, XkbStateNotifyMask))
+    if (!XkbSelectEvents(wtl_x11_display(), XkbUseCoreKbd, XkbStateNotifyMask, XkbStateNotifyMask))
         return 0;
 
     XkbStateRec xkbState;
-    XkbGetState(gdk_x11_get_default_xdisplay(), XkbUseCoreKbd, &xkbState);
+    XkbGetState(wtl_x11_display(), XkbUseCoreKbd, &xkbState);
     xkb_locks_update_display(p, xkbState.locked_mods, TRUE);
 
     gtk_widget_show(pwid);

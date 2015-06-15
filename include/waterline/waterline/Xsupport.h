@@ -54,7 +54,6 @@ typedef struct {
     unsigned int normal : 1;
 } NetWMWindowType;
 
-
 extern void * wtl_x11_get_xa_property(Window xid, Atom prop, Atom type, int * nitems);
 extern char * wtl_x11_get_utf8_property(Window win, Atom atom);
 extern char * wtl_x11_get_text_property(Window win, Atom prop);

@@ -37,6 +37,7 @@ waterline_SOURCES = \
 	commands.c \
 	generic_config_dlg.c \
 	Xsupport.c \
+	x11_wrappers.c \
 	configurator.c \
 	ev.c \
 	panel_config.c \
@@ -65,6 +66,7 @@ waterline_include_HEADERS = \
 	$(top_srcdir)/include/waterline/waterline/plugin.h \
 	$(top_srcdir)/include/waterline/waterline/typedef.h \
 	$(top_srcdir)/include/waterline/waterline/symbol_visibility.h \
+	$(top_srcdir)/include/waterline/waterline/x11_wrappers.h \
 	$(top_srcdir)/include/waterline/waterline/Xsupport.h
 endif
 waterline_LDFLAGS = $(DYNAMIC_FLAGS)

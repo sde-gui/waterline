@@ -45,6 +45,7 @@
 #include <waterline/misc.h>
 #include "bg.h"
 #include <waterline/Xsupport.h>
+#include <waterline/x11_wrappers.h>
 #include <waterline/gtkcompat.h>
 
 /******************************************************************************/
@@ -287,7 +288,7 @@ static void panel_set_desktop_icon_overlap_mode(Panel * panel)
         val[0] = 0;
         val_size = 1;
     }
-    XChangeProperty(GDK_DISPLAY(), panel->topxwin, a_SDE_DONT_OVERLAP_DESKTOP_ICONS, XA_CARDINAL, 32,
+    XChangeProperty(wtl_x11_display(), panel->topxwin, a_SDE_DONT_OVERLAP_DESKTOP_ICONS, XA_CARDINAL, 32,
           PropModeReplace, (unsigned char *) val, val_size);
 }
 
@@ -369,15 +370,15 @@ static gboolean panel_set_wm_strut_real(Panel *p)
             desired_strut[4 + index * 2] = strut_lower;
             desired_strut[5 + index * 2] = strut_upper;
 
-            XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL,
+            XChangeProperty(wtl_x11_display(), p->topxwin, a_NET_WM_STRUT_PARTIAL,
                 XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) desired_strut, 12);
-            XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT,
+            XChangeProperty(wtl_x11_display(), p->topxwin, a_NET_WM_STRUT,
                 XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) desired_strut, 4);
         }
         else
         {
-            XDeleteProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT);
-            XDeleteProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL);
+            XDeleteProperty(wtl_x11_display(), p->topxwin, a_NET_WM_STRUT);
+            XDeleteProperty(wtl_x11_display(), p->topxwin, a_NET_WM_STRUT_PARTIAL);
         }
     }
 
@@ -394,7 +395,7 @@ static void panel_set_wm_strut(Panel *p)
 static void panel_set_dock_type(Panel *p)
 {
     Atom state = a_NET_WM_WINDOW_TYPE_DOCK;
-    XChangeProperty(GDK_DISPLAY(), p->topxwin,
+    XChangeProperty(wtl_x11_display(), p->topxwin,
                     a_NET_WM_WINDOW_TYPE, XA_ATOM, 32,
                     PropModeReplace, (unsigned char *) &state, 1);
 }
@@ -690,7 +691,7 @@ static void cmd_panel_visible(Panel * panel, char ** argv, int argc)
             Xclimsg(panel->topxwin, a_NET_WM_DESKTOP, 0xFFFFFFFF, 0, 0, 0, 0);
             /* and assign it ourself just for case when wm is not running */
             guint32 val = 0xFFFFFFFF;
-            XChangeProperty(GDK_DISPLAY(), panel->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
+            XChangeProperty(wtl_x11_display(), panel->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
                   PropModeReplace, (unsigned char *) &val, 1);
 
             panel_set_wm_state(panel);
@@ -840,7 +841,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
 
     at = ev->xproperty.atom;
     win = ev->xproperty.window;
-    if (win == GDK_ROOT_WINDOW())
+    if (win == wtl_x11_root())
     {
         su_log_debug2("PropertyNotify: atom = 0x%x", at);
 
@@ -891,7 +892,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
             {
                 Panel* p = (Panel*)l->data;
                 g_free( p->workarea );
-                p->workarea = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
+                p->workarea = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
                 /* print_wmdata(p); */
             }
         }
@@ -899,11 +900,11 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
         {
             int remote_command_argc = 0;;
             char ** remote_command_argv = NULL;
-            remote_command_argv = wtl_x11_get_utf8_property_list(GDK_ROOT_WINDOW(), a_WATERLINE_TEXT_CMD, &remote_command_argc);
+            remote_command_argv = wtl_x11_get_utf8_property_list(wtl_x11_root(), a_WATERLINE_TEXT_CMD, &remote_command_argc);
             if (remote_command_argc > 0 && remote_command_argv)
             {
                 unsigned char b[1];
-                XChangeProperty (GDK_DISPLAY(), GDK_ROOT_WINDOW(), a_WATERLINE_TEXT_CMD, XA_STRING, 8, PropModeReplace, b, 0);
+                XChangeProperty (wtl_x11_display(), wtl_x11_root(), a_WATERLINE_TEXT_CMD, XA_STRING, 8, PropModeReplace, b, 0);
                 process_command(remote_command_argv, remote_command_argc);
             }
             g_strfreev(remote_command_argv);
@@ -1809,7 +1810,7 @@ panel_start_gui(Panel *p)
 {
     p->curdesk = get_net_current_desktop();
     p->desknum = get_net_number_of_desktops();
-    p->workarea = wtl_x11_get_xa_property (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
+    p->workarea = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
 
     /* main toplevel window */
     /* p->topgwin =  gtk_window_new(GTK_WINDOW_TOPLEVEL); */
@@ -1924,7 +1925,7 @@ panel_start_gui(Panel *p)
     Xclimsg(p->topxwin, a_NET_WM_DESKTOP, 0xFFFFFFFF, 0, 0, 0, 0);
     /* and assign it ourself just for case when wm is not running */
     guint32 val = 0xFFFFFFFF;
-    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
+    XChangeProperty(wtl_x11_display(), p->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
           PropModeReplace, (unsigned char *) &val, 1);
 
     panel_set_wm_state(p);
@@ -2333,8 +2334,8 @@ static void panel_destroy(Panel *p)
     g_free( p->widget_name );
 
     gdk_flush();
-    XFlush(GDK_DISPLAY());
-    XSync(GDK_DISPLAY(), True);
+    XFlush(wtl_x11_display());
+    XSync(wtl_x11_display(), True);
 
     g_free( p->name );
     g_free(p);
@@ -2425,7 +2426,7 @@ int panel_handle_x_error(Display * d, XErrorEvent * ev)
 
     if (su_log_level >= SU_LOG_WARNING)
     {
-        XGetErrorText(GDK_DISPLAY(), ev->error_code, buf, 256);
+        XGetErrorText(wtl_x11_display(), ev->error_code, buf, 256);
         su_log_warning("X error: %s\n", buf);
     }
     return 0;	/* Ignored */
@@ -2479,9 +2480,9 @@ static gboolean check_main_lock(void)
 
     atom = gdk_x11_get_xatom_by_name(CLIPBOARD_NAME);
 
-    XGrabServer(GDK_DISPLAY());
+    XGrabServer(wtl_x11_display());
 
-    if (XGetSelectionOwner(GDK_DISPLAY(), atom) != None)
+    if (XGetSelectionOwner(wtl_x11_display(), atom) != None)
         goto out;
 
     clipboard = gtk_clipboard_get(gdk_atom_intern(CLIPBOARD_NAME, FALSE));
@@ -2493,7 +2494,7 @@ static gboolean check_main_lock(void)
         retval = TRUE;
 
 out:
-    XUngrabServer (GDK_DISPLAY ());
+    XUngrabServer (wtl_x11_display ());
     gdk_flush ();
 
     return retval;
@@ -2592,7 +2593,7 @@ int main(int argc, char *argv[], char *env[])
     XSetLocaleModifiers("");
     XSetErrorHandler((XErrorHandler) panel_handle_x_error);
 
-    su_x11_resolve_well_known_atoms(gdk_x11_get_default_xdisplay());
+    su_x11_resolve_well_known_atoms(wtl_x11_display());
     update_net_supported();
 
 #define NEXT_ARGUMENT(s) if (++i >= argc) { su_print_error_message(s); goto print_usage_and_exit; }
@@ -2660,7 +2661,7 @@ restart:
 	/* NOTE: StructureNotifyMask is required by XRandR
 	 * See init_randr_support() in gdkscreen-x11.c of gtk+ for detail.
 	 */
-    XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), StructureNotifyMask|SubstructureNotifyMask|PropertyChangeMask);
+    XSelectInput (wtl_x11_display(), wtl_x11_root(), StructureNotifyMask|SubstructureNotifyMask|PropertyChangeMask);
     gdk_window_add_filter(gdk_get_default_root_window (), (GdkFilterFunc)panel_event_filter, NULL);
 
     if (!start_all_panels())
@@ -2671,7 +2672,7 @@ restart:
 
     gtk_main();
 
-    XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), NoEventMask);
+    XSelectInput (wtl_x11_display(), wtl_x11_root(), NoEventMask);
     gdk_window_remove_filter(gdk_get_default_root_window (), (GdkFilterFunc)panel_event_filter, NULL);
 
     /* destroy all panels */

@@ -52,7 +52,7 @@ static GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_name, in
 
 /********************************************************************/
 
-guint32 gcolor2rgb24(const GdkColor *color)
+guint32 wtl_util_gdkcolor_to_uint32(const GdkColor * color)
 {
     guint32 i;
     guint16 r, g, b;
@@ -608,7 +608,7 @@ void color_parse_d(const char * src, double dst[3])
 
 /********************************************************************/
 
-void rgba_to_color(GdkRGBA * rgba, GdkColor * color, guint16 * alpha)
+void wtl_util_gdkrgba_to_gdkcolor(GdkRGBA * rgba, GdkColor * color, guint16 * alpha)
 {
     if (!rgba)
         return;
@@ -655,7 +655,7 @@ void rgba_to_color(GdkRGBA * rgba, GdkColor * color, guint16 * alpha)
 
 /********************************************************************/
 
-void color_to_rgba(GdkRGBA * rgba, GdkColor * color, guint16 * alpha)
+void wtl_util_gdkcolor_to_gdkrgba(GdkRGBA * rgba, GdkColor * color, guint16 * alpha)
 {
     if (!rgba)
         return;

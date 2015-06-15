@@ -101,7 +101,7 @@ static void on_color_chooser_btn_rgba_set(GtkColorButton* button, GdkRGBA * rgba
     GdkColor color; guint16  alpha;
     gtk_color_button_get_color(button, &color);
     alpha = gtk_color_button_get_alpha(button);
-    color_to_rgba(rgba, &color, &alpha);
+    wtl_util_gdkcolor_to_gdkrgba(rgba, &color, &alpha);
     notify_apply_config(GTK_WIDGET(button));
 }
 
@@ -416,7 +416,7 @@ GtkWidget* create_generic_config_dialog( const char* title, GtkWidget* parent,
                 entry = gtk_color_button_new();
                 GdkRGBA * rgba = (GdkRGBA *) val;
                 GdkColor color; guint16 alpha;
-                rgba_to_color(rgba, &color, &alpha);
+                wtl_util_gdkrgba_to_gdkcolor(rgba, &color, &alpha);
                 gtk_color_button_set_color(GTK_COLOR_BUTTON(entry), &color);
                 gtk_color_button_set_alpha(GTK_COLOR_BUTTON(entry), alpha);
                 gtk_color_button_set_use_alpha(GTK_COLOR_BUTTON(entry), TRUE);

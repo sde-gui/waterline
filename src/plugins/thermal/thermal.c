@@ -232,7 +232,8 @@ update_display(thermal *th)
         panel_draw_label_text(plugin_panel(th->plugin), th->namew, "NA", STYLE_BOLD | STYLE_CUSTOM_COLOR);
     else
     {
-        gchar * buffer = g_strdup_printf("<span color=\"#%06x\"><b>%02d</b></span>", gcolor2rgb24(&color), temp);
+        gchar * buffer = g_strdup_printf("<span color=\"#%06x\"><b>%02d</b></span>",
+            wtl_util_gdkcolor_to_uint32(&color), temp);
         gtk_label_set_markup (GTK_LABEL(th->namew), buffer);
         g_free(buffer);
     }

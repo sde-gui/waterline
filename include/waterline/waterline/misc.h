@@ -53,7 +53,6 @@ enum {
 
 extern GtkWidget * _gtk_image_new_from_file_scaled(const gchar *file, gint width,
                                            gint height, gboolean keep_ratio, gboolean use_dummy_image);
-extern guint32 gcolor2rgb24(const GdkColor *color);
 
 extern void wtl_show_error_message(GtkWindow * parent_window, const char * message);
 
@@ -100,8 +99,13 @@ static inline void mix_rgba(GdkRGBA * result, GdkRGBA * a, GdkRGBA * b, double v
     result->alpha = a->alpha * v + b->alpha * (1.0 - v);
 }
 
-extern void rgba_to_color(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
-extern void color_to_rgba(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
+/****************************************************************************/
+
+extern guint32 wtl_util_gdkcolor_to_uint32(const GdkColor * color);
+extern void wtl_util_gdkrgba_to_gdkcolor(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
+extern void wtl_util_gdkcolor_to_gdkrgba(GdkRGBA * rgba, GdkColor * color, guint16 * alpha);
+
+/****************************************************************************/
 
 extern void wtl_show_run_box(void);
 

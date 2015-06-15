@@ -1093,7 +1093,7 @@ void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow 
         }
         pixmap = fb_bg_get_xroot_pix_for_win(p->bg, widget);
         if ((pixmap != NULL) && (pixmap != GDK_NO_BG) && (p->alpha != 0))
-            fb_bg_composite(pixmap, widget->style->black_gc, gcolor2rgb24(&p->background_color), p->alpha);
+            fb_bg_composite(pixmap, widget->style->black_gc, wtl_util_gdkcolor_to_uint32(&p->background_color), p->alpha);
     }
     else if (p->background_mode == BACKGROUND_SYSTEM)
     {
@@ -2044,7 +2044,7 @@ void panel_draw_label_text_with_font(Panel * p, GtkWidget * label, const char * 
     gchar * attr_color = "";
     gchar * attr_color_allocated = NULL;
     if ((custom_color) && (p->use_font_color))
-        attr_color_allocated =  attr_color = g_strdup_printf(" color=\"#%06x\"", gcolor2rgb24(&p->font_color));
+        attr_color_allocated =  attr_color = g_strdup_printf(" color=\"#%06x\"", wtl_util_gdkcolor_to_uint32(&p->font_color));
 
     gchar * attr_desc = "";
     gchar * attr_desc_allocated = NULL;

@@ -30,7 +30,7 @@
 
 /********************************************************************/
 
-char* translate_exec_to_cmd(const char * exec, const char * icon,
+char* wtl_translate_exec_to_cmd(const char * exec, const char * icon,
                             const char * title, const char * fpath)
 {
     if (!exec)
@@ -143,7 +143,7 @@ gboolean wtl_launch_app(const char* exec, GList* files, gboolean in_terminal)
 
 /********************************************************************/
 
-gchar * panel_translate_directory_name(const gchar * name)
+gchar * wtl_translate_directory_name(const gchar * name)
 {
     gchar * title = NULL;
 

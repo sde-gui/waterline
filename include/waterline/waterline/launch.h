@@ -22,7 +22,7 @@
 
 #include <glib.h>
 
-extern char* translate_exec_to_cmd( const char* exec, const char* icon,
+extern char* wtl_translate_exec_to_cmd( const char* exec, const char* icon,
                              const char* title, const char* fpath );
 
 extern gboolean wtl_launch_app(const char* exec, GList* files, gboolean in_terminal);
@@ -31,6 +31,6 @@ extern void wtl_open_in_file_manager(const char * path);
 extern void wtl_open_in_terminal(const char * path);
 extern void wtl_open_web_link(const char * link);
 
-extern gchar * panel_translate_directory_name(const gchar * name);
+extern gchar * wtl_translate_directory_name(const gchar * name);
 
 #endif

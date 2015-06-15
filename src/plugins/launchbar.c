@@ -324,7 +324,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
             if ( ! btn->customize_action )
             {
                 gchar * exec = g_key_file_get_string(desktop, desktop_ent, "Exec", NULL);
-                btn->action = translate_exec_to_cmd(exec, icon, title, desktop_file);
+                btn->action = wtl_translate_exec_to_cmd(exec, icon, title, desktop_file);
                 g_free(exec);
             }
 

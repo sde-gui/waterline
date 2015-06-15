@@ -1901,7 +1901,8 @@ panel_start_gui(Panel *p)
     su_log_debug("topxwin = %x\n", p->topxwin);
 
     /* the settings that should be done before window is mapped */
-    wm_noinput(p->topxwin);
+    wtl_x11_set_wmhints_no_input(p->topxwin);
+    wtl_x11_set_win_hints_skip_focus(p->topxwin);
     panel_set_dock_type(p);
 
     /* window mapping point */

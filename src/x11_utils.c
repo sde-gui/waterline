@@ -1268,13 +1268,16 @@ GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height
     return pixmap;
 }
 
-void wm_noinput(Window w)
+void wtl_x11_set_wmhints_no_input(Window w)
 {
     XWMHints wmhints;
     wmhints.flags = InputHint;
     wmhints.input = 0;
     XSetWMHints (wtl_x11_display(), w, &wmhints);
+}
 
+void wtl_x11_set_win_hints_skip_focus(Window w)
+{
     #define WIN_HINTS_SKIP_FOCUS      (1<<0)    /* "alt-tab" skips this win */
     guint32 val = WIN_HINTS_SKIP_FOCUS;
     XChangeProperty(wtl_x11_display(), w,

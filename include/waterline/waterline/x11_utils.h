@@ -81,7 +81,8 @@ extern gboolean check_net_supported(Atom atom);
 
 extern gboolean is_xcomposite_available(void);
 
-extern void wm_noinput(Window w);
+extern void wtl_x11_set_wmhints_no_input(Window w);
+extern void wtl_x11_set_win_hints_skip_focus(Window w);
 
 extern GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 

@@ -2695,7 +2695,6 @@ static void taskbar_build_preview_panel(TaskbarPlugin * tb)
 
     gdk_window_set_group(gtk_widget_get_window(win), gtk_widget_get_window(win));
 
-//    wm_noinput(GDK_WINDOW_XWINDOW(gtk_widget_get_window(win)));
     gdk_window_set_accept_focus(gtk_widget_get_window(win), FALSE);
 
 /*

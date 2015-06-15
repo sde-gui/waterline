@@ -1282,13 +1282,13 @@ void wm_noinput(Window w)
           PropModeReplace, (unsigned char *) &val, 1);
 }
 
-gboolean get_net_showing_desktop_supported(void)
+gboolean wtl_x11_get_net_showing_desktop_supported(void)
 {
     return gdk_x11_screen_supports_net_wm_hint(gdk_screen_get_default(),
         gdk_atom_intern("_NET_SHOWING_DESKTOP", FALSE));
 }
 
-gboolean get_net_showing_desktop(void)
+gboolean wtl_x11_get_net_showing_desktop(void)
 {
     gboolean result;
     guint32 * data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_SHOWING_DESKTOP, XA_CARDINAL, 0);
@@ -1300,7 +1300,7 @@ gboolean get_net_showing_desktop(void)
     return result;
 }
 
-void set_net_showing_desktop(gboolean value)
+void wtl_x11_set_net_showing_desktop(gboolean value)
 {
     Xclimsg(wtl_x11_root(), a_NET_SHOWING_DESKTOP, value, 0, 0, 0, 0);
 }

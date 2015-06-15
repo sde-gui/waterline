@@ -5512,7 +5512,7 @@ static void taskbar_popupmenu_task_manager(GtkMenuItem * item, TaskbarPlugin * t
 
 static void taskbar_popupmenu_show_desktop(GtkMenuItem * item, TaskbarPlugin * tb)
 {
-    set_net_showing_desktop(!get_net_showing_desktop());
+    wtl_x11_set_net_showing_desktop(!wtl_x11_get_net_showing_desktop());
 }
 
 static void taskbar_popupmenu_tile_vertically(GtkMenuItem * item, TaskbarPlugin * tb)
@@ -5549,7 +5549,7 @@ static void taskbar_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
 
     gboolean tile_command_supported = FALSE;
 
-    if (get_net_showing_desktop_supported() || tile_command_supported)
+    if (wtl_x11_get_net_showing_desktop_supported() || tile_command_supported)
     {
         {
             GtkWidget * menu_item = gtk_separator_menu_item_new();
@@ -5557,11 +5557,11 @@ static void taskbar_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), menu_item);
         }
 
-        if (get_net_showing_desktop_supported())
+        if (wtl_x11_get_net_showing_desktop_supported())
         {
             GtkWidget * menu_item = gtk_check_menu_item_new_with_mnemonic(_("Show the _Desktop"));
             gtk_widget_show(menu_item);
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), get_net_showing_desktop());
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), wtl_x11_get_net_showing_desktop());
             gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), menu_item);
             g_signal_connect(menu_item, "activate", G_CALLBACK(taskbar_popupmenu_show_desktop), tb);
         }

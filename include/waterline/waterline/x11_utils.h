@@ -85,8 +85,8 @@ extern void wm_noinput(Window w);
 
 extern GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 
-extern gboolean get_net_showing_desktop_supported(void);
-extern gboolean get_net_showing_desktop(void);
-extern void set_net_showing_desktop(gboolean value);
+extern gboolean wtl_x11_get_net_showing_desktop_supported(void);
+extern gboolean wtl_x11_get_net_showing_desktop(void);
+extern void wtl_x11_set_net_showing_desktop(gboolean value);
 
 #endif

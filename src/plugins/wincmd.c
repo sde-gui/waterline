@@ -136,7 +136,7 @@ static gboolean wincmd_button_clicked(GtkWidget * widget, GdkEventButton * event
         if (gdk_x11_screen_supports_net_wm_hint(screen, atom))
         {
             int showing_desktop = (( ( ! wc->toggle_state)) ? 1 : 0);
-            Xclimsg(wtl_x11_root(), a_NET_SHOWING_DESKTOP, showing_desktop, 0, 0, 0, 0);
+            wtl_x11_set_net_showing_desktop(showing_desktop);
             wc->toggle_state = !wc->toggle_state;
         }
         else

@@ -299,7 +299,7 @@ void bring_to_current_desktop(GtkWidget * win)
     GdkWindow * gdk_window = gtk_widget_get_window(win);
     Window w = GDK_WINDOW_XID(gdk_window);
     int window_desktop = get_net_wm_desktop(w);
-    int current_desktop = get_net_current_desktop();
+    int current_desktop = wtl_x11_get_net_current_desktop();
     if (window_desktop != 0xFFFFFFFF && window_desktop != current_desktop)
     {
         set_net_wm_desktop(w, current_desktop);

@@ -570,7 +570,7 @@ static void pager_net_desktop_names(FbEv * fbev, PagerPlugin * pg)
 static void pager_net_current_desktop(FbEv * ev, PagerPlugin * pg)
 {
     desk_set_dirty(pg->desks[pg->current_desktop]);
-    pg->current_desktop = get_net_current_desktop();
+    pg->current_desktop = wtl_x11_get_net_current_desktop();
     if (pg->current_desktop >= pg->number_of_desktops)
         pg->current_desktop = 0;
     desk_set_dirty(pg->desks[pg->current_desktop]);
@@ -585,7 +585,7 @@ static void pager_net_number_of_desktops(FbEv * ev, PagerPlugin * pg)
     int number_of_desktops = pg->number_of_desktops;
 
     /* Get the correct number of desktops. */
-    pg->number_of_desktops = get_net_number_of_desktops();
+    pg->number_of_desktops = wtl_x11_get_net_number_of_desktops();
     if (pg->number_of_desktops < 1)
         pg->number_of_desktops = 1;
 
@@ -603,7 +603,7 @@ static void pager_net_number_of_desktops(FbEv * ev, PagerPlugin * pg)
     }
 
     /* Reconcile the current desktop number. */
-    pg->current_desktop = get_net_current_desktop();
+    pg->current_desktop = wtl_x11_get_net_current_desktop();
     if (pg->current_desktop >= pg->number_of_desktops)
         pg->current_desktop = 0;
 

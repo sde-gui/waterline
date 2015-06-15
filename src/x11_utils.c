@@ -163,8 +163,7 @@ Xclimsgwm(Window win, Atom type, Atom arg)
 }
 
 
-int
-get_net_number_of_desktops()
+int wtl_x11_get_net_number_of_desktops(void)
 {
     int desknum;
     guint32 *data;
@@ -180,8 +179,7 @@ get_net_number_of_desktops()
 }
 
 
-int
-get_net_current_desktop ()
+int wtl_x11_get_net_current_desktop(void)
 {
     int desk;
     guint32 *data;

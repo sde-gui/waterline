@@ -62,9 +62,8 @@ extern char ** wtl_x11_get_utf8_property_list(Window win, Atom atom, int *count)
 extern void Xclimsg(Window win, Atom type, long l0, long l1, long l2, long l3, long l4);
 extern void Xclimsgwm(Window win, Atom type, Atom arg);
 
-//Window Select_Window(Display *dpy);
-extern int get_net_number_of_desktops();
-extern int get_net_current_desktop ();
+extern int wtl_x11_get_net_number_of_desktops(void);
+extern int wtl_x11_get_net_current_desktop(void);
 extern int get_net_wm_desktop(Window win);
 extern void set_net_wm_desktop(Window win, int num);
 extern int get_wm_state (Window win);

@@ -4076,7 +4076,7 @@ static gboolean taskbar_switch_desktop_and_window(TaskbarPlugin * tb)
 /* Handler for "current-desktop" event from root window listener. */
 static void taskbar_net_current_desktop(GtkWidget * widget, TaskbarPlugin * tb)
 {
-    int desktop = get_net_current_desktop();
+    int desktop = wtl_x11_get_net_current_desktop();
 
     int desktop_switch_timeout = 350;
 
@@ -4093,7 +4093,7 @@ static void taskbar_net_current_desktop(GtkWidget * widget, TaskbarPlugin * tb)
 static void taskbar_net_number_of_desktops(GtkWidget * widget, TaskbarPlugin * tb)
 {
     /* Store the local copy of number of desktops.  Recompute the popup menu and redisplay the taskbar. */
-    tb->number_of_desktops = get_net_number_of_desktops();
+    tb->number_of_desktops = wtl_x11_get_net_number_of_desktops();
     taskbar_make_menu(tb);
     taskbar_redraw(tb);
 }
@@ -4939,8 +4939,8 @@ static void taskbar_build_gui(Plugin * p)
     g_signal_connect(pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
 
     /* Connect signals to receive root window events and initialize root window properties. */
-    tb->number_of_desktops = get_net_number_of_desktops();
-    tb->current_desktop = get_net_current_desktop();
+    tb->number_of_desktops = wtl_x11_get_net_number_of_desktops();
+    tb->current_desktop = wtl_x11_get_net_current_desktop();
     g_signal_connect(G_OBJECT(fbev), "current_desktop", G_CALLBACK(taskbar_net_current_desktop), (gpointer) tb);
     g_signal_connect(G_OBJECT(fbev), "active_window", G_CALLBACK(taskbar_net_active_window), (gpointer) tb);
     g_signal_connect(G_OBJECT(fbev), "number_of_desktops", G_CALLBACK(taskbar_net_number_of_desktops), (gpointer) tb);

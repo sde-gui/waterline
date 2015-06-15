@@ -850,14 +850,14 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
         {
             GSList* l;
             for( l = all_panels; l; l = l->next )
-                ((Panel*)l->data)->curdesk = get_net_current_desktop();
+                ((Panel*)l->data)->curdesk = wtl_x11_get_net_current_desktop();
             fb_ev_emit(fbev, EV_CURRENT_DESKTOP);
         }
         else if (at == a_NET_NUMBER_OF_DESKTOPS)
         {
             GSList* l;
             for( l = all_panels; l; l = l->next )
-                ((Panel*)l->data)->desknum = get_net_number_of_desktops();
+                ((Panel*)l->data)->desknum = wtl_x11_get_net_number_of_desktops();
             fb_ev_emit(fbev, EV_NUMBER_OF_DESKTOPS);
         }
         else if (at == a_NET_DESKTOP_NAMES)
@@ -1805,8 +1805,8 @@ static gboolean panel_on_composite_check_timeout(Panel * p)
 static void
 panel_start_gui(Panel *p)
 {
-    p->curdesk = get_net_current_desktop();
-    p->desknum = get_net_number_of_desktops();
+    p->curdesk = wtl_x11_get_net_current_desktop();
+    p->desknum = wtl_x11_get_net_number_of_desktops();
     p->workarea = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
 
     /* main toplevel window */

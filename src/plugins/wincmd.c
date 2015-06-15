@@ -73,7 +73,7 @@ static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
     if (client_list != NULL)
     {
         /* Loop over all windows. */
-        guint current_desktop = get_net_current_desktop();
+        guint current_desktop = wtl_x11_get_net_current_desktop();
         int i;
         for (i = 0; i < client_count; i++)
         {

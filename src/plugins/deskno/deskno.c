@@ -75,7 +75,7 @@ static su_json_option_definition option_definitions[] = {
 static gboolean deskno_name_update(GtkWidget * widget, DesknoPlugin * dc)
 {
     /* Compute and redraw the desktop number. */
-    int desktop_number = get_net_current_desktop();
+    int desktop_number = wtl_x11_get_net_current_desktop();
     if (desktop_number < dc->number_of_desktops)
         panel_draw_label_text(dc->panel, dc->label, dc->desktop_labels[desktop_number], (dc->bold ? STYLE_BOLD : 0) | STYLE_CUSTOM_COLOR);
     return TRUE;
@@ -86,7 +86,7 @@ static gboolean deskno_name_update(GtkWidget * widget, DesknoPlugin * dc)
 static void deskno_redraw(GtkWidget * widget, DesknoPlugin * dc)
 {
     /* Get the NET_DESKTOP_NAMES property. */
-    dc->number_of_desktops = get_net_number_of_desktops();
+    dc->number_of_desktops = wtl_x11_get_net_number_of_desktops();
     int number_of_desktop_names;
     char * * desktop_names;
     desktop_names = wtl_x11_get_utf8_property_list(wtl_x11_root(), a_NET_DESKTOP_NAMES, &number_of_desktop_names);
@@ -121,8 +121,8 @@ static gboolean deskno_button_press_event(GtkWidget * widget, GdkEventButton * e
         return TRUE;
 
     /* Right-click goes to next desktop, wrapping around to first. */
-    int desknum = get_net_current_desktop();
-    int desks = get_net_number_of_desktops();
+    int desknum = wtl_x11_get_net_current_desktop();
+    int desks = wtl_x11_get_net_number_of_desktops();
     int newdesk = desknum + 1;
     if (newdesk >= desks)
         newdesk = 0;

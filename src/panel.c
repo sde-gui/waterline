@@ -911,7 +911,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
         }
         else if (at == a_NET_SUPPORTED)
         {
-            update_net_supported();
+            wtl_x11_update_net_supported();
         }
         else
             return GDK_FILTER_CONTINUE;
@@ -2595,7 +2595,7 @@ int main(int argc, char *argv[], char *env[])
     XSetErrorHandler((XErrorHandler) panel_handle_x_error);
 
     su_x11_resolve_well_known_atoms(wtl_x11_display());
-    update_net_supported();
+    wtl_x11_update_net_supported();
 
 #define NEXT_ARGUMENT(s) if (++i >= argc) { su_print_error_message(s); goto print_usage_and_exit; }
 

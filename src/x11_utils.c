@@ -445,7 +445,7 @@ gboolean get_decorations (Window win, NetWMState * nws)
 static Atom * _net_supported = NULL;
 static int _net_supported_nitems = 0;
 
-void update_net_supported()
+void wtl_x11_update_net_supported(void)
 {
     if (_net_supported)
     {

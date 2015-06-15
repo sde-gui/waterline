@@ -76,7 +76,6 @@ extern void set_decorations (Window win, gboolean decorate);
 extern int get_mvm_decorations(Window win);
 extern gboolean get_decorations (Window win, NetWMState * nws);
 
-extern void update_net_supported();
 extern gboolean check_net_supported(Atom atom);
 
 extern void wtl_x11_set_wmhints_no_input(Window w);

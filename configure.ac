@@ -14,8 +14,22 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_LIBTOOL
-AC_PROG_INTLTOOL(, [no-xml])
 AM_PROG_CC_C_O
+
+
+dnl ================================================================
+dnl Gettext stuff.
+dnl ================================================================
+
+IT_PROG_INTLTOOL([0.50.1])
+
+AM_GNU_GETTEXT_VERSION([0.19])
+AM_GNU_GETTEXT([external])
+
+AC_SUBST([GETTEXT_PACKAGE], [waterline])
+AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE], "$GETTEXT_PACKAGE", [Define to the gettext package name.])
+
+dnl ================================================================
 
 # Checks for libraries.
 pkg_modules="gtk+-2.0 >= 2.24.0 \
@@ -325,16 +339,6 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([bzero memset mkdir setlocale strchr])
-
-
-GETTEXT_PACKAGE=waterline
-#AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION(0.14.1)
-AC_SUBST(GETTEXT_PACKAGE)
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package.])
-
-ALL_LINGUAS="ru"
-AM_GLIB_GNU_GETTEXT
 
 if test x"$enable_man" = x"yes"; then
 	AC_PATH_PROG([XSLTPROC], [xsltproc])

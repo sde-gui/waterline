@@ -37,7 +37,6 @@
 extern void panel_update_geometry(Panel* p);
 extern void panel_adjust_geometry_terminology(Panel *p);
 extern void panel_update_toplevel_alignment(Panel *p);
-extern void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow * window);
 extern void panel_set_panel_configuration_changed(Panel *p);
 extern void panel_update_background(Panel* p);
 extern SYMBOL_HIDDEN void panel_autohide_conditions_changed(Panel* p);

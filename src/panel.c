@@ -1033,7 +1033,7 @@ static void on_root_bg_changed(FbBg *bg, Panel* p)
     panel_update_background( p );
 }
 
-void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow * window)
+static void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow * window)
 {
     GdkPixmap * pixmap = NULL;
 

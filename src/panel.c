@@ -1937,45 +1937,10 @@ panel_start_gui(Panel *p)
     }
 }
 
-/* Exchange the "width" and "height" terminology for vertical and horizontal panels. */
-void panel_adjust_geometry_terminology(Panel * p)
+static void panel_update_pref_gui(Panel * p)
 {
-    if ((p->pref_dialog.height_label != NULL) && (p->pref_dialog.width_label != NULL)
-    && (p->pref_dialog.alignment_left_label != NULL) && (p->pref_dialog.alignment_right_label != NULL))
-    {
-        char * edge_align_text = "";
-        switch (p->edge)
-        {
-            case EDGE_TOP   : edge_align_text = _("Top margin:"); break;
-            case EDGE_BOTTOM: edge_align_text = _("Bottom margin:"); break;
-            case EDGE_LEFT  : edge_align_text = _("Left margin:"); break;
-            case EDGE_RIGHT : edge_align_text = _("Right margin:"); break;
-        }
-        gtk_label_set_text(GTK_LABEL(p->pref_dialog.edge_margin_label), edge_align_text);
-
-        if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
-        {
-            gtk_label_set_text(GTK_LABEL(p->pref_dialog.height_label), _("Height:"));
-            gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Width:"));
-            gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Left"));
-            gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Right"));
-            if (p->align == ALIGN_RIGHT)
-                gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Right margin:"));
-            else
-                gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Left margin:"));
-        }
-        else
-        {
-            gtk_label_set_text(GTK_LABEL(p->pref_dialog.height_label), _("Width:"));
-            gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Height:"));
-            gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Top"));
-            gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Bottom"));
-            if (p->align == ALIGN_RIGHT)
-                gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Bottom margin:"));
-            else
-                gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Top margin:"));
-        }
-    }
+    if (p->pref_dialog.update_gui)
+        p->pref_dialog.update_gui(p);
 }
 
 void panel_draw_label_text(Panel * p, GtkWidget * label, const char * text, unsigned style)
@@ -2123,38 +2088,24 @@ static void panel_notify_plugins_on_compositing_mode_change(Panel *p)
 
 void panel_set_panel_configuration_changed(Panel *p)
 {
+    p->orientation = (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)
+        ? ORIENT_HORIZ : ORIENT_VERT;
+
     panel_set_desktop_icon_overlap_mode(p);
 
     if (p->toplevel_alignment)
         gtk_alignment_set_padding(GTK_ALIGNMENT(p->toplevel_alignment),
             p->padding_top, p->padding_bottom, p->padding_left, p->padding_right);
+
     if (p->plugin_box)
+    {
         gtk_box_set_spacing(GTK_BOX(p->plugin_box), p->applet_spacing);
-
-    int previous_orientation = p->orientation;
-    p->orientation = (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)
-        ? ORIENT_HORIZ : ORIENT_VERT;
-
-    if (previous_orientation != p->orientation)
-    {
-        panel_adjust_geometry_terminology(p);
-        if (p->pref_dialog.height_control != NULL)
-            gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->pref_dialog.height_control), p->oriented_height);
-        if ((p->oriented_width_type == WIDTH_PIXEL) && (p->pref_dialog.width_control != NULL))
-        {
-            int value = ((p->orientation == ORIENT_HORIZ) ? gdk_screen_width() : gdk_screen_height());
-            gtk_spin_button_set_range(GTK_SPIN_BUTTON(p->pref_dialog.width_control), 0, value);
-            gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->pref_dialog.width_control), value);
-        }
-
-    }
-
-    if (p->plugin_box != NULL)
-    {
         GtkOrientation bo = (p->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
         gtk_orientable_set_orientation(GTK_ORIENTABLE(p->plugin_box), bo);
         panel_update_toplevel_alignment(p);
     }
+
+    panel_update_pref_gui(p);
 
     panel_notify_plugins_on_configuration_change(p);
 }

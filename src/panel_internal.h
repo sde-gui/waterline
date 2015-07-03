@@ -35,7 +35,6 @@
 //#pragma GCC visibility push(hidden)
 
 extern void panel_update_geometry(Panel* p);
-extern void panel_adjust_geometry_terminology(Panel *p);
 extern void panel_update_toplevel_alignment(Panel *p);
 extern void panel_set_panel_configuration_changed(Panel *p);
 extern void panel_update_background(Panel* p);

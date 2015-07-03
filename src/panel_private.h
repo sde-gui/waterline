@@ -125,6 +125,8 @@ struct _Panel {
     json_t * json;
 
     struct {
+        void (*update_gui)(Panel * p);
+
         GtkWidget * pref_dialog;
         GtkWidget * plugin_pref_dialog;
         GtkWidget * notebook;

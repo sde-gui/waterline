@@ -47,6 +47,7 @@ enum{
 };
 
 static void update_opt_menu(GtkWidget *w, int ind);
+static void update_gui(Panel * p);
 
 /******************************************************************************/
 
@@ -153,7 +154,7 @@ static void set_edge(Panel* p, int edge)
     p->edge = edge;
     panel_update_geometry(p);
     panel_set_panel_configuration_changed(p);
-    panel_adjust_geometry_terminology(p);
+    update_gui(p);
 }
 
 static void edge_changed(GtkWidget *widget, Panel *p)
@@ -188,7 +189,7 @@ static void set_alignment(Panel* p, int align)
     p->align = align;
     panel_update_geometry(p);
     panel_set_panel_configuration_changed(p);
-    panel_adjust_geometry_terminology(p);
+    update_gui(p);
 }
 
 static void align_left_toggle(GtkToggleButton *widget, Panel *p)
@@ -518,12 +519,75 @@ static GtkSpinButton * connect_spinbutton(GtkBuilder * builder, const char * nam
     return w;
 }
 
+/* Exchange the "width" and "height" terminology for vertical and horizontal panels. */
+static void adjust_geometry_terminology(Panel * p)
+{
+    if (!p->pref_dialog.height_label ||
+        !p->pref_dialog.width_label ||
+        !p->pref_dialog.alignment_left_label ||
+        !p->pref_dialog.alignment_right_label)
+    {
+        return;
+    }
+
+    char * edge_align_text = "";
+    switch (p->edge)
+    {
+        case EDGE_TOP   : edge_align_text = _("Top margin:"); break;
+        case EDGE_BOTTOM: edge_align_text = _("Bottom margin:"); break;
+        case EDGE_LEFT  : edge_align_text = _("Left margin:"); break;
+        case EDGE_RIGHT : edge_align_text = _("Right margin:"); break;
+    }
+    gtk_label_set_text(GTK_LABEL(p->pref_dialog.edge_margin_label), edge_align_text);
+
+    if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
+    {
+        gtk_label_set_text(GTK_LABEL(p->pref_dialog.height_label), _("Height:"));
+        gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Width:"));
+        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Left"));
+        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Right"));
+        if (p->align == ALIGN_RIGHT)
+            gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Right margin:"));
+        else
+            gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Left margin:"));
+    }
+    else
+    {
+        gtk_label_set_text(GTK_LABEL(p->pref_dialog.height_label), _("Width:"));
+        gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Height:"));
+        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Top"));
+        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Bottom"));
+        if (p->align == ALIGN_RIGHT)
+            gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Bottom margin:"));
+        else
+            gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Top margin:"));
+    }
+}
+
+
+static void update_gui(Panel * p)
+{
+    adjust_geometry_terminology(p);
+
+    if (p->pref_dialog.height_control != NULL)
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->pref_dialog.height_control), p->oriented_height);
+
+    if ((p->oriented_width_type == WIDTH_PIXEL) && (p->pref_dialog.width_control != NULL))
+    {
+        int value = ((p->orientation == ORIENT_HORIZ) ? gdk_screen_width() : gdk_screen_height());
+        gtk_spin_button_set_range(GTK_SPIN_BUTTON(p->pref_dialog.width_control), 0, value);
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(p->pref_dialog.width_control), value);
+    }
+
+    gui_update_width(p);
+    gui_update_visibility(p);
+}
+
 #define CONNECT_SPINBUTTON(name, value_changed) \
     p->pref_dialog.name = connect_spinbutton(builder, #name, p->name, G_CALLBACK(value_changed), p);
 
 
-static
-void panel_initialize_pref_dialog(Panel * p)
+static void panel_initialize_pref_dialog(Panel * p)
 {
     GtkBuilder * builder;
     GtkWidget *w, *w2;
@@ -538,6 +602,8 @@ void panel_initialize_pref_dialog(Panel * p)
     }
 
     g_free(panel_perf_ui_path);
+
+    p->pref_dialog.update_gui = update_gui;
 
     p->pref_dialog.pref_dialog = (GtkWidget*)gtk_builder_get_object( builder, "panel_pref" );
     g_signal_connect(p->pref_dialog.pref_dialog, "response", (GCallback) response_event, p);
@@ -727,7 +793,7 @@ void panel_configure( Panel* p, int sel_page )
     if (!p->pref_dialog.pref_dialog)
         return;
 
-    panel_adjust_geometry_terminology(p);
+    update_gui(p);
     gtk_widget_show(GTK_WIDGET(p->pref_dialog.pref_dialog));
     wtl_util_bring_window_to_current_desktop(p->pref_dialog.pref_dialog);
 

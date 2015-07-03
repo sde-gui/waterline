@@ -215,7 +215,7 @@ get_cpus(cpufreq *cf)
             sprintf(cpu_path, "%s/%s/cpufreq", SYSFS_CPU_DIRECTORY, cpu);
 
             GDir * cpufreqDir = g_dir_open(SYSFS_CPU_DIRECTORY, 0, NULL);
-	        if (cpufreqDir == NULL)
+            if (cpufreqDir == NULL)
             {
                 cf->cpus = NULL;
                 cf->has_cpufreq = 0;

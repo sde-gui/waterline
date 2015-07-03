@@ -47,21 +47,21 @@ typedef struct {
     //GtkWidget * clock_icon;
     GtkWidget * calendar_window;
 
-    char * clock_format;			/* Format string for clock value */
-    char * tooltip_format;			/* Format string for tooltip value */
-    char * action;				/* Command to execute on a click */
-    char * timezone;				/* Timezone */
+    char * clock_format;            /* Format string for clock value */
+    char * tooltip_format;          /* Format string for tooltip value */
+    char * action;                  /* Command to execute on a click */
+    char * timezone;                /* Timezone */
     char * font;
-    guint timer;				/* Timer for periodic update */
+    guint timer;                    /* Timer for periodic update */
     enum {
-	AWAITING_FIRST_CHANGE,			/* Experimenting to determine interval, waiting for first change */
-	AWAITING_SECOND_CHANGE,			/* Experimenting to determine interval, waiting for second change */
-	ONE_SECOND_INTERVAL,			/* Determined that one second interval is necessary */
-	ONE_MINUTE_INTERVAL			/* Determined that one minute interval is sufficient */
-    } expiration_interval;			
-    int experiment_count;			/* Count of experiments that have been done to determine interval */
-    char * prev_clock_value;			/* Previous value of clock */
-    char * prev_tooltip_value;			/* Previous value of tooltip */
+        AWAITING_FIRST_CHANGE,      /* Experimenting to determine interval, waiting for first change */
+        AWAITING_SECOND_CHANGE,     /* Experimenting to determine interval, waiting for second change */
+        ONE_SECOND_INTERVAL,        /* Determined that one second interval is necessary */
+        ONE_MINUTE_INTERVAL         /* Determined that one minute interval is sufficient */
+    } expiration_interval;
+    int experiment_count;           /* Count of experiments that have been done to determine interval */
+    char * prev_clock_value;        /* Previous value of clock */
+    char * prev_tooltip_value;      /* Previous value of tooltip */
     char * timezones;
 } DClockPlugin;
 
@@ -371,7 +371,7 @@ static gboolean dclock_update_display(DClockPlugin * dc)
         char * newlines_converted = NULL;
         if (strstr(clock_value, "\\n") != NULL)
         {
-            newlines_converted = g_strdup(clock_value);	/* Just to get enough space for the converted result */
+            newlines_converted = g_strdup(clock_value); /* Just to get enough space for the converted result */
             char * p;
             char * q;
             for (p = clock_value, q = newlines_converted; *p != '\0'; p += 1)

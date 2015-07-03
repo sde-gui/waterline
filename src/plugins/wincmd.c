@@ -43,8 +43,8 @@ typedef enum {
 
 /* Private context for window command plugin. */
 typedef struct {
-    char * image;				/* Main icon */
-    gboolean toggle_state;			/* State of toggle */
+    char * image;                   /* Main icon */
+    gboolean toggle_state;          /* State of toggle */
 } WinCmdPlugin;
 
 static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command);

@@ -50,8 +50,8 @@
 
 /******************************************************************************/
 
-#define PANEL_ICON_SIZE               24	/* Default size of panel icons */
-#define PANEL_HEIGHT_DEFAULT          26	/* Default height of horizontal panel */
+#define PANEL_ICON_SIZE               24 /* Default size of panel icons */
+#define PANEL_HEIGHT_DEFAULT          26 /* Default height of horizontal panel */
 
 /******************************************************************************/
 
@@ -112,17 +112,17 @@ const char* wtl_agent_id(void)
  * So we make a derived class from GtkWindow named PanelToplevel
  * and create the panels with it to be compatible with Gnome themes.
  */
-#define PANEL_TOPLEVEL_TYPE				(panel_toplevel_get_type())
+#define PANEL_TOPLEVEL_TYPE             (panel_toplevel_get_type())
 
-typedef struct _PanelToplevel			PanelToplevel;
-typedef struct _PanelToplevelClass		PanelToplevelClass;
+typedef struct _PanelToplevel           PanelToplevel;
+typedef struct _PanelToplevelClass      PanelToplevelClass;
 struct _PanelToplevel
 {
-	GtkWindow parent;
+    GtkWindow parent;
 };
 struct _PanelToplevelClass
 {
-	GtkWindowClass parent_class;
+    GtkWindowClass parent_class;
 };
 G_DEFINE_TYPE(PanelToplevel, panel_toplevel, GTK_TYPE_WINDOW);
 static void panel_toplevel_class_init(PanelToplevelClass *klass)
@@ -1618,7 +1618,7 @@ static gboolean panel_button_press_event_with_panel(GtkWidget *widget, GdkEventB
 {
     panel_button_press_hack(panel);
 
-    if (event->button == 3)	 /* right button */
+    if (event->button == 3) /* right button */
     {
         panel_show_panel_menu(panel, NULL, event);
         return TRUE;
@@ -2427,14 +2427,14 @@ int panel_handle_x_error(Display * d, XErrorEvent * ev)
         XGetErrorText(wtl_x11_display(), ev->error_code, buf, 256);
         su_log_warning("X error: %s\n", buf);
     }
-    return 0;	/* Ignored */
+    return 0; /* Ignored */
 }
 
 int panel_handle_x_error_swallow_BadWindow_BadDrawable(Display * d, XErrorEvent * ev)
 {
     if ((ev->error_code != BadWindow) && (ev->error_code != BadDrawable))
         panel_handle_x_error(d, ev);
-    return 0;	/* Ignored */
+    return 0; /* Ignored */
 }
 
 /******************************************************************************/
@@ -2656,9 +2656,9 @@ restart:
 
     wtl_load_global_config();
 
-	/* NOTE: StructureNotifyMask is required by XRandR
-	 * See init_randr_support() in gdkscreen-x11.c of gtk+ for detail.
-	 */
+    /* NOTE: StructureNotifyMask is required by XRandR
+     * See init_randr_support() in gdkscreen-x11.c of gtk+ for detail.
+     */
     XSelectInput (wtl_x11_display(), wtl_x11_root(), StructureNotifyMask|SubstructureNotifyMask|PropertyChangeMask);
     gdk_window_add_filter(gdk_get_default_root_window (), (GdkFilterFunc)panel_event_filter, NULL);
 

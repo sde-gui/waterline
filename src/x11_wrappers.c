@@ -26,6 +26,6 @@ Display * wtl_x11_display(void)
 
 Window wtl_x11_root(void)
 {
-	return DefaultRootWindow(wtl_x11_display());
+    return DefaultRootWindow(wtl_x11_display());
 }
 

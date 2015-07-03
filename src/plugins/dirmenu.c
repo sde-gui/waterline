@@ -71,11 +71,11 @@ typedef struct _file_name {
 
 /* Private context for directory menu plugin. */
 typedef struct {
-    Plugin * plugin;			/* Back pointer to plugin */
-    char * image;			/* Icon for top level widget */
-    char * path;			/* Top level path for widget */
-    char * name;			/* User's label for widget */
-    GdkPixbuf * folder_icon;		/* Icon for folders */
+    Plugin * plugin;         /* Back pointer to plugin */
+    char * image;            /* Icon for top level widget */
+    char * path;             /* Top level path for widget */
+    char * name;             /* User's label for widget */
+    GdkPixbuf * folder_icon; /* Icon for folders */
     gboolean show_hidden;
     gboolean show_files;
     gboolean show_file_size;
@@ -389,7 +389,7 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
     if (dir != NULL)
     {
         const char * name;
-        while ((name = g_dir_read_name(dir)) != NULL)	/* Memory owned by glib */
+        while ((name = g_dir_read_name(dir)) != NULL) /* Memory owned by glib */
         {
             FileName ** plist = NULL;
 
@@ -694,26 +694,27 @@ static GtkWidget * dirmenu_create_menu(Plugin * p, const char * path, gboolean o
 
     if (!dm->plain_view)
     {
-	/* Create "Open" and "Open in Terminal" items. */
-	GtkWidget * item = gtk_image_menu_item_new_from_stock( GTK_STOCK_OPEN, NULL );
-	g_signal_connect(item, "activate", G_CALLBACK(dirmenu_menuitem_open_directory), p);
-	GtkWidget * term = gtk_menu_item_new_with_mnemonic( _("Open in _Terminal") );
-	g_signal_connect(term, "activate", G_CALLBACK(dirmenu_menuitem_open_in_terminal), p);
+        /* Create "Open" and "Open in Terminal" items. */
+        GtkWidget * item = gtk_image_menu_item_new_from_stock( GTK_STOCK_OPEN, NULL );
+        g_signal_connect(item, "activate", G_CALLBACK(dirmenu_menuitem_open_directory), p);
+        GtkWidget * term = gtk_menu_item_new_with_mnemonic( _("Open in _Terminal") );
+        g_signal_connect(term, "activate", G_CALLBACK(dirmenu_menuitem_open_in_terminal), p);
 
-	/* Insert or append based on caller's preference. */
-	if (open_at_top)
-	{
-	    if (not_empty)
-		gtk_menu_shell_insert(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new(), 0);
-	    gtk_menu_shell_insert(GTK_MENU_SHELL(menu), term, 0);
-	    gtk_menu_shell_insert(GTK_MENU_SHELL(menu), item, 0);
-	}
-	else {
-	    if (not_empty)
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
-	    gtk_menu_shell_append(GTK_MENU_SHELL(menu), term);
-	    gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-	}
+        /* Insert or append based on caller's preference. */
+        if (open_at_top)
+        {
+            if (not_empty)
+                gtk_menu_shell_insert(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new(), 0);
+            gtk_menu_shell_insert(GTK_MENU_SHELL(menu), term, 0);
+            gtk_menu_shell_insert(GTK_MENU_SHELL(menu), item, 0);
+        }
+        else
+        {
+            if (not_empty)
+                gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu), term);
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+        }
     }
 
     /* Show the menu. */
@@ -885,21 +886,21 @@ static void dirmenu_apply_configuration(Plugin * p)
 #if GLIB_CHECK_VERSION(2,20,0)
     if (!dm->image)
     {
-	GFile * file = g_file_new_for_path(path);
-	GFileInfo * file_info =g_file_query_info(file,
-	    G_FILE_ATTRIBUTE_STANDARD_ICON,
-	    G_FILE_QUERY_INFO_NONE,
-	    NULL,
-	    NULL);
-	GIcon * icon = g_file_info_get_icon(file_info);
-	if (icon)
-	{
-	    gchar * name = g_icon_to_string(icon);
-	    icon_name = g_strdup_printf("GIcon %s", name);
-	    g_free(name);
-	}
-	g_object_unref(G_OBJECT(file_info));
-	g_object_unref(G_OBJECT(file));
+        GFile * file = g_file_new_for_path(path);
+        GFileInfo * file_info =g_file_query_info(file,
+            G_FILE_ATTRIBUTE_STANDARD_ICON,
+            G_FILE_QUERY_INFO_NONE,
+            NULL,
+            NULL);
+        GIcon * icon = g_file_info_get_icon(file_info);
+        if (icon)
+        {
+            gchar * name = g_icon_to_string(icon);
+            icon_name = g_strdup_printf("GIcon %s", name);
+            g_free(name);
+        }
+        g_object_unref(G_OBJECT(file_info));
+        g_object_unref(G_OBJECT(file));
     }
 #endif
 

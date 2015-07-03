@@ -209,23 +209,22 @@ fb_ev_emit(FbEv *ev, int signal)
 {
     //su_log_debug("signal=%d\n", signal);
     g_assert(signal >=0 && signal < EV_LAST_SIGNAL);
-    if( signal == EV_ACTIVE_WINDOW )
+    if (signal == EV_ACTIVE_WINDOW)
     {
-    	Window* win = None;
-		ev->active_window = None;
-		win = (Window*) wtl_x11_get_xa_property (wtl_x11_root(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
-		if (win) {
-			ev->active_window = *win;
-			/* g_debug( "WIN: %p", *win ); */
-			XFree (win);
-		}
+        Window* win = None;
+        ev->active_window = None;
+        win = (Window*) wtl_x11_get_xa_property (wtl_x11_root(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
+        if (win) {
+            ev->active_window = *win;
+            XFree (win);
+        }
     }
     g_signal_emit(ev, signals [signal], 0);
 }
 
 void fb_ev_emit_destroy(FbEv *ev, Window win)
 {
-    g_signal_emit(ev, signals [EV_DESTROY_WINDOW], 0, win );	
+    g_signal_emit(ev, signals [EV_DESTROY_WINDOW], 0, win );
 }
 
 static void
@@ -237,7 +236,7 @@ ev_current_desktop(FbEv *ev, gpointer p)
 static void
 ev_active_window(FbEv *ev, gpointer p)
 {
-//    ev->active_window = None;		// Wrecks fb_ev_active window
+//    ev->active_window = None; // Wrecks fb_ev_active window
 }
 
 static void
@@ -306,16 +305,16 @@ fb_ev_number_of_desktops(FbEv *ev)
 
 Window *fb_ev_active_window(FbEv *ev)
 {
-	return &ev->active_window;	
+    return &ev->active_window;
 }
 
 Window *fb_ev_client_list(FbEv *ev)
 {
-	return ev->client_list;
+    return ev->client_list;
 }
 
 Window *fb_ev_client_list_stacking(FbEv *ev)
 {
-	return ev->client_list_stacking;
+    return ev->client_list_stacking;
 }
 

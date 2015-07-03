@@ -43,14 +43,14 @@
 typedef struct {
 
     /* Graphics. */
-    Plugin * plugin;				/* Back pointer to plugin */
-    GtkWidget * tray_icon;			/* Displayed image */
-    GtkWidget * popup_window;			/* Top level window for popup */
-    GtkWidget * volume_scale;			/* Scale for volume */
-    GtkWidget * mute_check;			/* Checkbox for mute state */
-    gboolean show_popup;			/* Toggle to show and hide the popup on left click */
-    guint volume_scale_handler;			/* Handler for vscale widget */
-    guint mute_check_handler;			/* Handler for mute_check widget */
+    Plugin * plugin;                /* Back pointer to plugin */
+    GtkWidget * tray_icon;          /* Displayed image */
+    GtkWidget * popup_window;       /* Top level window for popup */
+    GtkWidget * volume_scale;       /* Scale for volume */
+    GtkWidget * mute_check;         /* Checkbox for mute state */
+    gboolean show_popup;            /* Toggle to show and hide the popup on left click */
+    guint volume_scale_handler;     /* Handler for vscale widget */
+    guint mute_check_handler;       /* Handler for mute_check widget */
 
     guint theme_changed_handler_id;
 

@@ -24,7 +24,6 @@
 
 static void notify_state_changed(volume_control_backend_t * backend)
 {
-
     if (backend->frontend_callback_state_changed)
         (backend->frontend_callback_state_changed)(backend->frontend, backend);
 }
@@ -33,7 +32,7 @@ volume_control_backend_t * volume_control_backend_new(void)
 {
     volume_control_backend_t * backend = g_new0(volume_control_backend_t, 1);
     backend->notify_state_changed = notify_state_changed;
-	return backend;
+    return backend;
 }
 
 #define CHECK_SANITY_FN(fn) (\

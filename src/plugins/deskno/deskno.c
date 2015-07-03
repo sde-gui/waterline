@@ -40,12 +40,12 @@
 
 /* Private context for desktop number plugin. */
 typedef struct {
-    Panel * panel;			/* Back pointer to Panel */
-    GtkWidget * label;			/* The label */
-    int number_of_desktops;		/* Number of desktops */
-    char * * desktop_labels;		/* Vector of desktop labels */
-    gboolean bold;			/* User preference: True if bold font */
-    gboolean display_labels;			/* User preference: True to display window manager labels */
+    Panel * panel;              /* Back pointer to Panel */
+    GtkWidget * label;          /* The label */
+    int number_of_desktops;     /* Number of desktops */
+    char * * desktop_labels;    /* Vector of desktop labels */
+    gboolean bold;              /* User preference: True if bold font */
+    gboolean display_labels;    /* User preference: True to display window manager labels */
 } DesknoPlugin;
 
 static gboolean deskno_name_update(GtkWidget * widget, DesknoPlugin * dc);
@@ -202,7 +202,7 @@ static void deskno_configure(Plugin * p, GtkWindow * parent)
         NULL);
     if (dialog)
     {
-       gtk_widget_set_size_request(GTK_WIDGET(dialog), 400, -1);	/* Improve geometry */
+       gtk_widget_set_size_request(GTK_WIDGET(dialog), 400, -1); /* Improve geometry */
        gtk_window_present(GTK_WINDOW(dialog));
     }
 }

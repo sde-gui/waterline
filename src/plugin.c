@@ -37,7 +37,7 @@
 
 #include <glib-object.h>
 
-static GList * pcl = NULL;			/* List of PluginClass structures */
+static GList * pcl = NULL; /* List of PluginClass structures */
 
 static PluginClass * register_plugin_class(PluginClass * pc, gboolean dynamic);
 static void init_plugin_class_list(void);
@@ -465,7 +465,7 @@ gboolean plugin_button_press_event(GtkWidget *widget, GdkEventButton *event, Plu
 {
     panel_button_press_hack(plugin->panel);
 
-    if (event->button == 3)	 /* right button */
+    if (event->button == 3) /* right button */
     {
         plugin_show_menu(plugin, event);
         return TRUE;
@@ -497,7 +497,7 @@ void plugin_popup_set_position_helper2(Plugin * p, GtkWidget * near, GtkWidget *
     /* Get the origin of the requested-near widget in screen coordinates. */
     gint x, y;
     gdk_window_get_origin(GDK_WINDOW(near->window), &x, &y);
-    if (x != near->allocation.x) x += near->allocation.x;	/* Doesn't seem to be working according to spec; the allocation.x sometimes has the window origin in it */
+    if (x != near->allocation.x) x += near->allocation.x; /* Doesn't seem to be working according to spec; the allocation.x sometimes has the window origin in it */
     if (y != near->allocation.y) y += near->allocation.y;
 
     /* Dispatch on edge to lay out the popup menu with respect to the button.
@@ -600,16 +600,16 @@ void plugin_adjust_popup_position(GtkWidget * popup, Plugin * plugin)
 
 void plugin_lock_visible(Plugin * plugin)
 {
-	plugin->lock_visible++;
-	panel_autohide_conditions_changed(plugin->panel);
+    plugin->lock_visible++;
+    panel_autohide_conditions_changed(plugin->panel);
 }
 
 void plugin_unlock_visible(Plugin * plugin)
 {
-	plugin->lock_visible--;
-	if (plugin->lock_visible < 0)
-		plugin->lock_visible = 0;
-	panel_autohide_conditions_changed(plugin->panel);
+    plugin->lock_visible--;
+    if (plugin->lock_visible < 0)
+        plugin->lock_visible = 0;
+    panel_autohide_conditions_changed(plugin->panel);
 }
 
 void plugin_run_command(Plugin * plugin, char ** argv, int argc)

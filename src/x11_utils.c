@@ -209,8 +209,7 @@ void wtl_x11_set_net_wm_desktop(Window win, int num)
     Xclimsg(win, a_NET_WM_DESKTOP, num, 0, 0, 0, 0);
 }
 
-void
-get_net_wm_state(Window win, NetWMState *nws)
+void wtl_x11_get_net_wm_state(Window win, NetWMState *nws)
 {
     Atom *state;
     int num3;
@@ -269,8 +268,7 @@ get_net_wm_state(Window win, NetWMState *nws)
     su_log_debug2( "}\n");
 }
 
-void
-get_net_wm_window_type(Window win, NetWMWindowType *nwwt)
+void wtl_x11_get_net_wm_window_type(Window win, NetWMWindowType *nwwt)
 {
     Atom *state;
     int num3;
@@ -314,8 +312,7 @@ get_net_wm_window_type(Window win, NetWMWindowType *nwwt)
     su_log_debug2( "}\n");
 }
 
-int
-get_wm_state (Window win)
+int wtl_x11_get_wm_state (Window win)
 {
     unsigned long *data;
     int ret = 0;
@@ -410,7 +407,7 @@ gboolean get_decorations (Window win, NetWMState * nws)
         if (!nws)
         {
             nws = &n;
-            get_net_wm_state(win, nws);
+            wtl_x11_get_net_wm_state(win, nws);
         }
         return !nws->ob_undecorated;
     }

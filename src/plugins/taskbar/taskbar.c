@@ -3856,8 +3856,8 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                 /* Evaluate window state and window type to see if it should be in task list. */
                 NetWMWindowType nwwt;
                 NetWMState nws;
-                get_net_wm_state(client_list[i], &nws);
-                get_net_wm_window_type(client_list[i], &nwwt);
+                wtl_x11_get_net_wm_state(client_list[i], &nws);
+                wtl_x11_get_net_wm_window_type(client_list[i], &nwwt);
                 if ((accept_net_wm_state(&nws))
                 && (accept_net_wm_window_type(&nwwt)))
                 {
@@ -4237,7 +4237,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 {
                     /* Window changed EWMH state. */
                     NetWMState nws;
-                    get_net_wm_state(tk->win, &nws);
+                    wtl_x11_get_net_wm_state(tk->win, &nws);
                     if ( ! accept_net_wm_state(&nws))
                     {
                         task_delete(tb, tk, TRUE);
@@ -4279,7 +4279,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 {
                     /* Window changed EWMH window type. */
                     NetWMWindowType nwwt;
-                    get_net_wm_window_type(tk->win, &nwwt);
+                    wtl_x11_get_net_wm_window_type(tk->win, &nwwt);
                     if ( ! accept_net_wm_window_type(&nwwt))
                     {
                         task_delete(tb, tk, TRUE);

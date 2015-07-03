@@ -80,7 +80,7 @@ static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
             /* Get the desktop and window type properties. */
             NetWMWindowType nwwt;
             guint task_desktop = wtl_x11_get_net_wm_desktop(client_list[i]);
-            get_net_wm_window_type(client_list[i], &nwwt);
+            wtl_x11_get_net_wm_window_type(client_list[i], &nwwt);
 
             /* If the task is visible on the current desktop and it is an ordinary window,
              * execute the requested Iconify or Shade change. */

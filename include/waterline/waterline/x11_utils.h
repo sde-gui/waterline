@@ -66,9 +66,9 @@ extern int wtl_x11_get_net_number_of_desktops(void);
 extern int wtl_x11_get_net_current_desktop(void);
 extern int wtl_x11_get_net_wm_desktop(Window win);
 extern void wtl_x11_set_net_wm_desktop(Window win, int num);
-extern int get_wm_state (Window win);
-extern void get_net_wm_state(Window win, NetWMState *nws);
-extern void get_net_wm_window_type(Window win, NetWMWindowType *nwwt);
+extern int wtl_x11_get_wm_state (Window win);
+extern void wtl_x11_get_net_wm_state(Window win, NetWMState *nws);
+extern void wtl_x11_get_net_wm_window_type(Window win, NetWMWindowType *nwwt);
 
 extern void set_decorations (Window win, gboolean decorate);
 extern int get_mvm_decorations(Window win);

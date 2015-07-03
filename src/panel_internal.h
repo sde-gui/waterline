@@ -34,7 +34,7 @@
 
 //#pragma GCC visibility push(hidden)
 
-extern void update_panel_geometry(Panel* p);
+extern void panel_update_geometry(Panel* p);
 extern void panel_adjust_geometry_terminology(Panel *p);
 extern void panel_update_toplevel_alignment(Panel *p);
 extern void panel_determine_background_pixmap(Panel * p, GtkWidget * widget, GdkWindow * window);

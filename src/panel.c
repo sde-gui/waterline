@@ -63,8 +63,6 @@ static void panel_start_gui(Panel *p);
 static void panel_size_position_changed(Panel *p, gboolean position_changed);
 static void panel_calculate_position(Panel *p);
 
-extern void update_panel_geometry(Panel* p);
-
 static void panel_notify_plugins_on_configuration_change(Panel * p);
 static void panel_notify_plugins_on_compositing_mode_change(Panel * p);
 
@@ -712,7 +710,7 @@ static void cmd_panel_autohide(Panel * panel, char ** argv, int argc)
     if (autohide != autohide_old_value)
     {
         panel->visibility_mode = autohide ? VISIBILITY_AUTOHIDE : VISIBILITY_ALWAYS;
-        update_panel_geometry(panel);
+        panel_update_geometry(panel);
     }
 }
 
@@ -1342,7 +1340,7 @@ static void panel_calculate_position(Panel *p)
 
 /* Force panel geometry update. */
 
-void update_panel_geometry(Panel* p)
+void panel_update_geometry(Panel* p)
 {
     /* Guard against being called early in panel creation. */
     if (p->topgwin != NULL)
@@ -1402,7 +1400,7 @@ static void panel_size_position_changed(Panel *p, gboolean position_changed)
                 Panel* lp = (Panel*)l->data;
                 if (lp->edge == EDGE_LEFT || lp->edge == EDGE_RIGHT)
                 {
-                    update_panel_geometry(lp);
+                    panel_update_geometry(lp);
                 }
             }
         }
@@ -1465,12 +1463,12 @@ static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e,
 
 static void panel_screen_monitors_changed_event(GdkScreen * _screen, Panel * panel)
 {
-    update_panel_geometry(panel);
+    panel_update_geometry(panel);
 }
 
 static void panel_screen_size_changed_event(GdkScreen * _screen, Panel * panel)
 {
-    update_panel_geometry(panel);
+    panel_update_geometry(panel);
 }
 
 /******************************************************************************/
@@ -1577,7 +1575,7 @@ gboolean panel_handle_drag_move(Panel * panel, GdkEventButton * event)
     panel->edge_margin = edge_margin_offset;
     panel->align_margin = align_margin_offset;
 
-    update_panel_geometry(panel);
+    panel_update_geometry(panel);
 
     if (!(event->state & GDK_BUTTON1_MASK)
     ||   (event->type == GDK_BUTTON_RELEASE && event->button == 1)

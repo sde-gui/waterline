@@ -144,7 +144,7 @@ static void set_edge(Panel* p, int edge)
     if (p->edge == edge)
         return;
     p->edge = edge;
-    update_panel_geometry(p);
+    panel_update_geometry(p);
     panel_set_panel_configuration_changed(p);
     panel_adjust_geometry_terminology(p);
 }
@@ -171,7 +171,7 @@ set_edge_margin( GtkSpinButton* spin,  Panel* p  )
     if (p->edge_margin == edge_margin)
         return;
     p->edge_margin = edge_margin;
-    update_panel_geometry(p);
+    panel_update_geometry(p);
 }
 
 static void set_alignment(Panel* p, int align)
@@ -179,7 +179,7 @@ static void set_alignment(Panel* p, int align)
     if (p->pref_dialog.align_margin_control)
         gtk_widget_set_sensitive(p->pref_dialog.align_margin_control, (align != ALIGN_CENTER));
     p->align = align;
-    update_panel_geometry(p);
+    panel_update_geometry(p);
     panel_set_panel_configuration_changed(p);
     panel_adjust_geometry_terminology(p);
 }
@@ -209,7 +209,7 @@ set_align_margin( GtkSpinButton* spin,  Panel* p  )
     if (p->align_margin == align_margin)
         return;
     p->align_margin = align_margin;
-    update_panel_geometry(p);
+    panel_update_geometry(p);
 }
 
 static void
@@ -223,7 +223,7 @@ set_width(  GtkSpinButton* spin, Panel* p )
         return;
 
     p->oriented_width = oriented_width;
-    update_panel_geometry(p);
+    panel_update_geometry(p);
     panel_set_panel_configuration_changed(p);
 }
 
@@ -231,7 +231,7 @@ static void
 set_height( GtkSpinButton* spin, Panel* p )
 {
     p->oriented_height = (int)gtk_spin_button_get_value(spin);
-    update_panel_geometry(p);
+    panel_update_geometry(p);
     panel_set_panel_configuration_changed(p);
 }
 
@@ -271,7 +271,7 @@ static void set_width_type( GtkWidget *item, Panel* p )
 
     p->oriented_width_type = widthtype;
 
-    update_panel_geometry(p);
+    panel_update_geometry(p);
     panel_set_panel_configuration_changed(p);
 
     gui_update_width(p);
@@ -283,7 +283,7 @@ static void set_visibility(Panel* p, int visibility_mode)
     if (p->visibility_mode == visibility_mode)
         return;
     p->visibility_mode = visibility_mode;
-    update_panel_geometry(p);
+    panel_update_geometry(p);
     gui_update_visibility(p);
 }
 
@@ -353,14 +353,14 @@ static void
 set_strut(GtkToggleButton* toggle,  Panel* p )
 {
     p->set_strut = gtk_toggle_button_get_active(toggle) ? 1 : 0;
-    update_panel_geometry(p);
+    panel_update_geometry(p);
 }
 
 static void
 set_height_when_minimized( GtkSpinButton* spin,  Panel* p  )
 {
     p->height_when_hidden = (int)gtk_spin_button_get_value(spin);
-    update_panel_geometry(p);
+    panel_update_geometry(p);
 }
 
 static void
@@ -376,7 +376,7 @@ static void on_output_target_changed(GtkWidget * item, Panel * p)
     if (p->output_target != output_target)
     {
         p->output_target = output_target;
-        update_panel_geometry(p);
+        panel_update_geometry(p);
         gui_update_width(p);
 
         gtk_widget_set_sensitive(GTK_WIDGET(p->pref_dialog.custom_monitor), p->output_target == OUTPUT_CUSTOM_MONITOR);
@@ -390,7 +390,7 @@ on_custom_monitor_value_changed( GtkSpinButton* spin,  Panel* p  )
     if (p->custom_monitor != custom_monitor)
     {
         p->custom_monitor = custom_monitor;
-        update_panel_geometry(p);
+        panel_update_geometry(p);
         gui_update_width(p);
     }
 }

@@ -40,7 +40,6 @@ struct _Panel {
     GtkWidget * plugin_box;         /* Widget containing plugins */
 
     GtkRequisition requisition;
-    GtkWidget *(*my_box_new) (gboolean, gint);
 
     char * widget_name;
 

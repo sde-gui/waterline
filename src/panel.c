@@ -1871,7 +1871,11 @@ panel_start_gui(Panel *p)
 
     // containers
     p->toplevel_alignment = gtk_alignment_new(0, 0, 0, 0);
-    p->plugin_box = p->my_box_new(FALSE, 0);
+    if (p->orientation == ORIENT_HORIZ) {
+        p->plugin_box = gtk_hbox_new(FALSE, 0);
+    } else {
+        p->plugin_box = gtk_vbox_new(FALSE, 0);
+    }
     gtk_container_set_border_width(GTK_CONTAINER(p->toplevel_alignment), 0);
     gtk_container_set_border_width(GTK_CONTAINER(p->plugin_box), 0);
     gtk_container_add(GTK_CONTAINER(p->topgwin), p->toplevel_alignment);
@@ -2145,13 +2149,6 @@ void panel_set_panel_configuration_changed(Panel *p)
 
     }
 
-    if (p->orientation == ORIENT_HORIZ) {
-        p->my_box_new = gtk_hbox_new;
-    } else {
-        p->my_box_new = gtk_vbox_new;
-    }
-
-    /* recreate the main layout box */
     if (p->plugin_box != NULL)
     {
         GtkOrientation bo = (p->orientation == ORIENT_HORIZ) ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;

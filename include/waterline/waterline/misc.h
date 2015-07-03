@@ -71,7 +71,7 @@ extern GdkPixbuf* wtl_load_icon(const char* name, int width, int height, gboolea
 extern GdkPixbuf* wtl_load_icon2(const char* name, int width, int height, gboolean use_fallback, gboolean * themed);
 extern void wtl_load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size);
 
-extern void bring_to_current_desktop(GtkWidget * win);
+extern void wtl_util_bring_window_to_current_desktop(GtkWidget * win);
 
 extern gchar * wtl_tooltip_for_file_stat(struct stat * stat_data);
 

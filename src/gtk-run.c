@@ -432,7 +432,7 @@ void wtl_show_run_box(void)
 
     if( win )
     {
-        bring_to_current_desktop(win);
+        wtl_util_bring_window_to_current_desktop(win);
         return;
     }
 

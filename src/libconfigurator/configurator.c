@@ -722,7 +722,7 @@ void panel_configure( Panel* p, int sel_page )
 
     panel_adjust_geometry_terminology(p);
     gtk_widget_show(GTK_WIDGET(p->pref_dialog.pref_dialog));
-    bring_to_current_desktop(p->pref_dialog.pref_dialog);
+    wtl_util_bring_window_to_current_desktop(p->pref_dialog.pref_dialog);
 
     if (sel_page >= 0)
         gtk_notebook_set_current_page(GTK_NOTEBOOK(p->pref_dialog.notebook), sel_page);

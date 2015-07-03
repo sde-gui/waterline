@@ -294,7 +294,7 @@ void wtl_show_error_message(GtkWindow * parent_window, const char * message)
 
 /********************************************************************/
 
-void bring_to_current_desktop(GtkWidget * win)
+void wtl_util_bring_window_to_current_desktop(GtkWidget * win)
 {
     GdkWindow * gdk_window = gtk_widget_get_window(win);
     Window w = GDK_WINDOW_XID(gdk_window);

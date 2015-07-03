@@ -62,6 +62,7 @@ static int panel_start(Panel *p, const char * configuration, const char * source
 static void panel_start_gui(Panel *p);
 static void panel_size_position_changed(Panel *p, gboolean position_changed);
 static void panel_calculate_position(Panel *p);
+static void panel_update_toplevel_alignment(Panel *p);
 
 static void panel_notify_plugins_on_configuration_change(Panel * p);
 static void panel_notify_plugins_on_compositing_mode_change(Panel * p);

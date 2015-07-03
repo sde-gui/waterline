@@ -68,21 +68,6 @@ static MenuCacheApp* match_app_by_exec(const char* exec)
         const char* app_exec = menu_cache_app_get_exec(app);
         if ( ! app_exec)
             continue;
-#if 0   /* This is useless and incorrect. */
-        /* Dirty hacks to skip sudo programs. This can be a little bit buggy */
-        if( g_str_has_prefix(app_exec, "gksu") )
-        {
-            app_exec += 4;
-            if( app_exec[0] == '\0' ) /* "gksu" itself */
-                app_exec -= 4;
-            else if( app_exec[0] == ' ' ) /* "gksu something..." */
-                ++app_exec;
-            else if( g_str_has_prefix(app_exec, "do ") ) /* "gksudo something" */
-                app_exec += 3;
-        }
-        else if( g_str_has_prefix(app_exec, "kdesu ") ) /* kdesu */
-            app_exec += 6;
-#endif
 
         if( g_path_is_absolute(app_exec) )
         {

@@ -793,8 +793,6 @@ static void cmd_exit(char ** argv, int argc)
 
 static void process_command(char ** argv, int argc)
 {
-    //g_print("%s\n", argv[0]);
-
     if (argc < 1)
         return;
 
@@ -924,8 +922,6 @@ static gboolean panel_expose_event(GtkWidget *widget, GdkEventExpose *event, Pan
 {
     cairo_t *cr;
 
-    //su_log_debug2("panel expose");
-
     cr = gdk_cairo_create(widget->window); /* create cairo context */
 
     float a = (float) p->alpha / 255;
@@ -1030,8 +1026,6 @@ static gint panel_delete_event(GtkWidget * widget, GdkEvent * event, gpointer da
 
 static gint panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
-    //Panel *p = (Panel *) data;
-    //if (!p->self_destroy)
     gtk_main_quit();
     return FALSE;
 }
@@ -1496,7 +1490,6 @@ gboolean panel_handle_drag_move(Panel * panel, GdkEventButton * event)
         {
             if (!panel->doing_panel_drag_move && panel_can_be_drag_moved(panel))
             {
-                //GdkCursor * cursor = gdk_cursor_new_for_display(panel->display, GDK_FLEUR);
                 GdkCursor * cursor = gdk_cursor_new_from_name(panel->display, "fleur");
 
                 GdkGrabStatus grab_status = gdk_pointer_grab(
@@ -1877,7 +1870,6 @@ panel_start_gui(Panel *p)
     g_signal_connect (G_OBJECT (p->topgwin), "style-set",
           (GCallback)panel_style_set, p);
     gtk_widget_realize(p->topgwin);
-    //gdk_window_set_decorations(p->topgwin->window, 0);
 
     // containers
     p->toplevel_alignment = gtk_alignment_new(0, 0, 0, 0);

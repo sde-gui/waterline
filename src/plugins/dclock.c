@@ -44,7 +44,6 @@ typedef struct {
     Plugin * plugin;
     GtkWidget * label_box;
     GtkWidget * clock_labels[MAX_LABELS];
-    //GtkWidget * clock_icon;
     GtkWidget * calendar_window;
 
     char * clock_format;            /* Format string for clock value */
@@ -70,11 +69,7 @@ static GtkWidget * dclock_create_calendar(DClockPlugin * dc);
 static gboolean dclock_button_press_event(GtkWidget * widget, GdkEventButton * evt, Plugin * plugin);
 static void dclock_timer_set(DClockPlugin * dc);
 static gboolean dclock_update_display(DClockPlugin * dc);
-//static int dclock_constructor(Plugin * p, char ** fp);
-static void dclock_destructor(Plugin * p);
 static void dclock_apply_configuration(Plugin * p);
-static void dclock_configure(Plugin * p, GtkWindow * parent);
-//static void dclock_save_configuration(Plugin * p, FILE * fp);
 static void dclock_panel_configuration_changed(Plugin * p);
 
 /******************************************************************************/
@@ -178,7 +173,6 @@ static char * dclock_get_timezones(DClockPlugin * dc)
     if (!dc->timezones)
     {
         FILE * fpipe;
-        //char * command = "find /usr/share/zoneinfo/ -type f -printf '%P\\n'";
         char * command = "grep -v '^#' /usr/share/zoneinfo/zone.tab | awk '{print $3}' | sort";
 
         if ( !(fpipe = popen(command,"r")) )
@@ -219,7 +213,6 @@ static GtkWidget * dclock_create_calendar(DClockPlugin * dc)
     GtkWindow * window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     gtk_window_set_skip_taskbar_hint(window, TRUE);
     gtk_window_set_skip_pager_hint(window, TRUE);
-    //gtk_window_set_type_hint (window, GDK_WINDOW_TYPE_HINT_DOCK);
     gtk_window_set_default_size(window, 180, 180);
     gtk_window_set_decorated(window, FALSE);
     gtk_window_set_resizable(window, FALSE);
@@ -503,23 +496,8 @@ static int dclock_constructor(Plugin * p)
     gtk_container_add(GTK_CONTAINER(pwid), hbox);
     gtk_widget_show(hbox);
 
-    //dc->clock_icon = gtk_image_new();
-    //gtk_container_add(GTK_CONTAINER(hbox), dc->clock_icon);
-
     dc->label_box = gtk_hbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(hbox), dc->label_box);
-/*
-    dc->clock_labels[0] = gtk_label_new(NULL);
-    gtk_misc_set_alignment(GTK_MISC(dc->clock_labels[0]), 0.5, 0.5);
-    gtk_label_set_justify(GTK_LABEL(dc->clock_labels[0]), GTK_JUSTIFY_CENTER);
-    gtk_container_add(GTK_CONTAINER(dc->label_box), dc->clock_labels[0]);
-*/
-/*
-    if (plugin_get_orientation(dc->plugin) == ORIENT_HORIZ)
-        gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
-    else
-        gtk_misc_set_padding(GTK_MISC(dc->clock_label), 0, 4);
-*/
 
     /* Connect signals. */
     g_signal_connect(G_OBJECT (pwid), "button_press_event", G_CALLBACK(dclock_button_press_event), (gpointer) p);
@@ -563,13 +541,6 @@ static void dclock_apply_configuration(Plugin * p)
 
     gtk_widget_show(dc->label_box);
 
-/*
-    if (plugin_get_orientation(dc->plugin) == ORIENT_HORIZ)
-        gtk_misc_set_padding(GTK_MISC(dc->clock_label), 4, 0);
-    else
-        gtk_misc_set_padding(GTK_MISC(dc->clock_label), 0, 4);
-
-*/
     /* Rerun the experiment to determine update interval and update the display. */
     g_free(dc->prev_clock_value);
     g_free(dc->prev_tooltip_value);
@@ -680,7 +651,6 @@ static void dclock_run_command(Plugin * p, char ** argv, int argc)
 
 static void dclock_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
 {
-    //DClockPlugin * dc = PRIV(plugin);
     dclock_generate_copy_to_clipboard_menu(menu, plugin);
 }
 

@@ -572,7 +572,6 @@ static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION_ENUM(action_trigged_by_pair, menu_actions_click_press),
     SU_JSON_OPTION_ENUM(action_trigged_by_pair, other_actions_click_press),
 
-    //wtl_put_bool(fp, "OpenGroupMenuOnMouseOver", tb->open_group_menu_on_mouse_over);
     SU_JSON_OPTION_ENUM(mouse_over_action_pair, mouse_over_action),
 
     SU_JSON_OPTION(bool, use_group_separators),
@@ -691,14 +690,6 @@ static void taskbar_make_menu(TaskbarPlugin * tb);
 static void taskbar_window_manager_changed(GdkScreen * screen, TaskbarPlugin * tb);
 
 static void taskbar_build_gui(Plugin * p);
-
-//static int taskbar_constructor(Plugin * p, char ** fp);
-static void taskbar_destructor(Plugin * p);
-static void taskbar_apply_configuration(Plugin * p);
-static void taskbar_configure(Plugin * p, GtkWindow * parent);
-//static void taskbar_save_configuration(Plugin * p, FILE * fp);
-static void taskbar_panel_configuration_changed(Plugin * p);
-
 
 /******************************************************************************/
 
@@ -1657,8 +1648,6 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         if (children_return)
             XFree(children_return);
 
-        //g_print("0x%x => 0x%x, (root 0x%x)\n", w, parent_return, root_return);
-
         if (parent_return != root_return)
             w1 = parent_return;
 
@@ -1677,7 +1666,6 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
         }
 
     }
-    //g_print("> %d %d\n", (int)tk->win, (int)tk->backing_pixmap);
 
     if (!skip && tk->backing_pixmap != 0)
     {
@@ -1701,8 +1689,6 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
                 task_update_thumbnail_preview(tk);
 
             tk->require_update_composite_thumbnail = FALSE;
-
-            //g_print("New thumb for [%s]\n", tk->name);
         }
     }
 
@@ -2464,7 +2450,6 @@ static gboolean preview_panel_expose_event(GtkWidget *widget, GdkEventExpose *ev
 
     cairo_set_source_rgba(cr, r, g, b, 1);
     cairo_set_line_width(cr, 1);
-    //cairo_rectangle(cr, 0, 0, widget->allocation.width, widget->allocation.height);
     cairo_rectangle(cr, 0, 0, tb->preview_panel_window_alloc.width, tb->preview_panel_window_alloc.height);
     cairo_stroke(cr);
 
@@ -2518,14 +2503,11 @@ static  gboolean preview_panel_configure_event (GtkWidget *widget, GdkEventConfi
     tb->preview_panel_window_alloc.width = e->width;
     tb->preview_panel_window_alloc.height = e->height;
 
-    //g_print("configure: %d, %d, %d, %d\n", e->x, e->y, e->width, e->height);
-
     return FALSE;
 }
 
 static void preview_panel_size_allocate(GtkWidget * w, GtkAllocation * alloc, TaskbarPlugin * tb)
 {
-    //g_print("size-allocate: %d, %d, %d, %d\n", alloc->x, alloc->y, alloc->width, alloc->height);
     tb->preview_panel_window_alloc.width = alloc->width;
     tb->preview_panel_window_alloc.height = alloc->height;
 }
@@ -2587,8 +2569,6 @@ static void preview_panel_calculate_speed(TaskbarPlugin * tb, int window_left, i
     }
 
     tb->preview_panel_speed = speed;
-
-    //g_print("%d\n", speed);
 }
 
 static gboolean preview_panel_motion_timer(TaskbarPlugin * tb)
@@ -5424,7 +5404,6 @@ static void taskbar_panel_configuration_changed(Plugin * p)
 
 static void taskbar_compositing_mode_changed(Plugin * p)
 {
-    //TaskbarPlugin * tb = PRIV(p);
     taskbar_apply_configuration(p);
 }
 

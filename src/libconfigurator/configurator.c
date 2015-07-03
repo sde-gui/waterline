@@ -47,7 +47,6 @@ enum{
 };
 
 static void update_opt_menu(GtkWidget *w, int ind);
-//static void update_toggle_button(GtkWidget *w, gboolean n);
 
 /******************************************************************************/
 
@@ -497,21 +496,6 @@ update_opt_menu(GtkWidget *w, int ind)
     }
     gtk_combo_box_set_active(GTK_COMBO_BOX(w), ind);
 }
-#if 0
-static void
-update_toggle_button(GtkWidget *w, gboolean n)
-{
-    gboolean c;
-
-    /* this trick will trigger "changed" signal even if active entry is
-     * not actually changing */
-    c = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
-    if (c == n) {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), !n);
-    }
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), n);
-}
-#endif
 
 static GtkSpinButton * connect_spinbutton(GtkBuilder * builder, const char * name, int value, GCallback value_changed, void * p)
 {

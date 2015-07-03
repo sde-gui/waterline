@@ -50,14 +50,21 @@ static void update_opt_menu(GtkWidget *w, int ind);
 
 /******************************************************************************/
 
-/* defined in  generic_config_dlg.c */
-
-extern gboolean on_entry_focus_out( GtkWidget* edit, GdkEventFocus *evt, gpointer user_data );
-
 /* defined in  configurator_plugin_list.c */
 
 extern void initialize_plugin_list(Panel * p, GtkBuilder * builder);
 extern void initialize_background_controls(Panel * p, GtkBuilder * builder);
+
+/******************************************************************************/
+
+static gboolean on_entry_focus_out(GtkWidget * edit, GdkEventFocus * event, gpointer user_data)
+{
+    char ** val = (char**) user_data;
+    const char * new_val = gtk_entry_get_text((GtkEntry *) edit);
+    g_free(*val);
+    *val = (new_val && *new_val) ? g_strdup(new_val) : NULL;
+    return FALSE;
+}
 
 /******************************************************************************/
 

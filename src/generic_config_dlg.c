@@ -39,20 +39,19 @@ static void notify_apply_config( GtkWidget* widget )
     GSourceFunc apply_func;
     GtkWidget* dlg;
 
-    dlg = gtk_widget_get_toplevel( widget );
-    apply_func = g_object_get_data( G_OBJECT(dlg), "apply_func" );
-    if( apply_func )
-        (*apply_func)( g_object_get_data(G_OBJECT(dlg), "plugin") );
+    dlg = gtk_widget_get_toplevel(widget);
+    apply_func = g_object_get_data(G_OBJECT(dlg), "apply_func");
+    if (apply_func)
+        (*apply_func)(g_object_get_data(G_OBJECT(dlg), "plugin"));
 }
 
-gboolean on_entry_focus_out( GtkWidget* edit, GdkEventFocus *evt, gpointer user_data )
+static gboolean on_entry_focus_out(GtkWidget * edit, GdkEventFocus * event, gpointer user_data)
 {
-    char** val = (char**)user_data;
-    const char *new_val;
-    g_free( *val );
-    new_val = gtk_entry_get_text((GtkEntry*)edit);
-    *val = (new_val && *new_val) ? g_strdup( new_val ) : NULL;
-    notify_apply_config( edit );
+    char ** val = (char**) user_data;
+    const char * new_val = gtk_entry_get_text((GtkEntry *) edit);
+    g_free(*val);
+    *val = (new_val && *new_val) ? g_strdup(new_val) : NULL;
+    notify_apply_config(edit);
     return FALSE;
 }
 

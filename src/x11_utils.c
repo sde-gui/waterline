@@ -758,7 +758,7 @@ static GdkPixbuf * get_icon_from_kwm_win_icon(Window task_win)
 }
 
 /* Get an icon from the window manager for a task, and scale it to a specified size. */
-GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source)
+GdkPixbuf * wtl_x11_get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source)
 {
     /* The result. */
     GdkPixbuf * pixmap = NULL;

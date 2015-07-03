@@ -1789,7 +1789,7 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
     GdkPixbuf * pixbuf = NULL;
 
     /* Try to get an icon from the window manager at first */
-    pixbuf = get_wm_icon(tk->win, icon_size, icon_size, source, &tk->image_source);
+    pixbuf = wtl_x11_get_wm_icon(tk->win, icon_size, icon_size, source, &tk->image_source);
 
     if (!pixbuf && tk->wm_class)
     {

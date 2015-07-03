@@ -79,7 +79,7 @@ extern gboolean wtl_x11_check_net_supported(Atom atom);
 extern void wtl_x11_set_wmhints_no_input(Window w);
 extern void wtl_x11_set_win_hints_skip_focus(Window w);
 
-extern GdkPixbuf * get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
+extern GdkPixbuf * wtl_x11_get_wm_icon(Window task_win, int required_width, int required_height, Atom source, Atom * current_source);
 
 extern gboolean wtl_x11_get_net_showing_desktop_supported(void);
 extern gboolean wtl_x11_get_net_showing_desktop(void);

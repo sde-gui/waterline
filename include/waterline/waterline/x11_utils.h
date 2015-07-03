@@ -85,6 +85,6 @@ extern gboolean wtl_x11_get_net_showing_desktop_supported(void);
 extern gboolean wtl_x11_get_net_showing_desktop(void);
 extern void wtl_x11_set_net_showing_desktop(gboolean value);
 
-gboolean wtl_x11_is_my_own_window(Window window);
+extern gboolean wtl_x11_is_my_own_window(Window window);
 
 #endif

@@ -182,7 +182,6 @@ static void on_add_plugin_menu_item_activate(GtkWidget * menu_item, GtkTreeView 
         if (pl->pwid)
         {
             gtk_widget_show(pl->pwid);
-            plugin_widget_set_background(pl->pwid, pl->panel);
         }
 
         {

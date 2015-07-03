@@ -261,13 +261,6 @@ Plugin * plugin_load(const char * type)
     return plug;
 }
 
-static gboolean plugin_set_background(Plugin * pl)
-{
-    pl->background_update_scheduled = FALSE;
-    plugin_widget_set_background(pl->pwid, pl->panel);
-    return FALSE;
-}
-
 static void plugin_size_allocate(GtkWidget * widget, GtkAllocation * allocation, Plugin * pl)
 {
     gboolean c = (allocation->x != pl->pwid_allocation.x)
@@ -275,12 +268,6 @@ static void plugin_size_allocate(GtkWidget * widget, GtkAllocation * allocation,
         || (allocation->width != pl->pwid_allocation.width)
         || (allocation->height != pl->pwid_allocation.height);
     pl->pwid_allocation = *allocation;
-
-    if (c && !pl->background_update_scheduled)
-    {
-        pl->background_update_scheduled = TRUE;
-        g_idle_add((GSourceFunc) plugin_set_background, pl);
-    }
 }
 
 
@@ -300,7 +287,6 @@ int plugin_start(Plugin * pl)
     /* If the plugin has a top level widget, add it to the panel's container. */
     if (pl->pwid != NULL)
     {
-        pl->background_update_scheduled = FALSE;
         g_signal_connect(G_OBJECT(pl->pwid), "size-allocate", G_CALLBACK(plugin_size_allocate), (gpointer) pl);
         gtk_widget_set_name(pl->pwid, pl->class->type);
         gtk_box_pack_start(GTK_BOX(pl->panel->plugin_box), pl->pwid, pl->expand, TRUE, pl->padding);
@@ -405,58 +391,6 @@ void plugin_class_list_free(GList * list)
 {
    g_list_foreach(list, (GFunc) plugin_class_unref, NULL);
    g_list_free(list);
-}
-
-/* Recursively set the background of all widgets on a panel background configuration change. */
-void plugin_widget_set_background(GtkWidget * w, Panel * p)
-{
-#if 0
-    if (w != NULL)
-    {
-        if ( ! GTK_WIDGET_NO_WINDOW(w))
-        {
-            if ((p->background) || (p->transparent))
-            {
-                if (GTK_WIDGET_REALIZED(w))
-                {
-                    panel_determine_background_pixmap(p, w, w->window);
-                    gdk_window_invalidate_rect(w->window, NULL, TRUE);
-                }
-            }
-            else
-            {
-                /* Set background according to the current GTK style. */
-                gtk_widget_set_app_paintable(w, FALSE);
-                if (GTK_WIDGET_REALIZED(w))
-                {
-                    gdk_window_set_back_pixmap(w->window, NULL, TRUE);
-                    gtk_style_set_background(w->style, w->window, GTK_STATE_NORMAL);
-                }
-            }
-        }
-
-        /* Special handling to get tray icons redrawn. */
-        if (GTK_IS_SOCKET(w))
-        {
-            if (GTK_WIDGET_REALIZED(w))
-            {
-                if ((p->background) || (p->transparent))
-                    gdk_window_set_back_pixmap(w->window, NULL, TRUE);
-                else
-                    gtk_style_set_background(w->style, w->window, GTK_STATE_NORMAL);
-            }
-
-            gtk_widget_hide(w);
-            gdk_window_process_all_updates();
-            gtk_widget_show(w);
-            gdk_window_process_all_updates();
-        }
-
-        /* Recursively process all children of a container. */
-        if (GTK_IS_CONTAINER(w))
-            gtk_container_foreach(GTK_CONTAINER(w), (GtkCallback) plugin_widget_set_background, p);
-    }
-#endif
 }
 
 /* Handler for "button_press_event" signal with Plugin as parameter.

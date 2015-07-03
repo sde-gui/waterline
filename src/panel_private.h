@@ -28,6 +28,9 @@
 
 enum { BACKGROUND_SYSTEM, BACKGROUND_IMAGE, BACKGROUND_COLOR };
 
+#define PANEL_HEIGHT_MAX              200      /* Maximum height of panel */
+#define PANEL_HEIGHT_MIN              16       /* Minimum height of panel */
+
 struct _Panel {
     char* name;
     GtkWidget * topgwin;

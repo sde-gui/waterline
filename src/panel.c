@@ -63,6 +63,8 @@ static void panel_start_gui(Panel *p);
 static void panel_size_position_changed(Panel *p, gboolean position_changed);
 static void panel_calculate_position(Panel *p);
 static void panel_update_toplevel_alignment(Panel *p);
+static void panel_update_geometry(Panel* p);
+static void panel_update_background(Panel* p);
 
 static void panel_notify_plugins_on_configuration_change(Panel * p);
 static void panel_notify_plugins_on_compositing_mode_change(Panel * p);
@@ -248,7 +250,6 @@ static Panel* panel_allocate(void)
 /* Normalize panel configuration after load from file or reconfiguration. */
 static void panel_normalize_configuration(Panel* p)
 {
-    panel_set_panel_configuration_changed( p );
     if (p->oriented_width < 0)
         p->oriented_width = 100;
     if (p->oriented_width_type == WIDTH_PERCENT && p->oriented_width > 100)
@@ -260,6 +261,7 @@ static void panel_normalize_configuration(Panel* p)
         else if (p->oriented_height > PANEL_HEIGHT_MAX)
             p->oriented_height = PANEL_HEIGHT_MAX;
     }
+    panel_preferences_changed(p, 0);
 }
 
 /******************************************************************************/
@@ -2087,8 +2089,13 @@ static void panel_notify_plugins_on_compositing_mode_change(Panel *p)
     }
 }
 
-void panel_set_panel_configuration_changed(Panel *p)
+void panel_preferences_changed(Panel * p, int what_changed)
 {
+    if (what_changed & GEOMETRY_CHANGED)
+        panel_update_geometry(p);
+    if (what_changed & BACKGROUND_CHANGED)
+        panel_update_background(p);
+
     p->orientation = (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)
         ? ORIENT_HORIZ : ORIENT_VERT;
 

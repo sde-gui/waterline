@@ -26,7 +26,6 @@
 #include "plugin_internal.h"
 #include "plugin_private.h"
 #include <waterline/panel.h>
-#include "panel_internal.h"
 #include "panel_private.h"
 #include <waterline/paths.h>
 #include <waterline/misc.h>
@@ -96,7 +95,7 @@ on_plugin_expand_toggled(GtkCellRendererToggle* render, char* path, GtkTreeView*
              * Apply the new packing with only "expand" modified. */
             gtk_box_query_child_packing( GTK_BOX(pl->panel->plugin_box), pl->pwid, &old_expand, &fill, &padding, &pack_type );
             gtk_box_set_child_packing( GTK_BOX(pl->panel->plugin_box), pl->pwid, expand, fill, padding, pack_type );
-            panel_set_panel_configuration_changed(pl->panel);
+            panel_preferences_changed(pl->panel, 0);
         }
     }
     gtk_tree_path_free( tp );

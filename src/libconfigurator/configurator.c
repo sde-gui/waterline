@@ -26,7 +26,6 @@
 #include "plugin_internal.h"
 #include "plugin_private.h"
 #include <waterline/panel.h>
-#include "panel_internal.h"
 #include "panel_private.h"
 #include <waterline/paths.h>
 #include <waterline/misc.h>
@@ -152,8 +151,7 @@ static void set_edge(Panel* p, int edge)
     if (p->edge == edge)
         return;
     p->edge = edge;
-    panel_update_geometry(p);
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
     update_gui(p);
 }
 
@@ -179,7 +177,7 @@ set_edge_margin( GtkSpinButton* spin,  Panel* p  )
     if (p->edge_margin == edge_margin)
         return;
     p->edge_margin = edge_margin;
-    panel_update_geometry(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
 }
 
 static void set_alignment(Panel* p, int align)
@@ -187,8 +185,7 @@ static void set_alignment(Panel* p, int align)
     if (p->pref_dialog.align_margin_control)
         gtk_widget_set_sensitive(p->pref_dialog.align_margin_control, (align != ALIGN_CENTER));
     p->align = align;
-    panel_update_geometry(p);
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
     update_gui(p);
 }
 
@@ -217,7 +214,7 @@ set_align_margin( GtkSpinButton* spin,  Panel* p  )
     if (p->align_margin == align_margin)
         return;
     p->align_margin = align_margin;
-    panel_update_geometry(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
 }
 
 static void
@@ -231,16 +228,14 @@ set_width(  GtkSpinButton* spin, Panel* p )
         return;
 
     p->oriented_width = oriented_width;
-    panel_update_geometry(p);
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
 }
 
 static void
 set_height( GtkSpinButton* spin, Panel* p )
 {
     p->oriented_height = (int)gtk_spin_button_get_value(spin);
-    panel_update_geometry(p);
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
 }
 
 static void set_width_type( GtkWidget *item, Panel* p )
@@ -279,8 +274,7 @@ static void set_width_type( GtkWidget *item, Panel* p )
 
     p->oriented_width_type = widthtype;
 
-    panel_update_geometry(p);
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
 
     gui_update_width(p);
 }
@@ -291,8 +285,7 @@ static void set_visibility(Panel* p, int visibility_mode)
     if (p->visibility_mode == visibility_mode)
         return;
     p->visibility_mode = visibility_mode;
-    panel_update_geometry(p);
-    gui_update_visibility(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
 }
 
 static void always_visible_toggle(GtkToggleButton *widget, Panel *p)
@@ -323,7 +316,7 @@ static void
 on_font_color_set( GtkColorButton* clr,  Panel* p )
 {
     gtk_color_button_get_color( clr, &p->font_color );
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, 0);
 }
 
 static void
@@ -335,14 +328,14 @@ on_use_font_color_toggled( GtkToggleButton* btn,   Panel* p )
     else
         gtk_widget_set_sensitive( clr, FALSE );
     p->use_font_color = gtk_toggle_button_get_active( btn );
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, 0);
 }
 
 static void
 on_font_size_set( GtkSpinButton* spin, Panel* p )
 {
     p->font_size = (int)gtk_spin_button_get_value(spin);
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, 0);
 }
 
 static void
@@ -354,28 +347,28 @@ on_use_font_size_toggled( GtkToggleButton* btn,   Panel* p )
     else
         gtk_widget_set_sensitive( clr, FALSE );
     p->use_font_size = gtk_toggle_button_get_active( btn );
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, 0);
 }
 
 static void
 set_strut(GtkToggleButton* toggle,  Panel* p )
 {
     p->set_strut = gtk_toggle_button_get_active(toggle) ? 1 : 0;
-    panel_update_geometry(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
 }
 
 static void
 set_height_when_minimized( GtkSpinButton* spin,  Panel* p  )
 {
     p->height_when_hidden = (int)gtk_spin_button_get_value(spin);
-    panel_update_geometry(p);
+    panel_preferences_changed(p, GEOMETRY_CHANGED);
 }
 
 static void
 set_icon_size( GtkSpinButton* spin,  Panel* p  )
 {
     p->preferred_icon_size = (int)gtk_spin_button_get_value(spin);
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, 0);
 }
 
 static void on_output_target_changed(GtkWidget * item, Panel * p)
@@ -384,8 +377,7 @@ static void on_output_target_changed(GtkWidget * item, Panel * p)
     if (p->output_target != output_target)
     {
         p->output_target = output_target;
-        panel_update_geometry(p);
-        gui_update_width(p);
+        panel_preferences_changed(p, GEOMETRY_CHANGED);
 
         gtk_widget_set_sensitive(GTK_WIDGET(p->pref_dialog.custom_monitor), p->output_target == OUTPUT_CUSTOM_MONITOR);
     }
@@ -398,8 +390,7 @@ on_custom_monitor_value_changed( GtkSpinButton* spin,  Panel* p  )
     if (p->custom_monitor != custom_monitor)
     {
         p->custom_monitor = custom_monitor;
-        panel_update_geometry(p);
-        gui_update_width(p);
+        panel_preferences_changed(p, GEOMETRY_CHANGED);
     }
 }
 
@@ -412,7 +403,7 @@ on_paddings_value_changed(GtkSpinButton* spin, Panel* p)
     p->padding_left = gtk_spin_button_get_value(p->pref_dialog.padding_left);
     p->padding_right = gtk_spin_button_get_value(p->pref_dialog.padding_right);
     p->applet_spacing = gtk_spin_button_get_value(p->pref_dialog.applet_spacing);
-    panel_set_panel_configuration_changed(p);
+    panel_preferences_changed(p, 0);
 }
 
 static void

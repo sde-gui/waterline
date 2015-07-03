@@ -73,4 +73,8 @@ extern gboolean panel_is_application_class_visible(Panel* p, const char * class_
 extern int panel_get_available_screen_width(Panel* p);
 extern int panel_get_available_screen_height(Panel* p);
 
+/* for libconfigurator  */
+enum { GEOMETRY_CHANGED = (1 << 0), BACKGROUND_CHANGED  = (1 << 1)};
+extern void panel_preferences_changed(Panel * p, int what_changed);
+
 #endif

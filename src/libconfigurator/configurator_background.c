@@ -24,7 +24,6 @@
 
 #include <waterline/global.h>
 #include <waterline/panel.h>
-#include "panel_internal.h"
 #include "panel_private.h"
 #include <waterline/paths.h>
 #include <glib/gi18n.h>
@@ -36,7 +35,7 @@ static void stretch_background_toggle(GtkWidget * w, Panel*  p)
     gboolean t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
 
     p->stretch_background = t;
-    panel_update_background(p);
+    panel_preferences_changed(p, BACKGROUND_CHANGED);
 }
 
 static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
@@ -46,7 +45,7 @@ static void alpha_scale_value_changed(GtkWidget * w, Panel*  p)
     if (p->alpha != alpha)
     {
         p->alpha = alpha;
-        panel_update_background(p);
+        panel_preferences_changed(p, BACKGROUND_CHANGED);
 
         GtkWidget* tr = (GtkWidget*)g_object_get_data(G_OBJECT(w), "background_color");
         gtk_color_button_set_alpha(GTK_COLOR_BUTTON(tr), 256 * p->alpha);
@@ -62,7 +61,7 @@ static void background_color_toggled(GtkWidget * b, Panel * p)
     gtk_widget_set_sensitive(tr, t);
 
     p->background_mode = BACKGROUND_COLOR;
-    panel_update_background(p);
+    panel_preferences_changed(p, BACKGROUND_CHANGED);
 }
 
 static void background_file_helper(Panel * p, GtkWidget * toggle, GtkFileChooser * file_chooser)
@@ -77,7 +76,7 @@ static void background_file_helper(Panel * p, GtkWidget * toggle, GtkFileChooser
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle)))
     {
         p->background_mode = BACKGROUND_IMAGE;
-        panel_update_background(p);
+        panel_preferences_changed(p, BACKGROUND_CHANGED);
     }
 }
 
@@ -98,7 +97,7 @@ static void background_system_toggled(GtkWidget *b, Panel* p)
 {
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b))) {
         p->background_mode = BACKGROUND_SYSTEM;
-        panel_update_background(p);
+        panel_preferences_changed(p, BACKGROUND_CHANGED);
     }
 }
 
@@ -106,7 +105,7 @@ static void on_background_color_set( GtkColorButton* clr,  Panel* p )
 {
     gtk_color_button_get_color(clr, &p->background_color);
     p->alpha = gtk_color_button_get_alpha( clr ) / 256;
-    panel_update_background( p );
+    panel_preferences_changed(p, BACKGROUND_CHANGED);
 
     GtkWidget * alpha_scale = (GtkWidget*)g_object_get_data(G_OBJECT(clr), "alpha_scale");
     gtk_range_set_value(GTK_RANGE(alpha_scale), p->alpha);

@@ -43,8 +43,6 @@ extern void panel_update_background(Panel* p);
 extern SYMBOL_HIDDEN void panel_autohide_conditions_changed(Panel* p);
 extern void panel_require_update_background(Panel* p);
 
-extern Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name);
-
 extern SYMBOL_HIDDEN int panel_get_icon_size(Panel * p);
 extern SYMBOL_HIDDEN int panel_get_orientation(Panel * p);
 

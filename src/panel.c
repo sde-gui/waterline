@@ -596,7 +596,7 @@ int panel_count(void)
 
 /*= command handling =*/
 
-Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name)
+static Plugin * panel_get_plugin_by_name(Panel* p, const gchar * name)
 {
     GList * l;
 

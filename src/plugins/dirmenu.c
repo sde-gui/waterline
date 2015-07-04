@@ -879,7 +879,7 @@ static void dirmenu_apply_configuration(Plugin * p)
     gchar * icon_name = NULL;
 
 #if GLIB_CHECK_VERSION(2,20,0)
-    if (!dm->image)
+    if (su_str_empty_nl(dm->image))
     {
         GFile * file = g_file_new_for_path(path);
         GFileInfo * file_info =g_file_query_info(file,
@@ -900,7 +900,7 @@ static void dirmenu_apply_configuration(Plugin * p)
 #endif
 
     wtl_button_set_image_name(plugin_widget(p),
-        (dm->image ? dm->image : icon_name ? icon_name : "file-manager"),
+        (!su_str_empty_nl(dm->image) ? dm->image : icon_name ? icon_name : "file-manager"),
         plugin_get_icon_size(p));
     wtl_button_set_label_text(plugin_widget(p), dm->name);
     gtk_widget_set_tooltip_text(plugin_widget(p), path);

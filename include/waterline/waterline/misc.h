@@ -67,7 +67,6 @@ extern GtkWidget* wtl_create_entry_dialog(const char * title, const char * descr
 
 
 extern GdkPixbuf* wtl_load_icon(const char* name, int width, int height, gboolean use_fallback);
-extern GdkPixbuf* wtl_load_icon2(const char* name, int width, int height, gboolean use_fallback, gboolean * themed);
 extern void wtl_load_window_action_icon(GtkImage * image, const char * name, GtkIconSize icon_size);
 
 extern void wtl_util_bring_window_to_current_desktop(GtkWidget * win);

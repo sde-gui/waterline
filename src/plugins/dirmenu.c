@@ -882,19 +882,25 @@ static void dirmenu_apply_configuration(Plugin * p)
     if (su_str_empty(dm->image))
     {
         GFile * file = g_file_new_for_path(path);
-        GFileInfo * file_info =g_file_query_info(file,
-            G_FILE_ATTRIBUTE_STANDARD_ICON,
-            G_FILE_QUERY_INFO_NONE,
-            NULL,
-            NULL);
-        GIcon * icon = g_file_info_get_icon(file_info);
-        if (icon)
+        if (file)
         {
-            gchar * name = g_icon_to_string(icon);
-            icon_name = g_strdup_printf("GIcon %s", name);
-            g_free(name);
+            GFileInfo * file_info = g_file_query_info(file,
+                G_FILE_ATTRIBUTE_STANDARD_ICON,
+                G_FILE_QUERY_INFO_NONE,
+                NULL,
+                NULL);
+            if (file_info)
+            {
+                GIcon * icon = g_file_info_get_icon(file_info);
+                if (icon)
+                {
+                    gchar * name = g_icon_to_string(icon);
+                    icon_name = g_strdup_printf("GIcon %s", name);
+                    g_free(name);
+                }
+                g_object_unref(G_OBJECT(file_info));
+            }
         }
-        g_object_unref(G_OBJECT(file_info));
         g_object_unref(G_OBJECT(file));
     }
 #endif

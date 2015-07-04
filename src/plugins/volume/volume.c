@@ -17,6 +17,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -297,7 +301,7 @@ PluginClass volume_plugin_class = {
 
     type : "volume",
     name : N_("Volume Control (OSS)"),
-    version: "1.0",
+    version: VERSION,
     description : "Display and control volume for Open Sound System",
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 

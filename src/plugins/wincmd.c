@@ -16,6 +16,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -208,7 +212,7 @@ SYMBOL_PLUGIN_CLASS PluginClass wincmd_plugin_class = {
 
     type : "wincmd",
     name : N_("Minimize All Windows"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Sends commands to all desktop windows.\nSupported commands are 1) iconify and 2) shade"),
     category: PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
 

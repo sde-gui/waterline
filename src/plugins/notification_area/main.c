@@ -267,6 +267,9 @@ static gboolean applet_factory(MatePanelApplet* applet, const gchar* iid, gpoint
 #endif
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -410,7 +413,7 @@ PluginClass notification_area_plugin_class = {
 
     type : "notification_area",
     name : N_("Notification Area"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Notification Area"),
     category: PLUGIN_CATEGORY_SW_INDICATOR,
 

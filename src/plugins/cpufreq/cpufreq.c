@@ -19,6 +19,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -438,7 +442,7 @@ PluginClass cpufreq_plugin_class = {
 
     type : "cpufreq",
     name : N_("CPUFreq frontend"),
-    version: "0.1",
+    version: VERSION,
     description : N_("Display CPU frequency and allow to change governors and frequency"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 

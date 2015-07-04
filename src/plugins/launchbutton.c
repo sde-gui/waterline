@@ -887,7 +887,7 @@ SYMBOL_PLUGIN_CLASS PluginClass launchbutton_plugin_class = {
 
     type : "launchbutton",
     name : N_("Button"),
-    version: "0.1",
+    version: VERSION,
     description : N_("Launch button"),
     category: PLUGIN_CATEGORY_LAUNCHER,
 

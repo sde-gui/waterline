@@ -403,7 +403,7 @@ PluginClass xkb_groups_plugin_class = {
 
     type : "xkb_groups",
     name : N_("Keyboard Layout Switcher"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Allows to switch between available keyboard layouts"),
     category: PLUGIN_CATEGORY_SW_INDICATOR,
 

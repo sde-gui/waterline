@@ -17,6 +17,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -713,7 +717,7 @@ PluginClass volumealsa_plugin_class = {
 
     type : "volumealsa",
     name : N_("Volume Control (ALSA)"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Display and control volume for ALSA"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 

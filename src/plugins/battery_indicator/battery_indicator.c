@@ -30,11 +30,15 @@
  */
 
 /* FIXME:
- *  Here are somethings need to be improvec:
+ *  Here are somethings need to be improved:
  *  1. Replace pthread stuff with gthread counterparts for portability.
  *  3. Add an option to hide the plugin when AC power is used or there is no battery.
  *  4. Handle failure gracefully under systems other than Linux.
 */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -656,7 +660,7 @@ PluginClass battery_indicator_plugin_class = {
 
     type        : "battery_indicator",
     name        : N_("Battery Monitor"),
-    version     : "2.0",
+    version     : VERSION,
     description : N_("Battery charge level indicator"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 

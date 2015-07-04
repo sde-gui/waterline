@@ -19,7 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
-/*A little bug fixed by Mykola <mykola@2ka.mipt.ru>:) */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <string.h>
 #include <sys/time.h>
@@ -434,7 +437,7 @@ PluginClass cpu_plugin_class = {
 
     type : "cpu",
     name : N_("CPU Usage Monitor"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Display CPU usage"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 

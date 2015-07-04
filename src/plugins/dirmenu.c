@@ -1005,8 +1005,8 @@ SYMBOL_PLUGIN_CLASS PluginClass dirmenu_plugin_class = {
 
     type : "dirmenu",
     name : N_("Directory Menu"),
-    version: "1.0",
-    description : N_("Browse directory tree via menu (Author: PCMan)"),
+    version: VERSION,
+    description : N_("Browse directory tree via menu"),
     category: PLUGIN_CATEGORY_LAUNCHER,
 
     constructor : dirmenu_constructor,

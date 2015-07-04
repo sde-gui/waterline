@@ -436,7 +436,7 @@ SYMBOL_PLUGIN_CLASS PluginClass menu_plugin_class = {
 
     type : "menu",
     name : N_("Menu"),
-    version: "2.0",
+    version: VERSION,
     description : N_("Application Menu"),
     category: PLUGIN_CATEGORY_LAUNCHER,
 

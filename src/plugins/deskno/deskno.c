@@ -19,8 +19,9 @@
  *
  */
 
-// reused dclock.c and variables from pager.c
-// 11/23/04 by cmeury
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -228,7 +229,7 @@ PluginClass deskno_plugin_class = {
 
     type : "deskno",
     name : N_("Desktop Number / Workspace Name"),
-    version: "0.6",
+    version: VERSION,
     description : N_("Display workspace number, by cmeury@users.sf.net"),
     category: PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
 

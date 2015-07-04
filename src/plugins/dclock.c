@@ -16,6 +16,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <time.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -661,7 +665,7 @@ SYMBOL_PLUGIN_CLASS PluginClass dclock_plugin_class = {
 
     type : "dclock",
     name : N_("Digital Clock"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Display digital clock and tooltip"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 

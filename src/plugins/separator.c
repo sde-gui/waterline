@@ -16,6 +16,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <glib/gi18n.h>
 #include <waterline/symbol_visibility.h>
 #include <waterline/global.h>
@@ -89,7 +93,7 @@ SYMBOL_PLUGIN_CLASS PluginClass separator_plugin_class = {
 
     type : "separator",
     name : N_("Separator"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Add a separator to the panel"),
 
     constructor : separator_constructor,

@@ -16,6 +16,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
@@ -185,7 +189,7 @@ PluginClass netstatus_plugin_class = {
 
     type : "netstatus",
     name : N_("Network Status Monitor"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Monitor network status"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 

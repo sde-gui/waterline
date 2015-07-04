@@ -17,6 +17,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -824,7 +828,7 @@ SYMBOL_PLUGIN_CLASS PluginClass pager_plugin_class = {
 
     type : "pager",
     name : N_("Desktop Pager"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Simple pager plugin"),
     category: PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
 

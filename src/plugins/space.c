@@ -16,6 +16,10 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -127,7 +131,7 @@ SYMBOL_PLUGIN_CLASS PluginClass space_plugin_class = {
 
     type : "space",
     name : N_("Spacer"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Allocate space"),
 
     /* Stretch is available but not default for this plugin. */

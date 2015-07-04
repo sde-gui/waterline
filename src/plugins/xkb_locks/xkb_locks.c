@@ -321,7 +321,7 @@ PluginClass xkb_locks_plugin_class = {
 
     type : "xkb_locks",
     name : N_("Keyboard Lock Key Indicator"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Displays state of Caps Lock, Num Lock and Scroll Lock modifiers and allows you to toggle them with your mouse."),
     category: PLUGIN_CATEGORY_SW_INDICATOR,
 

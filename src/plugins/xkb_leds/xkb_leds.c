@@ -251,7 +251,7 @@ PluginClass xkb_leds_plugin_class = {
 
     type : "xkb_leds",
     name : N_("Keyboard LED Indicator"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Indicator of hardware LEDs: Caps Lock, Num Lock, and Scroll Lock. You need an indicator/switcher of logical keyboard Locks, not just hardware LEDs, please try the Keyboard Lock Key Indicator."),
     category: PLUGIN_CATEGORY_SW_INDICATOR,
 

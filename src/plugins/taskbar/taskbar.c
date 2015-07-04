@@ -23,6 +23,10 @@
  = HC SVNT DRACONES =
 \********************/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -5580,7 +5584,7 @@ PluginClass taskbar_plugin_class = {
 
     type : "taskbar",
     name : N_("Task Bar (Window List)"),
-    version: "1.0",
+    version: VERSION,
     description : N_("Taskbar shows all opened windows and allow to iconify them, shade or get focus"),
     category: PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
 

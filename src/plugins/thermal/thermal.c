@@ -19,6 +19,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -421,7 +425,7 @@ PluginClass thermal_plugin_class = {
 
     type : "thermal",
     name : N_("Temperature Monitor"),
-    version: "0.6",
+    version: VERSION,
     description : N_("Display system temperature"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 

@@ -50,7 +50,7 @@
 #include <waterline/paths.h>
 #include <waterline/misc.h>
 #include <waterline/launch.h>
-#include <waterline/fb_button.h>
+#include <waterline/wtl_button.h>
 #include <waterline/plugin.h>
 #include "menu-policy.h"
 
@@ -361,7 +361,7 @@ static void launchbutton_build_gui(Plugin * p, LaunchButton * btn)
     }
 
     /* Create a button with the specified icon. */
-    GtkWidget * button = fb_button_new_from_file(btn->image, plugin_get_icon_size(p), plugin_get_icon_size(p), p);
+    GtkWidget * button = wtl_button_new_from_image_name(p, btn->image, plugin_get_icon_size(p));
     btn->widget = button;
     gtk_widget_set_can_focus(button, FALSE);
 
@@ -912,7 +912,7 @@ static void launchbar_panel_configuration_changed(Plugin * p)
     for (l = lb->buttons; l != NULL; l = l->next)
     {
         LaunchButton * btn = (LaunchButton *) l->data;
-        fb_button_set_from_file(btn->widget, btn->image, plugin_get_icon_size(p), plugin_get_icon_size(p));
+        wtl_button_set_image_name(btn->widget, btn->image, plugin_get_icon_size(p));
     }
 
     /* Reset the bootstrap button. */

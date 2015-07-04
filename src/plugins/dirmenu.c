@@ -40,7 +40,7 @@
 #include <waterline/symbol_visibility.h>
 #include <waterline/panel.h>
 #include <waterline/misc.h>
-#include <waterline/fb_button.h>
+#include <waterline/wtl_button.h>
 #include <waterline/plugin.h>
 #include <waterline/libsmfm.h>
 #include <waterline/launch.h>
@@ -840,12 +840,7 @@ static int dirmenu_constructor(Plugin * p)
 
     su_json_read_options(plugin_inner_json(p), option_definitions, dm);
 
-    /* Allocate top level widget and set into Plugin widget pointer.
-     * It is not known why, but the button text will not draw if it is edited from empty to non-empty
-     * unless this strategy of initializing it with a non-empty value first is followed. */
-    GtkWidget * pwid = fb_button_new_from_file_with_text(
-        ((dm->image != NULL) ? dm->image : "file-manager"),
-        plugin_get_icon_size(p), plugin_get_icon_size(p), p, "Temp");
+    GtkWidget * pwid = wtl_button_new(p);
     plugin_set_widget(p, pwid);
     gtk_container_set_border_width(GTK_CONTAINER(pwid), 0);
     g_signal_connect(pwid, "button_press_event", G_CALLBACK(dirmenu_button_press_event), p);
@@ -904,13 +899,12 @@ static void dirmenu_apply_configuration(Plugin * p)
     }
 #endif
 
-
-    fb_button_set_from_file(plugin_widget(p),
-        ((dm->image != NULL) ? dm->image : (icon_name != NULL) ? icon_name : "file-manager"),
-        ((dm->image != NULL) ? -1 : plugin_get_icon_size(p)), plugin_get_icon_size(p));
-    fb_button_set_label_text(plugin_widget(p), dm->name);
+    wtl_button_set_image_name(plugin_widget(p),
+        (dm->image ? dm->image : icon_name ? icon_name : "file-manager"),
+        plugin_get_icon_size(p));
+    wtl_button_set_label_text(plugin_widget(p), dm->name);
     gtk_widget_set_tooltip_text(plugin_widget(p), path);
-    fb_button_set_orientation(plugin_widget(p), plugin_get_orientation(p));
+    wtl_button_set_orientation(plugin_widget(p), plugin_get_orientation(p));
 
     g_free(icon_name);
 
@@ -964,10 +958,6 @@ static void dirmenu_save_configuration(Plugin * p)
 /* Callback when panel configuration changes. */
 static void dirmenu_panel_configuration_changed(Plugin * p)
 {
-    DirMenuPlugin * dm = PRIV(p);
-    fb_button_set_from_file(plugin_widget(p),
-        ((dm->image != NULL) ? dm->image : "file-manager"),
-        plugin_get_icon_size(p), plugin_get_icon_size(p));
     dirmenu_apply_configuration(p);
 }
 

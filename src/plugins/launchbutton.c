@@ -42,7 +42,7 @@
 #include <waterline/panel.h>
 #include <waterline/misc.h>
 #include <waterline/launch.h>
-#include <waterline/fb_button.h>
+#include <waterline/wtl_button.h>
 
 #include <waterline/gtkcompat.h>
 
@@ -425,7 +425,7 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
 /*
     if (input == &lb->input_title)
     {
-        fb_button_set_label_markup(lb->button, line);
+        wtl_button_set_label_markup(lb->button, line);
     }
     else if (input == &lb->input_tooltip)
     {
@@ -434,7 +434,7 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
     else if (input == &lb->input_icon)
     {
         int icon_size = plugin_get_icon_size(lb->plug);
-        fb_button_set_from_file(lb->button, line, icon_size, icon_size);
+        wtl_button_set_from_file(lb->button, line, icon_size, icon_size);
     }
     else */if (input == &lb->input_general)
     {
@@ -442,9 +442,9 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
         if (g_strv_length(parts) == 2)
         {
             if (g_ascii_strcasecmp(parts[0], "Title") == 0)
-                fb_button_set_label_markup(lb->button, parts[1]);
+                wtl_button_set_label_markup(lb->button, parts[1]);
             else if (g_ascii_strcasecmp(parts[0], "TitlePlainText") == 0)
-                fb_button_set_label_text(lb->button, parts[1]);
+                wtl_button_set_label_text(lb->button, parts[1]);
             else if (g_ascii_strcasecmp(parts[0], "Tooltip") == 0)
                 gtk_widget_set_tooltip_markup(lb->button, parts[1]);
             else if (g_ascii_strcasecmp(parts[0], "TooltipPlainText") == 0)
@@ -452,7 +452,7 @@ static void lb_input(lb_t * lb, input_t * input, gchar * line)
             else if (g_ascii_strcasecmp(parts[0], "IconPath") == 0 || g_ascii_strcasecmp(parts[0], "Icon") == 0)
             {
                 int icon_size = plugin_get_icon_size(lb->plug);
-                fb_button_set_from_file(lb->button, parts[1], icon_size, icon_size);
+                wtl_button_set_image_name(lb->button, parts[1], icon_size);
             }
             else if (g_ascii_strcasecmp(parts[0], "Command1") == 0)
             {
@@ -590,8 +590,7 @@ static void lb_apply_configuration(Plugin * p)
 
     if (!lb->button)
     {
-        lb->button = fb_button_new_from_file_with_markup(lb->icon_path,
-                     plugin_get_icon_size(p), plugin_get_icon_size(p), p, lb->title);
+        lb->button = wtl_button_new_from_image_name_with_markup(p, lb->icon_path, plugin_get_icon_size(p), lb->title);
         gtk_container_add(GTK_CONTAINER(plugin_widget(p)), lb->button);
         g_signal_connect(G_OBJECT(lb->button), "button-press-event", G_CALLBACK(lb_press_event), (gpointer) lb);
         g_signal_connect(G_OBJECT(lb->button), "button-release-event", G_CALLBACK(lb_release_event), (gpointer) lb);
@@ -600,11 +599,11 @@ static void lb_apply_configuration(Plugin * p)
     }
     else
     {
-        fb_button_set_label_markup(lb->button, lb->title);
-        fb_button_set_from_file(lb->button, lb->icon_path, plugin_get_icon_size(p), plugin_get_icon_size(p));
+        wtl_button_set_label_markup(lb->button, lb->title);
+        wtl_button_set_image_name(lb->button, lb->icon_path, plugin_get_icon_size(p));
     }
 
-    fb_button_set_orientation(lb->button, plugin_get_orientation(p));
+    wtl_button_set_orientation(lb->button, plugin_get_orientation(p));
 
     if (!su_str_empty(lb->tooltip)) {
         gtk_widget_set_tooltip_markup(lb->button, lb->tooltip);

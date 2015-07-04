@@ -48,7 +48,7 @@
 #include <waterline/launch.h>
 #include <waterline/plugin.h>
 #include <waterline/paths.h>
-#include <waterline/fb_button.h>
+#include <waterline/wtl_button.h>
 #include "bg.h"
 #include "menu-policy.h"
 #include <waterline/commands.h>
@@ -216,15 +216,15 @@ make_button(Plugin *p, gchar *fname, gchar *name, GdkColor* tint, GtkWidget *men
     if( name )
     {
         title = wtl_translate_directory_name(name);
-        m->img = fb_button_new_from_file_with_text(fname, -1, plugin_get_icon_size(p), p, title);
+        m->img = wtl_button_new_from_image_name_with_text(p, fname, plugin_get_icon_size(p), title);
         g_free(title);
     }
     else
     {
-        m->img = fb_button_new_from_file(fname, -1, plugin_get_icon_size(p), p);
+        m->img = wtl_button_new_from_image_name(p, fname, plugin_get_icon_size(p));
     }
 
-    fb_button_set_orientation(m->img, plugin_get_orientation(p));
+    wtl_button_set_orientation(m->img, plugin_get_orientation(p));
 
     gtk_widget_show(m->img);
     gtk_box_pack_start(GTK_BOX(m->box), m->img, TRUE, TRUE, 0);
@@ -286,7 +286,7 @@ static GtkWidget * read_item(Plugin *p, json_t * json_item)
     gtk_container_set_border_width(GTK_CONTAINER(item), 0);
 
     if (!su_str_empty(icon)) {
-        GtkWidget *image = _gtk_image_new_from_file_scaled(icon, m->iconsize, m->iconsize, TRUE, TRUE);
+        GtkWidget * image = wtl_load_icon_as_gtk_image(icon, m->iconsize, m->iconsize);
         gtk_widget_show(image);
         gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
 
@@ -360,7 +360,7 @@ read_submenu(Plugin *p, json_t * json_menu, gboolean as_item)
 
         mi = gtk_image_menu_item_new_with_label(name);
         if (icon) {
-            GtkWidget * image = _gtk_image_new_from_file_scaled(icon, m->iconsize, m->iconsize, TRUE, TRUE);
+            GtkWidget * image = wtl_load_icon_as_gtk_image(icon, m->iconsize, m->iconsize);
             gtk_widget_show(image);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), image);
         }
@@ -421,7 +421,7 @@ menu_constructor(Plugin *p)
 static void apply_config(Plugin* p)
 {
     menup* m = PRIV(p);
-    fb_button_set_orientation(m->img, plugin_get_orientation(p));
+    wtl_button_set_orientation(m->img, plugin_get_orientation(p));
 }
 
 /* Callback when panel configuration changes. */

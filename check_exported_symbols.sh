@@ -16,6 +16,7 @@ count_prefixed_symbols()
 
 echo '================================='
 count_prefixed_symbols wtl_
+count_prefixed_symbols wtl_button_
 count_prefixed_symbols wtl_command_
 count_prefixed_symbols wtl_util_
 count_prefixed_symbols wtl_x11_

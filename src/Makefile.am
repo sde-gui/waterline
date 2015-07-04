@@ -29,7 +29,7 @@ waterline_SOURCES = \
 	wtl_private.h \
 	misc.c \
 	launch.c \
-	fb_button.c \
+	wtl_button.c \
 	defaultapplications.c \
 	libsmfm.c \
 	window-icons.c \
@@ -56,7 +56,7 @@ waterline_include_HEADERS = \
 	$(top_srcdir)/include/waterline/waterline/commands.h \
 	$(top_srcdir)/include/waterline/waterline/defaultapplications.h \
 	$(top_srcdir)/include/waterline/waterline/ev.h \
-	$(top_srcdir)/include/waterline/waterline/fb_button.h \
+	$(top_srcdir)/include/waterline/waterline/wtl_button.h \
 	$(top_srcdir)/include/waterline/waterline/global.h \
 	$(top_srcdir)/include/waterline/waterline/gtkcompat.h \
 	$(top_srcdir)/include/waterline/waterline/menu-cache-compat.h \

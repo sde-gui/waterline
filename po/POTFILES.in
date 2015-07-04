@@ -12,7 +12,7 @@ src/openbox-integration.c
 src/misc.c
 src/commands.c
 src/ev.c
-src/fb_button.c
+src/wtl_button.c
 src/panel.c
 src/panel_config.c
 src/panel_menu.c

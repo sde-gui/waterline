@@ -225,6 +225,17 @@ GdkPixbuf* wtl_load_icon2(const char* name, int width, int height, gboolean use_
 
 /********************************************************************/
 
+GtkWidget * wtl_load_icon_as_gtk_image(const char * name, int width, int height)
+{
+    GtkWidget * image = gtk_image_new();
+    GdkPixbuf * pixbuf = wtl_load_icon(name, width, height, TRUE);
+    gtk_image_set_from_pixbuf(GTK_IMAGE(image), pixbuf);
+    g_object_unref(pixbuf);
+    return image;
+}
+
+/********************************************************************/
+
 static void entry_dlg_response(GtkWidget * widget, int response, gpointer p)
 {
     (void)p;

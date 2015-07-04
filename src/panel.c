@@ -1742,7 +1742,7 @@ GList * panel_get_plugins(Panel * p)
 /* Set an image from a file with scaling to the panel icon size. */
 void panel_image_set_from_file(Panel * p, GtkWidget * image, char * file)
 {
-    GdkPixbuf * pixbuf = gdk_pixbuf_new_from_file_at_scale(file, panel_get_icon_size(p), panel_get_icon_size(p), TRUE, NULL);
+    GdkPixbuf * pixbuf = gdk_pixbuf_new_from_file_at_size(file, panel_get_icon_size(p), panel_get_icon_size(p), NULL);
     if (pixbuf != NULL)
     {
         gtk_image_set_from_pixbuf(GTK_IMAGE(image), pixbuf);

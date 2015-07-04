@@ -48,10 +48,6 @@
 
 /********************************************************************/
 
-static GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_name, int width, int height, gboolean keep_ratio);
-
-/********************************************************************/
-
 guint32 wtl_util_gdkcolor_to_uint32(const GdkColor * color)
 {
     guint32 i;
@@ -72,23 +68,6 @@ guint32 wtl_util_gdkcolor_to_uint32(const GdkColor * color)
 
 /********************************************************************/
 
-static GdkPixbuf * _gdk_pixbuf_new_from_file_at_scale(const char * file_path, int width, int height, gboolean keep_ratio)
-{
-    GdkPixbuf * icon = gdk_pixbuf_new_from_file_at_scale(file_path, width, height, keep_ratio, NULL);
-    if (!icon)
-        return NULL;
-
-    /* It seems sometimes gdk_pixbuf_new_from_file_at_scale() does not scale pixbuf, so we do. */
-    gulong w = gdk_pixbuf_get_width(icon);
-    gulong h = gdk_pixbuf_get_height(icon);
-    if ((width > 0 && w > width) || (height > 0 && h > height))
-    {
-        icon = su_gdk_pixbuf_scale_in_rect(icon, width, height, TRUE);
-    }
-
-    return icon;
-}
-
 /* Try to load an icon from a named file via the freedesktop.org data directories path.
  * http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html */
 static GdkPixbuf * load_icon_file(const char * file_name, int width, int height)
@@ -99,7 +78,7 @@ static GdkPixbuf * load_icon_file(const char * file_name, int width, int height)
     for (dir = dirs; ((*dir != NULL) && (icon == NULL)); dir++)
     {
         char * file_path = g_build_filename(*dir, "pixmaps", file_name, NULL);
-        icon = _gdk_pixbuf_new_from_file_at_scale(file_path, width, height, TRUE);
+        icon = gdk_pixbuf_new_from_file_at_size(file_path, width, height, NULL);
         g_free(file_path);
     }
     return icon;
@@ -179,7 +158,7 @@ GdkPixbuf* wtl_load_icon2(const char* name, int width, int height, gboolean use_
         if (g_path_is_absolute(name))
         {
             /* Absolute path. */
-            icon = _gdk_pixbuf_new_from_file_at_scale(name, width, height, TRUE);
+            icon = gdk_pixbuf_new_from_file_at_size(name, width, height, NULL);
             if (themed)
                 *themed = FALSE;
         }

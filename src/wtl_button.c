@@ -172,7 +172,7 @@ static void apply_pixbuf(WtlButtonData * button_data)
 
 static void apply_image_and_label(WtlButtonData * button_data)
 {
-    if (su_str_empty_nl(button_data->label_text))
+    if (su_str_empty(button_data->label_text))
     {
         if (button_data->label)
             gtk_widget_hide(button_data->label);
@@ -192,7 +192,7 @@ static void apply_image_and_label(WtlButtonData * button_data)
         gtk_widget_show(button_data->label);
     }
 
-    if (su_str_empty_nl(button_data->image_name) && !su_str_empty_nl(button_data->label_text))
+    if (su_str_empty(button_data->image_name) && !su_str_empty(button_data->label_text))
     {
         if (button_data->image)
             gtk_widget_hide(button_data->image);
@@ -222,7 +222,7 @@ static void apply_image_and_label(WtlButtonData * button_data)
 
         apply_pixbuf(button_data);
 
-        if (button_data->pixbuf || su_str_empty_nl(button_data->label_text))
+        if (button_data->pixbuf || su_str_empty(button_data->label_text))
             gtk_widget_show(button_data->image);
         else
             gtk_widget_hide(button_data->image);

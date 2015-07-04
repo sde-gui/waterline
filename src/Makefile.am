@@ -36,7 +36,7 @@ waterline_SOURCES = \
 	openbox-integration.c \
 	bg.c bg.h  \
 	commands.c \
-	generic_config_dlg.c \
+	generic_config_dialog.c \
 	x11_utils.c \
 	x11_wrappers.c \
 	configurator.c \

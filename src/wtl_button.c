@@ -290,7 +290,8 @@ static GtkWidget * wtl_button_new_from_image_name_with_label(Plugin * plugin, gc
     gtk_container_add(GTK_CONTAINER(event_box), button_data->inner_box);
     gtk_widget_show(button_data->inner_box);
 
-    apply_image_and_label(button_data);
+    if (image_name || label_text)
+        apply_image_and_label(button_data);
 
     return event_box;
 }

@@ -33,7 +33,7 @@
 /* Support for external plugin versioning.
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */
 #define PLUGINCLASS_MAGIC ((unsigned long)0x7bd4370f)
-#define PLUGINCLASS_VERSION 5
+#define PLUGINCLASS_VERSION 6
 #define PLUGINCLASS_BASE_SIZE ((unsigned short) (uintptr_t) & ((PluginClass*)0)->__end_of_required_part)
 #define PLUGINCLASS_VERSIONING \
     structure_magic : PLUGINCLASS_MAGIC, \
@@ -83,15 +83,16 @@ struct _PluginClass {
 
     void * __end_of_required_part;
 
-    void (*config)(struct _Plugin * plugin, GtkWindow * parent);	/* Request the plugin to display its configuration dialog */
-    void (*save)(struct _Plugin * plugin);			/* Request the plugin to save its configuration to a file */
-    void (*panel_configuration_changed)(struct _Plugin * plugin);	/* Request the plugin to do a full redraw after a panel configuration change */
+    void (*show_properties)(struct _Plugin * plugin, GtkWindow * parent);
+    void (*save_configuration)(struct _Plugin * plugin);
+    void (*panel_configuration_changed)(struct _Plugin * plugin);
+    void (*compositing_mode_changed)(struct _Plugin * plugin);
+
     void (*run_command)(struct _Plugin * plugin, char ** argv, int argc);
     void (*open_system_menu)(struct _Plugin * plugin);
     void (*add_launch_item)(struct _Plugin * plugin, const char * name);
     int  (*get_priority_of_launch_item_adding)(struct _Plugin * plugin);
     void (*popup_menu_hook)(struct _Plugin * plugin, GtkMenu * menu);
-    void (*compositing_mode_changed)(struct _Plugin * plugin);
 
     gboolean (*is_application_class_visible)(struct _Plugin * plugin, const char * class_name);
     void (*application_class_visibility_changed)(struct _Plugin * plugin);

@@ -666,7 +666,7 @@ PluginClass battery_indicator_plugin_class = {
 
     constructor : constructor,
     destructor  : destructor,
-    config      : config,
-    save        : save,
+    show_properties : config,
+    save_configuration : save,
     panel_configuration_changed : battery_indicator_panel_configuration_changed
 };

@@ -834,7 +834,5 @@ SYMBOL_PLUGIN_CLASS PluginClass pager_plugin_class = {
 
     constructor : pager_constructor,
     destructor  : pager_destructor,
-    config : NULL,
-    save : NULL,
     panel_configuration_changed : pager_panel_configuration_changed
 };

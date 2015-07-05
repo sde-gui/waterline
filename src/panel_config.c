@@ -199,8 +199,8 @@ static void panel_write_plugins_configuration_to_json_object(Panel* p)
         su_json_dot_set_int(plugin->json, "padding", plugin->padding);
         su_json_dot_set_int(plugin->json, "border", plugin->border);
 
-        if (plugin->class->save)
-            plugin->class->save(plugin);
+        if (plugin->class->save_configuration)
+            plugin->class->save_configuration(plugin);
 
         json_array_append(json_plugins, plugin->json);
     }

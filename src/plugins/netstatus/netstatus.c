@@ -198,6 +198,6 @@ PluginClass netstatus_plugin_class = {
 
     constructor : netstatus_constructor,
     destructor  : netstatus_destructor,
-    config : netstatus_config,
-    save : save_config
+    show_properties : netstatus_config,
+    save_configuration : save_config
 };

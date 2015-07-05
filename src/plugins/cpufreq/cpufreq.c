@@ -448,7 +448,4 @@ PluginClass cpufreq_plugin_class = {
 
     constructor : cpufreq_constructor,
     destructor  : cpufreq_destructor,
-    config : NULL,
-    save : NULL,
-    panel_configuration_changed : NULL
 };

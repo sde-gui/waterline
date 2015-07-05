@@ -139,6 +139,6 @@ SYMBOL_PLUGIN_CLASS PluginClass space_plugin_class = {
 
     constructor : space_constructor,
     destructor  : space_destructor,
-    config : space_configure,
-    save : space_save_configuration
+    show_properties : space_configure,
+    save_configuration : space_save_configuration
 };

@@ -5594,8 +5594,8 @@ PluginClass taskbar_plugin_class = {
 
     constructor : taskbar_constructor,
     destructor  : taskbar_destructor,
-    config : taskbar_configure,
-    save : taskbar_save_configuration,
+    show_properties : taskbar_configure,
+    save_configuration : taskbar_save_configuration,
     panel_configuration_changed : taskbar_panel_configuration_changed,
     compositing_mode_changed : taskbar_compositing_mode_changed,
     run_command : taskbar_run_command,

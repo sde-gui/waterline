@@ -893,8 +893,8 @@ SYMBOL_PLUGIN_CLASS PluginClass launchbutton_plugin_class = {
 
     constructor : lb_constructor,
     destructor  : lb_destructor,
-    config : lb_configure,
-    save : lb_save_configuration,
+    show_properties : lb_configure,
+    save_configuration : lb_save_configuration,
     panel_configuration_changed : lb_panel_configuration_changed
 };
 

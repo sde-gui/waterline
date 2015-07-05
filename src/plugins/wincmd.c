@@ -218,7 +218,7 @@ SYMBOL_PLUGIN_CLASS PluginClass wincmd_plugin_class = {
 
     constructor : wincmd_constructor,
     destructor  : wincmd_destructor,
-    save : wincmd_save_configuration,
+    save_configuration : wincmd_save_configuration,
     panel_configuration_changed : wincmd_panel_configuration_changed
 
 };

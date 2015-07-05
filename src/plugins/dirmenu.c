@@ -1017,8 +1017,8 @@ SYMBOL_PLUGIN_CLASS PluginClass dirmenu_plugin_class = {
 
     constructor : dirmenu_constructor,
     destructor  : dirmenu_destructor,
-    config : dirmenu_configure,
-    save : dirmenu_save_configuration,
+    show_properties : dirmenu_configure,
+    save_configuration : dirmenu_save_configuration,
     panel_configuration_changed : dirmenu_panel_configuration_changed,
     run_command : dirmenu_run_command,
     popup_menu_hook : dirmenu_popup_menu_hook

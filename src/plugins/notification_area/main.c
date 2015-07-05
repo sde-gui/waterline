@@ -424,7 +424,7 @@ PluginClass notification_area_plugin_class = {
 
     constructor : na_constructor,
     destructor  : na_destructor,
-    config : na_configure,
-    save : na_save_configuration,
+    show_properties : na_configure,
+    save_configuration : na_save_configuration,
     panel_configuration_changed : na_panel_configuration_changed
 };

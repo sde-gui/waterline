@@ -64,7 +64,7 @@ on_sel_plugin_changed( GtkTreeSelection* tree_sel, GtkWidget* label )
         GtkWidget *edit_btn = GTK_WIDGET(g_object_get_data( G_OBJECT(view), "edit_btn" ));
         gtk_tree_model_get( model, &it, COL_DATA, &pl, -1 );
         gtk_label_set_text( GTK_LABEL(label), _(pl->class->description) );
-        gtk_widget_set_sensitive( edit_btn, pl->class->config != NULL );
+        gtk_widget_set_sensitive(edit_btn, pl->class->show_properties != NULL);
     }
 }
 
@@ -347,8 +347,8 @@ void modify_plugin( GtkTreeView* view )
         return;
 
     gtk_tree_model_get( model, &it, COL_DATA, &pl, -1 );
-    if( pl->class->config )
-        pl->class->config( pl, (GtkWindow*)gtk_widget_get_toplevel(GTK_WIDGET(view)) );
+    if (pl->class->show_properties)
+        pl->class->show_properties(pl, (GtkWindow*)gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 
 static int get_widget_index(    Panel* p, Plugin* pl )

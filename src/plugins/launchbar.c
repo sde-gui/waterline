@@ -954,8 +954,8 @@ SYMBOL_PLUGIN_CLASS PluginClass launchbar_plugin_class = {
 
     constructor : launchbar_constructor,
     destructor  : launchbar_destructor,
-    config : launchbar_configure,
-    save : launchbar_save_configuration,
+    show_properties : launchbar_configure,
+    save_configuration : launchbar_save_configuration,
     panel_configuration_changed : launchbar_panel_configuration_changed,
     add_launch_item : launchbar_add_launch_item,
     get_priority_of_launch_item_adding : launchbar_get_priority_of_launch_item_adding,

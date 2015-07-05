@@ -257,7 +257,7 @@ PluginClass xkb_leds_plugin_class = {
 
     constructor : xkb_leds_constructor,
     destructor  : xkb_leds_destructor,
-    config : xkb_leds_configure,
-    save : xkb_leds_save_configuration,
+    show_properties : xkb_leds_configure,
+    save_configuration : xkb_leds_save_configuration,
     panel_configuration_changed : xkb_leds_panel_configuration_changed
 };

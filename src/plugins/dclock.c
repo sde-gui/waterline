@@ -671,8 +671,8 @@ SYMBOL_PLUGIN_CLASS PluginClass dclock_plugin_class = {
 
     constructor : dclock_constructor,
     destructor  : dclock_destructor,
-    config : dclock_configure,
-    save : dclock_save_configuration,
+    show_properties : dclock_configure,
+    save_configuration : dclock_save_configuration,
     panel_configuration_changed : dclock_panel_configuration_changed,
     run_command : dclock_run_command,
     popup_menu_hook : dclock_popup_menu_hook

@@ -443,7 +443,7 @@ PluginClass cpu_plugin_class = {
 
     constructor : cpu_constructor,
     destructor  : cpu_destructor,
-    config : cpu_configure,
-    save : cpu_save_configuration,
+    show_properties : cpu_configure,
+    save_configuration : cpu_save_configuration,
     panel_configuration_changed : cpu_panel_configuration_changed
 };

@@ -45,7 +45,7 @@ panel_popupmenu_configure(GtkWidget *widget, gpointer user_data)
 
 static void panel_popupmenu_config_plugin( GtkMenuItem* item, Plugin* plugin )
 {
-    plugin->class->config( plugin, GTK_WINDOW(plugin->panel->topgwin) );
+    plugin->class->show_properties(plugin, GTK_WINDOW(plugin->panel->topgwin));
 
     /* FIXME: this should be more elegant */
     plugin->panel->config_changed = TRUE;
@@ -241,7 +241,7 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
             g_free(tooltip);
         }
         gtk_menu_shell_append(menu, menu_item);
-        if (plugin && plugin_class(plugin)->config && !wtl_is_in_kiosk_mode())
+        if (plugin && plugin_class(plugin)->show_properties && !wtl_is_in_kiosk_mode())
             g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_config_plugin), plugin);
         else
             gtk_widget_set_sensitive(menu_item, FALSE);

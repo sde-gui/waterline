@@ -307,6 +307,4 @@ PluginClass volume_plugin_class = {
 
     constructor : volume_constructor,
     destructor  : volume_destructor,
-    config : NULL,
-    save : NULL
 };

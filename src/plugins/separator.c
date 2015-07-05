@@ -98,7 +98,5 @@ SYMBOL_PLUGIN_CLASS PluginClass separator_plugin_class = {
 
     constructor : separator_constructor,
     destructor  : separator_destructor,
-    config : NULL,
-    save : NULL,
     panel_configuration_changed : separator_panel_configuration_changed
 };

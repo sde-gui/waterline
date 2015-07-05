@@ -235,8 +235,8 @@ PluginClass deskno_plugin_class = {
 
     constructor : deskno_constructor,
     destructor  : deskno_destructor,
-    config : deskno_configure,
-    save : deskno_save_configuration,
+    show_properties : deskno_configure,
+    save_configuration : deskno_save_configuration,
     panel_configuration_changed : deskno_panel_configuration_changed
 
 };

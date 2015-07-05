@@ -431,7 +431,6 @@ PluginClass thermal_plugin_class = {
 
     constructor : thermal_constructor,
     destructor  : thermal_destructor,
-    config : config,
-    save : save_config,
-    panel_configuration_changed : NULL
+    show_properties : config,
+    save_configuration : save_config,
 };

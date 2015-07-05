@@ -409,8 +409,8 @@ PluginClass xkb_groups_plugin_class = {
 
     constructor : xkb_groups_constructor,
     destructor  : xkb_groups_destructor,
-    config : xkb_groups_configure,
-    save : xkb_groups_save_configuration,
+    show_properties : xkb_groups_configure,
+    save_configuration : xkb_groups_save_configuration,
     panel_configuration_changed : xkb_groups_panel_configuration_changed
 
 };

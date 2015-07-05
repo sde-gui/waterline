@@ -723,8 +723,8 @@ PluginClass volumealsa_plugin_class = {
 
     constructor : volumealsa_constructor,
     destructor  : volumealsa_destructor,
-    config : volumealsa_configure,
-    save : volumealsa_save_configuration,
+    show_properties : volumealsa_configure,
+    save_configuration : volumealsa_save_configuration,
     panel_configuration_changed : volumealsa_panel_configuration_changed,
     popup_menu_hook : volumealsa_popup_menu_hook
 };

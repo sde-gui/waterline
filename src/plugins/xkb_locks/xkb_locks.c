@@ -327,7 +327,7 @@ PluginClass xkb_locks_plugin_class = {
 
     constructor : xkb_locks_constructor,
     destructor  : xkb_locks_destructor,
-    config : xkb_locks_configure,
-    save : xkb_locks_save_configuration,
+    show_properties : xkb_locks_configure,
+    save_configuration : xkb_locks_save_configuration,
     panel_configuration_changed : xkb_locks_panel_configuration_changed
 };

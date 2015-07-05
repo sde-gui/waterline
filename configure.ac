@@ -243,7 +243,7 @@ if test x"$plugins_loading" = "xno"; then
 fi
 
 dnl Here are plugin listing.
-ALL_PLUGINS_LIST="taskbar show_desktop notification_area netstatus volume volumealsa cpu deskno battery_indicator xkb_leds xkb_groups xkb_locks thermal cpufreq"
+ALL_PLUGINS_LIST="taskbar show_desktop notification_area netstatus volume volumealsa cpu battery_indicator xkb_leds xkb_groups xkb_locks thermal cpufreq"
 AC_SUBST(ALL_PLUGINS_LIST)
 
 AC_MSG_CHECKING([which plugins should be built dynamically])
@@ -253,7 +253,7 @@ AC_ARG_WITH(plugins,
 [                         'all' builds all plugins (default), 'none' builds none ]
 [                         Possible plugins are: ]
 [                         taskbar, show_desktop, notification_area, netstatus, volume, volumealsa,]
-[                         cpu, deskno, battery_indicator, xkb_leds, xkb_groups, xkb_locks, thermal, cpufreq], plugins="$withval",[plugins="all"])
+[                         cpu, battery_indicator, xkb_leds, xkb_groups, xkb_locks, thermal, cpufreq], plugins="$withval",[plugins="all"])
 
 if test x"$plugins" != xall -a x"$plugins" != xnone; then
     if test x"$plugins_loading" = xno; then
@@ -368,7 +368,6 @@ AC_CONFIG_FILES([
     src/plugins/volume/Makefile
     src/plugins/volumealsa/Makefile
     src/plugins/cpu/Makefile
-    src/plugins/deskno/Makefile
     src/plugins/battery_indicator/Makefile
     src/plugins/xkb_leds/Makefile
     src/plugins/xkb_groups/Makefile
@@ -407,9 +406,6 @@ echo Building dynamic plugins:
     fi
     if test x"$plugin_cpu" != x; then
         AC_MSG_RESULT([    cpu - Display CPU loading])
-    fi
-    if test x"$plugin_deskno" != x; then
-        AC_MSG_RESULT([    deskno - Display desktop number])
     fi
     if test x"$plugin_battery_indicator" != x; then
         AC_MSG_RESULT([    battery_indicator - Battery charge level monitoring plugin])

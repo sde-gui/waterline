@@ -23,7 +23,6 @@ src/libconfigurator/configurator_plugin_list.c
 
 # Putting translation of plugins in main catalog is not a good idea...
 src/plugins/cpu/cpu.c
-src/plugins/deskno/deskno.c
 src/plugins/launchbar.c
 src/plugins/launchbutton.c
 src/plugins/dclock.c

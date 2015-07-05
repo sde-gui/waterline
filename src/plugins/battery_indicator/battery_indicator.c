@@ -291,25 +291,36 @@ static void update_label(BatteryPlugin *iplugin) {
    Don't repaint if percentage of remaining charge and remaining time aren't changed. */
 void update_display(BatteryPlugin *iplugin) {
     char tooltip[ 256 ];
-    battery *b = iplugin->b;
+    battery * b = iplugin->b;
     /* unit: mW */
 
 
     /* no battery is found */
-    if( b == NULL ) 
+    if (b == NULL)
     {
-        gtk_widget_set_tooltip_text( iplugin->vbox, _("No batteries found") );
-
-        if (!iplugin->label)
+        if (iplugin->hide_if_no_battery)
         {
-            iplugin->label = gtk_label_new("");
-            gtk_box_pack_start(GTK_BOX(iplugin->hbox), iplugin->label, TRUE, FALSE, 0);
+            if (iplugin->label)
+                gtk_widget_hide(iplugin->label);
+            if (iplugin->drawingArea)
+                gtk_widget_hide(iplugin->drawingArea);
         }
+        else
+        {
+            gtk_widget_set_tooltip_text( iplugin->vbox, _("No batteries found") );
 
-        gtk_widget_show(iplugin->label);
-        gtk_widget_hide(iplugin->drawingArea);
+            if (!iplugin->label)
+            {
+                iplugin->label = gtk_label_new("");
+                gtk_box_pack_start(GTK_BOX(iplugin->hbox), iplugin->label, TRUE, FALSE, 0);
+            }
 
-        gtk_label_set_text(GTK_LABEL(iplugin->label), _("N/A"));
+            gtk_widget_show(iplugin->label);
+            if (iplugin->drawingArea)
+                gtk_widget_hide(iplugin->drawingArea);
+
+            gtk_label_set_text(GTK_LABEL(iplugin->label), _("N/A"));
+        }
 
         return;
     }
@@ -318,7 +329,7 @@ void update_display(BatteryPlugin *iplugin) {
 
     int rate = iplugin->b->current_now;
     gboolean isCharging = battery_is_charging ( b );
-    
+
     /* Consider running the alarm command */
     if ( !isCharging && rate > 0 && ( ( battery_get_remaining( b ) / 60 ) < iplugin->alarmTime ) )
     {
@@ -546,6 +557,7 @@ constructor(Plugin *p)
     sem_init(&(iplugin->alarmProcessLock), 0, 1);
 
     /* Set default values. */
+    iplugin->hide_if_no_battery = TRUE;
     iplugin->alarmTime = 5;
     iplugin->border_width = 3;
     iplugin->display_as = DISPLAY_AS_TEXT;
@@ -627,9 +639,7 @@ static void config(Plugin *p, GtkWindow* parent)
     dialog = wtl_create_generic_config_dialog(_(plugin_class(p)->name),
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
-#if 0
             _("Hide if there is no battery"), &b->hide_if_no_battery, (GType)CONF_TYPE_BOOL,
-#endif
             "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
             _("Alarm command"), &b->alarmCommand, (GType)CONF_TYPE_STR,
             _("Alarm time (minutes left)"), &b->alarmTime, (GType)CONF_TYPE_INT,

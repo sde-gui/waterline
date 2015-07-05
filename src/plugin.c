@@ -73,10 +73,6 @@ static PluginClass * register_plugin_class(PluginClass * pc, gboolean dynamic)
 /* Initialize the static plugins. */
 static void init_plugin_class_list(void)
 {
-#ifdef STATIC_SEPARATOR
-    REGISTER_STATIC_PLUGIN_CLASS(separator_plugin_class);
-#endif
-
 #ifndef DISABLE_MENU
 #ifdef STATIC_LAUNCHBAR
     REGISTER_STATIC_PLUGIN_CLASS(launchbar_plugin_class);

@@ -30,7 +30,6 @@ PLUGINS_SOURCES = \
 	launchbutton.c \
 	dclock.c \
 	$(MENU_SOURCES) \
-	separator.c \
 	pager.c \
 	space.c \
 	wincmd.c \

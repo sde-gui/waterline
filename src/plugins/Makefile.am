@@ -31,7 +31,7 @@ PLUGINS_SOURCES = \
 	dclock.c \
 	$(MENU_SOURCES) \
 	pager.c \
-	space.c \
+	separator.c \
 	wincmd.c \
 	dirmenu.c
 

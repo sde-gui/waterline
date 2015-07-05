@@ -27,7 +27,7 @@
 #include <glib/gi18n.h>
 #include <sde-utils-jansson.h>
 
-#define PLUGIN_PRIV_TYPE SpacePlugin
+#define PLUGIN_PRIV_TYPE SeparatorPlugin
 
 #include <waterline/symbol_visibility.h>
 #include <waterline/panel.h>
@@ -39,17 +39,17 @@ typedef struct {
     gboolean show_separator;
     GtkWidget * inner_box;
     GtkWidget * separator;
-} SpacePlugin;
+} SeparatorPlugin;
 
-static int space_constructor(Plugin * p);
-static void space_destructor(Plugin * p);
-static void space_apply_configuration(Plugin * p);
-static void space_configure(Plugin * p, GtkWindow * parent);
-static void space_save_configuration(Plugin * p);
+static int separator_constructor(Plugin * p);
+static void separator_destructor(Plugin * p);
+static void separator_apply_configuration(Plugin * p);
+static void separator_configure(Plugin * p, GtkWindow * parent);
+static void separator_save_configuration(Plugin * p);
 
 /******************************************************************************/
 
-#define SU_JSON_OPTION_STRUCTURE SpacePlugin
+#define SU_JSON_OPTION_STRUCTURE SeparatorPlugin
 static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(int, size),
     SU_JSON_OPTION(bool, show_separator),
@@ -58,12 +58,13 @@ static su_json_option_definition option_definitions[] = {
 
 /******************************************************************************/
 
-static int space_constructor(Plugin * p)
+static int separator_constructor(Plugin * p)
 {
-    SpacePlugin * sp = g_new0(SpacePlugin, 1);
+    SeparatorPlugin * sp = g_new0(SeparatorPlugin, 1);
     plugin_set_priv(p, sp);
 
     sp->show_separator = TRUE;
+    sp->size = 5;
 
     su_json_read_options(plugin_inner_json(p), option_definitions, sp);
 
@@ -78,21 +79,21 @@ static int space_constructor(Plugin * p)
 
     g_signal_connect(pwid, "button-press-event", G_CALLBACK(plugin_button_press_event), p);
 
-    space_apply_configuration(p);
+    separator_apply_configuration(p);
     gtk_widget_show(pwid);
     return 1;
 }
 
-static void space_destructor(Plugin * p)
+static void separator_destructor(Plugin * p)
 {
-    SpacePlugin * sp = PRIV(p);
+    SeparatorPlugin * sp = PRIV(p);
     g_free(sp);
 }
 
 /* Callback when the configuration dialog has recorded a configuration change. */
-static void space_apply_configuration(Plugin * p)
+static void separator_apply_configuration(Plugin * p)
 {
-    SpacePlugin * sp = PRIV(p);
+    SeparatorPlugin * sp = PRIV(p);
     GtkWidget * box = plugin_widget(p);
 
     if (sp->separator)
@@ -133,19 +134,19 @@ static void space_apply_configuration(Plugin * p)
         gtk_widget_set_size_request(box, -1, sp->size);
 }
 
-static void space_panel_configuration_changed(Plugin * p)
+static void separator_panel_configuration_changed(Plugin * p)
 {
-    space_apply_configuration(p);
+    separator_apply_configuration(p);
 }
 
 /* Callback when the configuration dialog is to be shown. */
-static void space_configure(Plugin * p, GtkWindow * parent)
+static void separator_configure(Plugin * p, GtkWindow * parent)
 {
-    SpacePlugin * sp = PRIV(p);
+    SeparatorPlugin * sp = PRIV(p);
     GtkWidget * dialog = wtl_create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
-        (GSourceFunc) space_apply_configuration, (gpointer) p,
+        (GSourceFunc) separator_apply_configuration, (gpointer) p,
         _("Size"), &sp->size, (GType)CONF_TYPE_INT,
         _("Show a separator line"), &sp->show_separator, (GType)CONF_TYPE_BOOL,
         NULL);
@@ -157,28 +158,28 @@ static void space_configure(Plugin * p, GtkWindow * parent)
 }
 
 /* Callback when the configuration is to be saved. */
-static void space_save_configuration(Plugin * p)
+static void separator_save_configuration(Plugin * p)
 {
-    SpacePlugin * sp = PRIV(p);
+    SeparatorPlugin * sp = PRIV(p);
     su_json_write_options(plugin_inner_json(p), option_definitions, sp);
 }
 
 /* Plugin descriptor. */
-SYMBOL_PLUGIN_CLASS PluginClass space_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass separator_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 
-    type : "space",
-    name : N_("Spacer"),
+    type : "separator",
+    name : N_("Separator"),
     version: VERSION,
-    description : N_("The Spacer allows you to visually split the panel into sections."),
+    description : N_("The Separator allows you to visually split the panel into sections."),
 
     /* Stretch is available but not default for this plugin. */
     expand_available : TRUE,
 
-    constructor : space_constructor,
-    destructor  : space_destructor,
-    show_properties : space_configure,
-    save_configuration : space_save_configuration,
-    panel_configuration_changed : space_panel_configuration_changed
+    constructor : separator_constructor,
+    destructor  : separator_destructor,
+    show_properties : separator_configure,
+    save_configuration : separator_save_configuration,
+    panel_configuration_changed : separator_panel_configuration_changed
 };

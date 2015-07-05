@@ -48,7 +48,6 @@ struct _Plugin {
 };
 
 /* FIXME: optional definitions */
-#define STATIC_SEPARATOR
 #define STATIC_LAUNCHBAR
 #define STATIC_LAUNCHBUTTON
 #define STATIC_DCLOCK
@@ -56,7 +55,7 @@ struct _Plugin {
 #define STATIC_DIRMENU
 #define STATIC_PAGER
 #define STATIC_MENU
-#define STATIC_SPACE
 #define STATIC_ICONS
+#define STATIC_SEPARATOR
 
 #endif

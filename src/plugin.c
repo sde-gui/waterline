@@ -105,8 +105,8 @@ static void init_plugin_class_list(void)
 #endif
 #endif
 
-#ifdef STATIC_SPACE
-    REGISTER_STATIC_PLUGIN_CLASS(space_plugin_class);
+#ifdef STATIC_SEPARATOR
+    REGISTER_STATIC_PLUGIN_CLASS(separator_plugin_class);
 #endif
 }
 

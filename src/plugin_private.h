@@ -51,7 +51,6 @@ struct _Plugin {
 #define STATIC_LAUNCHBAR
 #define STATIC_LAUNCHBUTTON
 #define STATIC_DCLOCK
-#define STATIC_WINCMD
 #define STATIC_DIRMENU
 #define STATIC_PAGER
 #define STATIC_MENU

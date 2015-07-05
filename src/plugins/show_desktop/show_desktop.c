@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2015 Vadim Ushakov
  * Copyright (c) 2006 LxDE Developers, see the file AUTHORS for details.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,7 +29,7 @@
 #include <sde-utils.h>
 #include <sde-utils-jansson.h>
 
-#define PLUGIN_PRIV_TYPE WinCmdPlugin
+#define PLUGIN_PRIV_TYPE ShowDesktopPlugin
 
 #include <waterline/symbol_visibility.h>
 #include <waterline/panel.h>
@@ -49,18 +50,18 @@ typedef enum {
 typedef struct {
     char * image;                   /* Main icon */
     gboolean toggle_state;          /* State of toggle */
-} WinCmdPlugin;
+} ShowDesktopPlugin;
 
-static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command);
-static gboolean wincmd_button_clicked(GtkWidget * widget, GdkEventButton * event, Plugin * plugin);
-static int wincmd_constructor(Plugin * p);
-static void wincmd_destructor(Plugin * p);
-static void wincmd_save_configuration(Plugin * p);
-static void wincmd_panel_configuration_changed(Plugin * p);
+static void show_desktop_execute(ShowDesktopPlugin * wc, WindowCommand command);
+static gboolean show_desktop_button_clicked(GtkWidget * widget, GdkEventButton * event, Plugin * plugin);
+static int show_desktop_constructor(Plugin * p);
+static void show_desktop_destructor(Plugin * p);
+static void show_desktop_save_configuration(Plugin * p);
+static void show_desktop_panel_configuration_changed(Plugin * p);
 
 /******************************************************************************/
 
-#define SU_JSON_OPTION_STRUCTURE WinCmdPlugin
+#define SU_JSON_OPTION_STRUCTURE ShowDesktopPlugin
 static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(string, image),
     {0,}
@@ -69,7 +70,7 @@ static su_json_option_definition option_definitions[] = {
 /******************************************************************************/
 
 /* Execute a window command. */
-static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
+static void show_desktop_execute(ShowDesktopPlugin * wc, WindowCommand command)
 {
     /* Get the list of all windows. */
     int client_count;
@@ -119,9 +120,9 @@ static void wincmd_execute(WinCmdPlugin * wc, WindowCommand command)
 }
 
 /* Handler for "clicked" signal on main widget. */
-static gboolean wincmd_button_clicked(GtkWidget * widget, GdkEventButton * event, Plugin * plugin)
+static gboolean show_desktop_button_clicked(GtkWidget * widget, GdkEventButton * event, Plugin * plugin)
 {
-    WinCmdPlugin * wc = PRIV(plugin);
+    ShowDesktopPlugin * wc = PRIV(plugin);
 
     /* Standard right-click handling. */
     if (plugin_button_press_event(widget, event, plugin))
@@ -144,21 +145,21 @@ static gboolean wincmd_button_clicked(GtkWidget * widget, GdkEventButton * event
             wc->toggle_state = !wc->toggle_state;
         }
         else
-            wincmd_execute(wc, WC_ICONIFY);
+            show_desktop_execute(wc, WC_ICONIFY);
     }
 
     /* Middle-click to shade. */
     else if (event->button == 2)
-        wincmd_execute(wc, WC_SHADE);
+        show_desktop_execute(wc, WC_SHADE);
 
     return TRUE;
 }
 
 /* Plugin constructor. */
-static int wincmd_constructor(Plugin * p)
+static int show_desktop_constructor(Plugin * p)
 {
     /* Allocate plugin context and set into Plugin private data pointer. */
-    WinCmdPlugin * wc = g_new0(WinCmdPlugin, 1);
+    ShowDesktopPlugin * wc = g_new0(ShowDesktopPlugin, 1);
     plugin_set_priv(p, wc);
 
     su_json_read_options(plugin_inner_json(p), option_definitions, wc);
@@ -174,8 +175,8 @@ static int wincmd_constructor(Plugin * p)
     GtkWidget * pwid = wtl_button_new_from_image_name(p, wc->image, plugin_get_icon_size(p));
     plugin_set_widget(p, pwid);
     gtk_container_set_border_width(GTK_CONTAINER(pwid), 0);
-    g_signal_connect(G_OBJECT(pwid), "button_press_event", G_CALLBACK(wincmd_button_clicked), (gpointer) p);
-    gtk_widget_set_tooltip_text(pwid, _("Left click to iconify all windows.  Middle click to shade them."));
+    g_signal_connect(G_OBJECT(pwid), "button_press_event", G_CALLBACK(show_desktop_button_clicked), (gpointer) p);
+    gtk_widget_set_tooltip_text(pwid, _("Left click to iconify all windows.\nMiddle click to shade them."));
 
     /* Show the widget and return. */
     gtk_widget_show(pwid);
@@ -183,42 +184,42 @@ static int wincmd_constructor(Plugin * p)
 }
 
 /* Plugin destructor. */
-static void wincmd_destructor(Plugin * p)
+static void show_desktop_destructor(Plugin * p)
 {
-    WinCmdPlugin * wc = PRIV(p);
+    ShowDesktopPlugin * wc = PRIV(p);
     g_free(wc->image);
     g_free(wc);
 }
 
 
 /* Save the configuration to the configuration file. */
-static void wincmd_save_configuration(Plugin * p)
+static void show_desktop_save_configuration(Plugin * p)
 {
-    WinCmdPlugin * wc = PRIV(p);
+    ShowDesktopPlugin * wc = PRIV(p);
     su_json_write_options(plugin_inner_json(p), option_definitions, wc);
 }
 
 /* Callback when panel configuration changes. */
-static void wincmd_panel_configuration_changed(Plugin * p)
+static void show_desktop_panel_configuration_changed(Plugin * p)
 {
-    WinCmdPlugin * wc = PRIV(p);
+    ShowDesktopPlugin * wc = PRIV(p);
     wtl_button_set_image_name(plugin_widget(p), wc->image, plugin_get_icon_size(p));
 }
 
 /* Plugin descriptor. */
-SYMBOL_PLUGIN_CLASS PluginClass wincmd_plugin_class = {
+SYMBOL_PLUGIN_CLASS PluginClass show_desktop_plugin_class = {
 
     PLUGINCLASS_VERSIONING,
 
-    type : "wincmd",
-    name : N_("Minimize All Windows"),
+    type : "show_desktop",
+    name : N_("Show Desktop"),
     version: VERSION,
-    description : N_("Sends commands to all desktop windows.\nSupported commands are 1) iconify and 2) shade"),
+    description : N_("The Show Desktop button allows you to iconify or shade all windows"),
     category: PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
 
-    constructor : wincmd_constructor,
-    destructor  : wincmd_destructor,
-    save_configuration : wincmd_save_configuration,
-    panel_configuration_changed : wincmd_panel_configuration_changed
+    constructor : show_desktop_constructor,
+    destructor  : show_desktop_destructor,
+    save_configuration : show_desktop_save_configuration,
+    panel_configuration_changed : show_desktop_panel_configuration_changed
 
 };

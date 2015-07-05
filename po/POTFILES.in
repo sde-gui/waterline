@@ -31,10 +31,11 @@ src/plugins/menu.c
 src/plugins/separator.c
 src/plugins/pager.c
 src/plugins/xkb_groups/xkb_groups.c
-src/plugins/wincmd.c
 src/plugins/dirmenu.c
 
 src/plugins/taskbar/taskbar.c
+
+src/plugins/show_desktop/show_desktop.c
 
 src/plugins/notification_area/fixedtip.c
 src/plugins/notification_area/main.c

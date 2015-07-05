@@ -32,7 +32,6 @@ PLUGINS_SOURCES = \
 	$(MENU_SOURCES) \
 	pager.c \
 	separator.c \
-	wincmd.c \
 	dirmenu.c
 
 libbuiltin_plugins_a_SOURCES = \

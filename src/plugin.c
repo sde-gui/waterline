@@ -87,10 +87,6 @@ static void init_plugin_class_list(void)
     REGISTER_STATIC_PLUGIN_CLASS(dclock_plugin_class);
 #endif
 
-#ifdef STATIC_WINCMD
-    REGISTER_STATIC_PLUGIN_CLASS(wincmd_plugin_class);
-#endif
-
 #ifdef STATIC_DIRMENU
     REGISTER_STATIC_PLUGIN_CLASS(dirmenu_plugin_class);
 #endif

@@ -243,7 +243,7 @@ if test x"$plugins_loading" = "xno"; then
 fi
 
 dnl Here are plugin listing.
-ALL_PLUGINS_LIST="taskbar notification_area netstatus volume volumealsa cpu deskno battery_indicator xkb_leds xkb_groups xkb_locks thermal cpufreq"
+ALL_PLUGINS_LIST="taskbar show_desktop notification_area netstatus volume volumealsa cpu deskno battery_indicator xkb_leds xkb_groups xkb_locks thermal cpufreq"
 AC_SUBST(ALL_PLUGINS_LIST)
 
 AC_MSG_CHECKING([which plugins should be built dynamically])
@@ -252,7 +252,7 @@ AC_ARG_WITH(plugins,
 [                         plugins may be comma separated ]
 [                         'all' builds all plugins (default), 'none' builds none ]
 [                         Possible plugins are: ]
-[                         taskbar, notification_area, netstatus, volume, volumealsa,]
+[                         taskbar, show_desktop, notification_area, netstatus, volume, volumealsa,]
 [                         cpu, deskno, battery_indicator, xkb_leds, xkb_groups, xkb_locks, thermal, cpufreq], plugins="$withval",[plugins="all"])
 
 if test x"$plugins" != xall -a x"$plugins" != xnone; then
@@ -362,6 +362,7 @@ AC_CONFIG_FILES([
     src/libconfigurator/Makefile
     src/plugins/Makefile
     src/plugins/taskbar/Makefile
+    src/plugins/show_desktop/Makefile
     src/plugins/notification_area/Makefile
     src/plugins/netstatus/Makefile
     src/plugins/volume/Makefile
@@ -388,6 +389,9 @@ if test x$plugins_loading = xyes; then
 echo Building dynamic plugins:
     if test x"$plugin_taskbar" != x; then
         AC_MSG_RESULT([    taskbar - Taskbar])
+    fi
+    if test x"$plugin_show_desktop" != x; then
+        AC_MSG_RESULT([    show_desktop - Show Desktop button])
     fi
     if test x"$plugin_notification_area" != x; then
         AC_MSG_RESULT([    notification_area - notification area])

@@ -21,21 +21,11 @@
 #include <config.h>
 #endif
 
-#include <X11/Xatom.h>
-#include <X11/cursorfont.h>
-
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
-#include <gio/gio.h>
-#include <ctype.h>
-#include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <pwd.h>
-#include <grp.h>
 
 #include <sde-utils.h>
 
@@ -43,7 +33,6 @@
 #include <waterline/misc.h>
 #include <waterline/panel.h>
 #include "panel_internal.h"
-#include <waterline/x11_utils.h>
 #include <waterline/gtkcompat.h>
 
 /********************************************************************/

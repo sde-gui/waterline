@@ -91,10 +91,6 @@ static void init_plugin_class_list(void)
     REGISTER_STATIC_PLUGIN_CLASS(dirmenu_plugin_class);
 #endif
 
-#ifdef STATIC_PAGER
-    REGISTER_STATIC_PLUGIN_CLASS(pager_plugin_class);
-#endif
-
 #ifndef DISABLE_MENU
 #ifdef STATIC_MENU
     REGISTER_STATIC_PLUGIN_CLASS(menu_plugin_class);

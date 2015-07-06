@@ -52,7 +52,6 @@ struct _Plugin {
 #define STATIC_LAUNCHBUTTON
 #define STATIC_DCLOCK
 #define STATIC_DIRMENU
-#define STATIC_PAGER
 #define STATIC_MENU
 #define STATIC_ICONS
 #define STATIC_SEPARATOR

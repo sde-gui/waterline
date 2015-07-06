@@ -28,7 +28,7 @@ src/plugins/launchbutton.c
 src/plugins/dclock.c
 src/plugins/menu.c
 src/plugins/separator.c
-src/plugins/pager.c
+src/plugins/pager/pager.c
 src/plugins/xkb_groups/xkb_groups.c
 src/plugins/dirmenu.c
 

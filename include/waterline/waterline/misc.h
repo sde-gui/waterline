@@ -51,6 +51,9 @@ enum {
     CONF_TYPE_SET_PROPERTY
 };
 
+extern GtkWidget * wtl_gtk_widget_show(GtkWidget * widget);
+extern GtkWidget * wtl_gtk_widget_hide(GtkWidget * widget);
+
 extern GtkWidget * wtl_load_icon_as_gtk_image(const char * name, int width, int height);
 
 extern void wtl_show_error_message(GtkWindow * parent_window, const char * message);

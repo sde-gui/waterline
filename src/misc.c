@@ -48,6 +48,20 @@
 
 /********************************************************************/
 
+GtkWidget * wtl_gtk_widget_show(GtkWidget * widget)
+{
+    gtk_widget_show(widget);
+    return widget;
+}
+
+GtkWidget * wtl_gtk_widget_hide(GtkWidget * widget)
+{
+    gtk_widget_hide(widget);
+    return widget;
+}
+
+/********************************************************************/
+
 guint32 wtl_util_gdkcolor_to_uint32(const GdkColor * color)
 {
     guint32 i;

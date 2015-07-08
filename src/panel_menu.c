@@ -233,6 +233,12 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
     GtkMenuShell * menu = GTK_MENU_SHELL(gtk_menu_new());
 
     {
+        GtkWidget * menu_item = gtk_menu_item_new_with_mnemonic(_("Pa_nel"));
+        gtk_menu_shell_append(menu, menu_item);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(panel_submenu));
+    }
+
+    {
         GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Properties"));
         if (plugin)
         {
@@ -245,14 +251,6 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
             g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_config_plugin), plugin);
         else
             gtk_widget_set_sensitive(menu_item, FALSE);
-    }
-
-    gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-
-    {
-        GtkWidget * menu_item = gtk_menu_item_new_with_mnemonic(_("Pa_nel"));
-        gtk_menu_shell_append(menu, menu_item);
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(panel_submenu));
     }
 
     gtk_widget_show_all(GTK_WIDGET(menu));

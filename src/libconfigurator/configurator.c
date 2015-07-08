@@ -524,34 +524,34 @@ static void adjust_geometry_terminology(Panel * p)
     char * edge_align_text = "";
     switch (p->edge)
     {
-        case EDGE_TOP   : edge_align_text = _("Top margin:"); break;
-        case EDGE_BOTTOM: edge_align_text = _("Bottom margin:"); break;
-        case EDGE_LEFT  : edge_align_text = _("Left margin:"); break;
-        case EDGE_RIGHT : edge_align_text = _("Right margin:"); break;
+        case EDGE_TOP   : edge_align_text = _("Top margi_n:"); break;
+        case EDGE_BOTTOM: edge_align_text = _("Bottom margi_n:"); break;
+        case EDGE_LEFT  : edge_align_text = _("Left margi_n:"); break;
+        case EDGE_RIGHT : edge_align_text = _("Right margi_n:"); break;
     }
-    gtk_label_set_text(GTK_LABEL(p->pref_dialog.edge_margin_label), edge_align_text);
+    gtk_label_set_markup_with_mnemonic(GTK_LABEL(p->pref_dialog.edge_margin_label), edge_align_text);
 
     if ((p->edge == EDGE_TOP) || (p->edge == EDGE_BOTTOM))
     {
-        gtk_label_set_text(GTK_LABEL(p->pref_dialog.height_label), _("Height:"));
-        gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Width:"));
-        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Left"));
-        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Right"));
+        gtk_label_set_markup_with_mnemonic(GTK_LABEL(p->pref_dialog.height_label), _("_Height:"));
+        gtk_label_set_markup_with_mnemonic(GTK_LABEL(p->pref_dialog.width_label), _("_Width:"));
+        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("_Left"));
+        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("_Right"));
         if (p->align == ALIGN_RIGHT)
-            gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Right margin:"));
+            gtk_label_set_markup_with_mnemonic(GTK_LABEL(p->pref_dialog.align_margin_label), _("Right margi_n:"));
         else
-            gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Left margin:"));
+            gtk_label_set_markup_with_mnemonic(GTK_LABEL(p->pref_dialog.align_margin_label), _("Left margi_n:"));
     }
     else
     {
-        gtk_label_set_text(GTK_LABEL(p->pref_dialog.height_label), _("Width:"));
-        gtk_label_set_text(GTK_LABEL(p->pref_dialog.width_label), _("Height:"));
-        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("Top"));
-        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("Bottom"));
+        gtk_label_set_markup_with_mnemonic(GTK_LABEL(p->pref_dialog.height_label), _("_Width:"));
+        gtk_label_set_markup_with_mnemonic(GTK_LABEL(p->pref_dialog.width_label), _("_Height:"));
+        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_left_label), _("_Top"));
+        gtk_button_set_label(GTK_BUTTON(p->pref_dialog.alignment_right_label), _("_Bottom"));
         if (p->align == ALIGN_RIGHT)
-            gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Bottom margin:"));
+            gtk_label_set_markup_with_mnemonic(GTK_LABEL(p->pref_dialog.align_margin_label), _("Bottom margi_n:"));
         else
-            gtk_label_set_text(GTK_LABEL(p->pref_dialog.align_margin_label), _("Top margin:"));
+            gtk_label_set_markup_with_mnemonic(GTK_LABEL(p->pref_dialog.align_margin_label), _("Top margi_n:"));
     }
 }
 

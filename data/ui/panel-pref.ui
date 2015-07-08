@@ -1519,7 +1519,7 @@ for the true transparency support.&lt;/i&gt;</property>
                     </child>
                     <child>
                       <object class="GtkButton" id="edit_btn">
-                        <property name="label">gtk-edit</property>
+                        <property name="label">gtk-properties</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>

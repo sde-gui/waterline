@@ -700,6 +700,8 @@ static void volumealsa_popup_menu_hook(struct _Plugin * plugin, GtkMenu * menu)
     const char * command = volumealsa_get_volume_control_command(vol);
     if (command)
     {
+        gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), wtl_gtk_widget_show(gtk_separator_menu_item_new()));
+
         GtkWidget * mi = gtk_menu_item_new_with_label(_("Volume Control..."));
         gchar * tooltip = g_strdup_printf(_("Run %s"), command);
         gtk_widget_set_tooltip_text(mi, tooltip);

@@ -164,6 +164,8 @@ static void dclock_generate_copy_to_clipboard_menu(GtkMenu* panel_menu, Plugin *
     }
     else
     {
+        gtk_menu_shell_prepend(GTK_MENU_SHELL(panel_menu), wtl_gtk_widget_show(gtk_separator_menu_item_new()));
+
         GtkWidget * copy_to_clipboard = gtk_menu_item_new_with_label(_("Copy to Clipboard..."));
         gtk_menu_shell_prepend(GTK_MENU_SHELL(panel_menu), copy_to_clipboard);
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(copy_to_clipboard), menu);

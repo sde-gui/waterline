@@ -238,14 +238,16 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(panel_submenu));
     }
 
+    if (plugin)
     {
-        GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Properties"));
-        if (plugin)
-        {
-            char * tooltip = g_strdup_printf(_("\"%s\" Settings"), _(plugin_class(plugin)->name));
-            gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
-            g_free(tooltip);
-        }
+        char * name = g_strdup_printf(_("_Applet Properties"), _(plugin_class(plugin)->name));
+        GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(name);
+        g_free(name);
+
+        char * tooltip = g_strdup_printf(_("Properties of the applet \"%s\""), _(plugin_class(plugin)->name));
+        gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
+        g_free(tooltip);
+
         gtk_menu_shell_append(menu, menu_item);
         if (plugin && plugin_class(plugin)->show_properties && !wtl_is_in_kiosk_mode())
             g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_config_plugin), plugin);

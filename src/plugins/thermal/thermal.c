@@ -354,6 +354,7 @@ thermal_constructor(Plugin *p)
     th->warning1_temperature = 75;
     th->warning2_temperature = 80;
     th->autoselect_warning_levels = TRUE;
+    th->autoselect_sensor = TRUE;
 
     th->normal_color = g_strdup("#00ff00");
     th->warning1_color = g_strdup("#fff000");

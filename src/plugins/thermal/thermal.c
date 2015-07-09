@@ -244,7 +244,7 @@ static void update_display(thermal *th, gboolean force)
     }
     else
     {
-        gchar * buffer = g_strdup_printf("<span color=\"#%06x\"><b>%02d</b></span>",
+        gchar * buffer = g_strdup_printf("<span color=\"#%06x\"><b>%02d°C</b></span>",
             wtl_util_gdkcolor_to_uint32(&color), temp);
         gtk_label_set_markup (GTK_LABEL(th->namew), buffer);
         g_free(buffer);

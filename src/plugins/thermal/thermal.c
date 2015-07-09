@@ -52,6 +52,7 @@ typedef struct _thermal {
     Plugin * plugin;
     GtkWidget *main;
     GtkWidget *namew;
+    int previous_temperature;
     int critical;
     int warning1_temperature;
     int warning2_temperature;
@@ -219,10 +220,15 @@ set_get_functions(thermal *th)
     }
 }
 
-static gint
-update_display(thermal *th)
+static void update_display(thermal *th, gboolean force)
 {
     int temp = th->get_temperature(th);
+
+    if (th->previous_temperature == temp && !force)
+        return;
+
+    th->previous_temperature = temp;
+
     GdkColor color;
 
     if (temp >= th->warning2_temperature)
@@ -232,8 +238,10 @@ update_display(thermal *th)
     else
         color = th->cl_normal;
 
-    if(temp == -1)
-        panel_draw_label_text(plugin_panel(th->plugin), th->namew, "NA", STYLE_BOLD | STYLE_CUSTOM_COLOR);
+    if (temp == -1)
+    {
+        panel_draw_label_text(plugin_panel(th->plugin), th->namew, "N/A", STYLE_BOLD | STYLE_CUSTOM_COLOR);
+    }
     else
     {
         gchar * buffer = g_strdup_printf("<span color=\"#%06x\"><b>%02d</b></span>",
@@ -241,7 +249,11 @@ update_display(thermal *th)
         gtk_label_set_markup (GTK_LABEL(th->namew), buffer);
         g_free(buffer);
     }
+}
 
+static gboolean update_display_timeout(thermal *th)
+{
+    update_display(th, FALSE);
     return TRUE;
 }
 
@@ -358,8 +370,8 @@ thermal_constructor(Plugin *p)
 
     gtk_widget_show(th->namew);
 
-    update_display(th);
-    th->timer = g_timeout_add(1000, (GSourceFunc) update_display, (gpointer)th);
+    update_display(th, TRUE);
+    th->timer = g_timeout_add(2000, (GSourceFunc) update_display_timeout, (gpointer)th);
 
     return TRUE;
 }

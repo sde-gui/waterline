@@ -85,6 +85,7 @@ typedef struct {
     GdkPixmap *pixmap;
     GtkWidget *drawingArea;
     GtkWidget *label;
+    gchar * previous_markup;
 
     int display_as;
 
@@ -256,7 +257,19 @@ static void update_bar(BatteryPlugin *iplugin)
     gtk_widget_queue_draw(iplugin->drawingArea);
 }
 
-static void update_label(BatteryPlugin *iplugin) {
+static void label_set_markup(BatteryPlugin * iplugin, const char * markup)
+{
+    if (iplugin->previous_markup && g_strcmp0(iplugin->previous_markup, markup) == 0)
+        return;
+
+    gtk_label_set_markup(GTK_LABEL(iplugin->label), markup);
+    if (iplugin->previous_markup)
+        g_free(iplugin->previous_markup);
+    iplugin->previous_markup = g_strdup(markup);
+}
+
+static void update_label(BatteryPlugin *iplugin)
+{
 
     if (!iplugin->label)
         return;
@@ -281,7 +294,7 @@ static void update_label(BatteryPlugin *iplugin) {
 
     gchar * markup = g_strdup_printf("<span color=\"#%06x\">%s</span>", color, text);
 
-    gtk_label_set_markup(GTK_LABEL(iplugin->label), markup);
+    label_set_markup(iplugin, markup);
 
     g_free(markup);
     g_free(text);
@@ -319,7 +332,7 @@ void update_display(BatteryPlugin *iplugin) {
             if (iplugin->drawingArea)
                 gtk_widget_hide(iplugin->drawingArea);
 
-            gtk_label_set_text(GTK_LABEL(iplugin->label), _("N/A"));
+            label_set_markup(iplugin, _("N/A"));
         }
 
         return;
@@ -583,6 +596,9 @@ static void
 destructor(Plugin *p)
 {
     BatteryPlugin * iplugin = PRIV(p);
+
+    if (iplugin->previous_markup)
+        g_free(iplugin->previous_markup);
 
     if (iplugin->pixmap)
         g_object_unref(iplugin->pixmap);

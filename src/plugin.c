@@ -35,6 +35,7 @@
 #include "panel_internal.h"
 #include "panel_private.h"
 
+#include <glib/gi18n.h>
 #include <glib-object.h>
 
 static GList * pcl = NULL; /* List of PluginClass structures */
@@ -619,4 +620,13 @@ json_t * plugin_inner_json(Plugin * plugin)
     }
 
     return json_inner;
+}
+
+gchar * plugin_get_display_name(Plugin * plugin)
+{
+    const char * name1 = _(plugin->class->name);
+    gchar * name2 = plugin->class->get_name ? plugin->class->get_name(plugin) : NULL;
+    gchar * name = su_str_empty(name2) ? g_strdup(name1) : g_strdup_printf(_("%s (%s)"), name1, name2);
+    g_free(name2);
+    return name;
 }

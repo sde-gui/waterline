@@ -880,6 +880,25 @@ static void lb_panel_configuration_changed(Plugin * p)
     lb_apply_configuration(p);
 }
 
+static gchar * lb_get_name(Plugin * p)
+{
+    lb_t * lb = PRIV(p);
+
+    const char * name = NULL;
+
+    if (!su_str_empty(lb->title))
+        name = lb->title;
+    else if (!su_str_empty(lb->tooltip))
+        name = lb->tooltip;
+    else if (!su_str_empty(lb->command1))
+        name = lb->command1;
+    else if (!su_str_empty(lb->command2))
+        name = lb->command2;
+    else if (!su_str_empty(lb->command3))
+        name = lb->command3;
+
+    return g_strdup(name);
+}
 
 SYMBOL_PLUGIN_CLASS PluginClass launchbutton_plugin_class = {
 
@@ -893,6 +912,7 @@ SYMBOL_PLUGIN_CLASS PluginClass launchbutton_plugin_class = {
 
     constructor : lb_constructor,
     destructor  : lb_destructor,
+    get_name : lb_get_name,
     show_properties : lb_configure,
     save_configuration : lb_save_configuration,
     panel_configuration_changed : lb_panel_configuration_changed

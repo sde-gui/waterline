@@ -33,7 +33,7 @@
 /* Support for external plugin versioning.
  * Plugins must invoke PLUGINCLASS_VERSIONING when they instantiate PluginClass. */
 #define PLUGINCLASS_MAGIC ((unsigned long)0x7bd4370f)
-#define PLUGINCLASS_VERSION 6
+#define PLUGINCLASS_VERSION 7
 #define PLUGINCLASS_BASE_SIZE ((unsigned short) (uintptr_t) & ((PluginClass*)0)->__end_of_required_part)
 #define PLUGINCLASS_VERSIONING \
     structure_magic : PLUGINCLASS_MAGIC, \
@@ -87,6 +87,8 @@ struct _PluginClass {
     void (*save_configuration)(struct _Plugin * plugin);
     void (*panel_configuration_changed)(struct _Plugin * plugin);
     void (*compositing_mode_changed)(struct _Plugin * plugin);
+
+    gchar * (*get_name)(struct _Plugin * plugin);
 
     void (*run_command)(struct _Plugin * plugin, char ** argv, int argc);
     void (*open_system_menu)(struct _Plugin * plugin);
@@ -142,5 +144,7 @@ extern void plugin_run_command(Plugin * plugin, char ** argv, int argc);
 extern void plugin_save_configuration(Plugin * plugin);
 
 extern json_t * plugin_inner_json(Plugin * plugin);
+
+extern gchar * plugin_get_display_name(Plugin * plugin);
 
 #endif

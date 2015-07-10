@@ -145,12 +145,17 @@ static void init_plugin_list( Panel* p, GtkTreeView* view, GtkWidget* label )
     {
         GtkTreeIter it;
         Plugin* pl = (Plugin*)l->data;
+
+        gchar * name = plugin_get_display_name(pl);
+
         gtk_list_store_append( list, &it );
         gtk_list_store_set( list, &it,
-                            COL_NAME, _(pl->class->name),
+                            COL_NAME, name,
                             COL_EXPAND, pl->expand,
                             COL_DATA, pl,
                             -1);
+
+        g_free(name);
     }
     gtk_tree_view_set_model( view, GTK_TREE_MODEL( list ) );
     g_signal_connect( view, "row-activated",
@@ -189,12 +194,17 @@ static void on_add_plugin_menu_item_activate(GtkWidget * menu_item, GtkTreeView 
             GtkTreeIter it;
             GtkTreeModel* model;
 
+            gchar * name = plugin_get_display_name(pl);
+
             model = gtk_tree_view_get_model( _view );
             gtk_list_store_append( (GtkListStore*)model, &it );
             gtk_list_store_set( (GtkListStore*)model, &it,
-                COL_NAME, _(pl->class->name),
+                COL_NAME, _(name),
                 COL_EXPAND, pl->expand,
                 COL_DATA, pl, -1 );
+
+            g_free(name);
+
             tree_sel = gtk_tree_view_get_selection( _view );
             gtk_tree_selection_select_iter( tree_sel, &it );
             if ((tree_path = gtk_tree_model_get_path(model, &it)) != NULL)

@@ -214,45 +214,48 @@ static void task_get_geometry(PagerTask * tk)
 /* Draw the representation of a task's window on the backing pixmap. */
 static void task_update_pixmap(PagerTask * tk, PagerDesk * d)
 {
-    if ((d->pixmap != NULL) && (task_is_visible(tk)))
+    if (!d->pixmap)
+        return;
+
+    if (!task_is_visible(tk))
+        return;
+
+    if ((tk->desktop != ALL_DESKTOPS) && (tk->desktop != d->desktop_number))
+        return;
+
+    /* Scale the representation of the window to the drawing area. */
+    int x = (gfloat) tk->x * d->scale_x;
+    int y = (gfloat) tk->y * d->scale_y;
+    int w = (gfloat) tk->w * d->scale_x;
+    int h = ((tk->nws.shaded) ? 3 : (gfloat) tk->h * d->scale_y);
+    if ((w >= 3) && (h >= 3))
     {
-        if ((tk->desktop == ALL_DESKTOPS) || (tk->desktop == d->desktop_number))
-        {
-            /* Scale the representation of the window to the drawing area. */
-            int x = (gfloat) tk->x * d->scale_x;
-            int y = (gfloat) tk->y * d->scale_y;
-            int w = (gfloat) tk->w * d->scale_x;
-            int h = ((tk->nws.shaded) ? 3 : (gfloat) tk->h * d->scale_y);
-            if ((w >= 3) && (h >= 3))
-            {
-                /* Draw the window representation and a border. */
-                GtkWidget * widget = GTK_WIDGET(d->da);
+        /* Draw the window representation and a border. */
+        GtkWidget * widget = GTK_WIDGET(d->da);
 
-                cairo_t * cr = gdk_cairo_create(d->pixmap);
+        cairo_t * cr = gdk_cairo_create(d->pixmap);
 
-                cairo_set_line_width (cr, 1.0);
-                cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
+        cairo_set_line_width (cr, 1.0);
+        cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
 
-                if (d->pg->focused_task == tk)
-                    gdk_cairo_set_source_color(cr, &widget->style->bg[GTK_STATE_SELECTED]);
-                else
-                    gdk_cairo_set_source_color(cr, &widget->style->bg[GTK_STATE_NORMAL]);
+        if (d->pg->focused_task == tk)
+            gdk_cairo_set_source_color(cr, &widget->style->bg[GTK_STATE_SELECTED]);
+        else
+            gdk_cairo_set_source_color(cr, &widget->style->bg[GTK_STATE_NORMAL]);
 
-                cairo_rectangle(cr, x + 0.5, y + 0.5, w, h);
-                cairo_fill(cr);
+        cairo_rectangle(cr, x + 0.5, y + 0.5, w, h);
+        cairo_fill(cr);
 
-                if (d->pg->focused_task == tk)
-                    gdk_cairo_set_source_color(cr, &widget->style->fg[GTK_STATE_SELECTED]);
-                else
-                    gdk_cairo_set_source_color(cr, &widget->style->fg[GTK_STATE_NORMAL]);
+        if (d->pg->focused_task == tk)
+            gdk_cairo_set_source_color(cr, &widget->style->fg[GTK_STATE_SELECTED]);
+        else
+            gdk_cairo_set_source_color(cr, &widget->style->fg[GTK_STATE_NORMAL]);
 
-                cairo_rectangle(cr, x + 0.5, y + 0.5, w, h);
-                cairo_stroke(cr);
+        cairo_rectangle(cr, x + 0.5, y + 0.5, w, h);
+        cairo_stroke(cr);
 
-                cairo_destroy(cr);
+        cairo_destroy(cr);
 
-            }
-        }
     }
 }
 

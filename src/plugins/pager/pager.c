@@ -53,6 +53,7 @@ struct _pager;
 
 /* Structure representing a "task", an open window. */
 typedef struct _task {
+    struct _pager * pager;
     struct _task * task_flink; /* Forward link of task list */
     Window win;                /* X window ID */
     int x;                     /* Geometry as reported by X server */
@@ -97,12 +98,12 @@ typedef struct _pager {
 
 static gboolean task_is_visible(PagerTask * tk);
 static PagerTask * task_lookup(PagerPlugin * pg, Window win);
-static void task_delete(PagerPlugin * pg, PagerTask * tk, gboolean unlink);
+static void task_delete(PagerTask * tk, gboolean unlink);
 static void task_get_geometry(PagerTask * tk);
 static void task_update_pixmap(PagerTask * tk, PagerDesktop * d);
 static void desktop_set_dirty(PagerDesktop * d);
 static void pager_set_dirty_all_desktops(PagerPlugin * pg);
-static void task_set_desktop_dirty(PagerPlugin * pg, PagerTask * tk);
+static void task_set_desktop_dirty(PagerTask * tk);
 static gboolean desktop_configure_event(GtkWidget * widget, GdkEventConfigure * event, PagerDesktop * d);
 static gboolean desktop_expose_event(GtkWidget * widget, GdkEventExpose * event, PagerDesktop * d);
 static gboolean desktop_scroll_event(GtkWidget * widget, GdkEventScroll * event, PagerDesktop * d);
@@ -145,9 +146,10 @@ static PagerTask * task_lookup(PagerPlugin * pg, Window win)
 }
 
 /* Delete a task and optionally unlink it from the task list. */
-static void task_delete(PagerPlugin * pg, PagerTask * tk, gboolean unlink)
+static void task_delete(PagerTask * tk, gboolean unlink)
 {
-    task_set_desktop_dirty(pg, tk);
+    PagerPlugin * pg = tk->pager;
+    task_set_desktop_dirty(tk);
 
     /* If we think this task had focus, remove that. */
     if (pg->focused_task == tk)
@@ -282,8 +284,10 @@ static void pager_set_dirty_all_desktops(PagerPlugin * pg)
 }
 
 /* Mark the desktop on which a specified window resides for redraw. */
-static void task_set_desktop_dirty(PagerPlugin * pg, PagerTask * tk)
+static void task_set_desktop_dirty(PagerTask * tk)
 {
+    PagerPlugin * pg = tk->pager;
+
     if (tk->visible_on_pixmap || task_is_visible(tk))
     {
         if (tk->desktop < pg->number_of_desktops)
@@ -472,21 +476,21 @@ static void pager_property_notify_event(PagerPlugin * pg, XEvent * ev)
                 {
                     /* Window changed state. */
                     tk->ws = wtl_x11_get_wm_state(tk->win);
-                    task_set_desktop_dirty(pg, tk);
+                    task_set_desktop_dirty(tk);
                 }
                 else if (at == a_NET_WM_STATE)
                 {
                     /* Window changed EWMH state. */
                     wtl_x11_get_net_wm_state(tk->win, &tk->nws);
-                    task_set_desktop_dirty(pg, tk);
+                    task_set_desktop_dirty(tk);
                 }
                 else if (at == a_NET_WM_DESKTOP)
                 {
                     /* Window changed desktop.
                      * Mark both old and new desktops for redraw. */
-                    task_set_desktop_dirty(pg, tk);
+                    task_set_desktop_dirty(tk);
                     tk->desktop = wtl_x11_get_net_wm_desktop(tk->win);
-                    task_set_desktop_dirty(pg, tk);
+                    task_set_desktop_dirty(tk);
                 }
 
                 XSetErrorHandler(previous_error_handler);
@@ -503,7 +507,7 @@ static void pager_configure_notify_event(PagerPlugin * pg, XEvent * ev)
     if (tk != NULL)
     {
         task_get_geometry(tk);
-        task_set_desktop_dirty(pg, tk);
+        task_set_desktop_dirty(tk);
     }
 }
 
@@ -533,10 +537,10 @@ static void pager_net_active_window(FbEv * ev, PagerPlugin * pg)
         {
             /* Focused task changed.  Redraw both old and new. */
             if (pg->focused_task != NULL)
-                task_set_desktop_dirty(pg, pg->focused_task);
+                task_set_desktop_dirty(pg->focused_task);
             pg->focused_task = tk;
             if (tk != NULL)
-                task_set_desktop_dirty(pg, tk);
+                task_set_desktop_dirty(tk);
         }
         XFree(focused_window);
     }
@@ -545,7 +549,7 @@ static void pager_net_active_window(FbEv * ev, PagerPlugin * pg)
         /* Focused task disappeared.  Redraw old. */
         if (pg->focused_task != NULL)
         {
-            task_set_desktop_dirty(pg, pg->focused_task);
+            task_set_desktop_dirty(pg->focused_task);
             pg->focused_task = NULL;
         }
     }
@@ -681,7 +685,7 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
                 if (tk->stacking != i)
                 {
                     tk->stacking = i;
-                    task_set_desktop_dirty(pg, tk);
+                    task_set_desktop_dirty(tk);
                 }
             }
 
@@ -690,6 +694,7 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
             {
                 /* Allocate and initialize new task structure. */
                 tk = g_new0(PagerTask, 1);
+                tk->pager = pg;
                 tk->present_in_client_list = TRUE;
                 tk->win = client_list[i];
                 if (!wtl_x11_is_my_own_window(tk->win))
@@ -699,7 +704,7 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
                 wtl_x11_get_net_wm_state(tk->win, &tk->nws);
                 wtl_x11_get_net_wm_window_type(tk->win, &tk->nwwt);
                 task_get_geometry(tk);
-                task_set_desktop_dirty(pg, tk);
+                task_set_desktop_dirty(tk);
 
                 /* Link the task structure into the task list. */
                 if (tk_pred == NULL)
@@ -734,7 +739,7 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
             if (tk_pred == NULL)
                 pg->task_list = tk_succ;
                 else tk_pred->task_flink = tk_succ;
-            task_delete(pg, tk, FALSE);
+            task_delete(tk, FALSE);
         }
         tk = tk_succ;
     }
@@ -801,7 +806,7 @@ static void pager_destructor(Plugin * p)
 
     /* Deallocate task list. */
     while (pg->task_list != NULL)
-        task_delete(pg, pg->task_list, TRUE);
+        task_delete(pg->task_list, TRUE);
 
     /* Deallocate desktop structures. */
     int i;

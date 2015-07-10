@@ -66,6 +66,7 @@ typedef struct _task {
     NetWMWindowType nwwt;      /* NET_WM_WINDOW_TYPE value */
     guint focused : 1;         /* True if window has focus */
     guint present_in_client_list : 1; /* State during WM_CLIENT_LIST processing to detect deletions */
+    gboolean visible_on_pixmap;
 } PagerTask;
 
 /* Structure representing a desktop. */
@@ -217,7 +218,9 @@ static void task_update_pixmap(PagerTask * tk, PagerDesk * d)
     if (!d->pixmap)
         return;
 
-    if (!task_is_visible(tk))
+    tk->visible_on_pixmap = task_is_visible(tk);
+
+    if (!tk->visible_on_pixmap)
         return;
 
     if ((tk->desktop != ALL_DESKTOPS) && (tk->desktop != d->desktop_number))
@@ -281,7 +284,7 @@ static void desk_set_dirty_all(PagerPlugin * pg)
 /* Mark the desktop on which a specified window resides for redraw. */
 static void desk_set_dirty_by_win(PagerPlugin * pg, PagerTask * tk)
 {
-    if (task_is_visible(tk))
+    if (tk->visible_on_pixmap || task_is_visible(tk))
     {
         if (tk->desktop < pg->number_of_desktops)
             desk_set_dirty(pg->desks[tk->desktop]);

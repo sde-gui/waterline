@@ -686,13 +686,13 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
                 tk = g_new0(PagerTask, 1);
                 tk->present_in_client_list = TRUE;
                 tk->win = client_list[i];
+                if (!wtl_x11_is_my_own_window(tk->win))
+                    XSelectInput(wtl_x11_display(), tk->win, PropertyChangeMask | StructureNotifyMask);
                 tk->ws = wtl_x11_get_wm_state(tk->win);
                 tk->desktop = wtl_x11_get_net_wm_desktop(tk->win);
                 wtl_x11_get_net_wm_state(tk->win, &tk->nws);
                 wtl_x11_get_net_wm_window_type(tk->win, &tk->nwwt);
                 task_get_geometry(tk);
-                if (!wtl_x11_is_my_own_window(tk->win))
-                    XSelectInput(wtl_x11_display(), tk->win, PropertyChangeMask | StructureNotifyMask);
                 desk_set_dirty_by_win(pg, tk);
 
                 /* Link the task structure into the task list. */

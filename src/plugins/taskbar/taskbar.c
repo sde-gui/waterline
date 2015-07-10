@@ -3482,15 +3482,6 @@ static void task_build_gui_button_close(TaskbarPlugin * tb, Task* tk)
 /* Build graphic elements needed for a task button. */
 static void task_build_gui(TaskbarPlugin * tb, Task * tk)
 {
-    /* NOTE
-     * 1. the extended mask is sum of taskbar and pager needs
-     * see bug [ 940441 ] pager loose track of windows
-     *
-     * Do not change event mask to gtk windows spawned by this gtk client
-     * this breaks gtk internals */
-    if (!wtl_x11_is_my_own_window(tk->win))
-        XSelectInput(wtl_x11_display(), tk->win, PropertyChangeMask | StructureNotifyMask);
-
     /* Allocate a toggle button as the top level widget. */
     tk->button = gtk_toggle_button_new();
     gtk_container_set_border_width(GTK_CONTAINER(tk->button), 0);
@@ -3878,6 +3869,12 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     tk->image_source = None;
 
                     tk->x_window_position = -1;
+
+                    /*
+                     * Do not change event mask to gtk windows spawned by this gtk client
+                     * this breaks gtk internals */
+                    if (!wtl_x11_is_my_own_window(tk->win))
+                        XSelectInput(wtl_x11_display(), tk->win, PropertyChangeMask | StructureNotifyMask);
 
                     //tk->iconified = (get_wm_state(tk->win) == IconicState);
                     tk->iconified = nws.hidden;

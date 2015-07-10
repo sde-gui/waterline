@@ -68,6 +68,7 @@ typedef struct _task {
     guint focused : 1;         /* True if window has focus */
     guint present_in_client_list : 1; /* State during WM_CLIENT_LIST processing to detect deletions */
     gboolean visible_on_pixmap;
+    guint dirty_deferred_timeout;
 } PagerTask;
 
 /* Structure representing a desktop. */
@@ -128,6 +129,9 @@ static void pager_panel_configuration_changed(Plugin * p);
 /* Determine if a task is visible. */
 static gboolean task_is_visible(PagerTask * tk)
 {
+    if (tk->dirty_deferred_timeout)
+        return FALSE;
+
     return ( ! ((tk->nws.hidden) || (tk->nws.skip_pager) || (tk->nwwt.dock) || (tk->nwwt.desktop)));
 }
 
@@ -150,6 +154,12 @@ static void task_delete(PagerTask * tk, gboolean unlink)
 {
     PagerPlugin * pg = tk->pager;
     task_set_desktop_dirty(tk);
+
+    if (tk->dirty_deferred_timeout)
+    {
+        g_source_remove(tk->dirty_deferred_timeout);
+        tk->dirty_deferred_timeout = 0;
+    }
 
     /* If we think this task had focus, remove that. */
     if (pg->focused_task == tk)
@@ -295,6 +305,19 @@ static void task_set_desktop_dirty(PagerTask * tk)
         else
             pager_set_dirty_all_desktops(pg);
     }
+}
+
+static gboolean on_task_set_desktop_dirty_deferred_timeout(PagerTask * tk)
+{
+    tk->dirty_deferred_timeout = 0;
+    task_set_desktop_dirty(tk);
+    return FALSE;
+}
+
+static void task_set_desktop_dirty_deferred(PagerTask * tk)
+{
+    if (!tk->dirty_deferred_timeout)
+        tk->dirty_deferred_timeout = g_timeout_add(250, (GSourceFunc) on_task_set_desktop_dirty_deferred_timeout, tk);
 }
 
 /* Handler for configure_event on drawing area. */
@@ -704,7 +727,15 @@ static void pager_net_client_list_stacking(FbEv * ev, PagerPlugin * pg)
                 wtl_x11_get_net_wm_state(tk->win, &tk->nws);
                 wtl_x11_get_net_wm_window_type(tk->win, &tk->nwwt);
                 task_get_geometry(tk);
-                task_set_desktop_dirty(tk);
+
+                /*
+                    Sometimes 0 means WM just has not set the value yet.
+                    We are deferring updating the image and waiting for some time to avoid flickering.
+                */
+                if (tk->desktop == 0)
+                    task_set_desktop_dirty_deferred(tk);
+                else
+                    task_set_desktop_dirty(tk);
 
                 /* Link the task structure into the task list. */
                 if (tk_pred == NULL)

@@ -57,7 +57,6 @@
 #include <waterline/plugin.h>
 #include <waterline/x11_utils.h>
 #include <waterline/x11_wrappers.h>
-#include "icon.xpm"
 
 /******************************************************************************/
 
@@ -347,9 +346,6 @@ typedef struct _taskbar {
 
     int task_timestamp;                         /* To sort tasks and task classes by creation time. */
 
-    GdkPixbuf * custom_fallback_pixbuf; /* Custom fallback task icon when none is available */
-    GdkPixbuf * fallback_pixbuf;        /* Default fallback task icon when none is available */
-
     /* Geometry */
 
     int icon_size;          /* Size of task icons (from panel settings) */
@@ -434,9 +430,9 @@ typedef struct _taskbar {
     gboolean show_iconified;         /* User preference: show iconified windows */
     int show_icons_titles;           /* User preference: show icons, titles */
 
-    char* custom_fallback_icon; /* User preference: use as fallback icon */
+    char * custom_fallback_icon;     /* User preference: use as fallback icon */
 
-    gboolean show_close_buttons; /* User preference: show close button */
+    gboolean show_close_buttons;     /* User preference: show close button */
 
     gboolean show_urgency_all_desks; /* User preference: show windows from other workspaces if they set urgent hint*/
     gboolean use_urgency_hint;       /* User preference: windows with urgency will flash */
@@ -1799,37 +1795,18 @@ static GdkPixbuf * get_window_icon(Task * tk, int icon_size, Atom source)
     {
         /* try to guess an icon from window class name */
         gchar* classname = g_utf8_strdown(tk->wm_class, -1);
-        pixbuf = wtl_load_icon(classname,
-                                   icon_size, icon_size, FALSE);
+        pixbuf = wtl_load_icon(classname, icon_size, icon_size, FALSE);
         g_free(classname);
     }
 
-    if (!pixbuf)
-    {
-         /* custom fallback icon */
-         if (!tb->custom_fallback_pixbuf && !su_str_empty(tb->custom_fallback_icon))
-         {
-             tb->custom_fallback_pixbuf = wtl_load_icon(tb->custom_fallback_icon, tb->icon_size, tb->icon_size, TRUE);
-         }
-         if (tb->custom_fallback_pixbuf)
-         {
-            pixbuf = tb->custom_fallback_pixbuf;
-            g_object_ref(pixbuf);
-         }
-    }
+    if (!pixbuf && !su_str_empty(tb->custom_fallback_icon))
+        pixbuf = wtl_load_icon(tb->custom_fallback_icon, tb->icon_size, tb->icon_size, FALSE);
 
     if (!pixbuf)
-    {
-         /* default fallback icon */
-         if (!tb->fallback_pixbuf)
-             tb->fallback_pixbuf = gdk_pixbuf_new_from_xpm_data((const char **) icon_xpm);
-         if (tb->fallback_pixbuf)
-         {
-            pixbuf = tb->fallback_pixbuf;
-            g_object_ref(pixbuf);
-         }
-    }
+        pixbuf = wtl_load_icon("applications-other", tb->icon_size, tb->icon_size, FALSE);
 
+    if (!pixbuf)
+        pixbuf = wtl_load_icon("gtk-file", tb->icon_size, tb->icon_size, TRUE);
 
     if (tk->icon_for_bgcolor)
         g_object_unref(G_OBJECT(tk->icon_for_bgcolor));
@@ -5047,7 +5024,7 @@ static int taskbar_constructor(Plugin * p)
     /* Initialize to defaults. */
     tb->icon_size         = plugin_get_icon_size(p);
     tb->show_icons_titles = SHOW_BOTH;
-    tb->custom_fallback_icon = g_strdup("xorg");
+    tb->custom_fallback_icon = NULL;
     tb->show_all_desks    = FALSE;
     tb->show_urgency_all_desks = TRUE;
     tb->show_mapped       = TRUE;

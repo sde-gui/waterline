@@ -18,5 +18,3 @@ taskbar_la_LDFLAGS = \
 	-module \
     @WATERLINE_MODULE@
 
-EXTRA_DIST = \
-	icon.xpm

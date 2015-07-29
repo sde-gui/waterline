@@ -211,9 +211,8 @@ fb_ev_emit(FbEv *ev, int signal)
     g_assert(signal >=0 && signal < EV_LAST_SIGNAL);
     if (signal == EV_ACTIVE_WINDOW)
     {
-        Window* win = None;
         ev->active_window = None;
-        win = (Window*) wtl_x11_get_xa_property (wtl_x11_root(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
+        Window * win = (Window*) wtl_x11_get_xa_property (wtl_x11_root(), a_NET_ACTIVE_WINDOW, XA_WINDOW, 0);
         if (win) {
             ev->active_window = *win;
             XFree (win);

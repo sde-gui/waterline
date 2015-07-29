@@ -252,10 +252,6 @@ Plugin * plugin_load(const char * type)
 
 static void plugin_size_allocate(GtkWidget * widget, GtkAllocation * allocation, Plugin * pl)
 {
-    gboolean c = (allocation->x != pl->pwid_allocation.x)
-        || (allocation->y != pl->pwid_allocation.y)
-        || (allocation->width != pl->pwid_allocation.width)
-        || (allocation->height != pl->pwid_allocation.height);
     pl->pwid_allocation = *allocation;
 }
 

@@ -77,25 +77,17 @@ on_plugin_expand_toggled(GtkCellRendererToggle* render, char* path, GtkTreeView*
     model = gtk_tree_view_get_model( view );
     if( gtk_tree_model_get_iter( model, &it, tp ) )
     {
-        Plugin* pl;
-        gboolean old_expand, expand, fill;
-        guint padding;
-        GtkPackType pack_type;
+        Plugin * pl = NULL;
+        gboolean expand;
 
         gtk_tree_model_get( model, &it, COL_DATA, &pl, COL_EXPAND, &expand, -1 );
 
-        if (pl->class->expand_available)
+        if (plugin_get_expandable(pl))
         {
             /* Only honor "stretch" if allowed by the plugin. */
-            expand = ! expand;
-            pl->expand = expand;
+            expand = !expand;
+            plugin_set_expand(pl, expand);
             gtk_list_store_set( (GtkListStore*)model, &it, COL_EXPAND, expand, -1 );
-
-            /* Query the old packing of the plugin widget.
-             * Apply the new packing with only "expand" modified. */
-            gtk_box_query_child_packing( GTK_BOX(pl->panel->plugin_box), pl->pwid, &old_expand, &fill, &padding, &pack_type );
-            gtk_box_set_child_packing( GTK_BOX(pl->panel->plugin_box), pl->pwid, expand, fill, padding, pack_type );
-            panel_preferences_changed(pl->panel, 0);
         }
     }
     gtk_tree_path_free( tp );
@@ -108,7 +100,7 @@ static void on_stretch_render(GtkTreeViewColumn * column, GtkCellRenderer * rend
     Plugin * pl;
     gtk_tree_model_get(model, iter, COL_DATA, &pl, -1);
     g_object_set(renderer,
-        "visible", ((pl->class->expand_available) ? TRUE : FALSE),
+        "visible", plugin_get_expandable(pl),
         NULL);
 }
 
@@ -151,7 +143,7 @@ static void init_plugin_list( Panel* p, GtkTreeView* view, GtkWidget* label )
         gtk_list_store_append( list, &it );
         gtk_list_store_set( list, &it,
                             COL_NAME, name,
-                            COL_EXPAND, pl->expand,
+                            COL_EXPAND, plugin_get_expand(pl),
                             COL_DATA, pl,
                             -1);
 
@@ -178,7 +170,7 @@ static void on_add_plugin_menu_item_activate(GtkWidget * menu_item, GtkTreeView 
     {
         pl->panel = panel;
         if (pl->class->expand_default)
-            pl->expand = TRUE;
+            plugin_set_expand(pl, TRUE);
         plugin_start(pl);
         panel->plugins = g_list_append(panel->plugins, pl);
         panel_save_configuration(panel);
@@ -200,7 +192,7 @@ static void on_add_plugin_menu_item_activate(GtkWidget * menu_item, GtkTreeView 
             gtk_list_store_append( (GtkListStore*)model, &it );
             gtk_list_store_set( (GtkListStore*)model, &it,
                 COL_NAME, _(name),
-                COL_EXPAND, pl->expand,
+                COL_EXPAND, plugin_get_expand(pl),
                 COL_DATA, pl, -1 );
 
             g_free(name);

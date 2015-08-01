@@ -43,6 +43,11 @@ panel_popupmenu_configure(GtkWidget *widget, gpointer user_data)
     return TRUE;
 }
 
+static void panel_popupmenu_expand_plugin(GtkMenuItem * item, Plugin * plugin)
+{
+    plugin_set_expand(plugin, !plugin_get_expand(plugin));
+}
+
 static void panel_popupmenu_config_plugin( GtkMenuItem* item, Plugin* plugin )
 {
     plugin->class->show_properties(plugin, GTK_WINDOW(plugin->panel->topgwin));
@@ -232,6 +237,18 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
         GtkWidget * menu_item = gtk_menu_item_new_with_mnemonic(_("Pa_nel"));
         gtk_menu_shell_append(menu, menu_item);
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(panel_submenu));
+    }
+
+    if (plugin)
+    {
+        GtkWidget * menu_item = gtk_check_menu_item_new_with_mnemonic(_("_Stretch to Available Space"));
+        gtk_widget_set_sensitive(menu_item, plugin_get_expandable(plugin));
+        if (plugin_get_expandable(plugin))
+        {
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), plugin_get_expand(plugin));
+            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_expand_plugin), plugin);
+        }
+        gtk_menu_shell_append(menu, menu_item);
     }
 
     if (plugin)

@@ -115,6 +115,10 @@ extern void plugin_set_priv(Plugin * plugin, void * priv);
 extern GtkWidget * plugin_widget(Plugin * plugin);;
 extern void plugin_set_widget(Plugin * plugin, GtkWidget * widget);
 
+extern gboolean plugin_get_expandable(Plugin * plugin);
+extern gboolean plugin_get_expand(Plugin * plugin);
+extern void     plugin_set_expand(Plugin * plugin, gboolean value);
+
 extern void plugin_set_has_system_menu(Plugin * plugin, gboolean v);
 
 

@@ -626,3 +626,38 @@ gchar * plugin_get_display_name(Plugin * plugin)
     g_free(name2);
     return name;
 }
+
+gboolean plugin_get_expandable(Plugin * plugin)
+{
+    return plugin && plugin->class && plugin->class->expand_available;
+}
+
+gboolean plugin_get_expand(Plugin * plugin)
+{
+    return plugin && plugin->expand;
+}
+
+void plugin_set_expand(Plugin * plugin, gboolean value)
+{
+    if (!plugin)
+        return;
+
+    if (plugin->expand == value)
+        return;
+
+    plugin->expand = value;
+
+    if (plugin->panel->plugin_box && plugin->pwid)
+    {
+        gboolean old_expand, fill;
+        guint padding;
+        GtkPackType pack_type;
+
+        gtk_box_query_child_packing(
+            GTK_BOX(plugin->panel->plugin_box), plugin->pwid, &old_expand, &fill, &padding, &pack_type);
+        gtk_box_set_child_packing(
+            GTK_BOX(plugin->panel->plugin_box), plugin->pwid, plugin->expand, fill, padding, pack_type);
+    }
+
+    plugin->panel->config_changed = TRUE;
+}

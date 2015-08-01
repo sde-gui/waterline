@@ -56,6 +56,57 @@ static void panel_popupmenu_config_plugin( GtkMenuItem* item, Plugin* plugin )
     plugin->panel->config_changed = TRUE;
 }
 
+static void set_icon_size(Plugin * plugin, int value)
+{
+    plugin->icon_size = value;
+    plugin->panel->config_changed = TRUE;
+    panel_preferences_changed(plugin->panel, 0);
+
+    if (plugin->icon_size_dialog)
+    {
+        gtk_widget_destroy(plugin->icon_size_dialog);
+        plugin->icon_size_dialog = NULL;
+    }
+}
+
+static void panel_popupmenu_plugin_icon_size_default(GtkCheckMenuItem * item, Plugin * plugin)
+{
+    set_icon_size(plugin, 0);
+}
+
+static void panel_popupmenu_plugin_icon_size_n(GtkCheckMenuItem * item, Plugin * plugin)
+{
+    const char * v = gtk_menu_item_get_label(GTK_MENU_ITEM(item));
+    if (*v == '_')
+        v++;
+
+    set_icon_size(plugin, atoi(v));
+}
+
+static void set_icon_size_callback(char * value, gpointer p)
+{
+    Plugin * plugin = (Plugin *) p;
+
+    if (value)
+        set_icon_size(plugin, atoi(value));
+    else
+        set_icon_size(plugin, plugin->icon_size);
+}
+
+static void panel_popupmenu_plugin_icon_size_custom(GtkCheckMenuItem * item, Plugin * plugin)
+{
+    gchar * value = g_strdup_printf("%d", plugin->icon_size);
+
+    if (plugin->icon_size_dialog)
+    {
+        gtk_widget_destroy(plugin->icon_size_dialog);
+        plugin->icon_size_dialog = NULL;
+    }
+
+    plugin->icon_size_dialog = wtl_create_entry_dialog(_("Set icon size"), _("Icon size:"), value, set_icon_size_callback, plugin);
+}
+
+
 static void panel_popupmenu_add_item(GtkMenuItem* item, Panel* panel)
 {
     /* panel_add_plugin( panel, panel->topgwin ); */
@@ -237,6 +288,56 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
                 g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_expand_plugin), plugin);
             }
             gtk_menu_shell_append(applet_submenu, menu_item);
+        }
+
+        if (plugin->icon_size_used)
+        {
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Icon Size"));
+            gtk_menu_shell_append(applet_submenu, menu_item);
+
+            GtkMenuShell * icon_size_submenu = GTK_MENU_SHELL(gtk_menu_new());
+            gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(icon_size_submenu));
+
+            {
+                GtkWidget * menu_item = gtk_check_menu_item_new_with_mnemonic(_("_Default"));
+                gtk_menu_shell_append(icon_size_submenu, menu_item);
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), plugin->icon_size < 1);
+                g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_plugin_icon_size_default), plugin);
+            }
+
+            gboolean activate_custom = plugin->icon_size > 0;
+
+            #define DEF_SIZE(name, size) \
+            {\
+                GtkWidget * menu_item = gtk_check_menu_item_new_with_mnemonic(_(name));\
+                gtk_menu_shell_append(icon_size_submenu, menu_item);\
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), plugin->icon_size == (size));\
+                if (plugin->icon_size == (size))\
+                    activate_custom = FALSE;\
+                g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_plugin_icon_size_n), plugin);\
+            }
+
+            DEF_SIZE("_16 px", 16);
+            DEF_SIZE("_24 px", 24);
+            DEF_SIZE("_32 px", 32);
+            DEF_SIZE("_48 px", 48);
+            DEF_SIZE("_56 px", 56);
+            DEF_SIZE("_64 px", 64);
+
+            #undef DEF_SIZE
+
+            {
+                gchar * name;
+                if (activate_custom)
+                    name = g_strdup_printf(_("_Custom: %d px"), plugin->icon_size);
+                else
+                    name = g_strdup(_("_Custom..."));
+                GtkWidget * menu_item = gtk_check_menu_item_new_with_mnemonic(name);
+                gtk_menu_shell_append(icon_size_submenu, menu_item);
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), activate_custom);
+                g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_plugin_icon_size_custom), plugin);
+                g_free(name);
+            }
         }
 
         gtk_menu_shell_append(applet_submenu, gtk_separator_menu_item_new());

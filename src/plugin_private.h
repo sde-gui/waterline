@@ -35,6 +35,8 @@ struct _Plugin {
     GtkWidget * pwid;           /* Top level widget; plugin allocates, but plugin mechanism, not plugin itself, destroys this */
     gpointer priv;              /* Private context for plugin; plugin frees this in its destructor */
 
+    gboolean icon_size_used;
+    int icon_size;
     int expand;                 /* Expand ("stretch") setting for container */
     int padding;                /* Padding setting for container */
     int border;                 /* Border setting for container */
@@ -45,6 +47,8 @@ struct _Plugin {
     int lock_visible;
 
     json_t * json;
+
+    GtkWidget * icon_size_dialog;
 };
 
 /* FIXME: optional definitions */

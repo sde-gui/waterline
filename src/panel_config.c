@@ -195,6 +195,7 @@ static void panel_write_plugins_configuration_to_json_object(Panel* p)
         Plugin * plugin = (Plugin *) l->data;
 
         su_json_dot_set_string(plugin->json, "type", plugin->class->type);
+        su_json_dot_set_int(plugin->json, "icon_size", plugin->icon_size);
         su_json_dot_set_bool(plugin->json, "expand", plugin->expand);
         su_json_dot_set_int(plugin->json, "padding", plugin->padding);
         su_json_dot_set_int(plugin->json, "border", plugin->border);

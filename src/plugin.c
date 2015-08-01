@@ -302,6 +302,12 @@ void plugin_delete(Plugin * plugin)
         p->pref_dialog.plugin_pref_dialog = NULL;
     }
 
+    if (plugin->icon_size_dialog)
+    {
+        gtk_widget_destroy(plugin->icon_size_dialog);
+        plugin->icon_size_dialog = NULL;
+    }
+
     /* Run the destructor and then destroy the top level widget.
      * This prevents problems with the plugin destroying child widgets. */
     pc->destructor(plugin);
@@ -582,6 +588,13 @@ void plugin_set_has_system_menu(Plugin * plugin, gboolean v)
 
 int plugin_get_icon_size(Plugin * plugin)
 {
+    if (!plugin)
+        return 0;
+
+    plugin->icon_size_used = TRUE;
+    if (plugin->icon_size > 0)
+        return plugin->icon_size;
+
     return panel_get_icon_size(plugin_panel(plugin));
 }
 

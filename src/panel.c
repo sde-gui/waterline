@@ -2132,6 +2132,7 @@ panel_parse_plugin(Panel *p, json_t * json_plugin)
     }
 
     plugin->panel = p;
+    plugin->icon_size = su_json_dot_get_int(json_plugin, "icon_size", 0);
     if (plugin->class->expand_available)
         plugin->expand = su_json_dot_get_bool(json_plugin, "expand", FALSE);
     plugin->padding = su_json_dot_get_int(json_plugin, "padding", 0);

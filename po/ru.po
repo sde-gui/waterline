@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lxpanelx\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-29 15:04+0700\n"
-"PO-Revision-Date: 2015-07-29 16:00+0700\n"
+"POT-Creation-Date: 2015-08-01 17:40+0700\n"
+"PO-Revision-Date: 2015-08-01 17:50+0700\n"
 "Last-Translator: Vadim Ushakov <igeekless@gmail.com>\n"
 "Language-Team: Russian <igeekless@gmail.com>\n"
 "Language: ru\n"
@@ -406,77 +406,77 @@ msgstr "Завершение работы"
 msgid "Logout command is not set"
 msgstr "Команда выхода из сеанса не задана"
 
-#: ../src/panel.c:2463
+#: ../src/panel.c:2464
 #, c-format
 msgid "waterline %s - A lightweight framework for desktop widgets and applets"
 msgstr "waterline %s - легковесный фреймворк для апплетов рабочего стола"
 
-#: ../src/panel.c:2465
+#: ../src/panel.c:2466
 #, c-format
 msgid "Syntax: %s [options]"
 msgstr "Синтаксис: %s [options]"
 
-#: ../src/panel.c:2467
+#: ../src/panel.c:2468
 msgid "Options:"
 msgstr "Опции:"
 
-#: ../src/panel.c:2469
+#: ../src/panel.c:2470
 msgid "Print this help and exit"
 msgstr "Показать помощь и выйти"
 
-#: ../src/panel.c:2470
+#: ../src/panel.c:2471
 msgid "Print version and exit"
 msgstr "Показать версию и выйти"
 
-#: ../src/panel.c:2471
+#: ../src/panel.c:2472
 msgid "Set log level 0-5. 0 - none 5 - chatty"
 msgstr "Задать уровень журналирования 0-5. 0 - не вести журнал, 5 - подробно"
 
-#: ../src/panel.c:2472
+#: ../src/panel.c:2473
 msgid "Use specified profile"
 msgstr "Использовать заданный профиль"
 
-#: ../src/panel.c:2473
+#: ../src/panel.c:2474
 msgid "Enable kiosk mode"
 msgstr "Включить режим киоска"
 
-#: ../src/panel.c:2475
+#: ../src/panel.c:2476
 msgid "Debug options:"
 msgstr "Отладочные опции:"
 
-#: ../src/panel.c:2477
+#: ../src/panel.c:2478
 msgid "Display 'quit' command in popup menu"
 msgstr "Отображать команду 'Выход' в контекстном меню панели"
 
-#: ../src/panel.c:2478
+#: ../src/panel.c:2479
 msgid "Force specified colormap (rgba, rgb, system, default)"
 msgstr "Использовать указанную colormap (rgba, rgb, system, default)"
 
-#: ../src/panel.c:2480
+#: ../src/panel.c:2481
 msgid "Behave as if no compositing wm avaiable"
 msgstr "Вести себя, как будто композитный WM не запущен"
 
-#: ../src/panel.c:2482
+#: ../src/panel.c:2483
 msgid "Behave as if there is no compositing support at all"
 msgstr "Вести себя, как будто поддержка композитинга отсутствует"
 
-#: ../src/panel.c:2484
+#: ../src/panel.c:2485
 msgid "Short options:"
 msgstr "Короткие опции:"
 
-#: ../src/panel.c:2486
+#: ../src/panel.c:2487
 msgid "same as --help"
 msgstr "то же, что и --help"
 
-#: ../src/panel.c:2487
+#: ../src/panel.c:2488
 msgid "same as --profile"
 msgstr "то же, что и --profile"
 
-#: ../src/panel.c:2488
+#: ../src/panel.c:2489
 msgid "same as --version"
 msgstr "то же, что и --version"
 
-#: ../src/panel.c:2492
+#: ../src/panel.c:2493
 #, c-format
 msgid ""
 "Report bugs to: <%s> or <%s>\n"
@@ -485,16 +485,24 @@ msgstr ""
 "О багах просьба сообщать по адресу: <%s> или <%s>\n"
 "Домашняя страница программы: <%s>"
 
-#: ../src/panel_menu.c:72
+#: ../src/panel_menu.c:106
+msgid "Set icon size"
+msgstr "Переопределить размер иконок:"
+
+#: ../src/panel_menu.c:106
+msgid "Icon size:"
+msgstr "Размер значков:"
+
+#: ../src/panel_menu.c:124
 #, c-format
 msgid "Really delete plugin \"%s\" from the panel?"
 msgstr "Действительно удалить плагин \"%s\" с панели?"
 
-#: ../src/panel_menu.c:76 ../src/panel_menu.c:113
+#: ../src/panel_menu.c:128 ../src/panel_menu.c:165
 msgid "Confirm"
 msgstr "Подтвердить"
 
-#: ../src/panel_menu.c:111
+#: ../src/panel_menu.c:163
 msgid ""
 "Really delete this panel?\n"
 "<b>Warning: This can not be recovered.</b>"
@@ -503,79 +511,112 @@ msgstr ""
 "<b>Внимание: это необратимая операция.</b>"
 
 #. TRANSLATORS: Replace this string with your names, one name per line.
-#: ../src/panel_menu.c:137 ../src/plugins/notification_area/main.c:132
+#: ../src/panel_menu.c:189 ../src/plugins/notification_area/main.c:132
 msgid "translator-credits"
 msgstr ""
 "Vadim Ushakov <igeekless@gmail.com>\n"
 "HsH <hsh@runtu.org>\n"
 "Alexander Kazancev <kazancas@mandiriva.ru>"
 
-#: ../src/panel_menu.c:144
+#: ../src/panel_menu.c:196
 msgid "Waterline"
 msgstr ""
 
-#: ../src/panel_menu.c:146
+#: ../src/panel_menu.c:198
 msgid "Copyright (C) 2008-2013"
 msgstr ""
 
-#: ../src/panel_menu.c:147
+#: ../src/panel_menu.c:199
 msgid "A lightweight framework for desktop widgets and applets"
 msgstr "Легковесный фреймворк для апплетов рабочего стола"
 
-#: ../src/panel_menu.c:170
+#: ../src/panel_menu.c:222
 msgid "Panel _Settings..."
 msgstr "_Настройки панели"
 
-#: ../src/panel_menu.c:171
+#: ../src/panel_menu.c:223
 #, c-format
-msgid "Edit settings of panel \"%s\""
-msgstr "Редактировать настройки панели \"%s\""
+msgid "Edit settings of the panel \"%s\""
+msgstr "Редактировать настройки панели «%s»"
 
-#: ../src/panel_menu.c:179
-msgid "_Create New Panel"
-msgstr "_Создать новую панель"
+#: ../src/panel_menu.c:231
+msgid "_Add Applet..."
+msgstr "_Добавить апплет..."
 
-#: ../src/panel_menu.c:185
-msgid "_Delete This Panel"
-msgstr "_Удалить эту панель"
+#: ../src/panel_menu.c:239
+msgid "_Delete Panel"
+msgstr "_Удалить панель"
 
-#: ../src/panel_menu.c:186
+#: ../src/panel_menu.c:240
 #, c-format
 msgid "Delete panel \"%s\""
 msgstr "Удалить панель «%s»"
 
-#: ../src/panel_menu.c:197
-msgid "_Add to Panel..."
-msgstr "_Добавить на панель..."
+#: ../src/panel_menu.c:249
+msgid "_Create New Panel"
+msgstr "_Создать новую панель"
 
-#: ../src/panel_menu.c:204
-#, c-format
-msgid "D_elete \"%s\""
-msgstr "Удалить «%s»"
-
-#: ../src/panel_menu.c:216
+#: ../src/panel_menu.c:259
 msgid "_Quit"
 msgstr "Выход"
 
-#: ../src/panel_menu.c:226
+#: ../src/panel_menu.c:269
 msgid "A_bout"
 msgstr "_О программе"
 
-#: ../src/panel_menu.c:236
+#: ../src/panel_menu.c:283
+msgid "_Stretch to Available Space"
+msgstr "Раст_ягивать на доступное пространство"
+
+#: ../src/panel_menu.c:295
+msgid "_Icon Size"
+msgstr "Размер _значков"
+
+#: ../src/panel_menu.c:302
+msgid "_Default"
+msgstr "По-умолчанию"
+
+#: ../src/panel_menu.c:332
+#, c-format
+msgid "_Custom: %d px"
+msgstr "Др_угой: %d пикс."
+
+#: ../src/panel_menu.c:334
+msgid "_Custom..."
+msgstr "Др_угой..."
+
+#: ../src/panel_menu.c:346
+msgid "D_elete Applet"
+msgstr "_Удалить апплет"
+
+#: ../src/panel_menu.c:350
+#, c-format
+msgid "Delete \"%s\""
+msgstr "Удалить «%s»"
+
+#: ../src/panel_menu.c:361
 msgid "Pa_nel"
 msgstr "Па_нель"
 
-#: ../src/panel_menu.c:243
+#: ../src/panel_menu.c:368
+msgid "Apple_t"
+msgstr "Аппле_т"
+
+#: ../src/panel_menu.c:372
 #, c-format
+msgid "Applet \"%s\""
+msgstr "Апплет «%s»"
+
+#: ../src/panel_menu.c:379
 msgid "_Applet Properties"
 msgstr "С_войства апплета"
 
-#: ../src/panel_menu.c:247
+#: ../src/panel_menu.c:381
 #, c-format
 msgid "Properties of the applet \"%s\""
 msgstr "Свойства апплета «%s»"
 
-#: ../src/plugin.c:629
+#: ../src/plugin.c:638
 #, c-format
 msgid "%s (%s)"
 msgstr ""
@@ -589,6 +630,9 @@ msgid ""
 "<i>If you leave these fields empty,\n"
 "Waterline will try to automatically detect the appropriate applications.</i>"
 msgstr ""
+"<i>Если вы оставите эти поля пустыми,\n"
+"Waterline попытается автоматически\n"
+"определить подходящие приложения.</i>"
 
 #: ../src/libconfigurator/configurator.c:424
 #, c-format
@@ -597,6 +641,10 @@ msgid ""
 "\n"
 "<i>Automatically detected <b>file manager</b>:</i> %s"
 msgstr ""
+"\n"
+"\n"
+"<i>Автоматически выбранный <b>файловый менеджер</b>:</i>\n"
+"%s"
 
 #: ../src/libconfigurator/configurator.c:429
 msgid ""
@@ -614,6 +662,10 @@ msgid ""
 "\n"
 "<i>Automatically detected <b>terminal emulator</b>:</i> %s"
 msgstr ""
+"\n"
+"\n"
+"<i>Автоматически выбранный <b>эмулятор терминала</b>:</i>\n"
+"%s"
 
 #: ../src/libconfigurator/configurator.c:445
 msgid ""
@@ -632,6 +684,10 @@ msgid ""
 "\n"
 "<i>Automatically detected <b>logout command</b>:</i> %s"
 msgstr ""
+"\n"
+"\n"
+"<i>Автоматически выбранная <b>команда выхода из системы</b>:</i>\n"
+"%s"
 
 #: ../src/libconfigurator/configurator.c:461
 msgid ""
@@ -660,32 +716,32 @@ msgstr "Сверху"
 msgid "_Bottom"
 msgstr "Снизу"
 
-#: ../src/libconfigurator/configurator_plugin_list.c:128
+#: ../src/libconfigurator/configurator_plugin_list.c:120
 msgid "Currently loaded plugins"
 msgstr "Загруженные модули"
 
-#: ../src/libconfigurator/configurator_plugin_list.c:137
+#: ../src/libconfigurator/configurator_plugin_list.c:129
 msgid "Stretch"
 msgstr "Растянуть"
 
-#: ../src/libconfigurator/configurator_plugin_list.c:235
-#: ../src/libconfigurator/configurator_plugin_list.c:245
+#: ../src/libconfigurator/configurator_plugin_list.c:227
+#: ../src/libconfigurator/configurator_plugin_list.c:237
 msgid "Miscellaneous"
 msgstr "Прочее"
 
-#: ../src/libconfigurator/configurator_plugin_list.c:236
+#: ../src/libconfigurator/configurator_plugin_list.c:228
 msgid "Window Management"
 msgstr "Управление окнами"
 
-#: ../src/libconfigurator/configurator_plugin_list.c:237
+#: ../src/libconfigurator/configurator_plugin_list.c:229
 msgid "Launchers"
 msgstr "Средства запуска"
 
-#: ../src/libconfigurator/configurator_plugin_list.c:238
+#: ../src/libconfigurator/configurator_plugin_list.c:230
 msgid "Notifications and Indicators"
 msgstr "Уведомления и индикация"
 
-#: ../src/libconfigurator/configurator_plugin_list.c:239
+#: ../src/libconfigurator/configurator_plugin_list.c:231
 msgid "Hardware Monitoring and Control"
 msgstr "Мониторинг и управление аппаратурой"
 

@@ -169,7 +169,7 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
     {
         {
             GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("Panel _Settings..."));
-            char * tooltip = g_strdup_printf( _("Edit settings of panel \"%s\""), panel->name);
+            char * tooltip = g_strdup_printf( _("Edit settings of the panel \"%s\""), panel->name);
             gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
             g_free(tooltip);
             gtk_menu_shell_append(panel_submenu, menu_item);
@@ -177,13 +177,15 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
         }
 
         {
-            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Create New Panel"));
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Add Applet..."));
             gtk_menu_shell_append(panel_submenu, menu_item);
-            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_create_panel), panel);
+            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_add_item), panel );
         }
 
+        gtk_menu_shell_append(panel_submenu, gtk_separator_menu_item_new());
+
         {
-            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Delete This Panel"));
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Delete Panel"));
             char * tooltip = g_strdup_printf( _("Delete panel \"%s\""), panel->name);
             gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
             g_free(tooltip);
@@ -192,21 +194,10 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
             gtk_widget_set_sensitive(menu_item, panel_count() > 1);
         }
 
-        gtk_menu_shell_append(panel_submenu, gtk_separator_menu_item_new());
-
         {
-            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Add to Panel..."));
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Create New Panel"));
             gtk_menu_shell_append(panel_submenu, menu_item);
-            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_add_item), panel );
-        }
-
-        if (plugin)
-        {
-            char * name = g_strdup_printf( _("D_elete \"%s\""), _(plugin_class(plugin)->name) );
-            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(name);
-            gtk_menu_shell_append(panel_submenu, menu_item);
-            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_remove_item), plugin);
-            g_free(name);
+            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_create_panel), panel);
         }
 
         gtk_menu_shell_append(panel_submenu, gtk_separator_menu_item_new());
@@ -231,6 +222,38 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
 
     /*****************************************************/
 
+    GtkMenuShell * applet_submenu = NULL;
+
+    if (plugin && !wtl_is_in_kiosk_mode())
+    {
+        applet_submenu = GTK_MENU_SHELL(gtk_menu_new());
+
+        {
+            GtkWidget * menu_item = gtk_check_menu_item_new_with_mnemonic(_("_Stretch to Available Space"));
+            gtk_widget_set_sensitive(menu_item, plugin_get_expandable(plugin));
+            if (plugin_get_expandable(plugin))
+            {
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), plugin_get_expand(plugin));
+                g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_expand_plugin), plugin);
+            }
+            gtk_menu_shell_append(applet_submenu, menu_item);
+        }
+
+        gtk_menu_shell_append(applet_submenu, gtk_separator_menu_item_new());
+
+        {
+            GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("D_elete Applet"));
+            gtk_menu_shell_append(applet_submenu, menu_item);
+            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_remove_item), plugin);
+
+            gchar * tooltip = g_strdup_printf(_("Delete \"%s\""), _(plugin_class(plugin)->name));
+            gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
+            g_free(tooltip);
+        }
+    }
+
+    /*****************************************************/
+
     GtkMenuShell * menu = GTK_MENU_SHELL(gtk_menu_new());
 
     {
@@ -239,25 +262,22 @@ GtkMenu * panel_get_panel_menu(Panel * panel, Plugin * plugin)
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(panel_submenu));
     }
 
-    if (plugin)
+    if (applet_submenu)
     {
-        GtkWidget * menu_item = gtk_check_menu_item_new_with_mnemonic(_("_Stretch to Available Space"));
-        gtk_widget_set_sensitive(menu_item, plugin_get_expandable(plugin));
-        if (plugin_get_expandable(plugin))
-        {
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), plugin_get_expand(plugin));
-            g_signal_connect(menu_item, "activate", G_CALLBACK(panel_popupmenu_expand_plugin), plugin);
-        }
+        GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("Apple_t"));
         gtk_menu_shell_append(menu, menu_item);
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), GTK_WIDGET(applet_submenu));
+
+        gchar * tooltip = g_strdup_printf(_("Applet \"%s\""), _(plugin_class(plugin)->name));
+        gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
+        g_free(tooltip);
     }
 
-    if (plugin)
+    if (plugin && !wtl_is_in_kiosk_mode())
     {
-        char * name = g_strdup_printf(_("_Applet Properties"), _(plugin_class(plugin)->name));
-        GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(name);
-        g_free(name);
+        GtkWidget * menu_item = gtk_image_menu_item_new_with_mnemonic(_("_Applet Properties"));
 
-        char * tooltip = g_strdup_printf(_("Properties of the applet \"%s\""), _(plugin_class(plugin)->name));
+        gchar * tooltip = g_strdup_printf(_("Properties of the applet \"%s\""), _(plugin_class(plugin)->name));
         gtk_widget_set_tooltip_text(GTK_WIDGET(menu_item), tooltip);
         g_free(tooltip);
 

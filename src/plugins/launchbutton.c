@@ -241,6 +241,7 @@ static gboolean input_on_child_input(GIOChannel *source, GIOCondition condition,
 static void input_on_child_exit(GPid pid, gint status, gpointer _input)
 {
     input_t * input = _input;
+    input->process_source_id = 0; /* Glib will reap the watch source for us.  */
     input->child_pid = 0;
     input_on_child_input(input->input_channel, 0, input);
 }

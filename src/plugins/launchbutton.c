@@ -125,7 +125,7 @@ static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(string, scroll_down_command),
 
     SU_JSON_OPTION(bool, interactive_update),
-    SU_JSON_OPTION(bool, input_restart_interval),
+    SU_JSON_OPTION(int, input_restart_interval),
 /*
     SU_JSON_OPTION(string, input_title.command),
     SU_JSON_OPTION(string, input_tooltip.command),

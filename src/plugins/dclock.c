@@ -574,6 +574,20 @@ static void dclock_apply_configuration(Plugin * p)
 static void dclock_configure(Plugin * p, GtkWindow * parent)
 {
     DClockPlugin * dc = PRIV(p);
+
+    const char * clock_format_tooltip = _(
+        "See the manual page strftime(3) for possible format codes.\n\n"
+        "You can use the Pango markup to adjust text color, font size and other text properties.\n\n"
+        "Additionaly you can use:\n"
+        "\\n for line break\n"
+        "\\t for column break"
+    );
+
+    const char * tooltip_format_tooltip = _(
+        "See the manual page strftime(3) for possible format codes.\n\n"
+        "You can use the Pango markup to adjust text color, font size and other text properties."
+    );
+
     GtkWidget * dialog = wtl_create_generic_config_dialog(
         _(plugin_class(p)->name),
         GTK_WIDGET(parent),
@@ -581,9 +595,9 @@ static void dclock_configure(Plugin * p, GtkWindow * parent)
 
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         _("Clock Format")  , &dc->clock_format  , (GType)CONF_TYPE_STR,
-        "tooltip-text", _("Format codes: man 3 strftime; \\n for line break"), (GType)CONF_TYPE_SET_PROPERTY,
+        "tooltip-text", clock_format_tooltip, (GType)CONF_TYPE_SET_PROPERTY,
         _("Tooltip Format"), &dc->tooltip_format, (GType)CONF_TYPE_STR,
-        "tooltip-text", _("Format codes: man 3 strftime; \\n for line break"), (GType)CONF_TYPE_SET_PROPERTY,
+        "tooltip-text", tooltip_format_tooltip, (GType)CONF_TYPE_SET_PROPERTY,
         _("Font")          , &dc->font          , (GType)CONF_TYPE_STR,
         _("Action when clicked"), &dc->action, (GType)CONF_TYPE_STR,
         "tooltip-text", _("Default action: display calendar"), (GType)CONF_TYPE_SET_PROPERTY,

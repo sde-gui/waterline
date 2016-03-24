@@ -5557,9 +5557,9 @@ PluginClass taskbar_plugin_class = {
     PLUGINCLASS_VERSIONING,
 
     type : "taskbar",
-    name : N_("Task Bar (Window List)"),
+    name : N_("Task Bar"),
     version: VERSION,
-    description : N_("Taskbar shows all opened windows and allow to iconify them, shade or get focus"),
+    description : N_("Taskbar shows all opened windows and allows you to switch among them"),
     category: PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
 
     /* Stretch is available and default for this plugin. */

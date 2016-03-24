@@ -439,7 +439,7 @@ PluginClass thermal_plugin_class = {
     type : "thermal",
     name : N_("Temperature Monitor"),
     version: VERSION,
-    description : N_("Display system temperature"),
+    description : N_("Displays the system temperature"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : thermal_constructor,

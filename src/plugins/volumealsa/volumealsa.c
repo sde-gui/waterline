@@ -720,7 +720,7 @@ PluginClass volumealsa_plugin_class = {
     type : "volumealsa",
     name : N_("Volume Control (ALSA)"),
     version: VERSION,
-    description : N_("Display and control volume for ALSA"),
+    description : N_("Allows you to control the volume of the Advanced Linux Sound Architecture"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : volumealsa_constructor,

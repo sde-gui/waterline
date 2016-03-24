@@ -302,7 +302,7 @@ PluginClass volume_plugin_class = {
     type : "volume",
     name : N_("Volume Control (OSS)"),
     version: VERSION,
-    description : "Display and control volume for Open Sound System",
+    description : N_("Allows you to control the volume of the Open Sound System"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : volume_constructor,

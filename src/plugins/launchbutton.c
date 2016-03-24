@@ -908,7 +908,7 @@ SYMBOL_PLUGIN_CLASS PluginClass launchbutton_plugin_class = {
     type : "launchbutton",
     name : N_("Button"),
     version: VERSION,
-    description : N_("Launch button"),
+    description : N_("A Customized Launch Button"),
     category: PLUGIN_CATEGORY_LAUNCHER,
 
     constructor : lb_constructor,

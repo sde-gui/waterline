@@ -443,7 +443,7 @@ PluginClass cpufreq_plugin_class = {
     type : "cpufreq",
     name : N_("CPUFreq frontend"),
     version: VERSION,
-    description : N_("Display CPU frequency and allow to change governors and frequency"),
+    description : N_("Displays the CPU frequency"),
     category: PLUGIN_CATEGORY_HW_INDICATOR,
 
     constructor : cpufreq_constructor,

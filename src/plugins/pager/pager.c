@@ -871,7 +871,7 @@ SYMBOL_PLUGIN_CLASS PluginClass pager_plugin_class = {
     type : "pager",
     name : N_("Desktop Pager"),
     version: VERSION,
-    description : N_("Simple pager plugin"),
+    description : N_("Simple Pager of Desktop Workspaces"),
     category: PLUGIN_CATEGORY_WINDOW_MANAGEMENT,
 
     constructor : pager_constructor,

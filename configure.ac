@@ -37,10 +37,10 @@ pkg_modules="gtk+-2.0 >= 2.24.0 \
              gthread-2.0 \
              gmodule-2.0 \
              jansson >= 2.4 \
-             sde-utils-1.0 >= 0.1 \
-             sde-utils-x11-1.0 >= 0.1 \
-             sde-utils-jansson-1.0 >= 0.1 \
-             sde-utils-gtk-1.0 >= 0.1"
+             sde-utils-0 >= 0.1 \
+             sde-utils-x11-0 >= 0.1 \
+             sde-utils-jansson-0 >= 0.1 \
+             sde-utils-gtk-0 >= 0.1"
 #             libstartup-notification-1.0"
 PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
 AC_SUBST(PACKAGE_CFLAGS)

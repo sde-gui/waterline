@@ -23,6 +23,9 @@ dnl ================================================================
 
 IT_PROG_INTLTOOL([0.50.1])
 
+AM_GNU_GETTEXT_VERSION([0.19])
+AM_GNU_GETTEXT([external])
+
 AC_SUBST([GETTEXT_PACKAGE], [waterline])
 AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE], "$GETTEXT_PACKAGE", [Define to the gettext package name.])
 

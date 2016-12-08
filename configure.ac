@@ -23,7 +23,7 @@ dnl ================================================================
 
 IT_PROG_INTLTOOL([0.50.1])
 
-AM_GNU_GETTEXT_VERSION([0.19])
+AM_GNU_GETTEXT_VERSION([0.18])
 AM_GNU_GETTEXT([external])
 
 AC_SUBST([GETTEXT_PACKAGE], [waterline])
@@ -36,7 +36,7 @@ pkg_modules="gtk+-2.0 >= 2.24.0 \
              gio-unix-2.0 \
              gthread-2.0 \
              gmodule-2.0 \
-             jansson >= 2.4 \
+             jansson >= 2.2 \
              sde-utils-0 >= 0.1 \
              sde-utils-x11-0 >= 0.1 \
              sde-utils-jansson-0 >= 0.1 \

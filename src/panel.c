@@ -1417,12 +1417,12 @@ static void panel_size_position_changed(Panel *p, gboolean position_changed)
 
 static gint panel_size_alloc(GtkWidget *widget, GtkAllocation *a, Panel *p)
 {
+    SU_LOG_DEBUG2("signal: size-allocate: x=%d, y=%d, w=%d, h=%d", a->x, a->y, a->width, a->height);
+
     if (p->oriented_width_type == WIDTH_REQUEST)
         p->oriented_width = (p->orientation == ORIENT_HORIZ) ? a->width : a->height;
     if (p->oriented_height_type == HEIGHT_REQUEST)
         p->oriented_height = (p->orientation == ORIENT_HORIZ) ? a->height : a->width;
-
-    //g_print("size-alloc: %d, %d, %d, %d\n", a->x, a->y, a->width, a->height);
 
     panel_calculate_position(p);
     gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
@@ -1457,7 +1457,7 @@ static  gboolean panel_configure_event (GtkWidget *widget, GdkEventConfigure *e,
     p->cx = e->x;
     p->cy = e->y;
 
-    //g_print("configure: %d, %d, %d, %d\n", p->cx, p->cy, p->cw, p->ch);
+    SU_LOG_DEBUG2("signal: configure-event: x=%d, y=%d, w=%d, h=%d", e->x, e->y, e->width, e->height);
 
     panel_size_position_changed(p, position_changed);
 

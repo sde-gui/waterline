@@ -3668,12 +3668,12 @@ static void task_insert_after(Task * tk, Task * tk_prev_new)
             tk->task_flink = tk_prev_new->task_flink;
             tk_prev_new->task_flink = tk;
 
-            su_log_debug2("[0x%x] task \"%s\" (0x%x) moved after \"%s\" (0x%x)\n",
+            SU_LOG_DEBUG2("[0x%x] task \"%s\" (0x%x) moved after \"%s\" (0x%x)\n",
                 tb, tk->name, tk, tk_prev_new->name, tk_prev_new);
 
             icon_grid_place_child_after(tb->icon_grid, tk->button, tk_prev_new->button);
         } else {
-            su_log_debug2("[0x%x] task \"%s\" (0x%x) is in rigth place\n", tb, tk->name, tk);
+            SU_LOG_DEBUG2("[0x%x] task \"%s\" (0x%x) is in rigth place\n", tb, tk->name, tk);
         }
     } else {
         if (tk_prev_old)
@@ -3684,7 +3684,7 @@ static void task_insert_after(Task * tk, Task * tk_prev_new)
         tk->task_flink = tb->task_list;
         tb->task_list = tk;
 
-        su_log_debug2("[0x%x] task \"%s\" (0x%x) moved to head\n", tb, tk->name, tk);
+        SU_LOG_DEBUG2("[0x%x] task \"%s\" (0x%x) moved to head\n", tb, tk->name, tk);
 
         icon_grid_place_child_after(tb->icon_grid, tk->button, NULL);
     }

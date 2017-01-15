@@ -839,7 +839,7 @@ static GdkFilterReturn panel_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
     win = ev->xproperty.window;
     if (win == wtl_x11_root())
     {
-        su_log_debug2("PropertyNotify: atom = 0x%x", at);
+        SU_LOG_DEBUG2("PropertyNotify: atom = 0x%x", at);
 
         if (at == a_NET_CLIENT_LIST)
         {
@@ -1203,7 +1203,7 @@ static void panel_style_set(GtkWidget *widget, GtkStyle* prev, Panel *p)
 /* Calculate real width of a horizontal panel (or height of a vertical panel) */
 static void calculate_width(int scrw, int wtype, int align, int margin, int *panw, int *x)
 {
-    su_log_debug2("panw=%d, margin=%d scrw=%d\n", *panw, margin, scrw);
+    SU_LOG_DEBUG2("panw=%d, margin=%d, scrw=%d\n", *panw, margin, scrw);
     //scrw -= 2;
     if (wtype == WIDTH_PERCENT) {
         /* sanity check */
@@ -1224,7 +1224,7 @@ static void calculate_width(int scrw, int wtype, int align, int margin, int *pan
 
     *panw = MIN(scrw - margin, *panw);
 
-    su_log_debug2("panw=%d\n", *panw);
+    SU_LOG_DEBUG2("panw=%d\n", *panw);
     if (align == ALIGN_LEFT)
         *x += margin;
     else if (align == ALIGN_RIGHT) {

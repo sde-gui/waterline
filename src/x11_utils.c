@@ -218,54 +218,54 @@ void wtl_x11_get_net_wm_state(Window win, NetWMState *nws)
     if (!(state = wtl_x11_get_xa_property(win, a_NET_WM_STATE, XA_ATOM, &num3)))
         return;
 
-    su_log_debug2( "%x: netwm state = { ", (unsigned int)win);
+    SU_LOG_DEBUG2( "%x: netwm state = { ", (unsigned int)win);
     while (--num3 >= 0) {
 
         if (state[num3] == a_NET_WM_STATE_SKIP_PAGER) {
-            su_log_debug2("NET_WM_STATE_SKIP_PAGER ");
+            SU_LOG_DEBUG2("NET_WM_STATE_SKIP_PAGER ");
             nws->skip_pager = 1;
         } else if (state[num3] == a_NET_WM_STATE_SKIP_TASKBAR) {
-            su_log_debug2( "NET_WM_STATE_SKIP_TASKBAR ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_SKIP_TASKBAR ");
             nws->skip_taskbar = 1;
         } else if (state[num3] == a_NET_WM_STATE_STICKY) {
-            su_log_debug2( "NET_WM_STATE_STICKY ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_STICKY ");
             nws->sticky = 1;
         } else if (state[num3] == a_NET_WM_STATE_HIDDEN) {
-            su_log_debug2( "NET_WM_STATE_HIDDEN ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_HIDDEN ");
             nws->hidden = 1;
         } else if (state[num3] == a_NET_WM_STATE_SHADED) {
-            su_log_debug2( "NET_WM_STATE_SHADED ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_SHADED ");
             nws->shaded = 1;
         } else if (state[num3] == a_NET_WM_STATE_MODAL) {
-            su_log_debug2( "NET_WM_STATE_MODAL ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_MODAL ");
             nws->modal = 1;
         } else if (state[num3] == a_NET_WM_STATE_MAXIMIZED_VERT) {
-            su_log_debug2( "NET_WM_STATE_MAXIMIZED_VERT ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_MAXIMIZED_VERT ");
             nws->maximized_vert = 1;
         } else if (state[num3] == a_NET_WM_STATE_MAXIMIZED_HORZ) {
-            su_log_debug2( "NET_WM_STATE_MAXIMIZED_HORZ ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_MAXIMIZED_HORZ ");
             nws->maximized_horz = 1;
         } else if (state[num3] == a_NET_WM_STATE_FULLSCREEN) {
-            su_log_debug2( "NET_WM_STATE_FULLSCREEN; ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_FULLSCREEN; ");
             nws->fullscreen = 1;
         } else if (state[num3] == a_NET_WM_STATE_ABOVE) {
-            su_log_debug2( "NET_WM_STATE_ABOVE ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_ABOVE ");
             nws->above = 1;
         } else if (state[num3] == a_NET_WM_STATE_BELOW) {
-            su_log_debug2( "NET_WM_STATE_BELOW ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_BELOW ");
             nws->below = 1;
         } else if (state[num3] == a_NET_WM_STATE_DEMANDS_ATTENTION) {
-            su_log_debug2( "NET_WM_STATE_DEMANDS_ATTENTION ");
+            SU_LOG_DEBUG2( "NET_WM_STATE_DEMANDS_ATTENTION ");
             nws->demands_attention = 1;
         } else if (state[num3] == a_OB_WM_STATE_UNDECORATED) {
-            su_log_debug2( "OB_WM_STATE_UNDECORATED ");
+            SU_LOG_DEBUG2( "OB_WM_STATE_UNDECORATED ");
             nws->ob_undecorated = 1;
         } else {
-            su_log_debug2( "... ");
+            SU_LOG_DEBUG2( "... ");
         }
     }
     XFree(state);
-    su_log_debug2( "}\n");
+    SU_LOG_DEBUG2( "}\n");
 }
 
 void wtl_x11_get_net_wm_window_type(Window win, NetWMWindowType *nwwt)
@@ -277,39 +277,39 @@ void wtl_x11_get_net_wm_window_type(Window win, NetWMWindowType *nwwt)
     if (!(state = wtl_x11_get_xa_property(win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num3)))
         return;
 
-    su_log_debug2( "%x: netwm state = { ", (unsigned int)win);
+    SU_LOG_DEBUG2( "%x: netwm state = { ", (unsigned int)win);
     while (--num3 >= 0)
     {
         if (state[num3] == a_NET_WM_WINDOW_TYPE_DESKTOP) {
-            su_log_debug2("NET_WM_WINDOW_TYPE_DESKTOP ");
+            SU_LOG_DEBUG2("NET_WM_WINDOW_TYPE_DESKTOP ");
             nwwt->desktop = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_DOCK) {
-            su_log_debug2( "NET_WM_WINDOW_TYPE_DOCK ");
+            SU_LOG_DEBUG2( "NET_WM_WINDOW_TYPE_DOCK ");
             nwwt->dock = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_TOOLBAR) {
-            su_log_debug2( "NET_WM_WINDOW_TYPE_TOOLBAR ");
+            SU_LOG_DEBUG2( "NET_WM_WINDOW_TYPE_TOOLBAR ");
             nwwt->toolbar = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_MENU) {
-            su_log_debug2( "NET_WM_WINDOW_TYPE_MENU ");
+            SU_LOG_DEBUG2( "NET_WM_WINDOW_TYPE_MENU ");
             nwwt->menu = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_UTILITY) {
-            su_log_debug2( "NET_WM_WINDOW_TYPE_UTILITY ");
+            SU_LOG_DEBUG2( "NET_WM_WINDOW_TYPE_UTILITY ");
             nwwt->utility = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_SPLASH) {
-            su_log_debug2( "NET_WM_WINDOW_TYPE_SPLASH ");
+            SU_LOG_DEBUG2( "NET_WM_WINDOW_TYPE_SPLASH ");
             nwwt->splash = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_DIALOG) {
             su_log_debug( "NET_WM_WINDOW_TYPE_DIALOG ");
             nwwt->dialog = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_NORMAL) {
-            su_log_debug2( "NET_WM_WINDOW_TYPE_NORMAL ");
+            SU_LOG_DEBUG2( "NET_WM_WINDOW_TYPE_NORMAL ");
             nwwt->normal = 1;
         } else {
-            su_log_debug2( "... ");
+            SU_LOG_DEBUG2( "... ");
         }
     }
     XFree(state);
-    su_log_debug2( "}\n");
+    SU_LOG_DEBUG2( "}\n");
 }
 
 int wtl_x11_get_wm_state (Window win)

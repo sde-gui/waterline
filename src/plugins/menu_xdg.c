@@ -267,14 +267,14 @@ static GtkWidget* create_item( MenuCacheItem* item )
     else
     {
         const char * name = menu_cache_item_get_name(item);
-        su_log_debug2("Name    = %s", name);
+        SU_LOG_DEBUG2("Name    = %s", name);
         if (!name)
             name = "<unknown>";
 
         mi = gtk_image_menu_item_new_with_label(name);
 
         const char * icon_name = menu_cache_item_get_icon(item);
-        su_log_debug2("Icon    = %s", icon_name);
+        SU_LOG_DEBUG2("Icon    = %s", icon_name);
         if (su_str_empty(icon_name))
             icon_name = "applications-other";
         GtkWidget * image = NULL;
@@ -293,7 +293,7 @@ static GtkWidget* create_item( MenuCacheItem* item )
         if( menu_cache_item_get_type(item) == MENU_CACHE_TYPE_APP )
         {
             const gchar * tooltip = menu_cache_item_get_comment(item);
-            su_log_debug2("Tooltip = %s", tooltip);
+            SU_LOG_DEBUG2("Tooltip = %s", tooltip);
 
 /*
             FIXME: to be implemented in menu-cache
@@ -303,7 +303,7 @@ static GtkWidget* create_item( MenuCacheItem* item )
             gchar * additional_tooltip = NULL;
 
             const gchar * commandline = menu_cache_app_get_exec(MENU_CACHE_APP(item));
-            su_log_debug2("Exec    = %s", commandline);
+            SU_LOG_DEBUG2("Exec    = %s", commandline);
 
             gchar * executable = str_remove_trailing_percent_args(g_strdup(commandline));
 

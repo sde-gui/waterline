@@ -1239,7 +1239,7 @@ static void calculate_position(Panel *np, int margin_top, int margin_bottom)
 {
     int sswidth, ssheight, minx, miny;
 
-    GdkScreen * screen = gtk_widget_get_screen(np->topgwin);
+    GdkScreen * screen = np->screen;
 
     /* FIXME: Why this doesn't work? */
     if (0)  {

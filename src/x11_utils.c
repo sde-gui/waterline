@@ -164,31 +164,26 @@ Xclimsgwm(Window win, Atom type, Atom arg)
 
 int wtl_x11_get_net_number_of_desktops(void)
 {
-    int desknum;
-    guint32 *data;
-
-    data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_NUMBER_OF_DESKTOPS,
-          XA_CARDINAL, 0);
-    if (!data)
-        return 0;
-
-    desknum = *data;
-    XFree (data);
-    return desknum;
+    int number_of_desktops = 0;
+    guint32 * data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL, 0);
+    if (data)
+    {
+        number_of_desktops = *data;
+        XFree (data);
+    }
+    return number_of_desktops;
 }
 
 int wtl_x11_get_net_current_desktop(void)
 {
-    int desk;
-    guint32 *data;
-
-    data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
-    if (!data)
-        return 0;
-
-    desk = *data;
-    XFree (data);
-    return desk;
+    int current_desktop = 0;
+    guint32 * data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
+    if (data)
+    {
+        current_desktop = *data;
+        XFree (data);
+    }
+    return current_desktop;
 }
 
 int wtl_x11_get_net_wm_desktop(Window win)

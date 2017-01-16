@@ -1241,14 +1241,7 @@ static void calculate_position(Panel *np, int margin_top, int margin_bottom)
 
     GdkScreen * screen = np->screen;
 
-    /* FIXME: Why this doesn't work? */
-    if (0)  {
-//        if (np->curdesk < np->wa_len/4) {
-        minx = np->workarea[np->curdesk*4 + 0];
-        miny = np->workarea[np->curdesk*4 + 1];
-        sswidth  = np->workarea[np->curdesk*4 + 2];
-        ssheight = np->workarea[np->curdesk*4 + 3];
-    } else {
+    {
         minx = miny = 0;
         sswidth  = gdk_screen_get_width(screen);
         ssheight = gdk_screen_get_height(screen);

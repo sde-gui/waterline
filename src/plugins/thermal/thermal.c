@@ -85,7 +85,7 @@ static su_json_option_definition option_definitions[] = {
 sysfs_get_critical(thermal *th){
     FILE *state;
     char buf[ 256 ], sstmp [ 100 ];
-    char* pstr;
+    char* pstr = NULL;
 
     if(th->sensor == NULL) return -1;
 
@@ -112,7 +112,7 @@ static gint
 sysfs_get_temperature(thermal *th){
     FILE *state;
     char buf[ 256 ], sstmp [ 100 ];
-    char* pstr;
+    char* pstr = NULL;
 
     if(th->sensor == NULL) return -1;
 
@@ -337,7 +337,6 @@ thermal_destructor(Plugin *p)
 {
   thermal *th = PRIV(p);
 
-  th = (thermal *) PRIV(p);
   g_free(th->sensor);
   g_free(th->normal_color);
   g_free(th->warning1_color);

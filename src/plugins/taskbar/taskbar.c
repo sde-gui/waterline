@@ -1467,7 +1467,7 @@ static Task * task_lookup(TaskbarPlugin * tb, Window win)
 /* Delete a task and optionally unlink it from the task list. */
 static void task_delete(TaskbarPlugin * tb, Task * tk, gboolean unlink)
 {
-    su_log_debug("Deleting task %s (0x%x)\n", tk->name, (int)tk);
+    su_log_debug("Deleting task %s (%p)\n", tk->name, (void *) tk);
 
     if (tk->run_path && tk->run_path != (gchar *)-1)
         g_free(tk->run_path);
@@ -3868,7 +3868,7 @@ static void taskbar_net_client_list(GtkWidget * widget, TaskbarPlugin * tb)
                     task_build_gui(tb, tk);
                     task_set_names(tk, None);
 
-                    su_log_debug("Creating task %s (0x%x)\n", tk->name, (int)tk);
+                    su_log_debug("Creating task %s (%p)\n", tk->name, (void *) tk);
 
                     task_set_class(tk);
 

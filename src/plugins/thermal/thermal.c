@@ -37,11 +37,6 @@
 #include <waterline/plugin.h>
 #include <waterline/gtkcompat.h>
 
-#define PROC_THERMAL_DIRECTORY "/proc/acpi/thermal_zone/" /* must be slash-terminated */
-#define PROC_THERMAL_TEMPF  "temperature"
-#define PROC_THERMAL_TRIP  "trip_points"
-#define PROC_TRIP_CRITICAL "critical (S5):"
-
 #define SYSFS_THERMAL_DIRECTORY "/sys/class/thermal/" /* must be slash-terminated */
 #define SYSFS_THERMAL_SUBDIR_PREFIX "thermal_zone"
 #define SYSFS_THERMAL_TEMPF  "temp"
@@ -85,73 +80,6 @@ static su_json_option_definition option_definitions[] = {
 };
 
 /******************************************************************************/
-
-
-
-static gint
-proc_get_critical(thermal *th){
-    FILE *state;
-    char buf[ 256 ], sstmp [ 100 ];
-    char* pstr;
-
-    if(th->sensor == NULL) return -1;
-
-    sprintf(sstmp,"%s%s",th->sensor,PROC_THERMAL_TRIP);
-
-    if (!(state = fopen( sstmp, "r"))) {
-        //printf("cannot open %s\n",sstmp);
-        return -1;
-    }
-
-    while( fgets(buf, 256, state) &&
-            ! ( pstr = strstr(buf, PROC_TRIP_CRITICAL) ) );
-    if( pstr )
-    {
-        pstr += strlen(PROC_TRIP_CRITICAL);
-        while( *pstr && *pstr == ' ' )
-            ++pstr;
-
-        pstr[strlen(pstr)-3] = '\0';
-        printf("Critical: [%s]\n",pstr);
-        fclose(state);
-        return atoi(pstr);
-    }
-
-    fclose(state);
-    return -1;
-}
-
-static gint
-proc_get_temperature(thermal *th){
-    FILE *state;
-    char buf[ 256 ], sstmp [ 100 ];
-    char* pstr;
-
-    if(th->sensor == NULL) return -1;
-
-    sprintf(sstmp,"%s%s",th->sensor,PROC_THERMAL_TEMPF);
-
-    if (!(state = fopen( sstmp, "r"))) {
-        //printf("cannot open %s\n",sstmp);
-        return -1;
-    }
-
-    while( fgets(buf, 256, state) &&
-            ! ( pstr = strstr(buf, "temperature:") ) );
-    if( pstr )
-    {
-        pstr += 12;
-        while( *pstr && *pstr == ' ' )
-            ++pstr;
-
-        pstr[strlen(pstr)-3] = '\0';
-        fclose(state);
-        return atoi(pstr);
-    }
-
-    fclose(state);
-    return -1;
-}
 
  static gint
 sysfs_get_critical(thermal *th){
@@ -211,13 +139,8 @@ sysfs_get_temperature(thermal *th){
 static void
 set_get_functions(thermal *th)
 {
-    if (th->sensor && strncmp(th->sensor, "/sys/", 5) == 0){
-        th->get_temperature = sysfs_get_temperature;
-        th->get_critical = sysfs_get_critical;
-    } else {
-        th->get_temperature = proc_get_temperature;
-        th->get_critical = proc_get_critical;
-    }
+    th->get_temperature = sysfs_get_temperature;
+    th->get_critical = sysfs_get_critical;
 }
 
 static void update_display(thermal *th, gboolean force)
@@ -305,10 +228,7 @@ check_sensors( thermal *th )
         th->sensor = NULL;
     }
 
-    get_sensor(&th->sensor, PROC_THERMAL_DIRECTORY, NULL);
-
-    if (!th->sensor)
-        get_sensor(&th->sensor, SYSFS_THERMAL_DIRECTORY, SYSFS_THERMAL_SUBDIR_PREFIX);
+    get_sensor(&th->sensor, SYSFS_THERMAL_DIRECTORY, SYSFS_THERMAL_SUBDIR_PREFIX);
 
     //printf("thermal sensor: %s\n", th->sensor);
 }

@@ -1585,6 +1585,8 @@ static gboolean task_update_thumbnail_preview_real(Task * tk)
 
     if (tk->thumbnail)
     {
+        gint64 scale_start_time = g_get_monotonic_time();
+
         int preview_width = 150;
         int preview_height = 100;
         tk->thumbnail_preview = su_gdk_pixbuf_scale_in_rect(tk->thumbnail, preview_width, preview_height, TRUE);
@@ -1592,6 +1594,13 @@ static gboolean task_update_thumbnail_preview_real(Task * tk)
         {
             gtk_image_set_from_pixbuf(GTK_IMAGE(tk->preview_item.image), tk->thumbnail_preview);
         }
+
+        gint64 scale_end_time = g_get_monotonic_time();
+        gint64 scale_time = scale_end_time - scale_start_time;
+        SU_LOG_DEBUG("scaling of [%lux%lu] thumbnail takes %f s",
+            gdk_pixbuf_get_width(tk->thumbnail),
+            gdk_pixbuf_get_height(tk->thumbnail),
+            scale_time / 1000000.0);
     }
 
     return FALSE;
@@ -1669,9 +1678,21 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
 
     if (!skip && tk->backing_pixmap != 0)
     {
+        gint64 update_start_time = g_get_monotonic_time();
+
         GdkPixbuf * pixbuf = su_gdk_pixbuf_get_from_pixmap(tk->backing_pixmap, -1, -1);
+
+        gint64 update_end_time = g_get_monotonic_time();
+        gint64 update_time = update_end_time - update_start_time;
+
         if (pixbuf)
         {
+
+            SU_LOG_DEBUG("converting [%lux%lu] pixmap to pixbuf takes %f s",
+                gdk_pixbuf_get_width(pixbuf),
+                gdk_pixbuf_get_height(pixbuf),
+                update_time / 1000000.0);
+
             if (tk->thumbnail)
                 g_object_unref(G_OBJECT(tk->thumbnail));
             if (tk->thumbnail_icon)

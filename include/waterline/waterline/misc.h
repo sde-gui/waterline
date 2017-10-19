@@ -92,10 +92,28 @@ static inline void cairo_set_source_gdkrgba(cairo_t * cr, GdkRGBA * rgba)
 
 static inline void mix_rgba(GdkRGBA * result, GdkRGBA * a, GdkRGBA * b, double v)
 {
+    if (v < 0.0)
+        v = 0.0;
+    else if (v > 1.0)
+        v = 1.0;
     result->red   = a->red   * v + b->red   * (1.0 - v);
     result->green = a->green * v + b->green * (1.0 - v);
     result->blue  = a->blue  * v + b->blue  * (1.0 - v);
     result->alpha = a->alpha * v + b->alpha * (1.0 - v);
+}
+
+static inline double rescale_range(double value, double range1_l, double range1_h, double range2_l, double range2_h)
+{
+    double v = value;
+    v -= range1_l;
+    if (v < 0.0)
+        v = 0.0;
+    v /= (range1_h - range1_l);
+    if (v > 1.0)
+        v = 1.0;
+    v *= (range2_h - range2_l);
+    v += range2_l;
+    return v;
 }
 
 /****************************************************************************/

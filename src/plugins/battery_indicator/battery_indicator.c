@@ -173,7 +173,7 @@ static void get_status_color(BatteryPlugin *iplugin, GdkRGBA * color)
 
     gboolean isCharging = battery_is_charging(iplugin->b);
 
-    double v = iplugin->b->percentage / 100.0;
+    double v = rescale_range(iplugin->b->percentage, 5.0, 95.0, 0.0, 1.0);
 
     if (isCharging)
     {

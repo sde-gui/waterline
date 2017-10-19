@@ -412,7 +412,7 @@ void update_display(BatteryPlugin *iplugin) {
         if (isCharging)
         {
             TOOLTIP_PRINTF(
-                _("\nVoltage %.1fV\nCharging current: %.1fA"),
+                _("\nVoltage: %.1fV, Charging current: %.1fA"),
                 iplugin->b->voltage_now / 1000.0,
                 iplugin->b->current_now / 1000.0
             );
@@ -429,6 +429,16 @@ void update_display(BatteryPlugin *iplugin) {
                 iplugin->b->current_now / 1000.0
             );
         }
+    }
+
+    if (iplugin->b->charge_now > 0 && iplugin->b->charge_full > 0 && iplugin->b->charge_full_design > 0)
+    {
+        TOOLTIP_PRINTF(
+            _("\nCharge now: %u mAh\nLast full capacity: %u mAh\nDesign capacity: %u mAh"),
+            iplugin->b->charge_now,
+            iplugin->b->charge_full,
+            iplugin->b->charge_full_design
+        );
     }
 
     gtk_widget_set_tooltip_text(iplugin->vbox, tooltip);

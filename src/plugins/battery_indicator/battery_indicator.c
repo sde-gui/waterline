@@ -104,6 +104,10 @@ typedef struct {
         width,
         hide_if_no_battery;
     sem_t alarmProcessLock;
+
+    gboolean show_power_stats;
+    gboolean show_detailed_charge_stats;
+
     battery* b;
     gboolean has_ac_adapter;
 
@@ -125,9 +129,9 @@ static void battery_indicator_panel_configuration_changed(Plugin *p);
 
 #define SU_JSON_OPTION_STRUCTURE BatteryPlugin
 static su_json_option_definition option_definitions[] = {
+    SU_JSON_OPTION(bool, show_power_stats),
+    SU_JSON_OPTION(bool, show_detailed_charge_stats),
     SU_JSON_OPTION(bool, hide_if_no_battery),
-    SU_JSON_OPTION(string, alarmCommand),
-    SU_JSON_OPTION(int, alarmTime),
     SU_JSON_OPTION_ENUM(display_as_pair, display_as),
     SU_JSON_OPTION(rgba, background_color),
     SU_JSON_OPTION(int, border_width),
@@ -135,6 +139,8 @@ static su_json_option_definition option_definitions[] = {
     SU_JSON_OPTION(rgba, charging_color2),
     SU_JSON_OPTION(rgba, discharging_color1),
     SU_JSON_OPTION(rgba, discharging_color2),
+    SU_JSON_OPTION(string, alarmCommand),
+    SU_JSON_OPTION(int, alarmTime),
     {0,}
 };
 
@@ -407,7 +413,7 @@ void update_display(BatteryPlugin *iplugin) {
         }
     }
 
-    if (iplugin->b->voltage_now > 0 && iplugin->b->current_now > 0)
+    if (iplugin->show_power_stats && iplugin->b->voltage_now > 0 && iplugin->b->current_now > 0)
     {
         if (isCharging)
         {
@@ -431,10 +437,10 @@ void update_display(BatteryPlugin *iplugin) {
         }
     }
 
-    if (iplugin->b->charge_now > 0 && iplugin->b->charge_full > 0 && iplugin->b->charge_full_design > 0)
+    if (iplugin->show_detailed_charge_stats && iplugin->b->charge_now > 0 && iplugin->b->charge_full > 0 && iplugin->b->charge_full_design > 0)
     {
         TOOLTIP_PRINTF(
-            _("\nCharge now: %u mAh\nLast full capacity: %u mAh\nDesign capacity: %u mAh"),
+            _("\nCharge now: %u mAh\nFull capacity: %u mAh\nDesign capacity: %u mAh"),
             iplugin->b->charge_now,
             iplugin->b->charge_full,
             iplugin->b->charge_full_design
@@ -588,16 +594,18 @@ constructor(Plugin *p)
     sem_init(&(iplugin->alarmProcessLock), 0, 1);
 
     /* Set default values. */
+    iplugin->show_power_stats = TRUE;
+    iplugin->show_detailed_charge_stats = TRUE;
     iplugin->hide_if_no_battery = TRUE;
-    iplugin->alarmTime = 5;
     iplugin->border_width = 3;
     iplugin->display_as = DISPLAY_AS_TEXT;
-    iplugin->alarmCommand = g_strdup("xmessage Battery low");
     gdk_rgba_parse(&iplugin->background_color, "black");
     gdk_rgba_parse(&iplugin->charging_color1, "#1B3BC6");
     gdk_rgba_parse(&iplugin->charging_color2, "#B52FC3");
     gdk_rgba_parse(&iplugin->discharging_color1, "#00FF00");
     gdk_rgba_parse(&iplugin->discharging_color2, "#FF0000");
+    iplugin->alarmTime = 5;
+    iplugin->alarmCommand = g_strdup("xmessage Battery low");
 
     su_json_read_options(plugin_inner_json(p), option_definitions, iplugin);
 
@@ -673,11 +681,12 @@ static void config(Plugin *p, GtkWindow* parent)
     dialog = wtl_create_generic_config_dialog(_(plugin_class(p)->name),
             GTK_WIDGET(parent),
             (GSourceFunc) applyConfig, (gpointer) p,
-            _("Hide if there is no battery"), &b->hide_if_no_battery, (GType)CONF_TYPE_BOOL,
-            "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
-            _("Alarm command"), &b->alarmCommand, (GType)CONF_TYPE_STR,
-            _("Alarm time (minutes left)"), &b->alarmTime, (GType)CONF_TYPE_INT,
 
+            _("Appearance"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
+
+            _("Hide if there is no battery"), &b->hide_if_no_battery, (GType)CONF_TYPE_BOOL,
+
+            "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
             _("|Display as:|Bar|Text"), &b->display_as, (GType)CONF_TYPE_ENUM,
             _("Background color"), &b->background_color, (GType)CONF_TYPE_RGBA,
             _("Charging color 1"), &b->charging_color1, (GType)CONF_TYPE_RGBA,
@@ -685,6 +694,18 @@ static void config(Plugin *p, GtkWindow* parent)
             _("Discharging color 1"), &b->discharging_color1, (GType)CONF_TYPE_RGBA,
             _("Discharging color 2"), &b->discharging_color2, (GType)CONF_TYPE_RGBA,
             _("Border width"), &b->border_width, (GType)CONF_TYPE_INT,
+
+            _("Alarm"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
+
+            "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
+            _("Alarm command"), &b->alarmCommand, (GType)CONF_TYPE_STR,
+            _("Alarm time (minutes left)"), &b->alarmTime, (GType)CONF_TYPE_INT,
+
+            _("Tooltip"), (gpointer)NULL, (GType)CONF_TYPE_BEGIN_PAGE,
+
+            _("Display power, current and voltage"), (gpointer)&b->show_power_stats, (GType)CONF_TYPE_BOOL,
+            _("Display detailed charge values"), (gpointer)&b->show_detailed_charge_stats, (GType)CONF_TYPE_BOOL,
+
             NULL);
     if (dialog)
         gtk_window_present(GTK_WINDOW(dialog));

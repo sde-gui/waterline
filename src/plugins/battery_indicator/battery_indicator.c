@@ -303,10 +303,12 @@ static void update_label(BatteryPlugin *iplugin)
 /* FIXME:
    Don't repaint if percentage of remaining charge and remaining time aren't changed. */
 void update_display(BatteryPlugin *iplugin) {
-    char tooltip[ 256 ];
     battery * b = iplugin->b;
-    /* unit: mW */
 
+    #define TOOLTIP_SIZE 512
+    #define TOOLTIP_PRINTF(...) snprintf(tooltip + strlen(tooltip), TOOLTIP_SIZE - strlen(tooltip), __VA_ARGS__)
+    char tooltip[TOOLTIP_SIZE];
+    tooltip[0] = 0;
 
     /* no battery is found */
     if (b == NULL)
@@ -372,16 +374,18 @@ void update_display(BatteryPlugin *iplugin) {
             int hours = iplugin->b->seconds / 3600;
             int left_seconds = b->seconds - 3600 * hours;
             int minutes = left_seconds / 60;
-            snprintf(tooltip, 256,
+            TOOLTIP_PRINTF(
                 _("Battery: %d%% charged, %d:%02d until full"),
                 iplugin->b->percentage,
                 hours,
-                minutes );
+                minutes
+            );
         }
         else {
-            snprintf(tooltip, 256,
+            TOOLTIP_PRINTF(
                 _("Battery: %d%% charged"),
-                iplugin->b->percentage);
+                iplugin->b->percentage
+            );
         }
     } else {
         /* if we have enough rate information for battery */
@@ -389,15 +393,17 @@ void update_display(BatteryPlugin *iplugin) {
             int hours = iplugin->b->seconds / 3600;
             int left_seconds = b->seconds - 3600 * hours;
             int minutes = left_seconds / 60;
-            snprintf(tooltip, 256,
+            TOOLTIP_PRINTF(
                 _("Battery: %d%% charged, %d:%02d left"),
                 iplugin->b->percentage,
                 hours,
-            minutes );
+                minutes
+            );
         } else {
-            snprintf(tooltip, 256,
+            TOOLTIP_PRINTF(
                 _("Battery: %d%% charged"),
-                100 );
+                100
+            );
         }
     }
 
@@ -405,7 +411,7 @@ void update_display(BatteryPlugin *iplugin) {
     {
         if (isCharging)
         {
-            snprintf(tooltip + strlen(tooltip), 256 - strlen(tooltip),
+            TOOLTIP_PRINTF(
                 _("\nVoltage %.1fV\nCharging current: %.1fA"),
                 iplugin->b->voltage_now / 1000.0,
                 iplugin->b->current_now / 1000.0
@@ -416,7 +422,7 @@ void update_display(BatteryPlugin *iplugin) {
             int power_now = iplugin->b->power_now;
             if (power_now <= 0)
                 power_now = iplugin->b->voltage_now * iplugin->b->current_now / 1000;
-            snprintf(tooltip + strlen(tooltip), 256 - strlen(tooltip),
+            TOOLTIP_PRINTF(
                 _("\nPower: %.1fW (%.1fV, %.1fA)"),
                 power_now / 1000.0,
                 iplugin->b->voltage_now / 1000.0,
@@ -446,6 +452,8 @@ void update_display(BatteryPlugin *iplugin) {
         update_label(iplugin);
     }
 
+    #undef TOOLTIP_SIZE
+    #undef TOOLTIP_PRINTF
 }
 
 /* This callback is called every 3 seconds */

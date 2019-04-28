@@ -215,21 +215,9 @@ WATERLINE_INTERNAL_MODULE="-avoid-version \
 -no-undefined "'-export-symbols-regex "^[[^_]].*"'
 AC_SUBST(WATERLINE_INTERNAL_MODULE)
 
+##############################################################################
 
-AC_ARG_ENABLE([alsa],
-    AS_HELP_STRING([--disable-alsa],
-                    [compile ALSA providers (default: enable)]),
-            compile_alsa=$enableval, compile_alsa="yes")
-if test x"$compile_alsa" = "xyes"; then
-    AC_CHECK_HEADERS([alsa/asoundlib.h],
-                     [AC_CHECK_LIB([asound],
-                                   [snd_seq_open],
-                                   compile_alsa=yes,compile_alsa=no)],
-                          compile_alsa=no)
-fi
-AM_CONDITIONAL(BUILD_ALSA_PLUGINS, test x$compile_alsa = xyes)
-dnl FIXME: check OSS existence
-#AM_CONDITIONAL(BUILD_OSS_PLUGINS, test x$compile_alsa = xno)
+# FIXME: give this parameter somewhat more reasonable name
 
 AC_ARG_ENABLE([plugins-loading],
     AS_HELP_STRING([--disable-plugins-loading],
@@ -242,59 +230,92 @@ if test x"$plugins_loading" = "xno"; then
     AC_DEFINE(DISABLE_PLUGINS_LOADING, [1], [Disable plugin loading])
 fi
 
-dnl Here are plugin listing.
+##############################################################################
+
+# NOTE: Keep this in sync with --enable-plugin-* options
 ALL_PLUGINS_LIST="taskbar pager show_desktop notification_area netstatus volume volumealsa cpu battery_indicator xkb_leds xkb_groups xkb_locks thermal cpufreq"
 AC_SUBST(ALL_PLUGINS_LIST)
 
-AC_MSG_CHECKING([which plugins should be built dynamically])
-AC_ARG_WITH(plugins,
-[  --with-plugins=<list>  compile dynamic plugins in <list> ]
-[                         plugins may be comma separated ]
-[                         'all' builds all plugins (default), 'none' builds none ]
-[                         Possible plugins are: ]
-[                         taskbar, pager, show_desktop, notification_area,]
-[                         netstatus, volume, volumealsa, cpu, cpufreq,]
-[                         battery_indicator, xkb_leds, xkb_groups, xkb_locks, thermal], plugins="$withval",[plugins="all"])
+##############################################################################
 
-if test x"$plugins" != xall -a x"$plugins" != xnone; then
-    if test x"$plugins_loading" = xno; then
-        AC_MSG_ERROR(
-        [--disable-plugins-loading and --with-plugins conflict each other.])
-    fi
-fi
+# Plugin-specific checks.
 
-for name in $ALL_PLUGINS_LIST
-do
-    eval plugin_$name=
+for name in $ALL_PLUGINS_LIST ; do
+    eval autodetected_plugin_$name=
 done
 
-if test x"$plugins" = xall; then
-    for name in $ALL_PLUGINS_LIST
-    do
-        eval plugin_$name="$name"
-    done
+AC_ARG_ENABLE([alsa],
+    AS_HELP_STRING([--enable-alsa],
+                    [enable ALSA support for volumealsa plugin @<:@default=yes@:>@]),
+            compile_alsa=$enableval, compile_alsa="yes")
+if test x"$compile_alsa" = "xyes" ; then
+    AC_CHECK_HEADERS([alsa/asoundlib.h],
+                     [AC_CHECK_LIB([asound],
+                                   [snd_seq_open],
+                                   compile_alsa=yes,compile_alsa=no)],
+                          compile_alsa=no)
+fi
+AM_CONDITIONAL(BUILD_ALSA_PLUGINS, test x$compile_alsa = xyes)
+dnl FIXME: check OSS existence
+#AM_CONDITIONAL(BUILD_OSS_PLUGINS, test x$compile_alsa = xno)
 
+autodetected_plugin_volumealsa="$compile_alsa"
+
+##############################################################################
+
+# Build the plugin list based on configure options
+
+AC_MSG_CHECKING([which plugins should be built dynamically])
+AC_ARG_WITH(plugins,
+[  --with-plugins=<list>  the list of dynamically loadable plugins to be built:]
+[                         'auto' autodetects which plugins should be build (default),]
+[                         'all' builds all plugins,]
+[                         'none' builds none.]
+[                         Possible plugins are:]
+[                         taskbar, pager, show_desktop, notification_area,]
+[                         netstatus, volume, volumealsa, cpu, cpufreq,]
+[                         battery_indicator, xkb_leds, xkb_groups, xkb_locks, thermal.]
+[                         If any of --enable-plugin-* options are specified,]
+[                         they take precedence over the list.],
+    plugins="$withval",[plugins="auto"])
+
+for name in $ALL_PLUGINS_LIST ; do
+    eval plugin_$name=no
+done
+
+if test x"$plugins" = xnone ; then
+    AC_MSG_RESULT(none)
+elif test x"$plugins" = xall ; then
+    for name in $ALL_PLUGINS_LIST ; do
+        eval plugin_$name=yes
+    done
     AC_MSG_RESULT(all)
+elif test x"$plugins" = xauto ; then
+    for name in $ALL_PLUGINS_LIST ; do
+        if test x"$plugins_loading" = "xno"; then
+            eval plugin_$name=no
+        else
+            eval plugin_$name=auto
+        fi
+    done
+    AC_MSG_RESULT(auto)
 else
-    if test "$plugins" != "none"; then
-        plugins=`echo $plugins | sed 's/,/ /g'`
-        for plugin in $plugins
-        do
-            valid=no
-            for name in $ALL_PLUGINS_LIST
-            do
-                if test x"$name" = x"$plugin" ; then
-                    eval plugin_$name="$name"
-                    valid=yes
-                fi
-            done
-            if test "$valid" = "no" ; then
-                echo "Unknown plugin $plugin."
-                exit 1
+    plugins=`echo $plugins | sed 's/,/ /g'`
+    for plugin in $plugins ; do
+        valid=no
+        for name in $ALL_PLUGINS_LIST ; do
+            if test x"$name" = x"$plugin" ; then
+                eval plugin_$name=yes
+                valid=yes
             fi
         done
-        AC_MSG_RESULT($plugins)
-    fi
+
+        if test "$valid" = "no" ; then
+            echo "Unknown plugin $plugin."
+            exit 1
+        fi
+    done
+    AC_MSG_RESULT($plugins)
 fi
 
 dnl FIXME: OSS/ALSA checking
@@ -308,17 +329,125 @@ dnl FIXME: OSS/ALSA checking
 #    plugin_volume=
 #fi
 
+AC_ARG_ENABLE([plugin-battery_indicator],
+    AS_HELP_STRING([--enable-plugin-battery_indicator],
+                   [build plugin: battery_indicator @<:@default=auto@:>@]),
+            plugin_battery_indicator=$enableval)
 
+AC_ARG_ENABLE([plugin-cpu],
+    AS_HELP_STRING([--enable-plugin-cpu],
+                   [build plugin: cpu @<:@default=auto@:>@]),
+            plugin_cpu=$enableval)
+
+AC_ARG_ENABLE([plugin-cpufreq],
+    AS_HELP_STRING([--enable-plugin-cpufreq],
+                   [build plugin: cpufreq @<:@default=auto@:>@]),
+            plugin_cpufreq=$enableval)
+
+AC_ARG_ENABLE([plugin-netstatus],
+    AS_HELP_STRING([--enable-plugin-netstatus],
+                   [build plugin: netstatus @<:@default=auto@:>@]),
+            plugin_netstatus=$enableval)
+
+AC_ARG_ENABLE([plugin-notification_area],
+    AS_HELP_STRING([--enable-plugin-notification_area],
+                   [build plugin: notification_area @<:@default=auto@:>@]),
+            plugin_notification_area=$enableval)
+
+AC_ARG_ENABLE([plugin-pager],
+    AS_HELP_STRING([--enable-plugin-pager],
+                   [build plugin: pager @<:@default=auto@:>@]),
+            plugin_pager=$enableval)
+
+AC_ARG_ENABLE([plugin-show_desktop],
+    AS_HELP_STRING([--enable-plugin-show_desktop],
+                   [build plugin: show_desktop @<:@default=auto@:>@]),
+            plugin_show_desktop=$enableval)
+
+AC_ARG_ENABLE([plugin-taskbar],
+    AS_HELP_STRING([--enable-plugin-taskbar],
+                   [build plugin: taskbar @<:@default=auto@:>@]),
+            plugin_taskbar=$enableval)
+
+AC_ARG_ENABLE([plugin-thermal],
+    AS_HELP_STRING([--enable-plugin-thermal],
+                   [build plugin: thermal @<:@default=auto@:>@]),
+            plugin_thermal=$enableval)
+
+AC_ARG_ENABLE([plugin-volume],
+    AS_HELP_STRING([--enable-plugin-volume],
+                   [build plugin: volume @<:@default=auto@:>@]),
+            plugin_volume=$enableval)
+
+AC_ARG_ENABLE([plugin-volumealsa],
+    AS_HELP_STRING([--enable-plugin-volumealsa],
+                   [build plugin: volumealsa @<:@default=auto@:>@]),
+            plugin_volumealsa=$enableval)
+
+AC_ARG_ENABLE([plugin-xkb_groups],
+    AS_HELP_STRING([--enable-plugin-xkb_groups],
+                   [build plugin: xkb_groups @<:@default=auto@:>@]),
+            plugin_xkb_groups=$enableval)
+
+AC_ARG_ENABLE([plugin-xkb_leds],
+    AS_HELP_STRING([--enable-plugin-xkb_leds],
+                   [build plugin: xkb_leds @<:@default=auto@:>@]),
+            plugin_xkb_leds=$enableval)
+
+AC_ARG_ENABLE([plugin-xkb_locks],
+    AS_HELP_STRING([--enable-plugin-xkb_locks],
+                   [build plugin: xkb_locks @<:@default=auto@:>@]),
+            plugin_xkb_locks=$enableval)
+
+# replace 'auto's with autodetected values
+for name in $ALL_PLUGINS_LIST ; do
+    val=`eval echo '$'plugin_$name`
+    autodetected_val=`eval echo '$'autodetected_plugin_$name`
+    if test x"$val" = xauto ; then
+        if test x"$autodetected_val" = x ; then
+            echo "plugin: $name: enabled by default"
+            eval plugin_$name=yes
+        elif test x"$autodetected_val" = xyes ; then
+            echo "plugin: $name: enabled by autodetection"
+            eval plugin_$name=yes
+        else
+            echo "plugin: $name: disabled by autodetection"
+            eval plugin_$name=no
+        fi
+    elif test x"$val" = xyes ; then
+        echo "plugin: $name: enabled by user"
+        if test x"$autodetected_val" = xno ; then
+            AC_MSG_ERROR([unsatisfied dependencies for plugin $name])
+        fi
+    else
+        echo "plugin: $name: disabled by user"
+    fi
+done
+
+# check for conflicting options (--disable-plugins-loading vs any DL plugins)
+if test x"$plugins_loading" = xno; then
+    for name in $ALL_PLUGINS_LIST ; do
+        val=`eval echo '$'plugin_$name`
+        if test x"$val" = xyes ; then
+            AC_MSG_ERROR([--disable-plugins-loading cannot be used together with any dynamically loadable plugins.])
+        fi
+    done
+fi
+
+# generate the plugin list for Makefile
 PLUGINS_LIST=""
-for name in $ALL_PLUGINS_LIST
-do
-    eval 'PLUGINS_LIST="$PLUGINS_LIST $plugin_'"$name"'"'
+for name in $ALL_PLUGINS_LIST ; do
+    val=`eval echo '$'plugin_$name`
+    if test x"$val" = xyes ; then
+        PLUGINS_LIST="$PLUGINS_LIST $name"
+    fi
 done
 
 AC_SUBST(PLUGINS_LIST)
 
+##############################################################################
 
-if test x"$plugin_notification_area" != x; then
+if test x"$plugin_notification_area" != x ; then
     AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 fi
 

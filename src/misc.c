@@ -241,6 +241,28 @@ gchar * wtl_tooltip_for_file_stat(struct stat * stat_data)
 
 /********************************************************************/
 
+#ifndef S_TYPEISMQ
+# define S_TYPEISMQ(p) 0
+#endif
+
+#ifndef S_TYPEISSEM
+# ifdef S_INSEM
+#  define S_TYPEISSEM(p) (S_ISNAM ((p)->st_mode) && (p)->st_rdev == S_INSEM)
+# else
+#  define S_TYPEISSEM(p) 0
+# endif
+#endif
+
+#ifndef S_TYPEISSHM
+# ifdef S_INSHD
+#  define S_TYPEISSHM(p) (S_ISNAM ((p)->st_mode) && (p)->st_rdev == S_INSHD)
+# else
+#  define S_TYPEISSHM(p) 0
+# endif
+#endif
+
+/********************************************************************/
+
 /* filemode.c -- make a string describing file modes
 
    Copyright (C) 1985, 1990, 1993, 1998-2000, 2004, 2006, 2009-2012 Free

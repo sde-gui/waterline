@@ -340,6 +340,7 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([bzero memset mkdir setlocale strchr])
+AC_CHECK_DECLS_ONCE([strmode])
 
 if test x"$enable_man" = x"yes"; then
 	AC_PATH_PROG([XSLTPROC], [xsltproc])

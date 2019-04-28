@@ -31,7 +31,13 @@
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+#ifdef __FreeBSD__
+#include <termios.h>
+#include <libutil.h>
+#else
 #include <pty.h>
+#endif
 
 #include <sde-utils.h>
 #include <sde-utils-jansson.h>

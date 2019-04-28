@@ -256,10 +256,20 @@ if test x"$compile_alsa" = "xyes" ; then
                           compile_alsa=no)
 fi
 AM_CONDITIONAL(BUILD_ALSA_PLUGINS, test x$compile_alsa = xyes)
-dnl FIXME: check OSS existence
-#AM_CONDITIONAL(BUILD_OSS_PLUGINS, test x$compile_alsa = xno)
-
 autodetected_plugin_volumealsa="$compile_alsa"
+
+autodetected_plugin_volume="no"
+AC_CHECK_HEADERS([sys/soundcard.h], autodetected_plugin_volume="yes")
+AC_CHECK_HEADERS([linux/soundcard.h], autodetected_plugin_volum="yes")
+
+# FIXME: The following plugins are currently implemented only for Linux.
+# We check for the presence of <sys/sysinfo.h> to (hackishly) detect Linux and disable the plugins.
+AC_CHECK_HEADERS([sys/sysinfo.h], sys_sysinfo_h="yes", sys_sysinfo_h="no")
+autodetected_plugin_battery_indicator="$sys_sysinfo_h"
+autodetected_plugin_cpu="$sys_sysinfo_h"
+autodetected_plugin_cpufreq="$sys_sysinfo_h"
+autodetected_plugin_netstatus="$sys_sysinfo_h"
+autodetected_plugin_thermal="$sys_sysinfo_h"
 
 ##############################################################################
 
@@ -317,17 +327,6 @@ else
     done
     AC_MSG_RESULT($plugins)
 fi
-
-dnl FIXME: OSS/ALSA checking
-#if test x"$compile_alsa" = "xno"; then
-#    if test ! -z $plugin_volumealsa; then
-#        AC_MSG_RESULT([no ALSA headers/libraries found!])
-#        plugin_volumealsa=
-#    fi
-#else
-#    dnl force OSS plugin to <null>
-#    plugin_volume=
-#fi
 
 AC_ARG_ENABLE([plugin-battery_indicator],
     AS_HELP_STRING([--enable-plugin-battery_indicator],

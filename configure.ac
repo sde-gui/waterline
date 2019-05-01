@@ -282,8 +282,8 @@ autodetected_plugin_thermal="$sys_sysinfo_h"
 # Build the plugin list based on configure options
 
 AC_MSG_CHECKING([which plugins should be built dynamically])
-AC_ARG_WITH(plugins,
-[  --with-plugins=<list>  the list of dynamically loadable plugins to be built:]
+AC_ARG_ENABLE(plugins,
+[  --enable-plugins=<list> the list of dynamically loadable plugins to be built:]
 [                         'auto' autodetects which plugins should be build (default),]
 [                         'all' builds all plugins,]
 [                         'none' builds none.]
@@ -293,20 +293,20 @@ AC_ARG_WITH(plugins,
 [                         battery_indicator, xkb_leds, xkb_groups, xkb_locks, thermal.]
 [                         If any of --enable-plugin-* options are specified,]
 [                         they take precedence over the list.],
-    plugins="$withval",[plugins="auto"])
+    [enable_plugins="$enableval"],[enable_plugins="auto"])
 
 for name in $ALL_PLUGINS_LIST ; do
     eval plugin_$name=no
 done
 
-if test x"$plugins" = xnone ; then
+if test x"$enable_plugins" = xnone ; then
     AC_MSG_RESULT(none)
-elif test x"$plugins" = xall ; then
+elif test x"$enable_plugins" = xall ; then
     for name in $ALL_PLUGINS_LIST ; do
         eval plugin_$name=yes
     done
     AC_MSG_RESULT(all)
-elif test x"$plugins" = xauto ; then
+elif test x"$enable_plugins" = xauto ; then
     for name in $ALL_PLUGINS_LIST ; do
         if test x"$plugins_loading" = "xno"; then
             eval plugin_$name=no
@@ -316,8 +316,8 @@ elif test x"$plugins" = xauto ; then
     done
     AC_MSG_RESULT(auto)
 else
-    plugins=`echo $plugins | sed 's/,/ /g'`
-    for plugin in $plugins ; do
+    enable_plugins=`echo $enable_plugins | sed 's/,/ /g'`
+    for plugin in $enable_plugins ; do
         valid=no
         for name in $ALL_PLUGINS_LIST ; do
             if test x"$name" = x"$plugin" ; then
@@ -331,7 +331,7 @@ else
             exit 1
         fi
     done
-    AC_MSG_RESULT($plugins)
+    AC_MSG_RESULT($enable_plugins)
 fi
 
 AC_ARG_ENABLE([plugin-battery_indicator],

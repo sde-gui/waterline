@@ -244,23 +244,43 @@ for name in $ALL_PLUGINS_LIST ; do
     eval autodetected_plugin_$name=
 done
 
-AC_ARG_ENABLE([alsa],
-    AS_HELP_STRING([--enable-alsa],
-                    [enable ALSA support for volumealsa plugin @<:@default=yes@:>@]),
-            compile_alsa=$enableval, compile_alsa="yes")
-if test x"$compile_alsa" = "xyes" ; then
-    AC_CHECK_HEADERS([alsa/asoundlib.h],
-                     [AC_CHECK_LIB([asound],
-                                   [snd_seq_open],
-                                   compile_alsa=yes,compile_alsa=no)],
-                          compile_alsa=no)
-fi
-AM_CONDITIONAL(BUILD_ALSA_PLUGINS, test x$compile_alsa = xyes)
-autodetected_plugin_volumealsa="$compile_alsa"
+# ALSA
+
+AC_ARG_WITH([alsa],
+    [AS_HELP_STRING(
+        [--with-alsa],
+        [enable ALSA support for volumealsa plugin @<:@default=auto@:>@]
+    )],
+    [],
+    [with_alsa=auto]
+)
+
+AC_MSG_CHECKING([--with-alsa])
+AC_MSG_RESULT([$with_alsa])
+
+have_alsa=no
+AS_IF([test "x$with_alsa" != xno], [
+    AC_CHECK_HEADERS([alsa/asoundlib.h], [
+        AC_CHECK_LIB([asound], [snd_seq_open], [
+            have_alsa=yes
+        ])
+    ])
+])
+
+AS_IF([test "x$with_alsa" = "xyes" -a "x$have_foo" != "xyes"], [
+    AC_MSG_ERROR([alsa requested but not found])
+])
+
+AM_CONDITIONAL(BUILD_ALSA_PLUGINS, test x$have_alsa = xyes)
+autodetected_plugin_volumealsa="$have_alsa"
+
+# OSS
 
 autodetected_plugin_volume="no"
 AC_CHECK_HEADERS([sys/soundcard.h], autodetected_plugin_volume="yes")
 AC_CHECK_HEADERS([linux/soundcard.h], autodetected_plugin_volume="yes")
+
+# Non-portable plugins
 
 # FIXME: The following plugins are currently implemented only for Linux.
 # We check for the presence of <sys/sysinfo.h> to (hackishly) detect Linux and disable the plugins.

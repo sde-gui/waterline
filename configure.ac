@@ -259,9 +259,12 @@ autodetected_plugin_volumealsa="$have_alsa"
 
 # OSS
 
-autodetected_plugin_volume="no"
-AC_CHECK_HEADERS([sys/soundcard.h], autodetected_plugin_volume="yes")
-AC_CHECK_HEADERS([linux/soundcard.h], autodetected_plugin_volume="yes")
+SDE_WITH([oss], [enable support of the Open Sound System for volume plugin @<:@default=auto@:>@], [
+    AC_CHECK_HEADERS([sys/soundcard.h], have_oss="yes")
+    AC_CHECK_HEADERS([linux/soundcard.h], have_oss="yes")
+])
+
+autodetected_plugin_volume="$have_oss"
 
 # Non-portable plugins
 

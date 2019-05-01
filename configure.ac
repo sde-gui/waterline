@@ -260,7 +260,7 @@ autodetected_plugin_volumealsa="$compile_alsa"
 
 autodetected_plugin_volume="no"
 AC_CHECK_HEADERS([sys/soundcard.h], autodetected_plugin_volume="yes")
-AC_CHECK_HEADERS([linux/soundcard.h], autodetected_plugin_volum="yes")
+AC_CHECK_HEADERS([linux/soundcard.h], autodetected_plugin_volume="yes")
 
 # FIXME: The following plugins are currently implemented only for Linux.
 # We check for the presence of <sys/sysinfo.h> to (hackishly) detect Linux and disable the plugins.

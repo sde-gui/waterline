@@ -9,6 +9,7 @@ set -xe
 ###############################################################################
 
 SRC_DIR="${SRC_DIR:-}"
+test -z "$SRC_DIR" && SRC_DIR="`pwd`"
 
 AC_VERSION="${AC_VERSION:-}"
 AM_VERSION="${AC_VERSION:-}"
@@ -31,7 +32,7 @@ export GTKDOCIZE="${GTKDOCIZE:-gtkdocize}"
 
 ###############################################################################
 
-if [[ "`uname`" == OpenBSD ]] ; then
+if [ "x`uname`" = xOpenBSD ] ; then
     V="`ls -1 /usr/local/bin/autoreconf-* | env LC_ALL=C sort | tail -n 1`"
     V="${V##*-}"
     export AUTOCONF_VERSION="${AUTOCONF_VERSION:-$V}"
@@ -49,8 +50,9 @@ case "$AM_INSTALLED_VERSION" in
     1.1[1-6])
         ;;
     *)
+        set +x
         echo
-        echo "You must have automake 1.11...1.15 installed."
+        echo "You must have automake 1.11...1.16 installed."
         echo "Install the appropriate package for your distribution,"
         echo "or get the source tarball at http://ftp.gnu.org/gnu/automake/"
         exit 1
@@ -58,10 +60,6 @@ case "$AM_INSTALLED_VERSION" in
 esac
 
 ###############################################################################
-
-if [ -z "$SRC_DIR" ] ; then
-    SRC_DIR="`pwd`"
-fi
 
 if echo "$SRC_DIR" | grep -E -q '[[:space:]]' ; then
     printf "\nThe source path \"%q\" contains whitespace characters.\nPlease fix it.\n" "$SRC_DIR"
@@ -72,6 +70,10 @@ fi
 
 (
     cd "$SRC_DIR"
+
+    ACLOCAL_ARG="$ACLOCAL_ARG -I m4"
+    test -d m4-sde && ACLOCAL_ARG="$ACLOCAL_ARG -I m4-sde"
+    test -d m4-static && ACLOCAL_ARG="$ACLOCAL_ARG -I m4-static"
 
     if [ "x${ACLOCAL_DIR}" != "x" ]; then
         ACLOCAL_ARG="$ACLOCAL_ARG -I $ACLOCAL_DIR"
@@ -91,6 +93,12 @@ fi
 
     if grep -q "^GTK_DOC_CHECK" ./configure.ac ; then
         $GTKDOCIZE --copy
+        set +x
+        echo
+        echo "=> If you are going to 'make dist', please add configure option --enable-gtk-doc."
+        echo "=> Otherwise, API documents won't be correctly built by gtk-doc."
+        echo
+        set -x
     fi
 
     if grep -E -q "^(AC_PROG_INTLTOOL|IT_PROG_INTLTOOL)" ./configure.ac ; then

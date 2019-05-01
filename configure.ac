@@ -246,29 +246,12 @@ done
 
 # ALSA
 
-AC_ARG_WITH([alsa],
-    [AS_HELP_STRING(
-        [--with-alsa],
-        [enable ALSA support for volumealsa plugin @<:@default=auto@:>@]
-    )],
-    [],
-    [with_alsa=auto]
-)
-
-AC_MSG_CHECKING([--with-alsa])
-AC_MSG_RESULT([$with_alsa])
-
-have_alsa=no
-AS_IF([test "x$with_alsa" != xno], [
+SDE_WITH([alsa], [enable ALSA support for volumealsa plugin @<:@default=auto@:>@], [
     AC_CHECK_HEADERS([alsa/asoundlib.h], [
         AC_CHECK_LIB([asound], [snd_seq_open], [
             have_alsa=yes
         ])
     ])
-])
-
-AS_IF([test "x$with_alsa" = "xyes" -a "x$have_foo" != "xyes"], [
-    AC_MSG_ERROR([alsa requested but not found])
 ])
 
 AM_CONDITIONAL(BUILD_ALSA_PLUGINS, test x$have_alsa = xyes)

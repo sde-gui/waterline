@@ -94,9 +94,9 @@ static gboolean force_composite_disabled = FALSE;
 
 const char * wtl_license = "This program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n";
 
-const char * wtl_website = "http://dev.make-linux.org/projects/waterline";
+const char * wtl_website = "https://github.com/sde-gui/waterline";
 const char * wtl_email = "igeekless@gmail.com";
-const char * wtl_bugreporting = "http://dev.make-linux.org/projects/waterline/issues";
+const char * wtl_bugreporting = "https://github.com/sde-gui/waterline/issues";
 
 /******************************************************************************/
 

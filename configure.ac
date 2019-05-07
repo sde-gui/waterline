@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(waterline, 0.6.0-alpha, http://dev.make-linux.org/projects/waterline)
+AC_INIT(waterline, 0.6.0-alpha, https://github.com/sde-gui/waterline)
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE([enable])

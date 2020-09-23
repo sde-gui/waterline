@@ -49,7 +49,9 @@ gchar ** read_list_from_config(gchar * file_name)
 static const char * wtl_get_default_application_special_cases(char * type)
 {
     if (g_strcmp0(type, "logout") == 0) {
-        /* If LXSession is running, _LXSESSION_PID will be set */
+        if (getenv("_SDE_SESSION_MANAGER_PID"))
+            return "sde-logout";
+
         if (getenv("_LXSESSION_PID"))
             return "lxsession-logout";
     }

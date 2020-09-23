@@ -169,13 +169,15 @@ struct _Panel {
     } pref_dialog;
 };
 
-struct {
+struct _GlobalConfig {
     char * file_manager_cmd;
     char * terminal_cmd;
     char * logout_cmd;
     int kiosk_mode;
     int arg_kiosk_mode;
-} global_config;
+};
+
+extern struct _GlobalConfig global_config;
 
 /* panel_config.c */
 

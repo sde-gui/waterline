@@ -1631,7 +1631,7 @@ static gboolean task_update_composite_thumbnail_real(Task * tk)
 
     //Status status;
 
-    gboolean skip = tk->iconified && tk->shaded;
+    gboolean skip = tk->iconified || tk->shaded;
     if (!skip)
     {
         XWindowAttributes window_attributes;

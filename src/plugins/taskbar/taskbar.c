@@ -2013,6 +2013,40 @@ static void task_clear_urgency(Task * tk)
     }
 }
 
+/* Set iconified state on notification from WM. */
+static void task_set_iconified(Task * tk, gboolean iconified)
+{
+    TaskbarPlugin * tb = tk->tb;
+
+    if (tk->iconified != iconified)
+    {
+        tk->iconified = iconified;
+        if (tb->deferred_current_desktop >= 0)
+        {
+            /*
+                Waiting for deferred desktop switching:
+                * Don't call task_draw_label() right now.
+                * Schedule icon update.
+            */
+            if (tb->dim_iconified)
+                tk->deferred_iconified_update = TRUE;
+        }
+        else
+        {
+            /*
+                No deferred desktop switching.
+                Update label and icon right now.
+            */
+            tk->deferred_iconified_update = FALSE;
+            task_draw_label(tk);
+            task_update_icon(tk, None, FALSE);
+        }
+        task_update_grouping(tk, GROUP_BY_STATE);
+        task_update_sorting(tk, SORT_BY_STATE);
+        task_update_composite_thumbnail(tk);
+    }
+}
+
 /******************************************************************************/
 
 /* group menu */
@@ -4189,29 +4223,17 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                 }
                 else if (at == aWM_STATE)
                 {
-#if 0
                     /* Window changed state. */
-                    gboolean iconified = get_wm_state(win) == IconicState;
-                    if (tk->iconified != iconified)
-                    {
-                        tk->iconified = iconified;
-                        /* Do not update task label, if we a waiting for deferred desktop switching. */
-                        if (tb->deferred_current_desktop < 0)
-                        {
-                           tk->deferred_iconified_update = FALSE;
-                           task_draw_label(tk);
-                           task_update_icon(tk, None, FALSE);
-                        }
-                        else
-                        {
-                            if (tb->dim_iconified)
-                                tk->deferred_iconified_update = TRUE;
-                        }
-                        task_update_grouping(tk, GROUP_BY_STATE);
-                        task_update_sorting(tk, SORT_BY_STATE);
-                        task_update_composite_thumbnail(tk);
-                    }
-#endif
+
+                    /* This event can be safely ignored for all the tested WMs
+                       except for fluxbox.
+                       Fluxbox is somewhat special, see
+                       <https://github.com/sde-gui/waterline/issues/1>.
+                       I didn't get into details whose bug it is, fluxbox's or ours.
+                       Just restoring the code here.
+                    */
+                    gboolean iconified = wtl_x11_get_wm_state(win) == IconicState;
+                    task_set_iconified(tk, iconified);
                 }
                 else if (at == XA_WM_HINTS)
                 {
@@ -4251,18 +4273,7 @@ static void taskbar_property_notify_event(TaskbarPlugin *tb, XEvent *ev)
                         task_update_composite_thumbnail(tk);
 
                         gboolean iconified = nws.hidden;
-
-                        if (tk->iconified != iconified)
-                        {
-                            tk->iconified = iconified;
-                            tk->deferred_iconified_update = FALSE;
-                            task_draw_label(tk);
-                            task_update_icon(tk, None, FALSE);
-                            task_update_grouping(tk, GROUP_BY_STATE);
-                            task_update_sorting(tk, SORT_BY_STATE);
-                            task_update_composite_thumbnail(tk);
-                        }
-
+                        task_set_iconified(tk, iconified);
                     }
                 }
                 else if (at == a_MOTIF_WM_HINTS)

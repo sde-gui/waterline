@@ -1006,12 +1006,15 @@ void panel_apply_icon( GtkWindow *w )
 
 gboolean panel_is_composited(Panel * p)
 {
-    return !force_compositing_wm_disabled && panel_is_composite_available(p) && gtk_widget_is_composited(p->topgwin);
+    return !force_compositing_wm_disabled
+        && panel_is_composite_available(p)
+        && gtk_widget_is_composited(p->topgwin);
 }
 
 gboolean panel_is_composite_available(Panel * p)
 {
-    return !force_composite_disabled && wtl_x11_is_composite_available();
+    return !force_composite_disabled
+        && wtl_x11_is_composite_available();
 }
 
 /******************************************************************************/

@@ -48,7 +48,7 @@ struct _task;
 struct _desk;
 struct _pager;
 
-#define ALL_DESKTOPS   0xFFFFFFFF /* 64-bit clean */
+static const int ALL_DESKTOPS = 0xFFFFFFFF; /* 64-bit clean */
 #define BORDER_WIDTH   2
 
 /* Structure representing a "task", an open window. */
@@ -88,8 +88,8 @@ typedef struct _pager {
     IconGrid * icon_grid;           /* Container widget */
     int desk_extent;                /* Extent of desks vector */
     PagerDesktop * * desks;         /* Vector of desktop structures */
-    guint number_of_desktops;       /* Number of desktops, from NET_WM_NUMBER_OF_DESKTOPS */
-    guint current_desktop;          /* Current desktop, from NET_WM_CURRENT_DESKTOP */
+    int number_of_desktops;         /* Number of desktops, from NET_WM_NUMBER_OF_DESKTOPS */
+    int current_desktop;            /* Current desktop, from NET_WM_CURRENT_DESKTOP */
     gfloat aspect_ratio;            /* Aspect ratio of screen image */
     int client_count;               /* Count of tasks in stacking order */
     PagerTask * * tasks_in_stacking_order; /* Vector of tasks in stacking order */

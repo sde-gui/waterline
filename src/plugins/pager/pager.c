@@ -588,13 +588,13 @@ static void pager_net_desktop_names(FbEv * fbev, PagerPlugin * pg)
 
     /* Loop to copy the desktop names to the vector of labels.
      * If there are more desktops than labels, label the extras with a decimal number. */
-    int i;
+    int i = 0;
     for (i = 0; ((desktop_names != NULL) && (i < MIN(pg->number_of_desktops, number_of_desktop_names))); i++)
         gtk_widget_set_tooltip_text(pg->desks[i]->da, desktop_names[i]);
     for ( ; i < pg->number_of_desktops; i++)
     {
-        char temp[10];
-        sprintf(temp, "%d", i + 1);
+        char temp[64];
+        snprintf(temp, sizeof(temp), "%d", i + 1);
         gtk_widget_set_tooltip_text(pg->desks[i]->da, temp);
     }
 

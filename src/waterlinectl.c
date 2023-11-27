@@ -20,6 +20,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,6 +58,10 @@ int main(int argc, const char** argv)
         }
 
         char * buff = (char *) calloc(buff_size, sizeof(char));
+        if (buff == NULL) {
+            errx(1, "memory allocation failure (%zu bytes)", buff_size);
+            return 1;
+        }
 
         size_t buff_pos = 0;
         for (i = 1; i < argc; i++)
@@ -68,8 +73,8 @@ int main(int argc, const char** argv)
 
         dpy = XOpenDisplay(display_name);
         if (dpy == NULL) {
-            printf("cannot open display: %s\n", display_name);
-            exit(1);
+            err(1, "cannot open display: %s", display_name);
+            return 1;
         }
         root = DefaultRootWindow(dpy);
         cmd_atom = XInternAtom(dpy, "_WATERLINE_TEXT_CMD", False);

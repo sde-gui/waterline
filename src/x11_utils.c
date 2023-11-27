@@ -850,7 +850,7 @@ gboolean wtl_x11_get_net_showing_desktop_supported(void)
 
 gboolean wtl_x11_get_net_showing_desktop(void)
 {
-    gboolean result;
+    gboolean result = FALSE;
     guint32 * data = wtl_x11_get_xa_property (wtl_x11_root(), a_NET_SHOWING_DESKTOP, XA_CARDINAL, 0);
     if (data)
     {

@@ -300,7 +300,7 @@ static void task_set_desktop_dirty(PagerTask * tk)
 
     if (tk->visible_on_pixmap || task_is_visible(tk))
     {
-        if (tk->desktop < pg->number_of_desktops)
+        if (tk->desktop >= 0 && tk->desktop < pg->number_of_desktops)
             desktop_set_dirty(pg->desks[tk->desktop]);
         else
             pager_set_dirty_all_desktops(pg);
@@ -608,7 +608,7 @@ static void pager_net_current_desktop(FbEv * ev, PagerPlugin * pg)
 {
     desktop_set_dirty(pg->desks[pg->current_desktop]);
     pg->current_desktop = wtl_x11_get_net_current_desktop();
-    if (pg->current_desktop >= pg->number_of_desktops)
+    if (pg->current_desktop < 0 || pg->current_desktop >= pg->number_of_desktops)
         pg->current_desktop = 0;
     desktop_set_dirty(pg->desks[pg->current_desktop]);
 }
@@ -641,7 +641,7 @@ static void pager_net_number_of_desktops(FbEv * ev, PagerPlugin * pg)
 
     /* Reconcile the current desktop number. */
     pg->current_desktop = wtl_x11_get_net_current_desktop();
-    if (pg->current_desktop >= pg->number_of_desktops)
+    if (pg->current_desktop < 0 || pg->current_desktop >= pg->number_of_desktops)
         pg->current_desktop = 0;
 
     /* Reconcile the old and new number of desktops. */

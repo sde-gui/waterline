@@ -397,6 +397,7 @@ static void on_moveup_plugin(  GtkButton* btn, GtkTreeView* view )
                 {
                     panel->plugins = g_list_insert( panel->plugins, pl, i - 1);
                     panel->plugins = g_list_delete_link( panel->plugins, l);
+                    break;
                 }
             }
             if( pl->pwid )
@@ -439,6 +440,7 @@ static void on_movedown_plugin(  GtkButton* btn, GtkTreeView* view )
         {
             panel->plugins = g_list_insert( panel->plugins, pl, i + 2);
             panel->plugins = g_list_delete_link( panel->plugins, l);
+            break;
         }
     }
     if( pl->pwid )

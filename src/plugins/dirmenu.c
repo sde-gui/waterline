@@ -940,7 +940,7 @@ static void dirmenu_configure(Plugin * p, GtkWindow * parent)
         _("Use submenu if number of files is more than"), &dm->max_file_count, (GType)CONF_TYPE_INT,
         _("Show file size"), &dm->show_file_size, (GType)CONF_TYPE_BOOL,
         _("Show MIME type icons"), &dm->show_icons, (GType)CONF_TYPE_BOOL,
-        _("Show tooltips"), &dm->show_tooltips, (GType)CONF_TYPE_BOOL,
+        _("Show popup tooltips"), &dm->show_tooltips, (GType)CONF_TYPE_BOOL,
         "", 0, (GType)CONF_TYPE_BEGIN_TABLE,
         sort_directories, (gpointer)&dm->sort_directories_by, (GType)CONF_TYPE_ENUM,
         sort_files, (gpointer)&dm->sort_files_by, (GType)CONF_TYPE_ENUM,

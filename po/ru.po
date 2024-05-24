@@ -4,19 +4,19 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: lxpanelx\n"
+"Project-Id-Version: waterline\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-17 13:21+0700\n"
-"PO-Revision-Date: 2021-06-18 09:15+0700\n"
-"Last-Translator: Vadim Ushakov <igeekless@gmail.com>\n"
-"Language-Team: Russian <igeekless@gmail.com>\n"
+"POT-Creation-Date: 2024-05-24 17:02+0700\n"
+"PO-Revision-Date: 2024-05-24 17:10+0700\n"
+"Last-Translator: Vadim Ushakov <wandrien.dev@gmail.com>\n"
+"Language-Team: Russian <wandrien.dev@gmail.com>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 3.0\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 3.4.2\n"
 
 #: ../data/ui/panel-pref.ui.h:1
 msgid "Dynamic"
@@ -406,77 +406,77 @@ msgstr "Завершение работы"
 msgid "Logout command is not set"
 msgstr "Команда выхода из сеанса не задана"
 
-#: ../src/panel.c:2455
+#: ../src/panel.c:2467
 #, c-format
 msgid "waterline %s - A lightweight framework for desktop widgets and applets"
 msgstr "waterline %s - легковесный фреймворк для апплетов рабочего стола"
 
-#: ../src/panel.c:2457
+#: ../src/panel.c:2469
 #, c-format
 msgid "Syntax: %s [options]"
 msgstr "Синтаксис: %s [options]"
 
-#: ../src/panel.c:2459
+#: ../src/panel.c:2471
 msgid "Options:"
 msgstr "Опции:"
 
-#: ../src/panel.c:2461
+#: ../src/panel.c:2473
 msgid "Print this help and exit"
 msgstr "Показать помощь и выйти"
 
-#: ../src/panel.c:2462
+#: ../src/panel.c:2474
 msgid "Print version and exit"
 msgstr "Показать версию и выйти"
 
-#: ../src/panel.c:2463
+#: ../src/panel.c:2475
 msgid "Set log level 0-5. 0 - none 5 - chatty"
 msgstr "Задать уровень журналирования 0-5. 0 - не вести журнал, 5 - подробно"
 
-#: ../src/panel.c:2464
+#: ../src/panel.c:2476
 msgid "Use specified profile"
 msgstr "Использовать заданный профиль"
 
-#: ../src/panel.c:2465
+#: ../src/panel.c:2477
 msgid "Enable kiosk mode"
 msgstr "Включить режим киоска"
 
-#: ../src/panel.c:2467
+#: ../src/panel.c:2479
 msgid "Debug options:"
 msgstr "Отладочные опции:"
 
-#: ../src/panel.c:2469
+#: ../src/panel.c:2481
 msgid "Display 'quit' command in popup menu"
 msgstr "Отображать команду 'Выход' в контекстном меню панели"
 
-#: ../src/panel.c:2470
+#: ../src/panel.c:2482
 msgid "Force specified colormap (rgba, rgb, system, default)"
 msgstr "Использовать указанную colormap (rgba, rgb, system, default)"
 
-#: ../src/panel.c:2472
+#: ../src/panel.c:2484
 msgid "Behave as if no compositing wm avaiable"
 msgstr "Вести себя, как будто композитный WM не запущен"
 
-#: ../src/panel.c:2474
+#: ../src/panel.c:2486
 msgid "Behave as if there is no compositing support at all"
 msgstr "Вести себя, как будто поддержка композитинга отсутствует"
 
-#: ../src/panel.c:2476
+#: ../src/panel.c:2488
 msgid "Short options:"
 msgstr "Короткие опции:"
 
-#: ../src/panel.c:2478
+#: ../src/panel.c:2490
 msgid "same as --help"
 msgstr "то же, что и --help"
 
-#: ../src/panel.c:2479
+#: ../src/panel.c:2491
 msgid "same as --profile"
 msgstr "то же, что и --profile"
 
-#: ../src/panel.c:2480
+#: ../src/panel.c:2492
 msgid "same as --version"
 msgstr "то же, что и --version"
 
-#: ../src/panel.c:2484
+#: ../src/panel.c:2496
 #, c-format
 msgid ""
 "Report bugs to: <%s> or <%s>\n"
@@ -514,7 +514,7 @@ msgstr ""
 #: ../src/panel_menu.c:189 ../src/plugins/notification_area/main.c:132
 msgid "translator-credits"
 msgstr ""
-"Vadim Ushakov <igeekless@gmail.com>\n"
+"Vadim Ushakov <wandrien.dev@gmail.com>\n"
 "HsH <hsh@runtu.org>\n"
 "Alexander Kazancev <kazancas@mandiriva.ru>"
 
@@ -1074,7 +1074,7 @@ msgstr "|Сортировать файлы по"
 
 #: ../src/plugins/dirmenu.c:933
 msgid "Directory"
-msgstr "Корень"
+msgstr "Каталог"
 
 #: ../src/plugins/dirmenu.c:934
 msgid "Label"
@@ -1102,11 +1102,11 @@ msgstr "Отображать размер файлов"
 
 #: ../src/plugins/dirmenu.c:942
 msgid "Show MIME type icons"
-msgstr "Отображать иконки MIME-типа"
+msgstr "Отображать иконки MIME-типов"
 
 #: ../src/plugins/dirmenu.c:943
-msgid "Show tooltips"
-msgstr "Показывать подсказки"
+msgid "Show popup tooltips"
+msgstr "Показывать всплывающие подсказки"
 
 #: ../src/plugins/dirmenu.c:1013
 msgid "Directory Menu"
@@ -1117,7 +1117,7 @@ msgid "Browse directory tree via menu"
 msgstr "Просмотр дерева каталогов в виде меню"
 
 #. Add "move to all workspaces" item.  This causes the window to be visible no matter what desktop is active.
-#: ../src/plugins/taskbar/taskbar.c:729 ../src/plugins/taskbar/taskbar.c:4816
+#: ../src/plugins/taskbar/taskbar.c:729 ../src/plugins/taskbar/taskbar.c:4827
 msgid "_All workspaces"
 msgstr "_Все рабочие места"
 
@@ -1133,89 +1133,89 @@ msgstr "Свернутые"
 msgid "Mapped"
 msgstr "Видимые"
 
-#: ../src/plugins/taskbar/taskbar.c:3465
+#: ../src/plugins/taskbar/taskbar.c:3499
 msgid "Close window"
 msgstr "Закрыть окно"
 
-#: ../src/plugins/taskbar/taskbar.c:4398
+#: ../src/plugins/taskbar/taskbar.c:4409
 msgid "Move window to new group"
 msgstr "Переместить окно в новую группу"
 
-#: ../src/plugins/taskbar/taskbar.c:4514
+#: ../src/plugins/taskbar/taskbar.c:4525
 msgid "(unnamed)"
 msgstr "(без имени)"
 
-#: ../src/plugins/taskbar/taskbar.c:4526
+#: ../src/plugins/taskbar/taskbar.c:4537
 msgid "New group"
 msgstr "Новая группа"
 
-#: ../src/plugins/taskbar/taskbar.c:4650
+#: ../src/plugins/taskbar/taskbar.c:4661
 #, c-format
 msgid "Run new %s"
 msgstr "Запустить новый %s"
 
-#: ../src/plugins/taskbar/taskbar.c:4774
+#: ../src/plugins/taskbar/taskbar.c:4785
 msgid "_Raise"
 msgstr "_Активировать"
 
-#: ../src/plugins/taskbar/taskbar.c:4776
+#: ../src/plugins/taskbar/taskbar.c:4787
 msgid "R_estore"
 msgstr "В_осстановить"
 
-#: ../src/plugins/taskbar/taskbar.c:4778
+#: ../src/plugins/taskbar/taskbar.c:4789
 msgid "Ma_ximize"
 msgstr "_Распахнуть"
 
-#: ../src/plugins/taskbar/taskbar.c:4780
+#: ../src/plugins/taskbar/taskbar.c:4791
 msgid "Ico_nify"
 msgstr "_Свернуть"
 
-#: ../src/plugins/taskbar/taskbar.c:4782
+#: ../src/plugins/taskbar/taskbar.c:4793
 msgid "Un/_decorate"
 msgstr "Рас/Декорировать"
 
-#: ../src/plugins/taskbar/taskbar.c:4784
+#: ../src/plugins/taskbar/taskbar.c:4795
 msgid "_Roll up/down"
 msgstr "Рас/Скрутить"
 
-#: ../src/plugins/taskbar/taskbar.c:4788
+#: ../src/plugins/taskbar/taskbar.c:4799
 msgid "Move to this workspace"
 msgstr "Переместить на _текущее рабочее место"
 
 #. Add Move to Workspace menu item as a submenu.
-#: ../src/plugins/taskbar/taskbar.c:4822
+#: ../src/plugins/taskbar/taskbar.c:4833
 msgid "_Move to Workspace"
 msgstr "_Переместить на рабочее место"
 
-#: ../src/plugins/taskbar/taskbar.c:4828
+#: ../src/plugins/taskbar/taskbar.c:4839
 msgid "_Ungroup"
 msgstr "Разгруппировать"
 
-#: ../src/plugins/taskbar/taskbar.c:4830
+#: ../src/plugins/taskbar/taskbar.c:4841
 msgid "M_ove to Group"
 msgstr "Переместить _в группу"
 
-#: ../src/plugins/taskbar/taskbar.c:4832
+#: ../src/plugins/taskbar/taskbar.c:4843
 msgid "Unfold _Group"
 msgstr "Развернуть гру_ппу"
 
-#: ../src/plugins/taskbar/taskbar.c:4834
+#: ../src/plugins/taskbar/taskbar.c:4845
 msgid "Fold _Group"
 msgstr "Свернуть гру_ппу"
 
-#: ../src/plugins/taskbar/taskbar.c:4836
+#: ../src/plugins/taskbar/taskbar.c:4847
 msgid "Cop_y title"
 msgstr "_Копировать заголовок"
 
-#: ../src/plugins/taskbar/taskbar.c:4838
+#: ../src/plugins/taskbar/taskbar.c:4849
 msgid "_Run new"
 msgstr "Запустить новый"
 
-#: ../src/plugins/taskbar/taskbar.c:4840 ../src/plugins/taskbar/taskbar.c:4854
+#: ../src/plugins/taskbar/taskbar.c:4851 ../src/plugins/taskbar/taskbar.c:4865
 msgid "_Close Window"
 msgstr "_Закрыть окно"
 
-#: ../src/plugins/taskbar/taskbar.c:5226
+#: ../src/plugins/taskbar/taskbar.c:5237
 msgid ""
 "|None|Show context menu|Close|Raise|Raise/Iconify|Iconify|Maximize|Shade|"
 "Undecorate|Fullscreen|Stick|Show window list (menu)|Show group window list "
@@ -1230,256 +1230,256 @@ msgstr ""
 "группе|Следующее окно в указанной группе|Предыдущее окно в указанной группе|"
 "Копировать заголовок"
 
-#: ../src/plugins/taskbar/taskbar.c:5227
+#: ../src/plugins/taskbar/taskbar.c:5238
 msgid "|Left button"
 msgstr "|Левая кнопка"
 
-#: ../src/plugins/taskbar/taskbar.c:5228
+#: ../src/plugins/taskbar/taskbar.c:5239
 msgid "|Middle button"
 msgstr "|Средняя кнопка"
 
-#: ../src/plugins/taskbar/taskbar.c:5229
+#: ../src/plugins/taskbar/taskbar.c:5240
 msgid "|Right button"
 msgstr "|Правая кнопка"
 
-#: ../src/plugins/taskbar/taskbar.c:5230
+#: ../src/plugins/taskbar/taskbar.c:5241
 msgid "|Scroll up"
 msgstr "|Прокрутка вверх"
 
-#: ../src/plugins/taskbar/taskbar.c:5231
+#: ../src/plugins/taskbar/taskbar.c:5242
 msgid "|Scroll down"
 msgstr "|Прокрутка вниз"
 
-#: ../src/plugins/taskbar/taskbar.c:5232
+#: ../src/plugins/taskbar/taskbar.c:5243
 msgid "|Shift + Left button"
 msgstr "|Shift + Левая кнопка"
 
-#: ../src/plugins/taskbar/taskbar.c:5233
+#: ../src/plugins/taskbar/taskbar.c:5244
 msgid "|Shift + Middle button"
 msgstr "|Shift + Средняя кнопка"
 
-#: ../src/plugins/taskbar/taskbar.c:5234
+#: ../src/plugins/taskbar/taskbar.c:5245
 msgid "|Shift + Right button"
 msgstr "|Shift + Правая кнопка"
 
-#: ../src/plugins/taskbar/taskbar.c:5235
+#: ../src/plugins/taskbar/taskbar.c:5246
 msgid "|Shift + Scroll up"
 msgstr "|Shift + Прокрутка вверх"
 
-#: ../src/plugins/taskbar/taskbar.c:5236
+#: ../src/plugins/taskbar/taskbar.c:5247
 msgid "|Shift + Scroll down"
 msgstr "|Shift + Прокрутка вниз"
 
-#: ../src/plugins/taskbar/taskbar.c:5238
+#: ../src/plugins/taskbar/taskbar.c:5249
 msgid "|Timestamp|Title|Focus (LRU)|State|Workspace"
 msgstr "|Времени создания|Заголовку|Времени активации|Состоянию|Рабочему месту"
 
-#: ../src/plugins/taskbar/taskbar.c:5239
+#: ../src/plugins/taskbar/taskbar.c:5250
 msgid "|First sort by"
 msgstr "|Сначала сортировать по"
 
-#: ../src/plugins/taskbar/taskbar.c:5240
+#: ../src/plugins/taskbar/taskbar.c:5251
 msgid "|Then sort by"
 msgstr "|Затем сортировать по"
 
-#: ../src/plugins/taskbar/taskbar.c:5241
+#: ../src/plugins/taskbar/taskbar.c:5252
 msgid "|And last sort by"
 msgstr "|И затем сортировать по"
 
-#: ../src/plugins/taskbar/taskbar.c:5244
+#: ../src/plugins/taskbar/taskbar.c:5255
 msgid "|Click|Press"
 msgstr "|Щелчок|Нажатие"
 
-#: ../src/plugins/taskbar/taskbar.c:5245
+#: ../src/plugins/taskbar/taskbar.c:5256
 msgid "|Menu actions triggered by"
 msgstr "|Действия, открывающие меню, срабатывают на"
 
-#: ../src/plugins/taskbar/taskbar.c:5246
+#: ../src/plugins/taskbar/taskbar.c:5257
 msgid "|Other actions triggered by"
 msgstr "|Прочие действия срабатывают на"
 
-#: ../src/plugins/taskbar/taskbar.c:5259
+#: ../src/plugins/taskbar/taskbar.c:5270
 #: ../src/plugins/battery_indicator/battery_indicator.c:685
 msgid "Appearance"
 msgstr "Внешний вид"
 
-#: ../src/plugins/taskbar/taskbar.c:5261
+#: ../src/plugins/taskbar/taskbar.c:5272
 msgid "|Show:|Icons only|Titles only|Icons and titles"
 msgstr "|Показывать:|Только иконки|Только заголовки|Иконки и заголовки"
 
-#: ../src/plugins/taskbar/taskbar.c:5262
+#: ../src/plugins/taskbar/taskbar.c:5273
 msgid "Show close buttons"
 msgstr "Показывать кнопку «Закрыть»"
 
-#: ../src/plugins/taskbar/taskbar.c:5263
+#: ../src/plugins/taskbar/taskbar.c:5274
 msgid "Display inactive buttons flat"
 msgstr "Отображать неактивные кнопки плоскими"
 
-#: ../src/plugins/taskbar/taskbar.c:5264
+#: ../src/plugins/taskbar/taskbar.c:5275
 msgid "Display active button flat"
 msgstr "Отображать активные кнопки плоскими"
 
-#: ../src/plugins/taskbar/taskbar.c:5265
+#: ../src/plugins/taskbar/taskbar.c:5276
 msgid "Colorize buttons"
 msgstr "Расцвечивать кнопки"
 
-#: ../src/plugins/taskbar/taskbar.c:5267
+#: ../src/plugins/taskbar/taskbar.c:5278
 msgid "Icon settings"
 msgstr "Внешний вид иконок"
 
-#: ../src/plugins/taskbar/taskbar.c:5268
+#: ../src/plugins/taskbar/taskbar.c:5279
 msgid "Dim iconified"
 msgstr "Осветлять свернутые"
 
-#: ../src/plugins/taskbar/taskbar.c:5269
+#: ../src/plugins/taskbar/taskbar.c:5280
 msgid ""
 "Display window thumbnails instead of icons (requires compositing wm enabled)"
 msgstr ""
 "Отображать миниатюры окон вместо иконок (требуется WM с поддержкой "
 "композитинга)"
 
-#: ../src/plugins/taskbar/taskbar.c:5271
+#: ../src/plugins/taskbar/taskbar.c:5282
 msgid "Title settings"
 msgstr "Внешний вид заголовков"
 
-#: ../src/plugins/taskbar/taskbar.c:5272
+#: ../src/plugins/taskbar/taskbar.c:5283
 msgid "Highlight modified titles"
 msgstr "Подсвечивать изменившиеся заголовки"
 
-#: ../src/plugins/taskbar/taskbar.c:5273
+#: ../src/plugins/taskbar/taskbar.c:5284
 msgid "Highlight title of active button"
 msgstr "Подсвечивать заголовок активной кнопки"
 
-#: ../src/plugins/taskbar/taskbar.c:5274
+#: ../src/plugins/taskbar/taskbar.c:5285
 msgid "Highlight title when mouse is over a button"
 msgstr "Подсвечивать заголовок при наведении мыши"
 
-#: ../src/plugins/taskbar/taskbar.c:5276
+#: ../src/plugins/taskbar/taskbar.c:5287
 msgid "Geometry"
 msgstr "Размещение"
 
-#: ../src/plugins/taskbar/taskbar.c:5278
+#: ../src/plugins/taskbar/taskbar.c:5289
 msgid "Maximum width of task button"
 msgstr "Макс. ширина кнопки окна"
 
-#: ../src/plugins/taskbar/taskbar.c:5281
+#: ../src/plugins/taskbar/taskbar.c:5292
 msgid "Spacing"
 msgstr "Разделитель"
 
-#: ../src/plugins/taskbar/taskbar.c:5283
+#: ../src/plugins/taskbar/taskbar.c:5294
 msgid "Use group separators"
 msgstr "Использовать разделители групп"
 
-#: ../src/plugins/taskbar/taskbar.c:5284
+#: ../src/plugins/taskbar/taskbar.c:5295
 msgid "Group separator size"
 msgstr "Размер разделителя групп"
 
-#: ../src/plugins/taskbar/taskbar.c:5288
+#: ../src/plugins/taskbar/taskbar.c:5299
 msgid "Behavior"
 msgstr "Поведение"
 
-#: ../src/plugins/taskbar/taskbar.c:5291
+#: ../src/plugins/taskbar/taskbar.c:5302
 msgid "|Mode|Classic|Group windows|Show only active window"
 msgstr "|Режим|Классический|Группировать окна|Только активное окно"
 
-#: ../src/plugins/taskbar/taskbar.c:5292
+#: ../src/plugins/taskbar/taskbar.c:5303
 msgid "|Group by|None|Window class|Workspace|Window state"
 msgstr "|Критерий группировки|Нет|Класс окна|Рабочее место|Состояние окна"
 
 #. _("Group fold threshold"), (gpointer)&tb->group_fold_threshold, (GType)CONF_TYPE_INT,
-#: ../src/plugins/taskbar/taskbar.c:5294
+#: ../src/plugins/taskbar/taskbar.c:5305
 msgid "Fold group when it has Nr windows"
 msgstr "Сворачивать группу, когда количество окон в ней достигает"
 
-#: ../src/plugins/taskbar/taskbar.c:5295
+#: ../src/plugins/taskbar/taskbar.c:5306
 msgid "Fold groups when taskbar has Nr windows"
 msgstr "Сворачивать группы, когда количество окон на панели задач достигает"
 
-#: ../src/plugins/taskbar/taskbar.c:5296
+#: ../src/plugins/taskbar/taskbar.c:5307
 msgid "Unfold focused group"
 msgstr "Разворачивать группу активного окна"
 
-#: ../src/plugins/taskbar/taskbar.c:5297
+#: ../src/plugins/taskbar/taskbar.c:5308
 msgid "Show only focused group"
 msgstr "Показывать только группу активного окна"
 
-#: ../src/plugins/taskbar/taskbar.c:5298
+#: ../src/plugins/taskbar/taskbar.c:5309
 msgid "Manual grouping"
 msgstr "Ручное управление группами"
 
-#: ../src/plugins/taskbar/taskbar.c:5301
+#: ../src/plugins/taskbar/taskbar.c:5312
 msgid "Show iconified windows"
 msgstr "Показывать свернутые окна"
 
-#: ../src/plugins/taskbar/taskbar.c:5302
+#: ../src/plugins/taskbar/taskbar.c:5313
 msgid "Show mapped windows"
 msgstr "Показывать видимые окна"
 
-#: ../src/plugins/taskbar/taskbar.c:5303
+#: ../src/plugins/taskbar/taskbar.c:5314
 msgid "Show windows from all desktops"
 msgstr "Показывать окна всех рабочих мест"
 
-#: ../src/plugins/taskbar/taskbar.c:5305
+#: ../src/plugins/taskbar/taskbar.c:5316
 msgid "Flash when there is any window requiring attention"
 msgstr "Мигать, если окно требует внимания"
 
-#: ../src/plugins/taskbar/taskbar.c:5307
+#: ../src/plugins/taskbar/taskbar.c:5318
 msgid "Show windows from all desktops, if they requires attention"
 msgstr "Показывать окна всех рабочих мест, если они требуют внимания"
 
-#: ../src/plugins/taskbar/taskbar.c:5309
+#: ../src/plugins/taskbar/taskbar.c:5320
 msgid "Sorting"
 msgstr "Сортировка"
 
-#: ../src/plugins/taskbar/taskbar.c:5315
+#: ../src/plugins/taskbar/taskbar.c:5326
 msgid "Rearrange manually"
 msgstr "Переупорядочивать вручную"
 
-#: ../src/plugins/taskbar/taskbar.c:5317
+#: ../src/plugins/taskbar/taskbar.c:5328
 msgid "Bindings"
 msgstr "Привязки"
 
-#: ../src/plugins/taskbar/taskbar.c:5341
+#: ../src/plugins/taskbar/taskbar.c:5352
 msgid "Integration"
 msgstr "Интеграция"
 
-#: ../src/plugins/taskbar/taskbar.c:5343
+#: ../src/plugins/taskbar/taskbar.c:5354
 msgid "Hide buttons of visible applications from launchbar"
 msgstr "Не отображать иконки видимых приложений в панели запуска"
 
-#: ../src/plugins/taskbar/taskbar.c:5344
+#: ../src/plugins/taskbar/taskbar.c:5355
 msgid "_NET_WM_ICON_GEOMETRY"
 msgstr "_NET_WM_ICON_GEOMETRY"
 
-#: ../src/plugins/taskbar/taskbar.c:5345
+#: ../src/plugins/taskbar/taskbar.c:5356
 msgid "_WATERLINE_TASKBAR_WINDOW_POSITION"
 msgstr "_WATERLINE_TASKBAR_WINDOW_POSITION"
 
-#: ../src/plugins/taskbar/taskbar.c:5521
+#: ../src/plugins/taskbar/taskbar.c:5532
 msgid "Tas_k Manager"
 msgstr "Диспетчер задач"
 
-#: ../src/plugins/taskbar/taskbar.c:5540
+#: ../src/plugins/taskbar/taskbar.c:5551
 msgid "Show the _Desktop"
 msgstr "Показать рабочий стол"
 
-#: ../src/plugins/taskbar/taskbar.c:5549
+#: ../src/plugins/taskbar/taskbar.c:5560
 msgid "Tile Windows _Vertically"
 msgstr "Окна слева направо"
 
-#: ../src/plugins/taskbar/taskbar.c:5557
+#: ../src/plugins/taskbar/taskbar.c:5568
 msgid "Tile Windows _Horizontally"
 msgstr "Окна сверху вниз"
 
-#: ../src/plugins/taskbar/taskbar.c:5565
+#: ../src/plugins/taskbar/taskbar.c:5576
 msgid "_Cascade Windows"
 msgstr "Окна каскадом"
 
-#: ../src/plugins/taskbar/taskbar.c:5581
+#: ../src/plugins/taskbar/taskbar.c:5592
 msgid "Task Bar"
 msgstr "Панель задач"
 
-#: ../src/plugins/taskbar/taskbar.c:5583
+#: ../src/plugins/taskbar/taskbar.c:5594
 msgid "Taskbar shows all opened windows and allows you to switch among them"
 msgstr ""
 "Панель задач показывает все открытые окна, позволяя переключаться между ними"

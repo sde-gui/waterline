@@ -12,7 +12,7 @@ SRC_DIR="${SRC_DIR:-}"
 test -z "$SRC_DIR" && SRC_DIR="`pwd`"
 
 AC_VERSION="${AC_VERSION:-}"
-AM_VERSION="${AC_VERSION:-}"
+AM_VERSION="${AM_VERSION:-}"
 
 ACLOCAL_ARG="${ACLOCAL_ARG:-}"
 ACLOCAL_DIR="${ACLOCAL_DIR:-}"
@@ -47,12 +47,12 @@ fi
 AM_INSTALLED_VERSION=$($AUTOMAKE --version | sed -e '2,$ d' -e 's/.* \([0-9]*\.[0-9]*\).*/\1/')
 
 case "$AM_INSTALLED_VERSION" in
-    1.1[1-6])
+    1.1[1-8])
         ;;
     *)
         set +x
         echo
-        echo "You must have automake 1.11...1.16 installed."
+        echo "You must have automake 1.11...1.18 installed."
         echo "Install the appropriate package for your distribution,"
         echo "or get the source tarball at http://ftp.gnu.org/gnu/automake/"
         exit 1
@@ -79,19 +79,33 @@ fi
         ACLOCAL_ARG="$ACLOCAL_ARG -I $ACLOCAL_DIR"
     fi
 
+    if grep -q '^ACLOCAL_AMFLAGS' Makefile.am ; then
+        sed -i 's/^ACLOCAL_AMFLAGS[ ]*=.*/ACLOCAL_AMFLAGS = '"$ACLOCAL_ARG"'/' Makefile.am
+    else
+        (
+            cat Makefile.am
+            echo ""
+            echo "ACLOCAL_AMFLAGS = $ACLOCAL_ARG"
+        ) > Makefile.am.tmp
+        mv Makefile.am.tmp Makefile.am
+    fi
+
     test -f aclocal.m4 && rm aclocal.m4
     test -d m4 && rm -r m4
     mkdir m4
 
     if grep -q "^AM_GNU_GETTEXT" ./configure.ac ; then
+        $AUTOPOINT --version | head -1
         $AUTOPOINT --force
     fi
 
     if grep -q "^AM_GLIB_GNU_GETTEXT" ./configure.ac ; then
+        $GLIB_GETTEXTIZE --version | head -1
         $GLIB_GETTEXTIZE --force --copy
     fi
 
     if grep -q "^GTK_DOC_CHECK" ./configure.ac ; then
+        $GTKDOCIZE --version | head -1
         $GTKDOCIZE --copy
         set +x
         echo
@@ -102,15 +116,33 @@ fi
     fi
 
     if grep -E -q "^(AC_PROG_INTLTOOL|IT_PROG_INTLTOOL)" ./configure.ac ; then
+        $INTLTOOLIZE --version | head -1
         $INTLTOOLIZE --force --copy --automake
     fi
 
+    # XXX: a workaround for gettext >= 0.24
+    # https://gitlab.archlinux.org/archlinux/packaging/packages/dovecot/-/issues/4
+    # https://gitlab.archlinux.org/archlinux/packaging/packages/gettext/-/issues/6
+    prefix=/usr
+    if test ! -f "m4/nls.m4" -a -f "$prefix/share/gettext/m4/nls.m4" ; then
+        ln -s /usr/share/gettext/m4/nls.m4 m4
+    fi
+
+    $LIBTOOLIZE --version | head -1
+    $ACLOCAL --version | head -1
+    $AUTOHEADER --version | head -1
+    $AUTOMAKE --version | head -1
+    $AUTOCONF --version | head -1
+
+    $LIBTOOLIZE --force --copy
     $ACLOCAL $ACLOCAL_ARG
-    $LIBTOOLIZE
-    $AUTOHEADER --force
+    if grep -q "^AC_CONFIG_HEADERS" ./configure.ac ; then
+        $AUTOHEADER --force
+    fi
     $AUTOMAKE --add-missing --copy --include-deps
     $AUTOCONF
 
     rm -rf autom4te.cache
 )
 
+# -%- use-tabs: no; -%-

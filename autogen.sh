@@ -136,7 +136,7 @@ fi
 
     $LIBTOOLIZE --force --copy
     $ACLOCAL $ACLOCAL_ARG
-    if grep -q "^AC_CONFIG_HEADERS" ./configure.ac ; then
+    if grep -q "^AC_CONFIG_HEADER" ./configure.ac ; then
         $AUTOHEADER --force
     fi
     $AUTOMAKE --add-missing --copy --include-deps
